@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:beans.perspective.meridor.org"
+            elementFormDefault="qualified">
+
+    <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+            <xsd:length value="36" fixed="true"/>
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[8-9a-bA-B][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="uuidOrInteger">
+        <xsd:union>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer"/>
+            </xsd:simpleType>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:unsignedInt"/>
+            </xsd:simpleType>
+        </xsd:union>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="checksum">
+        <xsd:restriction base="xsd:string">
+            <xsd:length value="32" fixed="true"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="ipAddress">
+        <xsd:union>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:pattern value="([a-f0-9]{1,4}:){7}[a-f0-9]{1,4}" />
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:pattern value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:union>
+    </xsd:simpleType>
+
+    <xsd:complexType name="cidr">
+        <xsd:attribute name="address" type="ipAddress"/>
+        <xsd:attribute name="prefixSize" type="xsd:unsignedInt"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="availabilityZone">
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="region">
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="flavor">
+        <xsd:attribute name="id" type="uuidOrInteger"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="ram" type="xsd:unsignedInt"/>
+        <xsd:attribute name="vcpus" type="xsd:unsignedInt"/>
+        <xsd:attribute name="rootDisk" type="xsd:unsignedInt"/>
+        <xsd:attribute name="ephemeralDisk" type="xsd:unsignedInt"/>
+        <xsd:attribute name="hasSwap" type="xsd:boolean"/>
+        <xsd:attribute name="isPublic" type="xsd:boolean"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="image">
+        <xsd:attribute name="id" type="uuid"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="size" type="xsd:double"/>
+        <xsd:attribute name="minFlavor" type="flavor"/>
+        <xsd:attribute name="isPublic" type="xsd:boolean"/>
+        <xsd:attribute name="isProtected" type="xsd:boolean"/>
+        <xsd:attribute name="checksum" type="checksum"/>
+        <xsd:attribute name="created" type="xsd:dateTime"/>
+        <xsd:attribute name="updated" type="xsd:dateTime"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="quota">
+        <xsd:attribute name="maxInstances" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxVCPUs" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxRAM" type="xsd:double"/>
+        <xsd:attribute name="maxFloatingIPs" type="xsd:double"/>
+        <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="subnet">
+        <xsd:sequence>
+            <xsd:element name="dnsServer" type="ipAddress" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="uuid"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="cidr" type="cidr"/>
+        <xsd:attribute name="protocolVersion">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:enumeration value="4"/>
+                    <xsd:enumeration value="6"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="gateway" type="ipAddress"/>
+        <xsd:attribute name="isDHCPEnabled" type="xsd:boolean"/>
+        <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="network">
+        <xsd:sequence>
+            <xsd:element name="subnet" type="subnet" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="uuid"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="status" type="xsd:string"/>
+        <xsd:attribute name="isShared" type="xsd:boolean"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="fingerprint">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="([a-f0-9]{2}:){15}[a-f0-9]{2}" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="keypair">
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="fingerprint" type="fingerprint"/>
+        <xsd:attribute name="publicKey" type="xsd:string"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="project">
+        <xsd:sequence>
+            <xsd:element name="region" type="region" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="instance">
+        <xsd:sequence>
+            <xsd:element name="network" type="network" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="uuid"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="flavor" type="flavor"/>
+        <xsd:attribute name="image" type="image"/>
+        <xsd:attribute name="keypair" type="keypair"/>
+        <xsd:attribute name="created" type="xsd:dateTime"/>
+        <xsd:attribute name="status">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="error"/>
+                    <xsd:enumeration value="active"/>
+                    <xsd:enumeration value="reboot"/>
+                    <xsd:enumeration value="hard_reboot"/>
+                    <xsd:enumeration value="rebuild"/>
+                    <xsd:enumeration value="snapshot"/>
+                    <xsd:enumeration value="shutoff"/>
+                    <xsd:enumeration value="resize"/>
+                    <xsd:enumeration value="migrate"/>
+                    <xsd:enumeration value="pause"/>
+                    <xsd:enumeration value="suspend"/>
+                    <xsd:enumeration value="terminate"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="isLocked" type="xsd:dateTime"/>
+        <xsd:attribute name="availabilityZone" type="availabilityZone"/>
+    </xsd:complexType>
+
+</xsd:schema>
