@@ -10,7 +10,7 @@ GET /projects/$id/networks - list project networks
 GET /projects/$id/regions/$id/availability_zones - list project availability zones
 GET /keypairs - list current user keypairs
 POST /keypairs - add keypair
-DELETE /keypairs/$id - add keypair
+DELETE /keypairs/$id - delete keypair
 
 ### Instances
 GET /projects/$id/regions/$id/instances - list project instances

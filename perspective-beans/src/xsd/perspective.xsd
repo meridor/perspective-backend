@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:beans.perspective.meridor.org"
             targetNamespace="urn:beans.perspective.meridor.org"
             elementFormDefault="qualified">
 
@@ -43,7 +44,7 @@
     </xsd:simpleType>
 
     <xsd:complexType name="cidr">
-        <xsd:attribute name="address" type="ipAddress"/>
+        <xsd:attribute name="address" type="tns:ipAddress"/>
         <xsd:attribute name="prefixSize" type="xsd:unsignedInt"/>
     </xsd:complexType>
 
@@ -57,26 +58,30 @@
     </xsd:complexType>
 
     <xsd:complexType name="flavor">
-        <xsd:attribute name="id" type="uuidOrInteger"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="ram" type="xsd:unsignedInt"/>
-        <xsd:attribute name="vcpus" type="xsd:unsignedInt"/>
-        <xsd:attribute name="rootDisk" type="xsd:unsignedInt"/>
-        <xsd:attribute name="ephemeralDisk" type="xsd:unsignedInt"/>
-        <xsd:attribute name="hasSwap" type="xsd:boolean"/>
-        <xsd:attribute name="isPublic" type="xsd:boolean"/>
+        <xsd:all>
+            <xsd:element name="id" type="tns:uuidOrInteger"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="ram" type="xsd:unsignedInt"/>
+            <xsd:element name="vcpus" type="xsd:unsignedInt"/>
+            <xsd:element name="rootDisk" type="xsd:unsignedInt"/>
+            <xsd:element name="ephemeralDisk" type="xsd:unsignedInt"/>
+            <xsd:element name="hasSwap" type="xsd:boolean"/>
+            <xsd:element name="isPublic" type="xsd:boolean"/>
+        </xsd:all>
     </xsd:complexType>
 
     <xsd:complexType name="image">
-        <xsd:attribute name="id" type="uuid"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="size" type="xsd:double"/>
-        <xsd:attribute name="minFlavor" type="flavor"/>
-        <xsd:attribute name="isPublic" type="xsd:boolean"/>
-        <xsd:attribute name="isProtected" type="xsd:boolean"/>
-        <xsd:attribute name="checksum" type="checksum"/>
-        <xsd:attribute name="created" type="xsd:dateTime"/>
-        <xsd:attribute name="updated" type="xsd:dateTime"/>
+        <xsd:all>
+            <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="size" type="xsd:double"/>
+            <xsd:element name="minFlavor" type="tns:flavor"/>
+            <xsd:element name="isPublic" type="xsd:boolean"/>
+            <xsd:element name="isProtected" type="xsd:boolean"/>
+            <xsd:element name="checksum" type="tns:checksum"/>
+            <xsd:element name="created" type="xsd:dateTime"/>
+            <xsd:element name="updated" type="xsd:dateTime"/>
+        </xsd:all>
     </xsd:complexType>
     
     <xsd:complexType name="quota">
@@ -87,34 +92,45 @@
         <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
     </xsd:complexType>
     
-    <xsd:complexType name="subnet">
+    <xsd:complexType name="subnets">
         <xsd:sequence>
-            <xsd:element name="dnsServer" type="ipAddress" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="dnsServer" type="tns:ipAddress" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="uuid"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="cidr" type="cidr"/>
-        <xsd:attribute name="protocolVersion">
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:integer">
-                    <xsd:enumeration value="4"/>
-                    <xsd:enumeration value="6"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-        </xsd:attribute>
-        <xsd:attribute name="gateway" type="ipAddress"/>
-        <xsd:attribute name="isDHCPEnabled" type="xsd:boolean"/>
-        <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="subnet">
+        <xsd:all>
+            <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="cidr" type="tns:cidr"/>
+            <xsd:element name="protocolVersion">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:integer">
+                        <xsd:enumeration value="4"/>
+                        <xsd:enumeration value="6"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="gateway" type="tns:ipAddress"/>
+            <xsd:element name="isDHCPEnabled" type="xsd:boolean"/>
+            <xsd:element name="maxSecurityGroups" type="xsd:double"/>
+        </xsd:all>
     </xsd:complexType>
 
     <xsd:complexType name="network">
+        <xsd:all>
+            <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="subnets" type="tns:subnets"/>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="isShared" type="xsd:boolean"/>
+        </xsd:all>
+    </xsd:complexType>
+    
+    <xsd:complexType name="networks">
         <xsd:sequence>
-            <xsd:element name="subnet" type="subnet" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="network" type="tns:network" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="uuid"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="status" type="xsd:string"/>
-        <xsd:attribute name="isShared" type="xsd:boolean"/>
     </xsd:complexType>
 
     <xsd:simpleType name="fingerprint">
@@ -124,49 +140,62 @@
     </xsd:simpleType>
 
     <xsd:complexType name="keypair">
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="fingerprint" type="fingerprint"/>
-        <xsd:attribute name="publicKey" type="xsd:string"/>
+        <xsd:all>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="fingerprint" type="tns:fingerprint"/>
+            <xsd:element name="publicKey" type="xsd:string"/>
+        </xsd:all>
     </xsd:complexType>
     
-    <xsd:complexType name="project">
+    <xsd:complexType name="regions">
         <xsd:sequence>
-            <xsd:element name="region" type="region" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="region" type="tns:region" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:string"/>
-        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="project">
+        <xsd:all>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="regions" type="tns:regions"/>
+        </xsd:all>
     </xsd:complexType>
 
     <xsd:complexType name="instance">
-        <xsd:sequence>
-            <xsd:element name="network" type="network" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="id" type="uuid"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="flavor" type="flavor"/>
-        <xsd:attribute name="image" type="image"/>
-        <xsd:attribute name="keypair" type="keypair"/>
-        <xsd:attribute name="created" type="xsd:dateTime"/>
-        <xsd:attribute name="status">
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:string">
-                    <xsd:enumeration value="error"/>
-                    <xsd:enumeration value="active"/>
-                    <xsd:enumeration value="reboot"/>
-                    <xsd:enumeration value="hard_reboot"/>
-                    <xsd:enumeration value="rebuild"/>
-                    <xsd:enumeration value="snapshot"/>
-                    <xsd:enumeration value="shutoff"/>
-                    <xsd:enumeration value="resize"/>
-                    <xsd:enumeration value="migrate"/>
-                    <xsd:enumeration value="pause"/>
-                    <xsd:enumeration value="suspend"/>
-                    <xsd:enumeration value="terminate"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-        </xsd:attribute>
-        <xsd:attribute name="isLocked" type="xsd:dateTime"/>
-        <xsd:attribute name="availabilityZone" type="availabilityZone"/>
+        <xsd:all>
+            <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="flavor" type="tns:flavor"/>
+            <xsd:element name="image" type="tns:image"/>
+            <xsd:element name="keypair" type="tns:keypair"/>
+            <xsd:element name="network" type="tns:network"/>
+            <xsd:element name="created" type="xsd:dateTime"/>
+            <xsd:element name="status">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="error"/>
+                        <xsd:enumeration value="active"/>
+                        <xsd:enumeration value="reboot"/>
+                        <xsd:enumeration value="hard_reboot"/>
+                        <xsd:enumeration value="rebuild"/>
+                        <xsd:enumeration value="snapshot"/>
+                        <xsd:enumeration value="shutoff"/>
+                        <xsd:enumeration value="resize"/>
+                        <xsd:enumeration value="migrate"/>
+                        <xsd:enumeration value="pause"/>
+                        <xsd:enumeration value="suspend"/>
+                        <xsd:enumeration value="terminate"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="isLocked" type="xsd:dateTime"/>
+            <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="user">
+        <xsd:attribute name="login" type="xsd:string"/>
+        <xsd:attribute name="token" type="xsd:string"/>
     </xsd:complexType>
 
 </xsd:schema>

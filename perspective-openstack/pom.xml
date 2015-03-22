@@ -10,6 +10,41 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>perspective-openstack</artifactId>
+    
+    <properties>
+        <jclouds.version>1.8.1</jclouds.version>
+    </properties>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.jclouds.api</groupId>
+            <artifactId>openstack-nova</artifactId>
+            <version>${jclouds.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jclouds.labs</groupId>
+            <artifactId>openstack-glance</artifactId>
+            <version>${jclouds.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-agent</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-beans</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.meridor.stecker</groupId>
+                <artifactId>stecker-plugin-generator</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>

@@ -14,7 +14,7 @@ public enum OperationType {
     PROJECT_LIST_AVAILABILITY_ZONES,
     PROJECT_LIST_NETWORKS,
     
-    //INSTANCES operations
+    //Instances operations
     INSTANCES_ADD_IP,
     INSTANCES_ADD_TAG,
     INSTANCES_HARD_REBOOT,
@@ -40,6 +40,6 @@ public enum OperationType {
     IMAGES_LIST,
     IMAGES_SHOW_INFO,
     IMAGES_MODIFY,
-    IMAGES_REMOVE;
+    IMAGES_REMOVE
     
 }
