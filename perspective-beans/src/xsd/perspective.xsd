@@ -152,6 +152,12 @@
             <xsd:element name="region" type="tns:region" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
+    
+    <xsd:complexType name="projects">
+        <xsd:sequence>
+            <xsd:element name="project" type="tns:project" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
 
     <xsd:complexType name="project">
         <xsd:all>
@@ -168,7 +174,7 @@
             <xsd:element name="flavor" type="tns:flavor"/>
             <xsd:element name="image" type="tns:image"/>
             <xsd:element name="keypair" type="tns:keypair"/>
-            <xsd:element name="network" type="tns:network"/>
+            <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="created" type="xsd:dateTime"/>
             <xsd:element name="status">
                 <xsd:simpleType>

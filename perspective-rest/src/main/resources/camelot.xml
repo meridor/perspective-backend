@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugins-config xmlns="urn:config.camelot.qatools.yandex.ru">
+    <source>
+        <broker>
+            <param name="concurrentConsumers" value="1"/>
+            <param name="maxConcurrentConsumers" value="20"/>
+            <param name="destination.consumer.prefetchSize" value="0"/>
+            <param name="maxMessagesPerTask" value="10"/>
+        </broker>
+        <plugin id="requestsLogger">
+            <resource>org.meridor.perspective.rest.RequestsLoggingResource</resource>
+            <processor>org.meridor.perspective.rest.RequestsCountProcessor</processor>
+        </plugin>
+    </source>
+</plugins-config>

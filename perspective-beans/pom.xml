@@ -7,9 +7,12 @@
         <groupId>org.meridor.perspective</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
+    
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>perspective-beans</artifactId>
+    
+    <name>Perspective Backend Beans</name>
 
     <build>
         <plugins>
