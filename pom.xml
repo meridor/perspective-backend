@@ -19,11 +19,7 @@
     <properties>
         <compiler.version>1.8</compiler.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>4.0.7.RELEASE</spring.version>
-        <spring.security.version>3.2.5.RELEASE</spring.security.version>
-        <spring.data.mongodb.version>1.6.2.RELEASE</spring.data.mongodb.version>
         <camel.version>2.15.0</camel.version>
-        <activemq.version>5.11.1</activemq.version>
         <jersey.version>2.17</jersey.version>
         <slf4j.version>1.7.5</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
@@ -31,8 +27,6 @@
         <hamcrest.version>1.3</hamcrest.version>
         <mockito.version>1.9.5</mockito.version>
         <stecker.version>1.0.1</stecker.version>
-        <fongo.version>1.6.2</fongo.version>
-        <aspectj.version>1.8.5</aspectj.version>
         <camelot.version>2.1.12</camelot.version>
     </properties>
 
@@ -55,57 +49,38 @@
                 <artifactId>perspective-beans</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--<dependency>-->
-                <!--<groupId>org.meridor.perspective</groupId>-->
-                <!--<artifactId>perspective-dal</artifactId>-->
-                <!--<version>${project.version}</version>-->
-            <!--</dependency>-->
 
             <!-- Camelot -->
             <dependency>
                 <groupId>ru.yandex.qatools.camelot</groupId>
-                <artifactId>camelot-api</artifactId>
+                <artifactId>camelot-core</artifactId>
                 <version>${camelot.version}</version>
             </dependency>
+            <dependency>
+                <groupId>ru.yandex.qatools.camelot</groupId>
+                <artifactId>camelot-test</artifactId>
+                <version>${camelot.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-            <!-- Spring -->
+            <!-- Jersey -->
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring3</artifactId>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-orm</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-core</artifactId>
-                <version>${spring-security-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-config</artifactId>
-                <version>${spring-security-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-jpa</artifactId>
-                <version>1.2.0.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-tx</artifactId>
-                <version>${spring.version}</version>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${jersey.version}</version>
             </dependency>
             
             <!-- Misc -->
-            <!--<dependency>-->
-                <!--<groupId>org.meridor.stecker</groupId>-->
-                <!--<artifactId>stecker-plugin-loader</artifactId>-->
-                <!--<version>${stecker.version}</version>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>org.meridor.stecker</groupId>
+                <artifactId>stecker-plugin-loader</artifactId>
+                <version>${stecker.version}</version>
+            </dependency>
 
             <!-- Testing -->
             <dependency>
@@ -198,14 +173,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.16</version>
-                </plugin>
-                <plugin>
-                    <groupId>ru.yandex.qatools.camelot</groupId>
-                    <artifactId>camelot-test-maven-plugin</artifactId>
-                    <version>${camelot.version}</version>
-                    <configuration>
-                        <useEmbeddedActivemq>true</useEmbeddedActivemq>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -194,7 +194,7 @@
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:element>
-            <xsd:element name="isLocked" type="xsd:dateTime"/>
+            <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
         </xsd:all>
     </xsd:complexType>

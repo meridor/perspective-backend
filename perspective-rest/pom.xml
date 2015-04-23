@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
 
     <name>Perspective Backend REST API</name>
-    <!--<description>Simple REST API for Perspective</description>-->
+    <description>REST API for Perspective</description>
 
     <build>
         <plugins>
@@ -26,6 +26,55 @@
             <plugin>
                 <groupId>ru.yandex.qatools.camelot</groupId>
                 <artifactId>camelot-test-maven-plugin</artifactId>
+                <version>${camelot.version}</version>
+                <configuration>
+                    <runForked>true</runForked>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.10.v20150310</version>
+                <configuration>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webApp>
+                        <contextPath>/</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>org.apache.camel.spring.Main</mainClass>
+                            <useUniqueVersions>false</useUniqueVersions>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -39,7 +88,16 @@
         
         <dependency>
             <groupId>ru.yandex.qatools.camelot</groupId>
-            <artifactId>camelot-api</artifactId>
+            <artifactId>camelot-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-spring3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
 
         <!-- Logging -->
@@ -49,6 +107,10 @@
         </dependency>
         
         <!-- Testing -->
+        <dependency>
+            <groupId>ru.yandex.qatools.camelot</groupId>
+            <artifactId>camelot-test</artifactId>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

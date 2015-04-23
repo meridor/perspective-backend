@@ -7,9 +7,8 @@
             <param name="destination.consumer.prefetchSize" value="0"/>
             <param name="maxMessagesPerTask" value="10"/>
         </broker>
-        <plugin id="requestsLogger">
-            <resource>org.meridor.perspective.rest.RequestsCountResource</resource>
-            <processor>org.meridor.perspective.rest.RequestsCountProcessor</processor>
+        <plugin id="requestsCounter">
+            <aggregator>org.meridor.perspective.rest.RequestsCountAggregator</aggregator>
         </plugin>
     </source>
 </plugins-config>
