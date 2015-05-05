@@ -24,14 +24,6 @@
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>ru.yandex.qatools.camelot</groupId>
-                <artifactId>camelot-test-maven-plugin</artifactId>
-                <version>${camelot.version}</version>
-                <configuration>
-                    <runForked>true</runForked>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.2.10.v20150310</version>
@@ -40,6 +32,8 @@
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
+                    <stopKey/>
+                    <stopPort/>
                 </configuration>
             </plugin>
             <plugin>
@@ -81,16 +75,81 @@
     
     <dependencies>
 
+        <!-- Modules -->
         <dependency>
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-beans</artifactId>
         </dependency>
-        
         <dependency>
-            <groupId>ru.yandex.qatools.camelot</groupId>
-            <artifactId>camelot-core</artifactId>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-engine</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-openstack</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-mock</artifactId>
+        </dependency>
+        
+        <!-- ActiveMQ -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-pool</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+        </dependency>
+        
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
+        
+        <!-- Hazelcast -->
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-client</artifactId>
+        </dependency>
+        
+        <!-- Camel -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-hazelcast</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+        </dependency>
+        
+        <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-spring3</artifactId>
@@ -107,10 +166,6 @@
         </dependency>
         
         <!-- Testing -->
-        <dependency>
-            <groupId>ru.yandex.qatools.camelot</groupId>
-            <artifactId>camelot-test</artifactId>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

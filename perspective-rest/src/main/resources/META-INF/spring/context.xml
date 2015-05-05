@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:amq="http://activemq.apache.org/schema/core" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
             http://www.hazelcast.com/schema/spring
@@ -13,12 +13,28 @@
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-3.0.xsd
             http://activemq.apache.org/schema/core
-            http://activemq.apache.org/schema/core/activemq-core.xsd">
+            http://activemq.apache.org/schema/core/activemq-core.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective"/>
 
+    
+    <!-- Properties -->
+    <bean id="configurationProperties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:perspective.properties</value>
+            </list>
+        </property>
+    </bean>
 
+    <!-- Scheduler -->
+    <task:annotation-driven scheduler="perspectiveScheduler"/>
+    <task:scheduler id="perspectiveScheduler" pool-size="10"/>
+    
     <!-- Embedded ActiveMQ -->
     <amq:broker useJmx="false" persistent="false">
         <amq:transportConnectors>
@@ -31,7 +47,7 @@
         <property name="brokerURL" value="failover:(tcp://localhost:61619)?randomize=false&amp;maxReconnectAttempts=5"/>
     </bean>
     <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-          depends-on="perspectiveContext" init-method="start" destroy-method="stop">
+           init-method="start" destroy-method="stop"> <!-- depends-on="perspectiveContext" -->
         <property name="maxConnections" value="8"/>
         <property name="maximumActiveSessionPerConnection" value="500"/>
         <property name="connectionFactory" ref="jmsConnectionFactory"/>
@@ -50,7 +66,7 @@
     <!-- Embedded Hazelcast -->
     <hz:hazelcast id="hazelcastInstance">
         <hz:config>
-            <hz:group name="rest" password="rest-pass"/>
+            <hz:group name="${perspective.hazelcast.group.name}" password="${perspective.hazelcast.group.password}"/>
             <hz:properties>
                 <hz:property name="hazelcast.merge.first.run.delay.seconds">5</hz:property>
                 <hz:property name="hazelcast.merge.next.run.delay.seconds">5</hz:property>
@@ -77,48 +93,43 @@
         </hz:config>
     </hz:hazelcast>
 
-    <!-- Embedded Camelot -->
-    <bean id="threadPoolProfile" class="org.apache.camel.spi.ThreadPoolProfile">
-        <property name="id" value="camelotMulticastProfile"/>
-        <property name="timeUnit" value="MILLISECONDS"/>
-        <property name="keepAliveTime" value="30000"/>
-        <property name="poolSize" value="1"/>
-        <property name="maxPoolSize" value="5"/>
-    </bean>
-    <bean id="schedulerFactory" class="org.quartz.impl.StdSchedulerFactory"/>
-    <bean id="engine" class="ru.yandex.qatools.camelot.core.impl.ProcessingEngineImpl" init-method="init">
-        <constructor-arg name="configResources" value="classpath*:/camelot.xml"/>
-        <constructor-arg name="camelContext" ref="perspectiveContext"/>
-        <constructor-arg name="pluginLoader">
-            <bean class="ru.yandex.qatools.camelot.core.impl.SameClasspathPluginLoader"/>
-        </constructor-arg>
-        <constructor-arg name="inputUri" value="ref:events.input"/>
-        <constructor-arg name="outputUri" value="direct:plugin.stop"/>
-        <property name="scheduler">
-            <bean factory-bean="schedulerFactory" factory-method="getScheduler"/>
-        </property>
-        <property name="contextInjector">
-            <bean class="ru.yandex.qatools.camelot.core.impl.SpringContextInjector"/>
-        </property>
-        <property name="appConfig">
-            <bean class="ru.yandex.qatools.camelot.core.impl.AppConfigSpringProperties"/>
-        </property>
-        <property name="buildersFactory">
-            <bean class="ru.yandex.qatools.camelot.core.builders.BuildersFactoryWithHazelcastImpl">
-                <constructor-arg name="hazelcastInstance" ref="hazelcastInstance"/>
+    <bean id="hazelcastClient" class="com.hazelcast.client.HazelcastClient" factory-method="newHazelcastClient">
+        <constructor-arg>
+            <bean class="com.hazelcast.client.config.ClientConfig">
+                <property name="groupConfig">
+                    <bean class="com.hazelcast.config.GroupConfig">
+                        <property name="name" value="${perspective.hazelcast.group.name}"/>
+                        <property name="password" value="${perspective.hazelcast.group.password}"/>
+                    </bean>
+                </property>
+                <property name="networkConfig">
+                    <bean class="com.hazelcast.client.config.ClientNetworkConfig">
+                        <property name="addresses">
+                            <list>
+                                <value>127.0.0.1:5801</value>
+                            </list>
+                        </property>
+                    </bean>
+                </property>
             </bean>
-        </property>
+        </constructor-arg>
     </bean>
 
     <!-- Camel context -->
     <camelContext id="perspectiveContext" xmlns="http://camel.apache.org/schema/spring" allowUseOriginalMessage="false" streamCache="true">
         <jmxAgent id="agent" disabled="true"/>
-        <threadPoolProfile id="camelotDefaultProfile" defaultProfile="true" maxPoolSize="64"/>
-        <endpoint id="events.input" uri="activemq:queue:events.input"/>
-
-        <route id="stopped">
-            <from uri="direct:plugin.stop"/>
-            <stop/>
+        <threadPoolProfile id="camelThreadPool" defaultProfile="true" maxPoolSize="64"/>
+        <endpoint id="projects" uri="activemq:queue:projects?concurrentConsumers=${perspective.parallel.consumers}"/>
+         
+        <route id="projects">
+            <from uri="ref:projects"/>
+            <setHeader headerName="CamelHazelcastOperationType">
+                <constant>put</constant>
+            </setHeader>
+            <setHeader headerName="CamelHazelcastObjectId">
+                <constant>current</constant>
+            </setHeader>
+            <to uri="hazelcast:map:projects?hazelcastInstance=#hazelcastInstance"/>
         </route>
     </camelContext>
 </beans>

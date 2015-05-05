@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:config.perspective.meridor.org"
+            targetNamespace="urn:config.perspective.meridor.org"
+            elementFormDefault="qualified">
+
+    <xsd:simpleType name="cloudType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="mock"/>
+            <xsd:enumeration value="openstack"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="operationType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="listProjects"/>
+            <xsd:enumeration value="launchInstance"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="cloud">
+        <xsd:all>
+            <xsd:element name="name" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="type" type="tns:cloudType" minOccurs="1"/>
+            <xsd:element name="endpoint" type="xsd:string"/>
+            <xsd:element name="identity" type="xsd:string"/>
+            <xsd:element name="credential" type="xsd:string"/>
+            <xsd:element name="enabled" type="xsd:boolean" default="true"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="clouds">
+        <xsd:sequence>
+            <xsd:element name="cloud" type="tns:cloud" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="default" type="tns:cloudType" default="mock"/>
+    </xsd:complexType>
+
+    <xsd:element name="clouds" type="tns:clouds"/>
+    
+</xsd:schema>

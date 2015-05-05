@@ -5,8 +5,8 @@
 * GET /projects - list projects with enabled regions
 * GET /projects/$id/access - return endpoint urls for project services available
 * GET /projects/$id/regions/$id/rcfile - get Openstack RC file
-* GET /projects/$id/flavors - list project flavors
-* GET /projects/$id/networks - list project networks
+* GET /projects/$id/flavors - list project flavors -> move to projects list
+* GET /projects/$id/networks - list project networks -> move to projects list
 * GET /projects/$id/regions/$id/availability_zones - list project availability zones
 * GET /keypairs - list current user keypairs
 * POST /keypairs - add keypair
@@ -39,4 +39,15 @@
 * GET /projects/$id/images/$id - show image info
 * PUT /projects/$id/images - modify images
 * DELETE /projects/$id/images - delete images
-    
+
+# Преимущества Perspective по сравнению со стандартным Openstack API
+
+* Очень быстрое асинхронное API (за счет кеширования в память определенной информации наподобие списка флаворов, сетей и т.п.)
+* Поддержка bulk для всех типов операций (выполнение одной операции для нескольких сущностей: инстансов, контейнеров и т.п.)
+* Поддержка Swagger (возможность нагенерировать клиента для любого языка программирования)
+* В отдаленном будущем - поддержка других облачных платформ или нескольких облачных платформ как отдельных проектов в UI
+* Более простая аутентификация и авторизация (поддержка OAuth, LDAP и т.п.), по-умолчанию не нужно получать токен для каждой операции (это делается прозрачно для пользователя)
+* Более удобный клиентский UI (standalone client-side application)
+
+# TODO
+1) Как сделать обновление состояния по таймеру? (@OnTimer)
