@@ -4,6 +4,7 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
        xmlns:amq="http://activemq.apache.org/schema/core" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
             http://www.hazelcast.com/schema/spring
@@ -13,11 +14,11 @@
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-3.0.xsd
             http://activemq.apache.org/schema/core
-            http://activemq.apache.org/schema/core/activemq-core.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+            http://activemq.apache.org/schema/core/activemq-core.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective"/>
-
+    <aop:aspectj-autoproxy/>
     
     <!-- Properties -->
     <bean id="configurationProperties"
@@ -127,7 +128,7 @@
                 <constant>put</constant>
             </setHeader>
             <setHeader headerName="CamelHazelcastObjectId">
-                <constant>current</constant>
+                <constant>all</constant>
             </setHeader>
             <to uri="hazelcast:map:projects?hazelcastInstance=#hazelcastInstance"/>
         </route>

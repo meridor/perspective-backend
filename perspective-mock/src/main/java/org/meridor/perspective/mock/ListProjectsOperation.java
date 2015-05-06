@@ -5,6 +5,7 @@ import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.meridor.perspective.config.CloudType.MOCK;
@@ -15,13 +16,13 @@ import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 public class ListProjectsOperation {
     
     @EntryPoint
-    public void listProjects(Projects projects) {
+    public void listProjects(List<Project> projects) {
         Project project = new Project();
         project.setName("test-project");
         project.setId(getRandomId());
         Region region = getRegion();
         project.getRegions().add(region);
-        projects.getProjects().add(project);
+        projects.add(project);
     }
     
     private Region getRegion() {

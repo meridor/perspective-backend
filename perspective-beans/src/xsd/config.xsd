@@ -14,7 +14,11 @@
     <xsd:simpleType name="operationType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="listProjects"/>
-            <xsd:enumeration value="launchInstance"/>
+            <xsd:enumeration value="launchInstances"/>
+            <xsd:enumeration value="rebootInstances"/>
+            <xsd:enumeration value="hardRebootInstances"/>
+            <xsd:enumeration value="snapshotInstances"/>
+            <xsd:enumeration value="terminateInstances"/>
         </xsd:restriction>
     </xsd:simpleType>
 

@@ -178,12 +178,7 @@
         </xsd:all>
     </xsd:complexType>
 
-    <xsd:complexType name="projects">
-        <xsd:sequence>
-            <xsd:element name="project" type="tns:project" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="lastSync" type="xsd:dateTime"/>
-    </xsd:complexType>
+    <xsd:element name="project" type="tns:project"/>
 
     <xsd:complexType name="instance">
         <xsd:all>
@@ -222,6 +217,13 @@
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
         </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="instances">
+        <xsd:sequence>
+            <xsd:element name="instance" type="tns:instance" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="lastSync" type="xsd:dateTime"/>
     </xsd:complexType>
 
     <xsd:complexType name="user">

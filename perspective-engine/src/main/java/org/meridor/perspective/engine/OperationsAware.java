@@ -5,7 +5,7 @@ import org.meridor.perspective.config.OperationType;
 
 public interface OperationsAware {
 
-    boolean isOperationSupported(CloudType cloudType, OperationType operationType, Object dataContainer);
+    boolean isOperationSupported(CloudType cloudType, OperationType operationType);
     
     void act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception;
     

@@ -19,8 +19,8 @@ public class OperationProcessorImpl implements OperationProcessor {
             throw new IllegalArgumentException("Data container can't be null");
         }
         
-        if (!operationsAware.isOperationSupported(cloudType, operationType, dataContainer)) {
-            throw new UnsupportedOperationException(String.format("No operation %s defined for cloud %s and parameter class %s", operationType, cloudType, dataContainer.getClass().getCanonicalName()));
+        if (!operationsAware.isOperationSupported(cloudType, operationType)) {
+            throw new UnsupportedOperationException(String.format("No operation %s defined for cloud %s", operationType, cloudType));
         }
         
         operationsAware.act(cloudType, operationType, dataContainer);

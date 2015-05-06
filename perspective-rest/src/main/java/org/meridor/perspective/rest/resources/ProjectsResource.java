@@ -1,7 +1,7 @@
 package org.meridor.perspective.rest.resources;
 
 import com.hazelcast.core.HazelcastInstance;
-import org.meridor.perspective.beans.Projects;
+import org.meridor.perspective.beans.Project;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Component
 @Path("/projects")
@@ -20,9 +20,9 @@ public class ProjectsResource {
     
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response getProjects() {
-        Projects projects = (Projects) hazelcastClient.getMap("projects").get("current");
-        return Response.ok(projects).build();
+    @Path("/all")
+    public List<Project> getProjects() {
+        return (List) hazelcastClient.getMap("projects").get("all");
     }
     
 }
