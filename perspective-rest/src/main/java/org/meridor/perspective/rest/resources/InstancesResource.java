@@ -12,8 +12,8 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Component
-@Path("/projects")
-public class ProjectsResource {
+@Path("/instances")
+public class InstancesResource {
 
     @Autowired
     private HazelcastInstance hazelcastClient;

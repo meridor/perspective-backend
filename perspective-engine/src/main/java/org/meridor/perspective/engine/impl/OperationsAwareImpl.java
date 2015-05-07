@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,38 +32,42 @@ public class OperationsAwareImpl implements OperationsAware {
     private void init() {
         Map<String, Object> operationBeans = applicationContext.getBeansWithAnnotation(Operation.class);
         operationBeans.values().stream().forEach(bean -> {
-            OperationId operationId = getOperationId(bean);
-            operationInstances.put(operationId, bean);
+            List<OperationId> operationId = getOperationIds(bean);
+            operationId.stream().forEach(id -> {
+                Optional<Method> operationMethod = getOperationMethod(bean);
+                if (operationMethod.isPresent()) {
+                    operationInstances.put(id, bean);
+                    this.operationMethods.put(id, operationMethod.get());
+                    LOG.debug(
+                            "Added operation class {} with cloud type = {} and operation type = {}",
+                            bean.getClass().getCanonicalName(),
+                            id.getCloudType(),
+                            id.getOperationType()
+                    );
+                } else {
+                    LOG.warn("Skipping operation class {} because it contains no method marked as entry point.");
+                }
+            });
 
-            Map<OperationId, Method> operationMethods = getOperationMethods(bean);
-            this.operationMethods.putAll(operationMethods);
-            LOG.debug(
-                    "Added operation class {} with cloud type = {}, operation type = {} having {} operation methods",
-                    bean.getClass().getCanonicalName(),
-                    operationId.getCloudType(),
-                    operationId.getOperationType(),
-                    operationMethods.size()
-            );
         });
     }
 
-    private OperationId getOperationId(Object bean) {
+    private List<OperationId> getOperationIds(Object bean) {
         Operation operation = bean.getClass().getAnnotation(Operation.class);
-        return getOperationId(operation.cloud(), operation.type());
+        return Arrays.stream(operation.type())
+                .map(t -> getOperationId(operation.cloud(), t))
+                .collect(Collectors.toList());
     }
 
     private OperationId getOperationId(CloudType cloudType, OperationType operationType) {
         return new OperationId(cloudType, operationType);
     }
     
-    private Map<OperationId, Method> getOperationMethods(Object bean) {
+    private Optional<Method> getOperationMethod(Object bean) {
         return Arrays
                 .stream(bean.getClass().getMethods())
                 .filter(m -> m.isAnnotationPresent(EntryPoint.class) && m.getParameterCount() == 1)
-                .collect(Collectors.toMap(
-                        m -> getOperationId(bean),
-                        Function.identity()
-                ));
+                .findFirst();
     }
 
     @Override
@@ -116,8 +117,7 @@ public class OperationsAwareImpl implements OperationsAware {
 
             OperationId that = (OperationId) o;
 
-            if (cloudType != that.cloudType) return false;
-            return operationType == that.operationType;
+            return cloudType == that.cloudType && operationType == that.operationType;
 
         }
 

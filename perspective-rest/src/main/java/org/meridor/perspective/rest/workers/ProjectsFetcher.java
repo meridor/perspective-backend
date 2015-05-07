@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.fetchers;
+package org.meridor.perspective.rest.workers;
 
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -30,12 +30,12 @@ public class ProjectsFetcher {
     
     @Scheduled(fixedDelay = 5000)
     public void fetchProjects() {
-        LOG.info("Fetching projects list...");
+        LOG.debug("Fetching projects list");
         List<Project> projects = new ArrayList<>();
         try {
             operationProcessor.process(CloudType.MOCK, OperationType.LIST_PROJECTS, projects);
             producer.sendBody(projects);
-            LOG.info("Saved projects to queue");
+            LOG.debug("Saved projects to queue");
         } catch (Exception e) {
             LOG.error("Error while fetching projects list", e);
         }

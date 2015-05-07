@@ -13,6 +13,6 @@ public @interface Operation {
 
     CloudType cloud();
     
-    OperationType type(); //TODO: support multiple operation types for one class
+    OperationType[] type();
     
 }

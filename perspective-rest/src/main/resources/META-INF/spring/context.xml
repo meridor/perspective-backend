@@ -117,12 +117,14 @@
     </bean>
 
     <!-- Camel context -->
+    <!--<bean id="instancesFilter" class="org.meridor.perspective.rest.filters.InstancesFilter"/> -->
     <camelContext id="perspectiveContext" xmlns="http://camel.apache.org/schema/spring" allowUseOriginalMessage="false" streamCache="true">
         <jmxAgent id="agent" disabled="true"/>
         <threadPoolProfile id="camelThreadPool" defaultProfile="true" maxPoolSize="64"/>
         <endpoint id="projects" uri="activemq:queue:projects?concurrentConsumers=${perspective.parallel.consumers}"/>
+        <endpoint id="instances" uri="activemq:queue:instances?concurrentConsumers=${perspective.parallel.consumers}"/>
          
-        <route id="projects">
+        <route id="listProjects">
             <from uri="ref:projects"/>
             <setHeader headerName="CamelHazelcastOperationType">
                 <constant>put</constant>
@@ -132,5 +134,14 @@
             </setHeader>
             <to uri="hazelcast:map:projects?hazelcastInstance=#hazelcastInstance"/>
         </route>
+        
+        <route id="updateInstances">
+            <from uri="ref:instances"/>
+            <filter>
+                <method ref="instancesFilter" method="isInstanceDeletingEvent"/>
+                <bean ref="instancesUpdater" method="deleteInstances"/>
+            </filter>
+        </route>
+
     </camelContext>
 </beans>

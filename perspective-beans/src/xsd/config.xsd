@@ -18,7 +18,7 @@
             <xsd:enumeration value="rebootInstances"/>
             <xsd:enumeration value="hardRebootInstances"/>
             <xsd:enumeration value="snapshotInstances"/>
-            <xsd:enumeration value="terminateInstances"/>
+            <xsd:enumeration value="deleteInstances"/>
         </xsd:restriction>
     </xsd:simpleType>
 
