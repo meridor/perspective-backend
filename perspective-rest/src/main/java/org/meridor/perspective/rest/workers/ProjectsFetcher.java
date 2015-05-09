@@ -6,7 +6,7 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
-import org.meridor.perspective.rest.locks.Locked;
+import org.meridor.perspective.rest.storage.IfNotLocked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Locked
 public class ProjectsFetcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsFetcher.class);
@@ -29,6 +28,7 @@ public class ProjectsFetcher {
     private OperationProcessor operationProcessor;
     
     @Scheduled(fixedDelay = 5000)
+    @IfNotLocked
     public void fetchProjects() {
         LOG.debug("Fetching projects list");
         List<Project> projects = new ArrayList<>();

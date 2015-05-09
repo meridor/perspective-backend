@@ -2,6 +2,7 @@ package org.meridor.perspective.rest.resources;
 
 import com.hazelcast.core.HazelcastInstance;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.rest.storage.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,13 +17,13 @@ import java.util.List;
 public class ProjectsResource {
 
     @Autowired
-    private HazelcastInstance hazelcastClient;
+    private Storage storage;
     
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    @Path("/all")
+    @Path("/list")
     public List<Project> getProjects() {
-        return (List<Project>) hazelcastClient.getMap("projects").get("all");
+        return storage.getProjects();
     }
     
 }

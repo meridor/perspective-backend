@@ -1,28 +1,29 @@
 package org.meridor.perspective.rest.resources;
 
-import com.hazelcast.core.HazelcastInstance;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.rest.storage.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Component
-@Path("/instances")
+@Path("/projects/{projectId}/regions/{regionId}/instances")
 public class InstancesResource {
 
     @Autowired
-    private HazelcastInstance hazelcastClient;
+    private Storage storage;
     
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    @Path("/all")
-    public List<Project> getProjects() {
-        return (List<Project>) hazelcastClient.getMap("projects").get("all");
+    @Path("/list")
+    public List<Instance> listInstances(@PathParam("projectId") String projectId, @PathParam("regionId") String regionId) {
+        return storage.getInstances(projectId, regionId);
     }
     
 }

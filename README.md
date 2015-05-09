@@ -2,7 +2,7 @@
 
 ## API
 ### Project
-* GET /projects/all - list projects with enabled regions
+* GET /projects/list - list projects with enabled regions
 * GET /projects/$id/access - return endpoint urls for project services available
 * GET /projects/$id/regions/$id/rcfile - get Openstack RC file
 * GET /keypairs - list current user keypairs
@@ -10,7 +10,7 @@
 * DELETE /keypairs/$id - delete keypair
 
 ### Instances
-* GET /projects/$id/regions/$id/instances - list project instances
+* GET /projects/$id/regions/$id/instances/all - list project instances
 * POST /projects/$id/regions/$id/instances - launch instances
 * GET /projects/$id/regions/$id/instances/$id - show instance information
 * GET /projects/$id/regions/$id/instances/$id/console - redirect to instance console

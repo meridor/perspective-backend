@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.locks;
+package org.meridor.perspective.rest.storage;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Locked {
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface IfNotLocked {
     
-    String name() default "";
+    String lockName() default "";
     
 }
