@@ -1,9 +1,9 @@
 package org.meridor.perspective.rest.workers;
 
-import org.apache.camel.Body;
 import org.apache.camel.Handler;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
@@ -20,37 +20,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ProjectsFetcher {
+public class InstancesFetcher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectsFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InstancesFetcher.class);
     
-    @Produce(ref = "projects")
+    @Produce(ref = "instances")
     private ProducerTemplate producer;
     
     @Autowired
     private OperationProcessor operationProcessor;
-    
+
     @Autowired
     private Storage storage;
-    
+
     @Scheduled(fixedDelay = 5000)
     @IfNotLocked
     public void fetchProjects() {
-        LOG.debug("Fetching projects list");
-        List<Project> projects = new ArrayList<>();
+        LOG.debug("Fetching instances list");
+        List<Instance> instances = new ArrayList<>();
         try {
-            operationProcessor.process(CloudType.MOCK, OperationType.LIST_PROJECTS, projects);
-            producer.sendBody(projects);
-            LOG.debug("Saved projects to queue");
+            operationProcessor.process(CloudType.MOCK, OperationType.LIST_INSTANCES, instances);
+            producer.sendBody(instances);
+            LOG.debug("Saved instances to queue");
         } catch (Exception e) {
-            LOG.error("Error while fetching projects list", e);
+            LOG.error("Error while fetching instances list", e);
         }
     }
     
     @Handler
     @IfNotLocked
-    public void saveProjects(@Body List<Project> projects) {
-        storage.saveProjects(projects);
+    public void saveInstances(List<Instance> instances) {
+        LOG.debug("Saving {} instances to storage", instances.size());
+        storage.saveInstances(instances);
     }
     
 }

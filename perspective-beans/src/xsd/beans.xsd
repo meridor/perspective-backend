@@ -114,20 +114,20 @@
             <xsd:element name="dnsServer" type="tns:ipAddress" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
-    
+
+    <xsd:simpleType name="protocolVersion">
+        <xsd:restriction base="xsd:integer">
+            <xsd:enumeration value="4"/>
+            <xsd:enumeration value="6"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:complexType name="subnet">
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="cidr" type="tns:cidr"/>
-            <xsd:element name="protocolVersion">
-                <xsd:simpleType>
-                    <xsd:restriction base="xsd:integer">
-                        <xsd:enumeration value="4"/>
-                        <xsd:enumeration value="6"/>
-                    </xsd:restriction>
-                </xsd:simpleType>
-            </xsd:element>
+            <xsd:element name="protocolVersion" type="tns:protocolVersion" default="4"/>
             <xsd:element name="gateway" type="tns:ipAddress"/>
             <xsd:element name="isDHCPEnabled" type="xsd:boolean"/>
             <xsd:element name="maxSecurityGroups" type="xsd:double"/>
@@ -180,50 +180,45 @@
 
     <xsd:element name="project" type="tns:project"/>
 
+    <xsd:simpleType name="instanceStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="deleting"/>
+            <xsd:enumeration value="error"/>
+            <xsd:enumeration value="hard_rebooting"/>
+            <xsd:enumeration value="launched"/>
+            <xsd:enumeration value="launching"/>
+            <xsd:enumeration value="migrating"/>
+            <xsd:enumeration value="not_launched"/>
+            <xsd:enumeration value="paused"/>
+            <xsd:enumeration value="pausing"/>
+            <xsd:enumeration value="preparing_storage"/>
+            <xsd:enumeration value="queued"/>
+            <xsd:enumeration value="rebooting"/>
+            <xsd:enumeration value="rebuilding"/>
+            <xsd:enumeration value="resizing"/>
+            <xsd:enumeration value="shutoff"/>
+            <xsd:enumeration value="shutting_down"/>
+            <xsd:enumeration value="snapshotting"/>
+            <xsd:enumeration value="suspending"/>
+            <xsd:enumeration value="suspended"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:complexType name="instance">
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="projectId" type="tns:uuid"/>
+            <xsd:element name="regionId" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="flavor" type="tns:flavor"/>
             <xsd:element name="image" type="tns:image"/>
             <xsd:element name="keypair" type="tns:keypair"/>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="created" type="xsd:dateTime"/>
-            <xsd:element name="status">
-                <xsd:simpleType>
-                    <xsd:restriction base="xsd:string">
-                        <xsd:enumeration value="deleting"/>
-                        <xsd:enumeration value="error"/>
-                        <xsd:enumeration value="hard_rebooting"/>
-                        <xsd:enumeration value="launched"/>
-                        <xsd:enumeration value="launching"/>
-                        <xsd:enumeration value="migrating"/>
-                        <xsd:enumeration value="not_launched"/>
-                        <xsd:enumeration value="paused"/>
-                        <xsd:enumeration value="pausing"/>
-                        <xsd:enumeration value="preparing_storage"/>
-                        <xsd:enumeration value="queued"/>
-                        <xsd:enumeration value="rebooting"/>
-                        <xsd:enumeration value="rebuilding"/>
-                        <xsd:enumeration value="resizing"/>
-                        <xsd:enumeration value="shutoff"/>
-                        <xsd:enumeration value="shutting_down"/>
-                        <xsd:enumeration value="snapshotting"/>
-                        <xsd:enumeration value="suspending"/>
-                        <xsd:enumeration value="suspended"/>
-                    </xsd:restriction>
-                </xsd:simpleType>
-            </xsd:element>
+            <xsd:element name="status" type="tns:instanceStatus" minOccurs="1"/>
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
         </xsd:all>
-    </xsd:complexType>
-
-    <xsd:complexType name="instances">
-        <xsd:sequence>
-            <xsd:element name="instance" type="tns:instance" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="lastSync" type="xsd:dateTime"/>
     </xsd:complexType>
 
     <xsd:complexType name="user">

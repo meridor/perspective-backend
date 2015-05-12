@@ -117,25 +117,22 @@
     </bean>
 
     <!-- Camel context -->
-    <!--<bean id="instancesFilter" class="org.meridor.perspective.rest.filters.InstancesFilter"/> -->
     <camelContext id="perspectiveContext" xmlns="http://camel.apache.org/schema/spring" allowUseOriginalMessage="false" streamCache="true">
         <jmxAgent id="agent" disabled="true"/>
         <threadPoolProfile id="camelThreadPool" defaultProfile="true" maxPoolSize="64"/>
         <endpoint id="projects" uri="activemq:queue:projects?concurrentConsumers=${perspective.parallel.consumers}"/>
         <endpoint id="instances" uri="activemq:queue:instances?concurrentConsumers=${perspective.parallel.consumers}"/>
         
-        <!-- TODO: in case of Hazelcast lock problems this can be replaced by a bean endpoint with explicit Hazelcast client locks -->
         <route id="listProjects">
             <from uri="ref:projects"/>
-            <setHeader headerName="CamelHazelcastOperationType">
-                <constant>put</constant>
-            </setHeader>
-            <setHeader headerName="CamelHazelcastObjectId">
-                <constant>list</constant>
-            </setHeader>
-            <to uri="hazelcast:map:projects?hazelcastInstance=#hazelcastInstance"/>
+            <bean ref="projectsFetcher"/>
         </route>
-        
+
+        <route id="listInstances">
+            <from uri="ref:instances"/>
+            <bean ref="instancesFetcher"/>
+        </route>
+
         <route id="updateInstances">
             <from uri="ref:instances"/>
             <filter>

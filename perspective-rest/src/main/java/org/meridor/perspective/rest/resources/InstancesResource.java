@@ -26,4 +26,11 @@ public class InstancesResource {
         return storage.getInstances(projectId, regionId);
     }
     
+    @GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("/{instanceId}")
+    public Instance listInstances(@PathParam("projectId") String projectId, @PathParam("regionId") String regionId, @PathParam("instanceId") String instanceId) {
+        return storage.getInstance(projectId, regionId, instanceId);
+    }
+    
 }
