@@ -78,9 +78,14 @@ public class LockAspect {
         Optional<Method> annotationMethod = Arrays.stream(annotationType.getDeclaredMethods())
                 .filter(m -> m.getName().equals(LOCK_NAME))
                 .findFirst();
-        return annotationMethod.isPresent() ?
-                annotationMethod.get().invoke(annotation).toString() :
-                joinPoint.getSignature().getDeclaringType().getCanonicalName();
+        if (annotationMethod.isPresent()){
+
+            String lockNameCandidate = annotationMethod.get().invoke(annotation).toString();
+            if (!lockNameCandidate.isEmpty()) {
+                return lockNameCandidate;
+            }
+        }
+        return joinPoint.getSignature().getDeclaringType().getCanonicalName();
     }
     
     private long getLockTimeout(ProceedingJoinPoint joinPoint, Class annotationClass) throws Exception {

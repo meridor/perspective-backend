@@ -1,6 +1,5 @@
 package org.meridor.perspective.rest.resources;
 
-import com.hazelcast.core.HazelcastInstance;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.rest.storage.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
