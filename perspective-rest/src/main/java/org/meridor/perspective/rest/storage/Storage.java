@@ -7,10 +7,7 @@ import org.meridor.perspective.beans.Project;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class Storage {
@@ -31,7 +28,8 @@ public class Storage {
     
     @SuppressWarnings("unchecked")
     public List<Project> getProjects() {
-        return (List<Project>) hazelcastClient.getMap(PROJECTS).get(LIST);
+        List<Project> projects = (List<Project>) hazelcastClient.getMap(PROJECTS).get(LIST);
+        return (projects != null) ? projects : Collections.emptyList();
     }
 
     public void saveInstances(List<Instance> instances) {
@@ -58,12 +56,13 @@ public class Storage {
     
     @SuppressWarnings("unchecked")
     public List<Instance> getInstances(String projectId, String regionId) {
-        return (List<Instance>) hazelcastClient.getMap(INSTANCES).get(getRegionKey(projectId, regionId));
+        List<Instance> instances = (List<Instance>) hazelcastClient.getMap(INSTANCES).get(getRegionKey(projectId, regionId));
+        return (instances != null) ? instances : Collections.emptyList();
     }
     
     @SuppressWarnings("unchecked")
-    public Instance getInstance(String projectId, String regionId, String instanceId) {
-        return (Instance) hazelcastClient.getMap(INSTANCES).get(getInstanceKey(projectId, regionId, instanceId));
+    public Optional<Instance> getInstance(String projectId, String regionId, String instanceId) {
+        return Optional.ofNullable((Instance) hazelcastClient.getMap(INSTANCES).get(getInstanceKey(projectId, regionId, instanceId)));
     }
     
     private static String getRegionKey(String projectId, String regionId) {

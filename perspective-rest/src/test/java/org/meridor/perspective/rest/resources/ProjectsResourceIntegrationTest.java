@@ -1,17 +1,23 @@
 package org.meridor.perspective.rest.resources;
 
 import org.junit.Test;
+import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.mock.EntityGenerator;
 
-import static com.jayway.restassured.RestAssured.get;
+import javax.ws.rs.core.GenericType;
+import java.util.List;
 
-public class ProjectsResourceIntegrationTest {
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+
+public class ProjectsResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
-    public void testList() {
-        get("/projects/list")
-                .then()
-                .assertThat()
-                .statusCode(200);
+    public void testList() throws InterruptedException {
+        List<Project> projects = target("projects/list").request().get(new GenericType<List<Project>>(){});
+        assertThat(projects, hasSize(1));
+        assertThat(projects.get(0), equalTo(EntityGenerator.getProject()));
     }
     
 }

@@ -220,6 +220,8 @@
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
         </xsd:all>
     </xsd:complexType>
+    
+    <xsd:element name="instance" type="tns:instance"/>
 
     <xsd:complexType name="user">
         <xsd:attribute name="login" type="xsd:string"/>
