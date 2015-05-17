@@ -15,7 +15,7 @@ public class ProjectsResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
     public void testList() throws InterruptedException {
-        List<Project> projects = target("projects/list").request().get(new GenericType<List<Project>>(){});
+        List<Project> projects = target("/cloud/mock/project/list").request().get(new GenericType<List<Project>>(){});
         assertThat(projects, hasSize(1));
         assertThat(projects.get(0), equalTo(EntityGenerator.getProject()));
     }

@@ -2,139 +2,169 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:events="urn:events.perspective.meridor.org"
             xmlns:beans="urn:beans.perspective.meridor.org"
+            xmlns:config="urn:config.perspective.meridor.org"
             targetNamespace="urn:events.perspective.meridor.org"
             elementFormDefault="qualified">
     
     <xsd:import schemaLocation="beans.xsd" namespace="urn:beans.perspective.meridor.org"/>
+    <xsd:import schemaLocation="config.xsd" namespace="urn:config.perspective.meridor.org"/>
 
-    <!-- Instance events -->
-    <xsd:complexType name="instanceEvent" abstract="true">
-        <xsd:all>
-            <xsd:element name="uuid" type="beans:uuid"/>
+
+    <xsd:complexType name="baseEvent" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="id" type="beans:uuid"/>
+            <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
-        </xsd:all>
-    </xsd:complexType>
-
-    <xsd:complexType name="instanceDeletingEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
+        </xsd:sequence>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceErrorEvent">
+    <!-- Projects events -->
+    <xsd:complexType name="projectsEvent" abstract="true">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-
-    <xsd:complexType name="instanceHardRebootingEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:baseEvent">
+                <xsd:sequence>
+                    <xsd:element name="projects" type="beans:projects"/>
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="instanceLaunchedEvent">
+    <xsd:complexType name="projectsSyncEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:projectsEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceLaunchingEvent">
+    <!-- Instance events -->
+    <xsd:complexType name="instancesEvent" abstract="true">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instanceMigratingEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instanceNotLaunchedEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instancePausedEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instancePausingEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instancePreparingStorageEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:baseEvent">
+                <xsd:sequence>
+                    <xsd:element name="instances" type="beans:instances"/>
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="instanceQueuedEvent">
+    <xsd:complexType name="instancesSyncEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceRebootingEvent">
+    <xsd:complexType name="instancesDeletingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesErrorEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="instancesHardRebootingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="instancesLaunchedEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesLaunchingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesMigratingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesNotLaunchedEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesPausedEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesPausingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesPreparingStorageEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="instancesQueuedEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="instancesRebootingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
         
     </xsd:complexType>
     
-    <xsd:complexType name="instanceRebuildingEvent">
+    <xsd:complexType name="instancesRebuildingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceResizingEvent">
+    <xsd:complexType name="instancesResizingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceShutOffEvent">
+    <xsd:complexType name="instancesShutOffEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceShuttingDownEvent">
+    <xsd:complexType name="instancesShuttingDownEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceSnapshottingEvent">
+    <xsd:complexType name="instancesSnapshottingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceSuspendingEvent">
+    <xsd:complexType name="instancesSuspendingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="instanceSuspendedEvent">
+    <xsd:complexType name="instancesSuspendedEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <!-- Sync events -->
-    <xsd:complexType name="syncEvent">
-        <xsd:all>
-            <xsd:element name="timestamp" type="xsd:dateTime"/>
-        </xsd:all>
-    </xsd:complexType>
-
 </xsd:schema>

@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.storage;
+package org.meridor.perspective.rest.aspects;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -31,7 +31,7 @@ public class LockAspect {
     @Autowired
     private HazelcastInstance hazelcastInstance;
 
-    @Around("@within(org.meridor.perspective.rest.storage.IfNotLocked) || execution(@org.meridor.perspective.rest.storage.IfNotLocked * *(..))")
+    @Around("@within(org.meridor.perspective.rest.aspects.IfNotLocked) || execution(@org.meridor.perspective.rest.aspects.IfNotLocked * *(..))")
     public Object ifNotLocked(ProceedingJoinPoint joinPoint) throws Throwable {
         String lockName = getLockName(joinPoint, IfNotLocked.class);
         Lock lock = hazelcastInstance.getLock(lockName);
@@ -48,7 +48,7 @@ public class LockAspect {
         }
     }
 
-    @Around("@within(org.meridor.perspective.rest.storage.WaitForLock) || execution(@org.meridor.perspective.rest.storage.WaitForLock * *(..))")
+    @Around("@within(org.meridor.perspective.rest.aspects.WaitForLock) || execution(@org.meridor.perspective.rest.aspects.WaitForLock * *(..))")
     public Object waitForLock(ProceedingJoinPoint joinPoint) throws Throwable {
         String lockName = getLockName(joinPoint, WaitForLock.class);
         ILock lock = hazelcastInstance.getLock(lockName);

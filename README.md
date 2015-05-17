@@ -2,7 +2,7 @@
 
 ## API
 ### Project
-* GET /projects/list - list projects with enabled regions [+]
+* GET /cloud/$id/projects/list - list projects with enabled regions [+]
 
 // These urls probably aren't needed!
 * GET /projects/$id/access - return endpoint urls for project services available
@@ -12,32 +12,32 @@
 * DELETE /keypairs/$id - delete keypair
 
 ### Instances
-* GET /projects/$id/regions/$id/instances/list - list project instances [+]
-* POST /projects/$id/regions/$id/instances - launch instances
-* GET /projects/$id/regions/$id/instances/$id - show instance information [+]
-* GET /projects/$id/regions/$id/instances/$id/console - redirect to instance console
-* GET /projects/$id/regions/$id/instances/$id/log - return instance log
-* DELETE /projects/$id/regions/$id/instances - terminate instances
-* PUT /projects/$id/regions/$id/instances/rebuild - rebuild instances
-* PUT /projects/$id/regions/$id/instances/reboot - reboot instances
-* PUT /projects/$id/regions/$id/instances/resize - resize instances
-* PUT /projects/$id/regions/$id/instances/snapshot - snapshot instances
-* PUT /projects/$id/regions/$id/instances/pause - pause instances
-* PUT /projects/$id/regions/$id/instances/resume - resume instances
-* PUT /projects/$id/regions/$id/instances/suspend - suspend instances
-* PUT /projects/$id/regions/$id/instances/shutdown - shutdown instances
-* POST /projects/$id/regions/$id/instances/tag - add tags to instances
-* DELETE /projects/$id/regions/$id/instances/tag - remove instance tags
-* PUT /projects/$id/regions/$id/instances/lock - lock instances
-* PUT /projects/$id/regions/$id/instances/unlock - unlock instances
-* PUT /projects/$id/regions/$id/instances/ip - add ip to instance
-* DELETE /projects/$id/regions/$id/instances/ip - remove instance ip
+* GET /project/$id/region/$id/instance/list - list project instance [+]
+* POST /project/$id/region/$id/instance - launch instance
+* GET /project/$id/region/$id/instance/$id - show instance information [+]
+* GET /project/$id/region/$id/instance/$id/console - redirect to instance console
+* GET /project/$id/region/$id/instance/$id/log - return instance log
+* DELETE /project/$id/region/$id/instance - terminate instance
+* PUT /project/$id/region/$id/instance/rebuild - rebuild instance
+* PUT /project/$id/region/$id/instance/reboot - reboot instance
+* PUT /project/$id/region/$id/instance/resize - resize instance
+* PUT /project/$id/region/$id/instance/snapshot - snapshot instance
+* PUT /project/$id/region/$id/instance/pause - pause instance
+* PUT /project/$id/region/$id/instance/resume - resume instance
+* PUT /project/$id/region/$id/instance/suspend - suspend instance
+* PUT /project/$id/region/$id/instance/shutdown - shutdown instance
+* POST /project/$id/region/$id/instance/tag - add tags to instance
+* DELETE /project/$id/region/$id/instance/tag - remove instance tags
+* PUT /project/$id/region/$id/instance/lock - lock instance
+* PUT /project/$id/region/$id/instance/unlock - unlock instance
+* PUT /project/$id/region/$id/instance/ip - add ip to instance
+* DELETE /project/$id/region/$id/instance/ip - remove instance ip
  
 ### Images
-* GET /projects/$id/images - list project images
-* GET /projects/$id/images/$id - show image info
-* PUT /projects/$id/images - modify images
-* DELETE /projects/$id/images - delete images
+* GET /project/$id/region/$id/image/list - list project images
+* GET /project/$id/region/$id/image/$id - show image info
+* PUT /project/$id/region/$id/image - modify images
+* DELETE /project/$id/region/$id/image - delete images
 
 # Преимущества Perspective по сравнению со стандартным Openstack API
 

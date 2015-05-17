@@ -8,7 +8,9 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
-import org.meridor.perspective.rest.storage.IfNotLocked;
+import org.meridor.perspective.events.ProjectsSyncEvent;
+import org.meridor.perspective.framework.CloudConfigurationProvider;
+import org.meridor.perspective.rest.aspects.IfNotLocked;
 import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.meridor.perspective.events.EventFactory.projectsEvent;
 
 @Component
 public class ProjectsFetcher {
@@ -32,25 +36,31 @@ public class ProjectsFetcher {
     
     @Autowired
     private Storage storage;
-    
+
+    @Autowired
+    private CloudConfigurationProvider cloudConfigurationProvider;
+
     @Scheduled(fixedDelay = 5000)
     @IfNotLocked
     public void fetchProjects() {
-        LOG.debug("Fetching projects list");
-        List<Project> projects = new ArrayList<>();
-        try {
-            operationProcessor.process(CloudType.MOCK, OperationType.LIST_PROJECTS, projects);
-            producer.sendBody(projects);
-            LOG.debug("Saved projects to queue");
-        } catch (Exception e) {
-            LOG.error("Error while fetching projects list", e);
-        }
+        cloudConfigurationProvider.getSupportedClouds().forEach(t -> {
+            LOG.debug("Fetching projects list for cloud type {}", t);
+            List<Project> projects = new ArrayList<>();
+            try {
+                operationProcessor.process(t, OperationType.LIST_PROJECTS, projects);
+                producer.sendBody(projectsEvent(ProjectsSyncEvent.class, t, projects));
+                LOG.debug("Saved projects for cloud type {} to queue", t);
+            } catch (Exception e) {
+                LOG.error("Error while fetching projects list for cloud " + t.name(), e);
+            }
+        });
     }
     
     @Handler
     @IfNotLocked
-    public void saveProjects(@Body List<Project> projects) {
-        storage.saveProjects(projects);
+    public void saveProjects(@Body ProjectsSyncEvent event) {
+        CloudType cloudType = event.getCloudType();
+        storage.saveProjects(cloudType, event.getProjects());
     }
     
 }

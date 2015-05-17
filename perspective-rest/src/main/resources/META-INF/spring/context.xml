@@ -128,17 +128,18 @@
             <bean ref="projectsFetcher"/>
         </route>
 
-        <route id="listInstances">
+        <route id="instances">
             <from uri="ref:instances"/>
-            <bean ref="instancesFetcher"/>
-        </route>
-
-        <route id="updateInstances">
-            <from uri="ref:instances"/>
-            <filter>
-                <method ref="instancesFilter" method="isInstanceDeletingEvent"/>
-                <bean ref="instancesUpdater" method="deleteInstances"/>
-            </filter>
+            <choice>
+                <when>
+                    <spel>#{body instanceof T(org.meridor.perspective.events.InstancesSyncEvent)}</spel>
+                    <bean ref="instancesFetcher"/>
+                </when>
+                <when>
+                    <spel>#{body instanceof T(org.meridor.perspective.events.InstancesDeletingEvent)}</spel>
+                    <bean ref="instancesUpdater" method="deleteInstances"/>
+                </when>
+            </choice>
         </route>
 
     </camelContext>

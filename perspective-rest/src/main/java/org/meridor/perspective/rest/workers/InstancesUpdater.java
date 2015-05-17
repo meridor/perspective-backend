@@ -5,7 +5,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
-import org.meridor.perspective.rest.storage.WaitForLock;
+import org.meridor.perspective.events.InstancesDeletingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,9 @@ public class InstancesUpdater {
     @Autowired
     private OperationProcessor operationProcessor;
 
-    @WaitForLock
-    public void deleteInstances(@Body List<Instance> instances) {
+    public void deleteInstances(@Body InstancesDeletingEvent instancesDeletingEvent) {
         try {
+            List<Instance> instances = instancesDeletingEvent.getInstances();
             String instancesUuids = instances.stream().map(Instance::getId).collect(Collectors.joining(", "));
             LOG.info("Deleting instances {}", instancesUuids);
             operationProcessor.process(CloudType.MOCK, OperationType.DELETE_INSTANCES, instances);

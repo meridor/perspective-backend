@@ -21,13 +21,17 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class CloudConfigurationProvider {
     
     private static final Logger LOG = LoggerFactory.getLogger(CloudConfigurationProvider.class);
-    
+
     private static final String CONFIGURATION_FILE_NAME = "clouds.xml";
+
+    @Value("${perspective.mock.enabled}")
+    private boolean mockCloudEnabled;
     
     @Value("${perspective.configuration.dir}")
     private Resource configurationDirResource;
@@ -45,6 +49,11 @@ public class CloudConfigurationProvider {
             } else {
                 LOG.error("Configuration file {} does not exist", configurationFilePath.toString());
             }
+            
+            if (mockCloudEnabled) {
+                LOG.info("Mock cloud is enabled");
+                addMockCloud();
+            }
         } catch (Exception e) {
             LOG.error("Failed to load clouds configuration", e);
         }
@@ -54,11 +63,29 @@ public class CloudConfigurationProvider {
         JAXBContext context = JAXBContext.newInstance(ObjectFactory.class.getPackage().getName());
         Unmarshaller unmarshaller = context.createUnmarshaller();
         Clouds clouds = (Clouds) unmarshaller.unmarshal(Files.newInputStream(configurationFilePath));
-        clouds.getClouds().stream().forEach(c -> cloudsMap.put(c.getType(), c));
+        clouds.getClouds().stream()
+                .filter(Cloud::isEnabled)
+                .forEach(c -> cloudsMap.put(c.getType(), c));
+    }
+    
+    private void addMockCloud() {
+        CloudType cloudType = CloudType.MOCK;
+        Cloud cloud = new Cloud();
+        cloud.setType(cloudType);
+        cloud.setName(cloudType.name());
+        cloud.setEnabled(true);
+        cloud.setEndpoint("useless");
+        cloud.setIdentity("useless");
+        cloud.setCredential("useless");
+        cloudsMap.put(cloudType, cloud);
     }
     
     public Optional<Cloud> getConfiguration(CloudType cloudType) {
         return Optional.ofNullable(cloudsMap.get(cloudType));
+    }
+    
+    public Set<CloudType> getSupportedClouds() {
+        return cloudsMap.keySet();
     }
     
 }

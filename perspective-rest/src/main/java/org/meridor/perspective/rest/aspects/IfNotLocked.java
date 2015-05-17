@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.storage;
+package org.meridor.perspective.rest.aspects;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -32,6 +32,7 @@
         <hazelcast.version>3.4.1</hazelcast.version>
         <activemq.version>5.11.1</activemq.version>
         <aspectj.version>1.8.5</aspectj.version>
+        <yatomata.version>1.6</yatomata.version>
     </properties>
 
     <modules>
@@ -193,6 +194,11 @@
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
                 <version>${aspectj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.yandex.qatools</groupId>
+                <artifactId>yatomata</artifactId>
+                <version>${yatomata.version}</version>
             </dependency>
 
             <!-- Testing -->

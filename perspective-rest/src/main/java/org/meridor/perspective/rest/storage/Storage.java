@@ -4,6 +4,7 @@ package org.meridor.perspective.rest.storage;
 import com.hazelcast.core.HazelcastInstance;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.config.CloudType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,23 +13,22 @@ import java.util.*;
 @Component
 public class Storage {
 
-    private static final String PROJECTS = "projects";
     private static final String INSTANCES = "instances";
     private static final String LIST = "list";
     
     @Autowired
     private HazelcastInstance hazelcastClient;
     
-    public void saveProjects(List<Project> projects) {
+    public void saveProjects(CloudType cloudType, List<Project> projects) {
         Map<String, Object> projectsMap = new HashMap<>();
         projectsMap.put(LIST, projects);
         projects.stream().forEach(p -> projectsMap.put(p.getId(), p));
-        hazelcastClient.getMap(PROJECTS).putAll(projectsMap);
+        hazelcastClient.getMap(getProjectsKey(cloudType)).putAll(projectsMap);
     }
     
     @SuppressWarnings("unchecked")
-    public List<Project> getProjects() {
-        List<Project> projects = (List<Project>) hazelcastClient.getMap(PROJECTS).get(LIST);
+    public List<Project> getProjects(CloudType cloudType) {
+        List<Project> projects = (List<Project>) hazelcastClient.getMap(getProjectsKey(cloudType)).get(LIST);
         return (projects != null) ? projects : Collections.emptyList();
     }
 
@@ -43,7 +43,7 @@ public class Storage {
             if (instancesByProjectAndRegion.containsKey(regionKey)) {
                 instancesByProjectAndRegion.get(regionKey).add(i);
             } else {
-                instancesByProjectAndRegion.put(regionKey, new ArrayList<Instance>(){
+                instancesByProjectAndRegion.put(regionKey, new ArrayList<Instance>() {
                     {
                         add(i);
                     }
@@ -51,6 +51,29 @@ public class Storage {
             }
         });
         instancesMap.putAll(instancesByProjectAndRegion);
+        hazelcastClient.getMap(INSTANCES).putAll(instancesMap);
+    }
+    
+    public void saveInstance(Instance instance) {
+        saveInstances(new ArrayList<Instance>() {
+            {
+                add(instance);
+            }
+        });
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void deleteInstances(List<Instance> instances) {
+        Map<String, Object> instancesMap = hazelcastClient.getMap(INSTANCES);
+        instances.stream().forEach(
+                i -> {
+                    String instanceKey = getInstanceKey(i.getProjectId(), i.getRegionId(), i.getId());
+                    String regionKey = getRegionKey(i.getProjectId(), i.getRegionId());
+                    instancesMap.remove(instanceKey);
+                    instancesMap.remove(regionKey);
+                    ((List<Instance>) instancesMap.get(LIST)).remove(i);
+                }
+        );
         hazelcastClient.getMap(INSTANCES).putAll(instancesMap);
     }
     
@@ -63,6 +86,10 @@ public class Storage {
     @SuppressWarnings("unchecked")
     public Optional<Instance> getInstance(String projectId, String regionId, String instanceId) {
         return Optional.ofNullable((Instance) hazelcastClient.getMap(INSTANCES).get(getInstanceKey(projectId, regionId, instanceId)));
+    }
+    
+    private static String getProjectsKey(CloudType cloudType) {
+        return "projects_" + cloudType;
     }
     
     private static String getRegionKey(String projectId, String regionId) {
