@@ -16,8 +16,9 @@ import static org.meridor.perspective.mock.EntityGenerator.getProject;
 public class ListProjectsOperation {
     
     @EntryPoint
-    public void listProjects(List<Project> projects) {
+    public boolean listProjects(List<Project> projects) {
         projects.add(getProject());
+        return true;
     }
     
     

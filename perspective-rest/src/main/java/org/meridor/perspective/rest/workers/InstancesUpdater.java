@@ -6,6 +6,7 @@ import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.InstancesDeletingEvent;
+import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +22,22 @@ public class InstancesUpdater {
     
     @Autowired
     private OperationProcessor operationProcessor;
+    
+    @Autowired
+    private Storage storage;
 
     public void deleteInstances(@Body InstancesDeletingEvent instancesDeletingEvent) {
+        CloudType cloudType = instancesDeletingEvent.getCloudType();
+        List<Instance> instances = instancesDeletingEvent.getInstances();
+        String instancesUuids = instances.stream().map(Instance::getId).collect(Collectors.joining(", "));
         try {
-            List<Instance> instances = instancesDeletingEvent.getInstances();
-            String instancesUuids = instances.stream().map(Instance::getId).collect(Collectors.joining(", "));
-            LOG.info("Deleting instances {}", instancesUuids);
-            operationProcessor.process(CloudType.MOCK, OperationType.DELETE_INSTANCES, instances);
+            LOG.info("Deleting instances {} in cloud {}", instancesUuids, cloudType);
+            if (!operationProcessor.process(cloudType, OperationType.DELETE_INSTANCES, instances)) {
+                throw new RuntimeException("Failed to delete instances from the cloud");
+            }
+            storage.deleteInstances(cloudType, instances);
         } catch (Exception e) {
-            LOG.error("Failed to delete instances");
+            LOG.error("Failed to delete instances in cloud " + cloudType, e);
         }
     }
     

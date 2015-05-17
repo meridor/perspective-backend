@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ClassUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -77,7 +78,7 @@ public class OperationsAwareImpl implements OperationsAware {
     }
 
     @Override
-    public void act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception {
+    public boolean act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception {
         OperationId operationId = getOperationId(cloudType, operationType);
         Object operationInstance = operationInstances.get(operationId);
         Method method = operationMethods.get(operationId);
@@ -85,12 +86,15 @@ public class OperationsAwareImpl implements OperationsAware {
         Class<?> dataContainerClass = dataContainer.getClass();
         if (!parameterClass.isAssignableFrom(dataContainerClass)) {
             throw new IllegalStateException(String.format(
-                    "Data container with class %s can not be substitued as parameter %s",
+                    "Data container with class %s can not be substituted as parameter %s",
                     parameterClass.getClass().getCanonicalName(),
                     dataContainerClass.getClass().getCanonicalName()
             ));
         }
-        method.invoke(operationInstance, dataContainer);
+
+        Class<?> booleanClass = ClassUtils.forName("boolean", null);
+        boolean ret = (boolean) method.invoke(operationInstance, dataContainer);
+        return !method.getReturnType().equals(booleanClass) || ret;
     }
 
     private static class OperationId {

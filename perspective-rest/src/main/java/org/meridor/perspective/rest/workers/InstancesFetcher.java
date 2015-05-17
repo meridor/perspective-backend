@@ -46,7 +46,9 @@ public class InstancesFetcher {
             LOG.debug("Fetching instances list for cloud type {}", t);
             List<Instance> instances = new ArrayList<>();
             try {
-                operationProcessor.process(t, OperationType.LIST_INSTANCES, instances);
+                if (!operationProcessor.process(t, OperationType.LIST_INSTANCES, instances)) {
+                    throw new RuntimeException("Failed to get instances list from the cloud");
+                }
                 InstancesSyncEvent event = instancesEvent(InstancesSyncEvent.class, t, instances);
                 producer.sendBody(event);
                 LOG.debug("Saved instances for cloud type {} to queue", t);
@@ -57,12 +59,11 @@ public class InstancesFetcher {
     }
     
     @Handler
-    @IfNotLocked
     public void saveInstances(InstancesSyncEvent instancesSyncEvent) {
         CloudType cloudType = instancesSyncEvent.getCloudType();
         List<Instance> instances = instancesSyncEvent.getInstances();
         LOG.debug("Saving {} instances to storage", instances.size());
-        storage.saveInstances(instances);
+        storage.saveInstances(cloudType, instances);
     }
     
 }

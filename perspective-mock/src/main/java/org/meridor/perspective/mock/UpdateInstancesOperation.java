@@ -19,8 +19,9 @@ public class UpdateInstancesOperation {
     private static final Logger LOG = LoggerFactory.getLogger(UpdateInstancesOperation.class);
     
     @EntryPoint
-    public void updateInstances(List<Instance> instances) {
+    public boolean updateInstances(List<Instance> instances) {
         LOG.debug("Updating {} instances", instances.size());
+        return true;
     }
     
 }

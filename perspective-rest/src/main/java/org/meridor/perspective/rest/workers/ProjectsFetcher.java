@@ -47,11 +47,13 @@ public class ProjectsFetcher {
             LOG.debug("Fetching projects list for cloud type {}", t);
             List<Project> projects = new ArrayList<>();
             try {
-                operationProcessor.process(t, OperationType.LIST_PROJECTS, projects);
+                if (!operationProcessor.process(t, OperationType.LIST_PROJECTS, projects)){
+                    throw new RuntimeException("Failed to get projects list from the cloud");
+                }
                 producer.sendBody(projectsEvent(ProjectsSyncEvent.class, t, projects));
                 LOG.debug("Saved projects for cloud type {} to queue", t);
             } catch (Exception e) {
-                LOG.error("Error while fetching projects list for cloud " + t.name(), e);
+                LOG.error("Error while fetching projects list for cloud " + t, e);
             }
         });
     }

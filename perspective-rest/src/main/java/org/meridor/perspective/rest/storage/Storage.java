@@ -32,7 +32,7 @@ public class Storage {
         return (projects != null) ? projects : Collections.emptyList();
     }
 
-    public void saveInstances(List<Instance> instances) {
+    public void saveInstances(CloudType cloudType, List<Instance> instances) {
         Map<String, Object> instancesMap = new HashMap<>();
         instancesMap.put(LIST, instances);
         Map<String, List<Instance>> instancesByProjectAndRegion = new HashMap<>();
@@ -51,11 +51,11 @@ public class Storage {
             }
         });
         instancesMap.putAll(instancesByProjectAndRegion);
-        hazelcastClient.getMap(INSTANCES).putAll(instancesMap);
+        hazelcastClient.getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
     }
     
-    public void saveInstance(Instance instance) {
-        saveInstances(new ArrayList<Instance>() {
+    public void saveInstance(CloudType cloudType, Instance instance) {
+        saveInstances(cloudType, new ArrayList<Instance>() {
             {
                 add(instance);
             }
@@ -63,8 +63,8 @@ public class Storage {
     }
     
     @SuppressWarnings("unchecked")
-    public void deleteInstances(List<Instance> instances) {
-        Map<String, Object> instancesMap = hazelcastClient.getMap(INSTANCES);
+    public void deleteInstances(CloudType cloudType, List<Instance> instances) {
+        Map<String, Object> instancesMap = hazelcastClient.getMap(getCloudInstancesKey(cloudType));
         instances.stream().forEach(
                 i -> {
                     String instanceKey = getInstanceKey(i.getProjectId(), i.getRegionId(), i.getId());
@@ -74,18 +74,22 @@ public class Storage {
                     ((List<Instance>) instancesMap.get(LIST)).remove(i);
                 }
         );
-        hazelcastClient.getMap(INSTANCES).putAll(instancesMap);
+        hazelcastClient.getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
     }
     
     @SuppressWarnings("unchecked")
-    public List<Instance> getInstances(String projectId, String regionId) {
-        List<Instance> instances = (List<Instance>) hazelcastClient.getMap(INSTANCES).get(getRegionKey(projectId, regionId));
+    public List<Instance> getInstances(CloudType cloudType, String projectId, String regionId) {
+        String cloudInstancesKey = getCloudInstancesKey(cloudType);
+        String regionKey = getRegionKey(projectId, regionId);
+        List<Instance> instances = (List<Instance>) hazelcastClient.getMap(cloudInstancesKey).get(regionKey);
         return (instances != null) ? instances : Collections.emptyList();
     }
     
     @SuppressWarnings("unchecked")
-    public Optional<Instance> getInstance(String projectId, String regionId, String instanceId) {
-        return Optional.ofNullable((Instance) hazelcastClient.getMap(INSTANCES).get(getInstanceKey(projectId, regionId, instanceId)));
+    public Optional<Instance> getInstance(CloudType cloudType, String projectId, String regionId, String instanceId) {
+        String cloudInstancesKey = getCloudInstancesKey(cloudType);
+        String instanceKey = getInstanceKey(projectId, regionId, instanceId);
+        return Optional.ofNullable((Instance) hazelcastClient.getMap(cloudInstancesKey).get(instanceKey));
     }
     
     private static String getProjectsKey(CloudType cloudType) {
@@ -94,6 +98,10 @@ public class Storage {
     
     private static String getRegionKey(String projectId, String regionId) {
         return "project_" + projectId + "_region_" + regionId; 
+    }
+    
+    private static String getCloudInstancesKey(CloudType cloudType){
+        return "cloud_" + cloudType.value() + "_instances";
     }
     
     private static String getInstanceKey(String projectId, String regionId, String instanceId) {

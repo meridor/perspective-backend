@@ -17,7 +17,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
     public void testList() {
-        List<Instance> instances = target("/project/test-project/region/test-region/instances/list")
+        List<Instance> instances = target("/cloud/mock/project/test-project/region/test-region/instance/list")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });
@@ -27,7 +27,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
     public void testMissingList() {
-        List<Instance> instances = target("/project/missing-project/region/missing-region/instances/list")
+        List<Instance> instances = target("/cloud/mock/project/missing-project/region/missing-region/instance/list")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });
@@ -36,7 +36,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
     public void testGetById() {
-        Instance instance = target("/project/missing-project/region/missing-region/instances/test-instance")
+        Instance instance = target("/cloud/mock/project/missing-project/region/missing-region/instance/test-instance")
                 .request()
                 .get(Instance.class);
         assertThat(instance, equalTo(EntityGenerator.getInstance()));
@@ -44,7 +44,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void testGetByMissingId() {
-        Response response = target("/projects/missing-project/regions/missing-region/instances/missing-id")
+        Response response = target("/cloud/mock/project/missing-project/regions/missing-region/instance/missing-id")
                 .request()
                 .get();
         assertThat(response.getStatus(), equalTo(Response.Status.NOT_FOUND.getStatusCode()));

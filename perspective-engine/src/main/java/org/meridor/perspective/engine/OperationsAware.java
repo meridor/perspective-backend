@@ -7,6 +7,6 @@ public interface OperationsAware {
 
     boolean isOperationSupported(CloudType cloudType, OperationType operationType);
     
-    void act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception;
+    boolean act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception;
     
 }

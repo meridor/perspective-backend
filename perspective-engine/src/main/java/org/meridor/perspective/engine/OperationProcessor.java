@@ -5,6 +5,6 @@ import org.meridor.perspective.config.OperationType;
 
 public interface OperationProcessor {
     
-    void process(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception;
+    boolean process(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception;
     
 }

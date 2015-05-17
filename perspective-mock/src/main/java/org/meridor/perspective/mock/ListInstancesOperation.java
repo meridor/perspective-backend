@@ -16,8 +16,9 @@ import static org.meridor.perspective.mock.EntityGenerator.getInstance;
 public class ListInstancesOperation {
     
     @EntryPoint
-    public void listInstances(List<Instance> instances) {
+    public boolean listInstances(List<Instance> instances) {
         instances.add(getInstance());
+        return true;
     }
     
 }
