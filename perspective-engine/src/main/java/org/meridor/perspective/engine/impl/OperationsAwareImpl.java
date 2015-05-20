@@ -15,6 +15,8 @@ import org.springframework.util.ClassUtils;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -78,23 +80,35 @@ public class OperationsAwareImpl implements OperationsAware {
     }
 
     @Override
-    public boolean act(CloudType cloudType, OperationType operationType, Object dataContainer) throws Exception {
+    public <T> boolean consume(CloudType cloudType, OperationType operationType, Consumer<T> consumer) throws Exception {
+        return doAct(cloudType, operationType, consumer);
+    }
+    
+    @Override
+    public <T> boolean supply(CloudType cloudType, OperationType operationType, Supplier<T> supplier) throws Exception {
+        return doAct(cloudType, operationType, supplier);
+    }
+
+    private boolean doAct(CloudType cloudType, OperationType operationType, Object consumerOrSupplier) throws Exception {
         OperationId operationId = getOperationId(cloudType, operationType);
         Object operationInstance = operationInstances.get(operationId);
         Method method = operationMethods.get(operationId);
         Class<?> parameterClass = method.getParameters()[0].getType();
-        Class<?> dataContainerClass = dataContainer.getClass();
-        if (!parameterClass.isAssignableFrom(dataContainerClass)) {
-            throw new IllegalStateException(String.format(
-                    "Data container with class %s can not be substituted as parameter %s",
-                    parameterClass.getClass().getCanonicalName(),
-                    dataContainerClass.getClass().getCanonicalName()
+        if (!Consumer.class.isAssignableFrom(parameterClass) && !Supplier.class.isAssignableFrom(parameterClass)) {
+            throw new UnsupportedOperationException(String.format(
+                    "Operation class entry point should have one parameter of Consumer<T> or Supplier<T> type. However for cloud %s operation %s this type is %s",
+                    cloudType,
+                    operationType,
+                    parameterClass.getClass().getCanonicalName()
             ));
         }
 
         Class<?> booleanClass = ClassUtils.forName("boolean", null);
-        boolean ret = (boolean) method.invoke(operationInstance, dataContainer);
-        return !method.getReturnType().equals(booleanClass) || ret;
+        if (method.getReturnType().equals(booleanClass)) {
+            return (boolean) method.invoke(operationInstance, consumerOrSupplier);
+        }
+        method.invoke(operationInstance, consumerOrSupplier);
+        return true;
     }
 
     private static class OperationId {

@@ -47,7 +47,7 @@ public class ProjectsFetcher {
             LOG.debug("Fetching projects list for cloud type {}", t);
             List<Project> projects = new ArrayList<>();
             try {
-                if (!operationProcessor.process(t, OperationType.LIST_PROJECTS, projects)){
+                if (!operationProcessor.<List<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)){
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 producer.sendBody(projectsEvent(ProjectsSyncEvent.class, t, projects));

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -106,7 +107,7 @@ public class InstancesFSM {
         String instancesUuids = instances.stream().map(Instance::getId).collect(Collectors.joining(", "));
         try {
             LOG.info("Deleting instances {} in cloud {}", instancesUuids, cloudType);
-            if (!operationProcessor.process(cloudType, OperationType.DELETE_INSTANCES, instances)) {
+            if (!operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCES, () -> instances)) {
                 throw new RuntimeException("Failed to delete instances from the cloud");
             }
             storage.deleteInstances(cloudType, instances);

@@ -46,7 +46,7 @@ public class InstancesFetcher {
             LOG.debug("Fetching instances list for cloud type {}", t);
             List<Instance> instances = new ArrayList<>();
             try {
-                if (!operationProcessor.process(t, OperationType.LIST_INSTANCES, instances)) {
+                if (!operationProcessor.<List<Instance>>consume(t, OperationType.LIST_INSTANCES, instances::addAll)) {
                     throw new RuntimeException("Failed to get instances list from the cloud");
                 }
                 InstancesSyncEvent event = instancesEvent(InstancesSyncEvent.class, t, instances);

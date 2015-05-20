@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.config.OperationType.*;
@@ -19,8 +20,8 @@ public class UpdateInstancesOperation {
     private static final Logger LOG = LoggerFactory.getLogger(UpdateInstancesOperation.class);
     
     @EntryPoint
-    public boolean updateInstances(List<Instance> instances) {
-        LOG.debug("Updating {} instances", instances.size());
+    public boolean updateInstances(Supplier<List<Instance>> supplier) {
+        LOG.debug("Updating {} instances", supplier.get().size());
         return true;
     }
     
