@@ -105,12 +105,6 @@
             <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
-    <xsd:complexType name="instancesPreparingStorageEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instancesEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
 
     <xsd:complexType name="instancesQueuedEvent">
         <xsd:complexContent>
@@ -136,7 +130,13 @@
             <xsd:extension base="events:instancesEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
+    <xsd:complexType name="instancesResumingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instancesEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:complexType name="instancesShutOffEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instancesEvent"/>
