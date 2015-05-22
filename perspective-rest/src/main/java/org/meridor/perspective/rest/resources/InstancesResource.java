@@ -1,7 +1,5 @@
 package org.meridor.perspective.rest.resources;
 
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.rest.storage.Storage;
@@ -20,9 +18,6 @@ public class InstancesResource {
 
     @Autowired
     private Storage storage;
-
-    @Produce(ref = "instances")
-    private ProducerTemplate producer;
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

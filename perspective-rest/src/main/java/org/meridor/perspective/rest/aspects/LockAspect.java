@@ -5,7 +5,6 @@ import com.hazelcast.core.ILock;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +12,10 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.locks.Lock;
+
+import static org.meridor.perspective.rest.aspects.AspectUtils.getAnnotationParameter;
+import static org.meridor.perspective.rest.aspects.AspectUtils.getMethodAnnotation;
 
 @Component
 @Aspect
@@ -71,34 +70,23 @@ public class LockAspect {
     }
 
     private String getLockName(ProceedingJoinPoint joinPoint, Class annotationClass) throws Exception {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        Method method = signature.getMethod();
-        Annotation annotation = method.getAnnotation(annotationClass);
-        Class<? extends Annotation> annotationType = annotation.annotationType();
-        Optional<Method> annotationMethod = Arrays.stream(annotationType.getDeclaredMethods())
-                .filter(m -> m.getName().equals(LOCK_NAME))
-                .findFirst();
-        if (annotationMethod.isPresent()){
-
-            String lockNameCandidate = annotationMethod.get().invoke(annotation).toString();
-            if (!lockNameCandidate.isEmpty()) {
-                return lockNameCandidate;
-            }
-        }
-        return joinPoint.getSignature().getDeclaringType().getCanonicalName();
+        Annotation annotation = getMethodAnnotation(joinPoint, annotationClass);
+        return getAnnotationParameter(
+                annotation,
+                LOCK_NAME,
+                t -> !t.isEmpty(),
+                joinPoint.getSignature().getDeclaringType().getCanonicalName()
+        );
     }
     
     private long getLockTimeout(ProceedingJoinPoint joinPoint, Class annotationClass) throws Exception {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        Method method = signature.getMethod();
-        Annotation annotation = method.getAnnotation(annotationClass);
-        Class<? extends Annotation> annotationType = annotation.annotationType();
-        Optional<Method> annotationMethod = Arrays.stream(annotationType.getDeclaredMethods())
-                .filter(m -> m.getName().equals(LOCK_TIMEOUT))
-                .findFirst();
-        return annotationMethod.isPresent() ?
-                Long.valueOf(annotationMethod.get().invoke(annotation).toString()) :
-                0l;
-    }
+        Annotation annotation = getMethodAnnotation(joinPoint, annotationClass);
+        return getAnnotationParameter(
+                annotation,
+                LOCK_TIMEOUT,
+                v -> true,
+                0l
+        );
+   }
     
 }

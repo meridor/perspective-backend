@@ -27,10 +27,8 @@
         <mockito.version>1.9.5</mockito.version>
         <restassured.version>2.4.1</restassured.version>
         <stecker.version>1.0.1</stecker.version>
-        <camel.version>2.15.1</camel.version>
         <spring.version>4.1.6.RELEASE</spring.version>
         <hazelcast.version>3.4.1</hazelcast.version>
-        <activemq.version>5.11.1</activemq.version>
         <aspectj.version>1.8.5</aspectj.version>
         <yatomata.version>1.6</yatomata.version>
     </properties>
@@ -79,23 +77,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- ActiveMQ -->
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-pool</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-spring</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-camel</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
-            
             <!-- Hazelcast -->
             <dependency>
                 <groupId>com.hazelcast</groupId>
@@ -138,29 +119,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-jms</artifactId>
                 <version>${spring.version}</version>
-            </dependency>
-
-            <!-- Camel -->
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-core</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-spring</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-jms</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-test-spring</artifactId>
-                <version>${camel.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Jersey -->

@@ -3,18 +3,16 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:amq="http://activemq.apache.org/schema/core" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:task="http://www.springframework.org/schema/task"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
             http://www.hazelcast.com/schema/spring
             http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
-            http://camel.apache.org/schema/spring
-            http://camel.apache.org/schema/spring/camel-spring.xsd
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-3.0.xsd
-            http://activemq.apache.org/schema/core
-            http://activemq.apache.org/schema/core/activemq-core.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective"/>
@@ -34,36 +32,8 @@
 
     <!-- Scheduler -->
     <task:annotation-driven scheduler="perspectiveScheduler"/>
-    <task:scheduler id="perspectiveScheduler" pool-size="10"/>
+    <task:scheduler id="perspectiveScheduler" pool-size="${perspective.scheduler.pool.size}"/>
     
-    <!-- Embedded ActiveMQ -->
-    <amq:broker useJmx="false" persistent="false">
-        <amq:transportConnectors>
-            <amq:transportConnector uri="tcp://localhost:61619"/>
-        </amq:transportConnectors>
-    </amq:broker>
-    
-    <!-- ActiveMQ connection pooler -->
-    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="failover:(tcp://localhost:61619)?randomize=false&amp;maxReconnectAttempts=5"/>
-    </bean>
-    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-           init-method="start" destroy-method="stop"> <!-- depends-on="perspectiveContext" -->
-        <property name="maxConnections" value="8"/>
-        <property name="maximumActiveSessionPerConnection" value="500"/>
-        <property name="connectionFactory" ref="jmsConnectionFactory"/>
-    </bean>
-    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-        <property name="connectionFactory" ref="pooledConnectionFactory"/>
-        <property name="transacted" value="false"/>
-        <property name="testConnectionOnStartup" value="true"/>
-        <property name="receiveTimeout" value="10"/>
-    </bean>
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-        <property name="configuration" ref="jmsConfig"/>
-        <property name="testConnectionOnStartup" value="true"/>
-    </bean>
-
     <!-- Embedded Hazelcast -->
     <hz:hazelcast id="hazelcastInstance">
         <hz:config>
@@ -116,27 +86,4 @@
         </constructor-arg>
     </bean>
 
-    <!-- Camel context -->
-    <camelContext id="perspectiveContext" xmlns="http://camel.apache.org/schema/spring" allowUseOriginalMessage="false" streamCache="true">
-        <jmxAgent id="agent" disabled="true"/>
-        <threadPoolProfile id="camelThreadPool" defaultProfile="true" maxPoolSize="64"/>
-        <endpoint id="projects" uri="activemq:queue:projects?concurrentConsumers=${perspective.parallel.consumers}"/>
-        <endpoint id="instances" uri="activemq:queue:instances?concurrentConsumers=${perspective.parallel.consumers}"/>
-        
-        <route id="listProjects">
-            <from uri="ref:projects"/>
-            <bean ref="projectsFetcher"/>
-        </route>
-
-        <route id="instances">
-            <from uri="ref:instances"/>
-            <choice>
-                <when>
-                    <spel>#{body instanceof T(org.meridor.perspective.events.InstancesSyncEvent)}</spel>
-                    <bean ref="instancesFetcher"/>
-                </when>
-            </choice>
-        </route>
-
-    </camelContext>
 </beans>
