@@ -4,7 +4,7 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
-import org.meridor.perspective.events.ProjectsSyncEvent;
+import org.meridor.perspective.events.ProjectSyncEvent;
 import org.meridor.perspective.framework.CloudConfigurationProvider;
 import org.meridor.perspective.rest.storage.*;
 import org.slf4j.Logger;
@@ -46,8 +46,10 @@ public class ProjectsProcessor {
                 if (!operationProcessor.<List<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)) {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
-                ProjectsSyncEvent event = projectsEvent(ProjectsSyncEvent.class, t, projects);
-                producer.produce(event);
+                for (Project project : projects) {
+                    ProjectSyncEvent event = projectsEvent(ProjectSyncEvent.class, t, project);
+                    producer.produce(event);
+                }
                 LOG.debug("Saved projects for cloud type {} to queue", t);
             } catch (Exception e) {
                 LOG.error("Error while fetching projects list for cloud " + t, e);
@@ -56,9 +58,9 @@ public class ProjectsProcessor {
     }
     
     @Consume(queueName = PROJECTS, numConsumers = 2)
-    public void syncProjects(ProjectsSyncEvent event) {
+    public void syncProjects(ProjectSyncEvent event) {
         CloudType cloudType = event.getCloudType();
-        storage.saveProjects(cloudType, event.getProjects());
+        storage.saveProject(cloudType, event.getProject());
     }
     
 }

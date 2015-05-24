@@ -4,8 +4,8 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
-import org.meridor.perspective.events.InstancesSyncEvent;
-import org.meridor.perspective.events.InstancesUpdateEvent;
+import org.meridor.perspective.events.InstanceEvent;
+import org.meridor.perspective.events.InstanceSyncEvent;
 import org.meridor.perspective.framework.CloudConfigurationProvider;
 import org.meridor.perspective.rest.storage.*;
 import org.slf4j.Logger;
@@ -19,8 +19,8 @@ import ru.yandex.qatools.fsm.impl.FSMBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.meridor.perspective.events.EventFactory.instancesEvent;
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
+import static org.meridor.perspective.events.EventFactory.instancesEvent;
 
 @Component
 public class InstancesProcessor {
@@ -49,8 +49,10 @@ public class InstancesProcessor {
                 if (!operationProcessor.<List<Instance>>consume(t, OperationType.LIST_INSTANCES, instances::addAll)) {
                     throw new RuntimeException("Failed to get instances list from the cloud");
                 }
-                InstancesSyncEvent event = instancesEvent(InstancesSyncEvent.class, t, instances);
-                producer.produce(event);
+                for (Instance instance : instances) {
+                    InstanceSyncEvent event = instancesEvent(InstanceSyncEvent.class, t, instance);
+                    producer.produce(event);
+                }
                 LOG.debug("Saved instances for cloud type {} to queue", t);
             } catch (Exception e) {
                 LOG.error("Error while fetching instances list for cloud type " + t, e);
@@ -58,18 +60,25 @@ public class InstancesProcessor {
         });
     }
     
-    @Consume(queueName = INSTANCES)
-    public void syncInstances(InstancesSyncEvent instancesSyncEvent) {
-        CloudType cloudType = instancesSyncEvent.getCloudType();
-        List<Instance> instances = instancesSyncEvent.getInstances();
-        LOG.debug("Saving {} instances to storage", instances.size());
-        storage.saveInstances(cloudType, instances);
+    @Consume(queueName = INSTANCES, numConsumers = 5)
+    public void processInstances(InstanceEvent instanceEvent) {
+        if (instanceEvent instanceof InstanceSyncEvent) {
+            syncInstances((InstanceSyncEvent) instanceEvent);
+        } else {
+            updateInstances(instanceEvent);
+        }
     }
     
-    @Consume(queueName = INSTANCES, numConsumers = 5)
-    public void updateInstances(InstancesUpdateEvent instancesUpdateEvent) {
-        Yatomata<InstancesFSM> fsm = new FSMBuilder<>(InstancesFSM.class).build();
-        fsm.fire(instancesUpdateEvent);
+    private void updateInstances(InstanceEvent instanceEvent) {
+        Yatomata<InstanceFSM> fsm = new FSMBuilder<>(InstanceFSM.class).build();
+        fsm.fire(instanceEvent);
+    }
+    
+    private void syncInstances(InstanceSyncEvent instanceSyncEvent) {
+        CloudType cloudType = instanceSyncEvent.getCloudType();
+        Instance instance = instanceSyncEvent.getInstance();
+        LOG.debug("Saving instance {} to storage", instance);
+        storage.saveInstance(cloudType, instance);
     }
     
 }

@@ -12,19 +12,19 @@ import java.util.List;
 
 public final class EventFactory {
     
-    public static <T extends InstancesEvent> T instancesEvent(Class<T> eventClass, CloudType cloudType, List<Instance> instances) throws Exception {
+    public static <T extends InstanceEvent> T instancesEvent(Class<T> eventClass, CloudType cloudType, Instance instance) throws Exception {
         T event = eventClass.newInstance();
         event.setTimestamp(now());
         event.setCloudType(cloudType);
-        event.getInstances().addAll(instances);
+        event.setInstance(instance);
         return event;
     }
 
-    public static <T extends ProjectsEvent> T projectsEvent(Class<T> eventClass, CloudType cloudType, List<Project> projects) throws Exception {
+    public static <T extends ProjectEvent> T projectsEvent(Class<T> eventClass, CloudType cloudType, Project project) throws Exception {
         T event = eventClass.newInstance();
         event.setTimestamp(now());
         event.setCloudType(cloudType);
-        event.getProjects().addAll(projects);
+        event.setProject(project);
         return event;
     }
     
