@@ -9,9 +9,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
 public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     

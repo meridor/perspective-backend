@@ -6,10 +6,9 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.ProjectsSyncEvent;
 import org.meridor.perspective.framework.CloudConfigurationProvider;
-import org.meridor.perspective.rest.aspects.Consume;
-import org.meridor.perspective.rest.aspects.IfNotLocked;
+import org.meridor.perspective.rest.storage.Consume;
+import org.meridor.perspective.rest.storage.IfNotLocked;
 import org.meridor.perspective.rest.storage.Producer;
-import org.meridor.perspective.rest.storage.ProducerAware;
 import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ public class ProjectsFetcher {
             LOG.debug("Fetching projects list for cloud type {}", t);
             try {
                 List<Project> projects = new ArrayList<>();
-                if (!operationProcessor.<List<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)){
+                if (!operationProcessor.<List<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)) {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 ProjectsSyncEvent event = projectsEvent(ProjectsSyncEvent.class, t, projects);

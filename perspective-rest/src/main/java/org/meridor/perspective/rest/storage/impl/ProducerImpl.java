@@ -1,34 +1,34 @@
 package org.meridor.perspective.rest.storage.impl;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import org.meridor.perspective.rest.storage.Producer;
+import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 public class ProducerImpl implements Producer {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProducerImpl.class);
 
-    private final String storageKey;
+    private final String queueName;
     
-    private final HazelcastInstance hazelcastInstance;
+    private final Storage storage;
 
-    public ProducerImpl(String storageKey, HazelcastInstance hazelcastInstance) {
-        this.storageKey = storageKey;
-        this.hazelcastInstance = hazelcastInstance;
+    public ProducerImpl(String queueName, Storage storage) {
+        this.queueName = queueName;
+        this.storage = storage;
     }
 
     @Override
     public void produce(Object data) {
-        if (storageKey == null) {
+        if (queueName == null) {
             throw new IllegalStateException("Storage key can't be null");
         }
-        IQueue<Object> queue = hazelcastInstance.getQueue(storageKey);
-        LOG.debug("Putting value {} to queue {}", data, storageKey);
         try {
+            LOG.debug("Putting value {} to queue {}", data, queueName);
+            BlockingQueue<Object> queue = storage.getQueue(queueName);
             if (data instanceof List) {
                 for (Object value : (List) data) {
                     queue.put(value);
@@ -36,8 +36,8 @@ public class ProducerImpl implements Producer {
             } else {
                 queue.put(data);
             }
-        } catch (InterruptedException e) {
-            LOG.error("Failed to put data to queue " + storageKey, e);
+        } catch (Exception e) {
+            LOG.error("Failed to put data to queue " + queueName, e);
         }
     }
     

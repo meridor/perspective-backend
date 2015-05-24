@@ -5,30 +5,57 @@ import com.hazelcast.core.HazelcastInstance;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.CloudType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.NotActiveException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.locks.Lock;
 
 @Component
 public class Storage {
 
-    private static final String INSTANCES = "instances";
     private static final String LIST = "list";
     
     @Autowired
     private HazelcastInstance hazelcastClient;
     
+    public boolean isAvailable() {
+        return hazelcastClient.getLifecycleService().isRunning();
+    }
+    
+    public BlockingQueue<Object> getQueue(String name) {
+        return hazelcastClient.getQueue(name);
+    }
+    
+    public Optional<Lock> getLock(String name) {
+        return isAvailable() ? Optional.of(hazelcastClient.getLock(name)) : Optional.empty();
+    }
+    
+    public Map<String, Object> getMap(String name) {
+        checkIsAvailable();
+        return hazelcastClient.getMap(name);
+    }
+    
+    private void checkIsAvailable() {
+        if (!isAvailable()) {
+            throw new UnsupportedOperationException("Storage is not available");
+        }
+    }
+    
     public void saveProjects(CloudType cloudType, List<Project> projects) {
         Map<String, Object> projectsMap = new HashMap<>();
         projectsMap.put(LIST, projects);
         projects.stream().forEach(p -> projectsMap.put(p.getId(), p));
-        hazelcastClient.getMap(getProjectsKey(cloudType)).putAll(projectsMap);
+        getMap(getProjectsKey(cloudType)).putAll(projectsMap);
     }
     
     @SuppressWarnings("unchecked")
     public List<Project> getProjects(CloudType cloudType) {
-        List<Project> projects = (List<Project>) hazelcastClient.getMap(getProjectsKey(cloudType)).get(LIST);
+        List<Project> projects = (List<Project>) getMap(getProjectsKey(cloudType)).get(LIST);
         return (projects != null) ? projects : Collections.emptyList();
     }
 
@@ -51,7 +78,7 @@ public class Storage {
             }
         });
         instancesMap.putAll(instancesByProjectAndRegion);
-        hazelcastClient.getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
+        getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
     }
     
     public void saveInstance(CloudType cloudType, Instance instance) {
@@ -64,7 +91,7 @@ public class Storage {
     
     @SuppressWarnings("unchecked")
     public void deleteInstances(CloudType cloudType, List<Instance> instances) {
-        Map<String, Object> instancesMap = hazelcastClient.getMap(getCloudInstancesKey(cloudType));
+        Map<String, Object> instancesMap = getMap(getCloudInstancesKey(cloudType));
         instances.stream().forEach(
                 i -> {
                     String instanceKey = getInstanceKey(i.getProjectId(), i.getRegionId(), i.getId());
@@ -74,14 +101,14 @@ public class Storage {
                     ((List<Instance>) instancesMap.get(LIST)).remove(i);
                 }
         );
-        hazelcastClient.getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
+        getMap(getCloudInstancesKey(cloudType)).putAll(instancesMap);
     }
     
     @SuppressWarnings("unchecked")
     public List<Instance> getInstances(CloudType cloudType, String projectId, String regionId) {
         String cloudInstancesKey = getCloudInstancesKey(cloudType);
         String regionKey = getRegionKey(projectId, regionId);
-        List<Instance> instances = (List<Instance>) hazelcastClient.getMap(cloudInstancesKey).get(regionKey);
+        List<Instance> instances = (List<Instance>) getMap(cloudInstancesKey).get(regionKey);
         return (instances != null) ? instances : Collections.emptyList();
     }
     
@@ -89,7 +116,7 @@ public class Storage {
     public Optional<Instance> getInstance(CloudType cloudType, String projectId, String regionId, String instanceId) {
         String cloudInstancesKey = getCloudInstancesKey(cloudType);
         String instanceKey = getInstanceKey(projectId, regionId, instanceId);
-        return Optional.ofNullable((Instance) hazelcastClient.getMap(cloudInstancesKey).get(instanceKey));
+        return Optional.ofNullable((Instance) getMap(cloudInstancesKey).get(instanceKey));
     }
     
     private static String getProjectsKey(CloudType cloudType) {

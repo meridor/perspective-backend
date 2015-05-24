@@ -209,6 +209,13 @@
             <xsd:enumeration value="suspended"/>
         </xsd:restriction>
     </xsd:simpleType>
+    
+    <xsd:simpleType name="destinationName">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="instances"/>
+            <xsd:enumeration value="projects"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
     <xsd:complexType name="instance">
         <xsd:all>

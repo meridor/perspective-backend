@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -81,7 +80,7 @@ import java.util.stream.Collectors;
         
         //Instances removal
         @Transit(from = InstancesErrorEvent.class, on = InstancesDeletingEvent.class, to = InstancesDeletingEvent.class),
-        @Transit(from = InstancesDeletingEvent.class, on = InstancesNotLaunchedEvent.class, to = InstancesNotLaunchedEvent.class, stop = true),
+        @Transit(from = InstancesDeletingEvent.class, on = InstancesNotLaunchedEvent.class, to = InstancesNotLaunchedEvent.class),
 })
 public class InstancesFSM {
     

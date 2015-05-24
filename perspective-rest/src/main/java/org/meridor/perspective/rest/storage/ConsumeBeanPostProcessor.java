@@ -1,8 +1,5 @@
 package org.meridor.perspective.rest.storage;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import org.meridor.perspective.rest.aspects.Consume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -17,12 +14,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
-import static org.meridor.perspective.rest.aspects.AspectUtils.getAnnotationParameter;
+import static org.meridor.perspective.rest.storage.AspectUtils.getAnnotationParameter;
 
 @Component
 public class ConsumeBeanPostProcessor implements BeanPostProcessor {
@@ -36,7 +36,7 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor {
     private int shutdownTimeout;
 
     @Autowired
-    private HazelcastInstance hazelcastInstance;
+    private Storage storage;
 
     private Map<Method, ExecutorService> executorServices = new HashMap<>();
     
@@ -57,53 +57,62 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor {
                     ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
                     AtomicBoolean switcher = new AtomicBoolean(true);
                     switchers.put(m, switcher);
-                    Runnable runnable = getConsumerRunnable(bean, m, switcher);
-                    executorService.submit(runnable);
-                    executorServices.put(m, executorService);
+                    Optional<Runnable> runnable = getConsumerRunnable(bean, m, switcher);
+                    if (runnable.isPresent()) {
+                        for (int threadNumber = 0; threadNumber <= threadsCount - 1; threadNumber++) {
+                            executorService.submit(runnable.get());
+                        }
+                        executorServices.put(m, executorService);
+                    }
                 },
                 m -> m.isAnnotationPresent(Consume.class)
         );
         return bean;
     }
 
-    public Runnable getConsumerRunnable(Object bean, Method method, AtomicBoolean switcher) {
-        String keyName = null;
+    public Optional<Runnable> getConsumerRunnable(Object bean, Method method, AtomicBoolean switcher) {
         try {
             Annotation annotation = method.getAnnotation(Consume.class);
-            keyName = getAnnotationParameter(
+            final String keyName = getAnnotationParameter(
                     annotation,
                     Consume.STORAGE_KEY,
                     t -> !t.isEmpty(),
                     bean.getClass().getCanonicalName()
             );
+            Runnable runnable = () -> {
+                while (switcher.get()) {
+                    try {
+                        BlockingQueue<Object> queue = storage.getQueue(keyName);
+                        Object item = queue.take(); //TODO: this one causes long application stop
+                        method.invoke(bean, item);
+                    } catch (Exception e) {
+                        LOG.debug("Failed to consume message from queue " + keyName, e);
+                    }
+                }
+            };
+            return Optional.of(runnable);
         } catch (Exception e) {
             LOG.debug("Failed to get queue name for method {} of bean {}", method, bean);
+            return Optional.empty();
         }
-        IQueue<Object> queue = hazelcastInstance.getQueue(keyName);
-        return () -> {
-            while (switcher.get()) {
-                try {
-                    Object item = queue.take();
-                    method.invoke(bean, item);
-                } catch (Exception e) {
-                    LOG.debug("Failed to consume message from queue " + queue.getName(), e);
-                }
-            }
-        };
     }
 
     @PreDestroy
     public void destroy() throws InterruptedException {
-        LOG.info("Shutting down consuming threads for {} methods", executorServices.size());
+        LOG.info("Shutting down {} consumers", executorServices.size());
         for (AtomicBoolean switcher : switchers.values()) {
             switcher.set(false);
         }
+        ExecutorService shutdownExecutorService = Executors.newFixedThreadPool(executorServices.size());
         for (Method method : executorServices.keySet()) {
-            LOG.debug("Shutting down executor service for method {}", method);
+            LOG.debug("Shutting down consumer for method {} (waiting for {} milliseconds)", method, shutdownTimeout);
             ExecutorService executorService = executorServices.get(method);
-            //TODO: investigate why it does not stop
-            executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
+            //TODO: investigate why it does not stop (probably we need to stop scheduler before this one)
+            shutdownExecutorService.submit(
+                    () -> executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS)
+            );
         }
+        shutdownExecutorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
     }
     
 }

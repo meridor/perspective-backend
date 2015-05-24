@@ -1,7 +1,5 @@
 package org.meridor.perspective.rest.storage;
 
-import com.hazelcast.core.HazelcastInstance;
-import org.meridor.perspective.rest.aspects.Destination;
 import org.meridor.perspective.rest.storage.impl.ProducerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +17,7 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ProduceBeanPostProcessor.class);
 
     @Autowired
-    private HazelcastInstance hazelcastInstance;
+    private Storage storage;
     
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -38,10 +36,10 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
                     Producer producer;
                     if (f.isAnnotationPresent(Destination.class)) {
                         Destination annotation = f.getAnnotation(Destination.class);
-                        String storageKey = annotation.storageKey();
-                        producer = new ProducerImpl(storageKey, hazelcastInstance);
+                        String queueName = annotation.name().value();
+                        producer = new ProducerImpl(queueName, storage);
                     } else {
-                        producer = new ProducerImpl(className, hazelcastInstance);
+                        producer = new ProducerImpl(className, storage);
                     }
                     if (AopUtils.isAopProxy(bean)) {
                         Advised advisedBean = (Advised) bean;

@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.aspects;
+package org.meridor.perspective.rest.storage;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
