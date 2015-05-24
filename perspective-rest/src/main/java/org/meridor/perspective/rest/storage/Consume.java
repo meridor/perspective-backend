@@ -1,5 +1,7 @@
 package org.meridor.perspective.rest.storage;
 
+import org.meridor.perspective.beans.DestinationName;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,8 +11,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Consume {
 
-    String STORAGE_KEY = "storageKey";
-
-    String storageKey() default "";
+    DestinationName queueName() default DestinationName.UNDEFINED;
+    
+    int numConsumers() default 1; 
     
 }

@@ -6,10 +6,7 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.ProjectsSyncEvent;
 import org.meridor.perspective.framework.CloudConfigurationProvider;
-import org.meridor.perspective.rest.storage.Consume;
-import org.meridor.perspective.rest.storage.IfNotLocked;
-import org.meridor.perspective.rest.storage.Producer;
-import org.meridor.perspective.rest.storage.Storage;
+import org.meridor.perspective.rest.storage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +16,15 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.meridor.perspective.beans.DestinationName.PROJECTS;
 import static org.meridor.perspective.events.EventFactory.projectsEvent;
 
 @Component
-public class ProjectsFetcher {
+public class ProjectsProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectsFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectsProcessor.class);
     
+    @Destination(PROJECTS)
     private Producer producer;
     
     @Autowired
@@ -56,9 +55,8 @@ public class ProjectsFetcher {
         });
     }
     
-    @IfNotLocked
-    @Consume
-    public void saveProjects(ProjectsSyncEvent event) {
+    @Consume(queueName = PROJECTS, numConsumers = 2)
+    public void syncProjects(ProjectsSyncEvent event) {
         CloudType cloudType = event.getCloudType();
         storage.saveProjects(cloudType, event.getProjects());
     }

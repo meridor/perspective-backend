@@ -5,6 +5,8 @@ import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.*;
+import org.meridor.perspective.rest.storage.Destination;
+import org.meridor.perspective.rest.storage.Producer;
 import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,8 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.meridor.perspective.beans.DestinationName.INSTANCES;
 
 @Component
 @FSM(start = InstancesNotLaunchedEvent.class)
@@ -91,6 +95,9 @@ public class InstancesFSM {
 
     @Autowired
     private Storage storage;
+    
+    @Destination(INSTANCES)
+    private Producer producer;
 
     @OnTransit
     public void onInstancesQueued(InstancesQueuedEvent event) {

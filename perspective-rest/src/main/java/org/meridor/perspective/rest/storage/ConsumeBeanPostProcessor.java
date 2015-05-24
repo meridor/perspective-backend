@@ -1,16 +1,18 @@
 package org.meridor.perspective.rest.storage;
 
+import org.meridor.perspective.beans.DestinationName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PreDestroy;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,27 +22,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
-import static org.meridor.perspective.rest.storage.AspectUtils.getAnnotationParameter;
+import java.util.stream.Collectors;
 
 @Component
-public class ConsumeBeanPostProcessor implements BeanPostProcessor {
+public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsumeBeanPostProcessor.class);
 
-    @Value("${perspective.queue.thread.count}")
-    private int threadsCount;
-    
     @Value("${perspective.queue.shutdown.timeout}")
     private int shutdownTimeout;
 
     @Autowired
     private Storage storage;
-
-    private Map<Method, ExecutorService> executorServices = new HashMap<>();
     
-    private Map<Method, AtomicBoolean> switchers = new HashMap<>();
+    private ExecutorService executorService;
+
+    private AtomicBoolean canExecute = new AtomicBoolean(true);
+    
+    private Map<Runnable, Integer> runnables = new HashMap<>();
     
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -54,15 +53,13 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor {
                 cls,
                 m -> {
                     //TODO: decide whether we need to change this one to another thread pool!!!
-                    ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
-                    AtomicBoolean switcher = new AtomicBoolean(true);
-                    switchers.put(m, switcher);
-                    Optional<Runnable> runnable = getConsumerRunnable(bean, m, switcher);
+                    Consume annotation = m.getAnnotation(Consume.class);
+                    DestinationName destinationName = annotation.queueName();
+                    int numConsumers = annotation.numConsumers();
+
+                    Optional<Runnable> runnable = getConsumerRunnable(bean, m, destinationName);
                     if (runnable.isPresent()) {
-                        for (int threadNumber = 0; threadNumber <= threadsCount - 1; threadNumber++) {
-                            executorService.submit(runnable.get());
-                        }
-                        executorServices.put(m, executorService);
+                        runnables.put(runnable.get(), numConsumers);
                     }
                 },
                 m -> m.isAnnotationPresent(Consume.class)
@@ -70,26 +67,35 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor {
         return bean;
     }
 
-    public Optional<Runnable> getConsumerRunnable(Object bean, Method method, AtomicBoolean switcher) {
+    public Optional<Runnable> getConsumerRunnable(Object bean, Method method, DestinationName destinationName) {
         try {
-            Annotation annotation = method.getAnnotation(Consume.class);
-            final String keyName = getAnnotationParameter(
-                    annotation,
-                    Consume.STORAGE_KEY,
-                    t -> !t.isEmpty(),
-                    bean.getClass().getCanonicalName()
-            );
+
+            if (method.getParameterCount() != 1) {
+                LOG.debug("Will not consume to method {} because it has more than 1 parameter.");
+                return Optional.empty();
+            }
+
+            String storageKey = (destinationName != DestinationName.UNDEFINED) ?
+                    destinationName.value() :
+                    bean.getClass().getCanonicalName();
+            
             Runnable runnable = () -> {
-                while (switcher.get()) {
+                while (canExecute.get()) {
                     try {
-                        BlockingQueue<Object> queue = storage.getQueue(keyName);
-                        Object item = queue.take(); //TODO: this one causes long application stop
-                        method.invoke(bean, item);
+                        BlockingQueue<Object> queue = storage.getQueue(storageKey);
+                        Object item = queue.poll(1000, TimeUnit.MILLISECONDS);
+                        if (item != null) {
+                            Class<?> parameterType = method.getParameterTypes()[0];
+                            if (parameterType.isAssignableFrom(item.getClass())) {
+                                method.invoke(bean, item);
+                            }
+                        }
                     } catch (Exception e) {
-                        LOG.debug("Failed to consume message from queue " + keyName, e);
+                        LOG.debug("Failed to consume message from queue " + destinationName, e);
                     }
                 }
             };
+            
             return Optional.of(runnable);
         } catch (Exception e) {
             LOG.debug("Failed to get queue name for method {} of bean {}", method, bean);
@@ -99,20 +105,25 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor {
 
     @PreDestroy
     public void destroy() throws InterruptedException {
-        LOG.info("Shutting down {} consumers", executorServices.size());
-        for (AtomicBoolean switcher : switchers.values()) {
-            switcher.set(false);
+        if (executorService != null) {
+            LOG.info("Shutting down consumers");
+            canExecute.set(false);
+            executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
         }
-        ExecutorService shutdownExecutorService = Executors.newFixedThreadPool(executorServices.size());
-        for (Method method : executorServices.keySet()) {
-            LOG.debug("Shutting down consumer for method {} (waiting for {} milliseconds)", method, shutdownTimeout);
-            ExecutorService executorService = executorServices.get(method);
-            //TODO: investigate why it does not stop (probably we need to stop scheduler before this one)
-            shutdownExecutorService.submit(
-                    () -> executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS)
-            );
-        }
-        shutdownExecutorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
     }
-    
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        int threadsCount = runnables.values().stream().collect(Collectors.summingInt(cn -> cn));
+        if (threadsCount > 0) {
+            LOG.debug("Will use {} consumer threads in total", threadsCount);
+            executorService = Executors.newFixedThreadPool(threadsCount);
+            for (Runnable runnable : runnables.keySet()) {
+                Integer numConsumers = runnables.get(runnable);
+                for (int threadNumber = 0; threadNumber <= numConsumers - 1; threadNumber++) {
+                    executorService.submit(runnable);
+                }
+            }
+        }
+    }
 }

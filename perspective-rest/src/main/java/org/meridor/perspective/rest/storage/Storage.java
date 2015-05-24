@@ -31,19 +31,12 @@ public class Storage {
         return hazelcastClient.getQueue(name);
     }
     
-    public Optional<Lock> getLock(String name) {
-        return isAvailable() ? Optional.of(hazelcastClient.getLock(name)) : Optional.empty();
+    public Lock getLock(String name) {
+        return hazelcastClient.getLock(name);
     }
     
     public Map<String, Object> getMap(String name) {
-        checkIsAvailable();
         return hazelcastClient.getMap(name);
-    }
-    
-    private void checkIsAvailable() {
-        if (!isAvailable()) {
-            throw new UnsupportedOperationException("Storage is not available");
-        }
     }
     
     public void saveProjects(CloudType cloudType, List<Project> projects) {

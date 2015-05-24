@@ -36,7 +36,7 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
                     Producer producer;
                     if (f.isAnnotationPresent(Destination.class)) {
                         Destination annotation = f.getAnnotation(Destination.class);
-                        String queueName = annotation.name().value();
+                        String queueName = annotation.value().value();
                         producer = new ProducerImpl(queueName, storage);
                     } else {
                         producer = new ProducerImpl(className, storage);

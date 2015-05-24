@@ -212,6 +212,7 @@
     
     <xsd:simpleType name="destinationName">
         <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="undefined"/>
             <xsd:enumeration value="instances"/>
             <xsd:enumeration value="projects"/>
         </xsd:restriction>
