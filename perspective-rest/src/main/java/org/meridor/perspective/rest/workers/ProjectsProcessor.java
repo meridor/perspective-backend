@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.meridor.perspective.beans.DestinationName.PROJECTS;
-import static org.meridor.perspective.events.EventFactory.projectsEvent;
+import static org.meridor.perspective.events.EventFactory.projectEvent;
 
 @Component
 public class ProjectsProcessor {
@@ -47,7 +47,7 @@ public class ProjectsProcessor {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 for (Project project : projects) {
-                    ProjectSyncEvent event = projectsEvent(ProjectSyncEvent.class, t, project);
+                    ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, t, project);
                     producer.produce(event);
                 }
                 LOG.debug("Saved projects for cloud type {} to queue", t);

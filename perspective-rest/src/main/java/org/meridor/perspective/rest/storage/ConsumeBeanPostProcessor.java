@@ -37,7 +37,7 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
     
     private ExecutorService executorService;
 
-    private AtomicBoolean canExecute = new AtomicBoolean(true);
+    private volatile AtomicBoolean canExecute = new AtomicBoolean(true);
     
     private Map<Runnable, Integer> runnables = new HashMap<>();
     

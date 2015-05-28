@@ -8,4 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface EntryPoint {
+    
+    int maxAttempts() default 0;
+    
 }

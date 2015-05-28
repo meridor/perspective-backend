@@ -1,6 +1,7 @@
 package org.meridor.perspective.rest.workers;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.InstanceStatus;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
@@ -18,9 +19,11 @@ import ru.yandex.qatools.fsm.impl.FSMBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
-import static org.meridor.perspective.events.EventFactory.instancesEvent;
+import static org.meridor.perspective.events.EventFactory.instanceEvent;
+import static org.meridor.perspective.events.EventFactory.statusToEvent;
 
 @Component
 public class InstancesProcessor {
@@ -50,7 +53,7 @@ public class InstancesProcessor {
                     throw new RuntimeException("Failed to get instances list from the cloud");
                 }
                 for (Instance instance : instances) {
-                    InstanceSyncEvent event = instancesEvent(InstanceSyncEvent.class, t, instance);
+                    InstanceSyncEvent event = instanceEvent(InstanceSyncEvent.class, t, instance);
                     producer.produce(event);
                 }
                 LOG.debug("Saved instances for cloud type {} to queue", t);
@@ -63,18 +66,33 @@ public class InstancesProcessor {
     @Consume(queueName = INSTANCES, numConsumers = 5)
     public void processInstances(InstanceEvent instanceEvent) {
         if (instanceEvent instanceof InstanceSyncEvent) {
-            syncInstances((InstanceSyncEvent) instanceEvent);
+            syncInstance((InstanceSyncEvent) instanceEvent);
         } else {
-            updateInstances(instanceEvent);
+            updateInstance(instanceEvent);
         }
     }
     
-    private void updateInstances(InstanceEvent instanceEvent) {
-        Yatomata<InstanceFSM> fsm = new FSMBuilder<>(InstanceFSM.class).build();
-        fsm.fire(instanceEvent);
+    private void updateInstance(InstanceEvent instanceEvent) {
+        Instance instanceFromEvent = instanceEvent.getInstance();
+        CloudType cloudType = instanceEvent.getCloudType();
+        Optional<Instance> instance = storage.getInstance(cloudType, instanceFromEvent.getId());
+        if (instance.isPresent()) {
+            InstanceStatus status = instance.get().getStatus();
+            InstanceEvent currentState = statusToEvent(status);
+            Yatomata<InstanceFSM> fsm = new FSMBuilder<>(InstanceFSM.class).build(currentState);
+            instanceEvent.setInstance(instance.get());
+            fsm.fire(instanceEvent);
+        } else {
+            LOG.error(
+                    "Will not update instance with cloudType = {}, projectId = {}, id = {} as it does not exist",
+                    cloudType,
+                    instanceFromEvent.getProjectId(),
+                    instanceFromEvent.getId()
+            );
+        }
     }
     
-    private void syncInstances(InstanceSyncEvent instanceSyncEvent) {
+    private void syncInstance(InstanceSyncEvent instanceSyncEvent) {
         CloudType cloudType = instanceSyncEvent.getCloudType();
         Instance instance = instanceSyncEvent.getInstance();
         LOG.debug("Saving instance {} to storage", instance);

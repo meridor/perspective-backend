@@ -29,6 +29,12 @@ public class StorageAspects {
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
+        
+        if (storage == null || !storage.isAvailable()) {
+            LOG.debug("Skipping method {} execution because storage is not available", method);
+            return null;
+        }
+        
         IfNotLocked annotation = method.getAnnotation(IfNotLocked.class);
         String lockName = annotation.lockName();
         if (lockName.isEmpty()) {

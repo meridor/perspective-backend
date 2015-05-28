@@ -1,6 +1,7 @@
 package org.meridor.perspective.rest.workers;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.InstanceStatus;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
@@ -14,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
+import static org.meridor.perspective.events.EventFactory.now;
 
 @Component
 @FSM(start = InstanceNotLaunchedEvent.class)
@@ -45,14 +44,14 @@ import static org.meridor.perspective.beans.DestinationName.INSTANCES;
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceShutOffEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
+        @Transit(from = InstanceShutOffEvent.class, on = InstanceDeletingEvent.class, stop = true),
         
         //Instance suspend
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
         @Transit(from = InstanceSuspendingEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
         @Transit(from = InstanceSuspendingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceSuspendedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceSuspendedEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
+        @Transit(from = InstanceSuspendedEvent.class, on = InstanceDeletingEvent.class, stop = true),
         
         //Instance pause
         @Transit(from = InstanceLaunchedEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
@@ -60,7 +59,7 @@ import static org.meridor.perspective.beans.DestinationName.INSTANCES;
         @Transit(from = InstancePausingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstancePausedEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
         @Transit(from = InstanceResumingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstancePausedEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
+        @Transit(from = InstancePausedEvent.class, on = InstanceDeletingEvent.class, stop = true),
         
         //Instance snapshot
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
@@ -83,8 +82,7 @@ import static org.meridor.perspective.beans.DestinationName.INSTANCES;
         @Transit(from = InstanceMigratingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
         
         //Instance removal
-        @Transit(from = InstanceErrorEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
-        @Transit(from = InstanceDeletingEvent.class, on = InstanceNotLaunchedEvent.class, to = InstanceNotLaunchedEvent.class),
+        @Transit(from = InstanceErrorEvent.class, on = InstanceDeletingEvent.class, stop = true)
 })
 public class InstanceFSM {
     
@@ -98,29 +96,64 @@ public class InstanceFSM {
     
     @Destination(INSTANCES)
     private Producer producer;
-
+    
     @OnTransit
     public void onInstanceQueued(InstanceQueuedEvent event) {
+        CloudType cloudType = event.getCloudType();
         Instance instance = event.getInstance();
-        LOG.debug("Queued instance {} for launch", instance);
-        //TODO: to be implemented!
+        try {
+            if (!operationProcessor.supply(cloudType, OperationType.LAUNCH_INSTANCE, () -> instance)) {
+                throw new RuntimeException(String.format("Failed to launch instance %s", instance));
+            }
+            instance.setCreated(now());
+            instance.setStatus(InstanceStatus.LAUNCHING);
+            storage.saveInstance(cloudType, instance);
+            LOG.debug("Queued instance {} for launch", instance);
+        } catch (Exception e) {
+            LOG.error("Failed to launch instances in cloud " + cloudType, e);
+        }
     }
 
     @OnTransit
     public void onInstanceDeleting(InstanceDeletingEvent event) {
         CloudType cloudType = event.getCloudType();
-        Instance instances = event.getInstance();
-        LOG.info("Deleting instance {} in cloud {}", instances.getId(), cloudType);
-        try {
-            if (!operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCES, () -> instances)) {
-                throw new RuntimeException("Failed to delete instances from the cloud");
+        Instance instance = event.getInstance();
+        if (storage.instanceExists(cloudType, instance.getId())) {
+            LOG.info("Deleting instance {} in cloud {}", instance.getId(), cloudType);
+            try {
+                if (!operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCE, () -> instance)) {
+                    throw new RuntimeException("Failed to delete instances from the cloud");
+                }
+                instance.setStatus(InstanceStatus.DELETING);
+                storage.saveInstance(cloudType, instance);
+            } catch (Exception e) {
+                LOG.error("Failed to delete instance in cloud " + cloudType, e);
             }
-            storage.deleteInstance(cloudType, instances);
-        } catch (Exception e) {
-            LOG.error("Failed to delete instances in cloud " + cloudType, e);
+        } else {
+            LOG.error("Can't delete instance {} from cloud {} - not exists", instance.getId());
         }
     }
+    
+    @OnTransit
+    public void onInstanceError(InstanceErrorEvent event) {
+        CloudType cloudType = event.getCloudType();
+        Instance instance = event.getInstance();
+        LOG.info("Changing cloud {} instance {} status to error", instance.getId(), cloudType);
+        instance.setStatus(InstanceStatus.ERROR);
+        instance.setErrorReason(event.getErrorReason());
+        storage.saveInstance(cloudType, instance);
+    }
 
+    @OnTransit
+    public void onUnknownEvent(InstanceEvent event) {
+        LOG.warn("Discovered unknown event {}. Skipping it.", event);
+    }
+    
+    @OnException
+    public void onUnsupportedOperationException(UnsupportedOperationException e){
+        LOG.error("Trying to do an unsupported operation", e);
+    }
+    
     @OnException
     public void onException(Exception e){
         LOG.error("An uncaught exception discovered", e);

@@ -15,11 +15,11 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="listProjects"/>
             <xsd:enumeration value="listInstances"/>
-            <xsd:enumeration value="launchInstances"/>
-            <xsd:enumeration value="rebootInstances"/>
-            <xsd:enumeration value="hardRebootInstances"/>
-            <xsd:enumeration value="snapshotInstances"/>
-            <xsd:enumeration value="deleteInstances"/>
+            <xsd:enumeration value="launchInstance"/>
+            <xsd:enumeration value="rebootInstance"/>
+            <xsd:enumeration value="hardRebootInstance"/>
+            <xsd:enumeration value="snapshotInstance"/>
+            <xsd:enumeration value="deleteInstance"/>
         </xsd:restriction>
     </xsd:simpleType>
 

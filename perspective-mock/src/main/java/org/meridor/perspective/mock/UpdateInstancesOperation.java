@@ -14,7 +14,7 @@ import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.config.OperationType.*;
 
 @Component
-@Operation(cloud = MOCK, type = {DELETE_INSTANCES, LAUNCH_INSTANCES, REBOOT_INSTANCES, HARD_REBOOT_INSTANCES, SNAPSHOT_INSTANCES})
+@Operation(cloud = MOCK, type = {DELETE_INSTANCE, LAUNCH_INSTANCE, REBOOT_INSTANCE, HARD_REBOOT_INSTANCE, SNAPSHOT_INSTANCE})
 public class UpdateInstancesOperation {
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateInstancesOperation.class);

@@ -191,7 +191,6 @@
             <xsd:enumeration value="not_launched"/>
             <xsd:enumeration value="paused"/>
             <xsd:enumeration value="pausing"/>
-            <xsd:enumeration value="preparing_storage"/>
             <xsd:enumeration value="queued"/>
             <xsd:enumeration value="rebooting"/>
             <xsd:enumeration value="rebuilding"/>
@@ -215,7 +214,7 @@
     <xsd:complexType name="instance">
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
-            <xsd:element name="projectId" type="tns:uuid"/>
+            <xsd:element name="projectId" type="tns:uuid" minOccurs="1"/>
             <xsd:element name="regionId" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="flavor" type="tns:flavor"/>
@@ -224,6 +223,7 @@
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="created" type="xsd:dateTime"/>
             <xsd:element name="status" type="tns:instanceStatus" minOccurs="1"/>
+            <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
         </xsd:all>

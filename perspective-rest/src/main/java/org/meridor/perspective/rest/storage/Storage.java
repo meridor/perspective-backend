@@ -38,8 +38,7 @@ public class Storage {
     
     @SuppressWarnings("unchecked")
     public void saveProject(CloudType cloudType, Project project) {
-        String projectsKey = getProjectsKey(cloudType);
-        Map<String, Object> projectsMap = new HashMap<>(getMap(projectsKey));
+        Map<String, Object> projectsMap = new HashMap<>(getProjectsMap(cloudType));
         if (projectsMap.containsKey(LIST)) {
             ((List<Project>) projectsMap.get(LIST)).add(project);
         } else {
@@ -50,7 +49,7 @@ public class Storage {
             });
         }
         projectsMap.put(project.getId(), project);
-        getMap(projectsKey).putAll(projectsMap);
+        getProjectsMap(cloudType).putAll(projectsMap);
     }
     
     @SuppressWarnings("unchecked")
@@ -60,9 +59,14 @@ public class Storage {
     }
 
     @SuppressWarnings("unchecked")
+    public Optional<Project> getProject(CloudType cloudType, String projectId) {
+        String projectsKey = getProjectsKey(cloudType);
+        return Optional.ofNullable((Project) getMap(projectsKey).get(projectId));
+    }
+
+    @SuppressWarnings("unchecked")
     public void saveInstance(CloudType cloudType, Instance instance) {
-        String cloudKey = getCloudInstancesKey(cloudType);
-        Map<String, Object> instancesMap = new HashMap<>(getMap(cloudKey));
+        Map<String, Object> instancesMap = new HashMap<>(getInstancesMap(cloudType));
         
         //Full list
         if (instancesMap.containsKey(LIST)) {
@@ -76,7 +80,7 @@ public class Storage {
         }
         
         //Access by id
-        String instanceKey = getInstanceKey(instance.getProjectId(), instance.getRegionId(), instance.getId());
+        String instanceKey = getInstanceKey(instance.getId());
         instancesMap.put(instanceKey, instance);
         
         //Access by project and region
@@ -90,47 +94,58 @@ public class Storage {
                 }
             });
         }
-        getMap(cloudKey).putAll(instancesMap);
+        getInstancesMap(cloudType).putAll(instancesMap);
     }
     
     @SuppressWarnings("unchecked")
     public void deleteInstance(CloudType cloudType, Instance instance) {
-        Map<String, Object> instancesMap = getMap(getCloudInstancesKey(cloudType));
-        String instanceKey = getInstanceKey(instance.getProjectId(), instance.getRegionId(), instance.getId());
+        Map<String, Object> instancesMap = getInstancesMap(cloudType);
+        String instanceKey = getInstanceKey(instance.getId());
         String regionKey = getRegionKey(instance.getProjectId(), instance.getRegionId());
         instancesMap.remove(instanceKey);
         ((List<Instance>) instancesMap.get(regionKey)).remove(instance);
         ((List<Instance>) instancesMap.get(LIST)).remove(instance);
     }
     
+    public boolean instanceExists(CloudType cloudType, String instanceId) {
+        return getInstancesMap(cloudType).containsKey(getInstanceKey(instanceId));
+    }
+    
     @SuppressWarnings("unchecked")
     public List<Instance> getInstances(CloudType cloudType, String projectId, String regionId) {
-        String cloudInstancesKey = getCloudInstancesKey(cloudType);
         String regionKey = getRegionKey(projectId, regionId);
-        List<Instance> instances = (List<Instance>) getMap(cloudInstancesKey).get(regionKey);
+        List<Instance> instances = (List<Instance>) getInstancesMap(cloudType).get(regionKey);
         return (instances != null) ? instances : Collections.emptyList();
     }
     
     @SuppressWarnings("unchecked")
-    public Optional<Instance> getInstance(CloudType cloudType, String projectId, String regionId, String instanceId) {
+    public Optional<Instance> getInstance(CloudType cloudType, String instanceId) {
         String cloudInstancesKey = getCloudInstancesKey(cloudType);
-        String instanceKey = getInstanceKey(projectId, regionId, instanceId);
+        String instanceKey = getInstanceKey(instanceId);
         return Optional.ofNullable((Instance) getMap(cloudInstancesKey).get(instanceKey));
     }
     
     private static String getProjectsKey(CloudType cloudType) {
         return "projects_" + cloudType;
     }
-    
+
+    private Map<String, Object> getProjectsMap(CloudType cloudType) {
+        return getMap(getProjectsKey(cloudType));
+    }
+
     private static String getRegionKey(String projectId, String regionId) {
         return "project_" + projectId + "_region_" + regionId; 
+    }
+    
+    private Map<String, Object> getInstancesMap(CloudType cloudType) {
+        return getMap(getCloudInstancesKey(cloudType));
     }
     
     private static String getCloudInstancesKey(CloudType cloudType){
         return "cloud_" + cloudType.value() + "_instances";
     }
     
-    private static String getInstanceKey(String projectId, String regionId, String instanceId) {
-        return getRegionKey(projectId, regionId) + "_instance_" + instanceId; 
+    private static String getInstanceKey(String instanceId) {
+        return "instance_" + instanceId; 
     }
 }
