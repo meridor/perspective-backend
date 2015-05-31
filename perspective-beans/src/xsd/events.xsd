@@ -2,18 +2,15 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:events="urn:events.perspective.meridor.org"
             xmlns:beans="urn:beans.perspective.meridor.org"
-            xmlns:config="urn:config.perspective.meridor.org"
             targetNamespace="urn:events.perspective.meridor.org"
             elementFormDefault="qualified">
     
     <xsd:import schemaLocation="beans.xsd" namespace="urn:beans.perspective.meridor.org"/>
-    <xsd:import schemaLocation="config.xsd" namespace="urn:config.perspective.meridor.org"/>
 
 
     <xsd:complexType name="baseEvent" abstract="true">
         <xsd:sequence>
             <xsd:element name="id" type="beans:uuid"/>
-            <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
         </xsd:sequence>
     </xsd:complexType>
@@ -87,12 +84,6 @@
     </xsd:complexType>
     
     <xsd:complexType name="instanceMigratingEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
-        </xsd:complexContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="instanceNotLaunchedEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>

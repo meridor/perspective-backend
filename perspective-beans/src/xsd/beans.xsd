@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:tns="urn:beans.perspective.meridor.org"
+            xmlns:config="urn:config.perspective.meridor.org"
             targetNamespace="urn:beans.perspective.meridor.org"
             elementFormDefault="qualified">
 
+    <xsd:import schemaLocation="config.xsd" namespace="urn:config.perspective.meridor.org"/>
+    
     <xsd:simpleType name="uuid">
         <xsd:restriction base="xsd:string">
             <xsd:length value="36" fixed="true"/>
@@ -173,6 +176,7 @@
     <xsd:complexType name="project">
         <xsd:all>
             <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="regions" type="tns:regions"/>
         </xsd:all>
@@ -188,7 +192,6 @@
             <xsd:enumeration value="launched"/>
             <xsd:enumeration value="launching"/>
             <xsd:enumeration value="migrating"/>
-            <xsd:enumeration value="not_launched"/>
             <xsd:enumeration value="paused"/>
             <xsd:enumeration value="pausing"/>
             <xsd:enumeration value="queued"/>
@@ -214,6 +217,7 @@
     <xsd:complexType name="instance">
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="projectId" type="tns:uuid" minOccurs="1"/>
             <xsd:element name="regionId" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>

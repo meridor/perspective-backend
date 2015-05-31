@@ -26,6 +26,7 @@ public class ProcessingAspects {
         Method method = signature.getMethod();
         EntryPoint annotation = method.getAnnotation(EntryPoint.class);
         final int maxAttempts = annotation.maxAttempts();
+        final long delayBetweenAttempts = annotation.delayBetweenAttempts();
         int attemptNumber = 1;
         
         while (attemptNumber <= maxAttempts) {
@@ -37,6 +38,9 @@ public class ProcessingAspects {
                 }
             } catch (Exception e) {
                 LOG.error("An exception while executing method " + method, e);
+            }
+            if (delayBetweenAttempts > 0) {
+                Thread.sleep(delayBetweenAttempts);
             }
             attemptNumber++;
         }

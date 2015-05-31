@@ -13,10 +13,9 @@ import java.util.List;
 
 public final class EventFactory {
     
-    public static <T extends InstanceEvent> T instanceEvent(Class<T> eventClass, CloudType cloudType, Instance instance) throws Exception {
+    public static <T extends InstanceEvent> T instanceEvent(Class<T> eventClass, Instance instance) throws Exception {
         T event = eventClass.newInstance();
         event.setTimestamp(now());
-        event.setCloudType(cloudType);
         event.setInstance(instance);
         return event;
     }
@@ -33,7 +32,6 @@ public final class EventFactory {
             case LAUNCHING: return new InstanceLaunchingEvent();
             case MIGRATING: return new InstanceMigratingEvent();
             default:
-            case NOT_LAUNCHED: return new InstanceNotLaunchedEvent();
             case PAUSED: return new InstancePausedEvent();
             case PAUSING: return new InstancePausingEvent();
             case QUEUED: return new InstanceQueuedEvent();
@@ -48,10 +46,9 @@ public final class EventFactory {
         }
     }
 
-    public static <T extends ProjectEvent> T projectEvent(Class<T> eventClass, CloudType cloudType, Project project) throws Exception {
+    public static <T extends ProjectEvent> T projectEvent(Class<T> eventClass, Project project) throws Exception {
         T event = eventClass.newInstance();
         event.setTimestamp(now());
-        event.setCloudType(cloudType);
         event.setProject(project);
         return event;
     }

@@ -7,10 +7,13 @@ import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -35,15 +38,16 @@ public class OperationsAwareImpl implements OperationsAware {
     private void init() {
         Map<String, Object> operationBeans = applicationContext.getBeansWithAnnotation(Operation.class);
         operationBeans.values().stream().forEach(bean -> {
-            List<OperationId> operationId = getOperationIds(bean);
+            final Object realBean = getRealBean(bean);
+            List<OperationId> operationId = getOperationIds(realBean);
             operationId.stream().forEach(id -> {
-                Optional<Method> operationMethod = getOperationMethod(bean);
+                Optional<Method> operationMethod = getOperationMethod(realBean);
                 if (operationMethod.isPresent()) {
-                    operationInstances.put(id, bean);
+                    operationInstances.put(id, realBean);
                     this.operationMethods.put(id, operationMethod.get());
                     LOG.debug(
                             "Added operation class {} with cloud type = {} and operation type = {}",
-                            bean.getClass().getCanonicalName(),
+                            realBean.getClass().getCanonicalName(),
                             id.getCloudType(),
                             id.getOperationType()
                     );
@@ -53,6 +57,18 @@ public class OperationsAwareImpl implements OperationsAware {
             });
 
         });
+    }
+    
+    private Object getRealBean(Object bean) {
+        if (AopUtils.isAopProxy(bean)) {
+            Advised advisedBean = (Advised) bean;
+            try {
+                return advisedBean.getTargetSource().getTarget();
+            } catch (Exception e) {
+                LOG.debug("Failed to process AOP proxied bean {}", bean);
+            }
+        }
+        return bean;
     }
 
     private List<OperationId> getOperationIds(Object bean) {

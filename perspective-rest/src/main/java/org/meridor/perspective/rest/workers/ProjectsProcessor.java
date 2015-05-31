@@ -47,7 +47,8 @@ public class ProjectsProcessor {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 for (Project project : projects) {
-                    ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, t, project);
+                    project.setCloudType(t);
+                    ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
                     producer.produce(event);
                 }
                 LOG.debug("Saved projects for cloud type {} to queue", t);
@@ -59,8 +60,7 @@ public class ProjectsProcessor {
     
     @Consume(queueName = PROJECTS, numConsumers = 2)
     public void syncProjects(ProjectSyncEvent event) {
-        CloudType cloudType = event.getCloudType();
-        storage.saveProject(cloudType, event.getProject());
+        storage.saveProject(event.getProject());
     }
     
 }

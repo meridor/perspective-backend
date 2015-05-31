@@ -11,4 +11,6 @@ public @interface EntryPoint {
     
     int maxAttempts() default 0;
     
+    long delayBetweenAttempts() default 0;
+    
 }

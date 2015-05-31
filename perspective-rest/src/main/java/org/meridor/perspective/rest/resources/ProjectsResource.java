@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Component
-@Path("/cloud/{cloudType}/project")
+@Path("/{cloudType}/project")
 public class ProjectsResource {
 
     @Autowired

@@ -16,13 +16,11 @@ import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
-import static org.meridor.perspective.events.EventFactory.now;
 
 @Component
-@FSM(start = InstanceNotLaunchedEvent.class)
+@FSM(start = InstanceQueuedEvent.class)
 @Transitions({
         //Instance queue
-        @Transit(from = InstanceNotLaunchedEvent.class, on = InstanceQueuedEvent.class, to = InstanceQueuedEvent.class),
         @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
         
         //Instance launch
@@ -98,55 +96,58 @@ public class InstanceFSM {
     private Producer producer;
     
     @OnTransit
-    public void onInstanceQueued(InstanceQueuedEvent event) {
-        CloudType cloudType = event.getCloudType();
+    public void onInstanceLaunching(InstanceLaunchingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        try {
-            if (!operationProcessor.supply(cloudType, OperationType.LAUNCH_INSTANCE, () -> instance)) {
-                throw new RuntimeException(String.format("Failed to launch instance %s", instance));
-            }
-            instance.setCreated(now());
+        CloudType cloudType = instance.getCloudType();
+        LOG.info("Launching instance {}", instance);
+        if (operationProcessor.supply(cloudType, OperationType.LAUNCH_INSTANCE, () -> instance)) {
             instance.setStatus(InstanceStatus.LAUNCHING);
-            storage.saveInstance(cloudType, instance);
-            LOG.debug("Queued instance {} for launch", instance);
-        } catch (Exception e) {
-            LOG.error("Failed to launch instances in cloud " + cloudType, e);
+            storage.saveInstance(instance);
+        } else {
+            throw new InstanceException("Failed to launch", instance);
         }
     }
 
     @OnTransit
-    public void onInstanceDeleting(InstanceDeletingEvent event) {
-        CloudType cloudType = event.getCloudType();
+    public void onInstanceDeleting(InstanceDeletingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        if (storage.instanceExists(cloudType, instance.getId())) {
+        CloudType cloudType = instance.getCloudType();
+        if (storage.instanceExists(instance)) {
             LOG.info("Deleting instance {} in cloud {}", instance.getId(), cloudType);
-            try {
-                if (!operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCE, () -> instance)) {
-                    throw new RuntimeException("Failed to delete instances from the cloud");
-                }
+            if (operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCE, () -> instance)) {
                 instance.setStatus(InstanceStatus.DELETING);
-                storage.saveInstance(cloudType, instance);
-            } catch (Exception e) {
-                LOG.error("Failed to delete instance in cloud " + cloudType, e);
+                storage.saveInstance(instance);
+            } else {
+                throw new InstanceException("Failed to delete", instance);
             }
         } else {
-            LOG.error("Can't delete instance {} from cloud {} - not exists", instance.getId());
+            LOG.error("Can't delete instance {} - not exists", instance.getId());
         }
     }
     
     @OnTransit
     public void onInstanceError(InstanceErrorEvent event) {
-        CloudType cloudType = event.getCloudType();
         Instance instance = event.getInstance();
+        CloudType cloudType = instance.getCloudType();
         LOG.info("Changing cloud {} instance {} status to error", instance.getId(), cloudType);
         instance.setStatus(InstanceStatus.ERROR);
         instance.setErrorReason(event.getErrorReason());
-        storage.saveInstance(cloudType, instance);
+        storage.saveInstance(instance);
     }
 
     @OnTransit
     public void onUnknownEvent(InstanceEvent event) {
         LOG.warn("Discovered unknown event {}. Skipping it.", event);
+    }
+    
+    @OnException
+    public void onInstanceException(InstanceException e) {
+        Instance instance = e.getInstance();
+        instance.setStatus(InstanceStatus.ERROR);
+        String errorReason = e.getMessage();
+        instance.setErrorReason(errorReason);
+        LOG.info("Setting instance {} status to ERROR with reason message: '{}'", instance, errorReason);
+        storage.saveInstance(instance);
     }
     
     @OnException

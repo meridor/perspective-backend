@@ -44,7 +44,7 @@ public class InstancesProcessor {
 
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.instances}")
     @IfNotLocked
-    public void fetchProjects() {
+    public void fetchInstances() {
         cloudConfigurationProvider.getSupportedClouds().forEach(t -> {
             LOG.debug("Fetching instances list for cloud type {}", t);
             List<Instance> instances = new ArrayList<>();
@@ -53,7 +53,8 @@ public class InstancesProcessor {
                     throw new RuntimeException("Failed to get instances list from the cloud");
                 }
                 for (Instance instance : instances) {
-                    InstanceSyncEvent event = instanceEvent(InstanceSyncEvent.class, t, instance);
+                    instance.setCloudType(t);
+                    InstanceSyncEvent event = instanceEvent(InstanceSyncEvent.class, instance);
                     producer.produce(event);
                 }
                 LOG.debug("Saved instances for cloud type {} to queue", t);
@@ -74,7 +75,7 @@ public class InstancesProcessor {
     
     private void updateInstance(InstanceEvent instanceEvent) {
         Instance instanceFromEvent = instanceEvent.getInstance();
-        CloudType cloudType = instanceEvent.getCloudType();
+        CloudType cloudType = instanceFromEvent.getCloudType();
         Optional<Instance> instance = storage.getInstance(cloudType, instanceFromEvent.getId());
         if (instance.isPresent()) {
             InstanceStatus status = instance.get().getStatus();
@@ -93,10 +94,9 @@ public class InstancesProcessor {
     }
     
     private void syncInstance(InstanceSyncEvent instanceSyncEvent) {
-        CloudType cloudType = instanceSyncEvent.getCloudType();
         Instance instance = instanceSyncEvent.getInstance();
         LOG.debug("Saving instance {} to storage", instance);
-        storage.saveInstance(cloudType, instance);
+        storage.saveInstance(instance);
     }
     
 }
