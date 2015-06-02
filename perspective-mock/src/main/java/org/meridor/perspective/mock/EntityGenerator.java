@@ -1,6 +1,7 @@
 package org.meridor.perspective.mock;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.config.CloudType;
 
 public class EntityGenerator {
 
@@ -8,6 +9,7 @@ public class EntityGenerator {
         Project project = new Project();
         project.setName("test-project");
         project.setId("test-project");
+        project.setCloudType(CloudType.MOCK);
         Region region = getRegion();
         project.getRegions().add(region);
         return project;
@@ -57,6 +59,7 @@ public class EntityGenerator {
     public static Instance getInstance() {
         Instance instance = new Instance();
         instance.setId("test-instance");
+        instance.setCloudType(CloudType.MOCK);
         instance.setProjectId("test-project");
         instance.setRegionId("test-region");
         instance.setName("test-instance");
