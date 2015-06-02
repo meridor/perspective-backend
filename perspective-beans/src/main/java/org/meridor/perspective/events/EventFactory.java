@@ -3,21 +3,24 @@ package org.meridor.perspective.events;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceStatus;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.config.CloudType;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 public final class EventFactory {
     
-    public static <T extends InstanceEvent> T instanceEvent(Class<T> eventClass, Instance instance) throws Exception {
-        T event = eventClass.newInstance();
-        event.setTimestamp(now());
-        event.setInstance(instance);
-        return event;
+    public static <T extends InstanceEvent> T instanceEvent(Class<T> eventClass, Instance instance) {
+        try {
+            T event = eventClass.newInstance();
+            ZonedDateTime now = now();
+            event.setId(uuid());
+            event.setTimestamp(now);
+            instance.setTimestamp(now);
+            event.setInstance(instance);
+            return event;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     
     public static InstanceEvent statusToEvent(InstanceStatus instanceStatus) {
@@ -46,17 +49,27 @@ public final class EventFactory {
         }
     }
 
-    public static <T extends ProjectEvent> T projectEvent(Class<T> eventClass, Project project) throws Exception {
-        T event = eventClass.newInstance();
-        event.setTimestamp(now());
-        event.setProject(project);
-        return event;
-    }
-    
-    public static XMLGregorianCalendar now() throws Exception {
-        GregorianCalendar c = new GregorianCalendar();
-        c.setTime(new Date());
-        return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+    public static <T extends ProjectEvent> T projectEvent(Class<T> eventClass, Project project) {
+        try {
+            T event = eventClass.newInstance();
+            ZonedDateTime now = now();
+            event.setId(uuid());
+            event.setTimestamp(now);
+            event.setProject(project);
+            project.setTimestamp(now);
+            return event;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public static String uuid() {
+        return UUID.randomUUID().toString();
+    }
+
+    public static ZonedDateTime now() {
+        return ZonedDateTime.now();
+    }
+
+    private EventFactory(){}
 }

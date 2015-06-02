@@ -13,13 +13,15 @@
 
 ### Instances
 * GET /project/$id/region/$id/instance/list - list project instance [+]
-* POST /project/$id/region/$id/instance - launch instance
+* POST /project/$id/region/$id/instance - launch instance [+]
 * GET /project/$id/region/$id/instance/$id - show instance information [+]
 * GET /project/$id/region/$id/instance/$id/console - redirect to instance console
 * GET /project/$id/region/$id/instance/$id/log - return instance log
-* DELETE /project/$id/region/$id/instance - terminate instance
+* POST /project/$id/region/$id/instance/selection - create instance selection
+* POST /project/$id/region/$id/instance/delete - delete (terminate) instances [+]
 * PUT /project/$id/region/$id/instance/rebuild - rebuild instance
-* PUT /project/$id/region/$id/instance/reboot - reboot instance
+* PUT /project/$id/region/$id/instance/reboot - reboot instance [+]
+* PUT /project/$id/region/$id/instance/hard-reboot - hard reboot instance [+]
 * PUT /project/$id/region/$id/instance/resize - resize instance
 * PUT /project/$id/region/$id/instance/snapshot - snapshot instance
 * PUT /project/$id/region/$id/instance/pause - pause instance

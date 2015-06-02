@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -37,7 +38,7 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
     
     private ExecutorService executorService;
 
-    private volatile AtomicBoolean canExecute = new AtomicBoolean(true);
+    private volatile boolean canExecute = true;
     
     private Map<Runnable, Integer> runnables = new HashMap<>();
     
@@ -52,7 +53,6 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
         ReflectionUtils.doWithMethods(
                 cls,
                 m -> {
-                    //TODO: decide whether we need to change this one to another thread pool!!!
                     Consume annotation = m.getAnnotation(Consume.class);
                     DestinationName destinationName = annotation.queueName();
                     int numConsumers = annotation.numConsumers();
@@ -80,8 +80,12 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
                     bean.getClass().getCanonicalName();
             
             Runnable runnable = () -> {
-                while (canExecute.get()) {
+                while (canExecute) {
                     try {
+                        if (!storage.isAvailable()) {
+                            LOG.debug("Stopping consumer thread {} as storage is not available", Thread.currentThread());
+                            return;
+                        }
                         BlockingQueue<Object> queue = storage.getQueue(storageKey);
                         Object item = queue.poll(1000, TimeUnit.MILLISECONDS);
                         if (item != null) {
@@ -105,9 +109,10 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
 
     @PreDestroy
     public void destroy() throws InterruptedException {
+        canExecute = false;
         if (executorService != null) {
             LOG.info("Shutting down consumers");
-            canExecute.set(false);
+            executorService.shutdown();
             executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
         }
     }

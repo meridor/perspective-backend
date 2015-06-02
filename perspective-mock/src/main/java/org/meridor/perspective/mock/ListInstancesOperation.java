@@ -3,24 +3,24 @@ package org.meridor.perspective.mock;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
-import static org.meridor.perspective.mock.EntityGenerator.getInstance;
 
 @Component
 @Operation(cloud = MOCK, type = LIST_INSTANCES)
 public class ListInstancesOperation {
     
+    @Autowired
+    private InstancesStorage instances;
+    
     @EntryPoint
-    public boolean listInstances(Consumer<List<Instance>> consumer) {
-        List<Instance> instances = new ArrayList<>();
-        instances.add(getInstance());
+    public boolean listInstances(Consumer<Set<Instance>> consumer) {
         consumer.accept(instances);
         return true;
     }

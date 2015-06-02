@@ -64,26 +64,26 @@
         </hz:config>
     </hz:hazelcast>
 
-    <bean id="hazelcastClient" class="com.hazelcast.client.HazelcastClient" factory-method="newHazelcastClient">
-        <constructor-arg>
-            <bean class="com.hazelcast.client.config.ClientConfig">
-                <property name="groupConfig">
-                    <bean class="com.hazelcast.config.GroupConfig">
-                        <property name="name" value="${perspective.hazelcast.group.name}"/>
-                        <property name="password" value="${perspective.hazelcast.group.password}"/>
-                    </bean>
-                </property>
-                <property name="networkConfig">
-                    <bean class="com.hazelcast.client.config.ClientNetworkConfig">
-                        <property name="addresses">
-                            <list>
-                                <value>127.0.0.1:5801</value>
-                            </list>
-                        </property>
-                    </bean>
-                </property>
-            </bean>
-        </constructor-arg>
-    </bean>
+    <!--<bean id="hazelcastClient" class="com.hazelcast.client.HazelcastClient" factory-method="newHazelcastClient">-->
+        <!--<constructor-arg>-->
+            <!--<bean class="com.hazelcast.client.config.ClientConfig">-->
+                <!--<property name="groupConfig">-->
+                    <!--<bean class="com.hazelcast.config.GroupConfig">-->
+                        <!--<property name="name" value="${perspective.hazelcast.group.name}"/>-->
+                        <!--<property name="password" value="${perspective.hazelcast.group.password}"/>-->
+                    <!--</bean>-->
+                <!--</property>-->
+                <!--<property name="networkConfig">-->
+                    <!--<bean class="com.hazelcast.client.config.ClientNetworkConfig">-->
+                        <!--<property name="addresses">-->
+                            <!--<list>-->
+                                <!--<value>127.0.0.1:5801</value>-->
+                            <!--</list>-->
+                        <!--</property>-->
+                    <!--</bean>-->
+                <!--</property>-->
+            <!--</bean>-->
+        <!--</constructor-arg>-->
+    <!--</bean>-->
 
 </beans>

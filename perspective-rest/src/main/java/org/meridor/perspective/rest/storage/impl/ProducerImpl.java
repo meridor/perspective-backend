@@ -28,6 +28,10 @@ public class ProducerImpl implements Producer {
         }
         try {
             LOG.debug("Putting value {} to queue {}", data, queueName);
+            if (!storage.isAvailable()) {
+                LOG.debug("Storage is not available. Will not put {} to queue {}.", data, queueName);
+                return;
+            }
             BlockingQueue<Object> queue = storage.getQueue(queueName);
             if (data instanceof List) {
                 for (Object value : (List) data) {

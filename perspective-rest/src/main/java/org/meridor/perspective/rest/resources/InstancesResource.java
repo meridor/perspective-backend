@@ -3,7 +3,10 @@ package org.meridor.perspective.rest.resources;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceStatus;
 import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.events.InstanceDeletingEvent;
+import org.meridor.perspective.events.InstanceHardRebootingEvent;
 import org.meridor.perspective.events.InstanceLaunchingEvent;
+import org.meridor.perspective.events.InstanceRebootingEvent;
 import org.meridor.perspective.rest.storage.Destination;
 import org.meridor.perspective.rest.storage.Producer;
 import org.meridor.perspective.rest.storage.Storage;
@@ -21,7 +24,7 @@ import java.util.Optional;
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
 import static org.meridor.perspective.events.EventFactory.instanceEvent;
 import static org.meridor.perspective.events.EventFactory.now;
-import static org.meridor.perspective.framework.Util.getUUID;
+import static org.meridor.perspective.events.EventFactory.uuid;
 
 @Component
 @Path("/{cloudType}/project/{projectId}/region/{regionId}/instance")
@@ -50,7 +53,7 @@ public class InstancesResource {
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Path("/{instanceId}")
-    public Response getInstance(@PathParam("cloudType") String cloudTypeString, @PathParam("projectId") String projectId, @PathParam("regionId") String regionId, @PathParam("instanceId") String instanceId) {
+    public Response getInstance(@PathParam("cloudType") String cloudTypeString, @PathParam("instanceId") String instanceId) {
         try {
             CloudType cloudType = CloudType.fromValue(cloudTypeString);
             Optional<Instance> instance = storage.getInstance(cloudType, instanceId);
@@ -64,10 +67,10 @@ public class InstancesResource {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response launchInstances(@PathParam("cloudType") String cloudTypeString, @PathParam("projectId") String projectId, @PathParam("regionId") String regionId, List<Instance> instances) throws Exception {
+    public Response launchInstances(@PathParam("cloudType") String cloudTypeString, @PathParam("projectId") String projectId, @PathParam("regionId") String regionId, List<Instance> instances) {
         CloudType cloudType = CloudType.fromValue(cloudTypeString);
         for (Instance instance : instances) {
-            instance.setId(getUUID());
+            instance.setId(uuid());
             instance.setCloudType(cloudType);
             instance.setProjectId(projectId);
             instance.setRegionId(regionId);
@@ -81,11 +84,36 @@ public class InstancesResource {
         return Response.ok().build();
     }
 
-    @DELETE
+    @PUT
+    @Path("/reboot")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response deleteInstances(@PathParam("cloudType") String cloudTypeString, @PathParam("projectId") String projectId, @PathParam("regionId") String regionId, List<Instance> instances) {
-        CloudType cloudType = CloudType.fromValue(cloudTypeString);
-        //TODO: to be implemented!
+    public Response rebootInstances(List<Instance> instances) {
+        for (Instance instance : instances) {
+            InstanceRebootingEvent event = instanceEvent(InstanceRebootingEvent.class, instance);
+            producer.produce(event);
+        }
+        return Response.ok().build();
+    }
+    
+    @PUT
+    @Path("/hard-reboot")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response hardRebootInstances(List<Instance> instances) {
+        for (Instance instance : instances) {
+            InstanceHardRebootingEvent event = instanceEvent(InstanceHardRebootingEvent.class, instance);
+            producer.produce(event);
+        }
+        return Response.ok().build();
+    }
+    
+    @POST
+    @Path("/delete")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response deleteInstances(List<Instance> instances) {
+        for (Instance instance : instances) {
+            InstanceDeletingEvent event = instanceEvent(InstanceDeletingEvent.class, instance);
+            producer.produce(event);
+        }
         return Response.ok().build();
     }
     

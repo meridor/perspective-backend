@@ -16,14 +16,13 @@ import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
+import static org.meridor.perspective.events.EventFactory.instanceEvent;
 
 @Component
 @FSM(start = InstanceQueuedEvent.class)
 @Transitions({
-        //Instance queue
-        @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        
         //Instance launch
+        @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         
@@ -107,6 +106,59 @@ public class InstanceFSM {
             throw new InstanceException("Failed to launch", instance);
         }
     }
+    
+    @OnTransit
+    public void onInstanceLaunched(InstanceLaunchedEvent event) {
+        Instance instance = event.getInstance();
+        instance.setStatus(InstanceStatus.LAUNCHED);
+        storage.saveInstance(instance);
+    }
+
+    @OnTransit
+    public void onInstanceRebooting(InstanceRebootingEvent event) throws Exception {
+        Instance instance = event.getInstance();
+        CloudType cloudType = instance.getCloudType();
+        LOG.info("Rebooting instance {}", instance);
+        if (operationProcessor.supply(cloudType, OperationType.REBOOT_INSTANCE, () -> instance)) {
+            instance.setStatus(InstanceStatus.REBOOTING);
+        } else {
+            instance.setErrorReason("Failed to reboot");
+        }
+        storage.saveInstance(instance);
+    }
+    
+    @OnTransit
+    public void onInstanceHardRebooting(InstanceHardRebootingEvent event) throws Exception {
+        Instance instance = event.getInstance();
+        CloudType cloudType = instance.getCloudType();
+        LOG.info("Hard rebooting instance {}", instance);
+        if (operationProcessor.supply(cloudType, OperationType.HARD_REBOOT_INSTANCE, () -> instance)) {
+            instance.setStatus(InstanceStatus.REBOOTING);
+        } else {
+            instance.setErrorReason("Failed to hard reboot");
+        }
+        storage.saveInstance(instance);
+    }
+    
+    @OnTransit
+    public void onInstanceShuttingDown(InstanceShuttingDownEvent event) throws Exception {
+        Instance instance = event.getInstance();
+        CloudType cloudType = instance.getCloudType();
+        LOG.info("Shutting down instance {}", instance);
+        if (operationProcessor.supply(cloudType, OperationType.SHUTDOWN_INSTANCE, () -> instance)) {
+            instance.setStatus(InstanceStatus.REBOOTING);
+        } else {
+            instance.setErrorReason("Failed to shut down");
+        }
+        storage.saveInstance(instance);
+    }
+
+    @OnTransit
+    public void onInstanceShutoff(InstanceShutOffEvent event) {
+        Instance instance = event.getInstance();
+        instance.setStatus(InstanceStatus.SHUTOFF);
+        storage.saveInstance(instance);
+    }
 
     @OnTransit
     public void onInstanceDeleting(InstanceDeletingEvent event) throws Exception {
@@ -124,7 +176,20 @@ public class InstanceFSM {
             LOG.error("Can't delete instance {} - not exists", instance.getId());
         }
     }
-    
+
+    @OnTransit
+    public void onInstanceSnapshotting(InstanceSnapshottingEvent event) throws Exception {
+        Instance instance = event.getInstance();
+        CloudType cloudType = instance.getCloudType();
+        LOG.info("Taking instance {} snapshot", instance);
+        if (operationProcessor.supply(cloudType, OperationType.SNAPSHOT_INSTANCE, () -> instance)) {
+            instance.setStatus(InstanceStatus.SNAPSHOTTING);
+        } else {
+            instance.setErrorReason("Failed to take snapshot");
+        }
+        storage.saveInstance(instance);
+    }
+
     @OnTransit
     public void onInstanceError(InstanceErrorEvent event) {
         Instance instance = event.getInstance();
@@ -141,13 +206,10 @@ public class InstanceFSM {
     }
     
     @OnException
-    public void onInstanceException(InstanceException e) {
-        Instance instance = e.getInstance();
-        instance.setStatus(InstanceStatus.ERROR);
-        String errorReason = e.getMessage();
-        instance.setErrorReason(errorReason);
-        LOG.info("Setting instance {} status to ERROR with reason message: '{}'", instance, errorReason);
-        storage.saveInstance(instance);
+    public void onInstanceException(InstanceException e) throws Exception {
+        InstanceErrorEvent event = instanceEvent(InstanceErrorEvent.class, e.getInstance());
+        event.setErrorReason(e.getMessage());
+        onInstanceError(event);
     }
     
     @OnException

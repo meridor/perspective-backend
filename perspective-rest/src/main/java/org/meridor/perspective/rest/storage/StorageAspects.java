@@ -8,21 +8,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 
 @Component
 @Aspect
 @Configurable
-public class StorageAspects {
+public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
     
     private static final Logger LOG = LoggerFactory.getLogger(StorageAspects.class);
     
     @Autowired
     private Storage storage;
+    
+    private boolean isApplicationRunning = true;
 
     @Around("@within(org.meridor.perspective.rest.storage.IfNotLocked) || execution(@org.meridor.perspective.rest.storage.IfNotLocked * *(..))")
     public Object ifNotLocked(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -30,8 +35,8 @@ public class StorageAspects {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         
-        if (storage == null || !storage.isAvailable()) {
-            LOG.debug("Skipping method {} execution because storage is not available", method);
+        if (!isApplicationRunning) {
+            LOG.debug("Skipping method {} execution because application is stopping", method);
             return null;
         }
         
@@ -56,5 +61,9 @@ public class StorageAspects {
             return null;
         }
     }
-    
+
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        isApplicationRunning = false;
+    }
 }

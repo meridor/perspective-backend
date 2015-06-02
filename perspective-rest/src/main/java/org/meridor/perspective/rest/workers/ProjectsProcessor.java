@@ -1,7 +1,6 @@
 package org.meridor.perspective.rest.workers;
 
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.ProjectSyncEvent;
@@ -13,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.meridor.perspective.beans.DestinationName.PROJECTS;
 import static org.meridor.perspective.events.EventFactory.projectEvent;
@@ -42,8 +41,8 @@ public class ProjectsProcessor {
         cloudConfigurationProvider.getSupportedClouds().forEach(t -> {
             LOG.debug("Fetching projects list for cloud type {}", t);
             try {
-                List<Project> projects = new ArrayList<>();
-                if (!operationProcessor.<List<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)) {
+                Set<Project> projects = new HashSet<>();
+                if (!operationProcessor.<Set<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)) {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 for (Project project : projects) {

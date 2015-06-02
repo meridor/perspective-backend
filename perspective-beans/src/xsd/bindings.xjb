@@ -1,12 +1,127 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <jaxb:bindings
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
         xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:equals="http://jaxb2-commons.dev.java.net/basic/equals"
+        xmlns:hashCode="http://jaxb2-commons.dev.java.net/basic/hashCode"
         version="2.1">
 
     <jaxb:globalBindings>
+        <jaxb:javaType 
+                name="java.time.ZonedDateTime"
+                xmlType="xsd:dateTime"
+                parseMethod="org.meridor.perspective.beans.DateTimeAdapter.parseDate"
+                printMethod="org.meridor.perspective.beans.DateTimeAdapter.printDate"/>
         <jaxb:serializable/>
         <xjc:simple/>
     </jaxb:globalBindings>
+
+    <jaxb:bindings schemaLocation="beans.xsd">
+        <jaxb:bindings node="/xsd:schema">
+            <jaxb:bindings node="./xsd:complexType[@name='image']/xsd:all">
+                <jaxb:bindings node="./xsd:element[@name='timestamp']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='created']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='name']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='size']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='minFlavor']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='isPublic']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='isProtected']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='checksum']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:complexType[@name='instance']/xsd:all">
+                <jaxb:bindings node="./xsd:element[@name='projectId']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='regionId']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='availabilityZone']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='timestamp']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='created']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='errorReason']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='status']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='image']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='name']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='flavor']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='keypair']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='networks']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='isLocked']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:complexType[@name='project']/xsd:all">
+                <jaxb:bindings node="./xsd:element[@name='timestamp']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='name']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='regions']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+            </jaxb:bindings>
+        </jaxb:bindings>
+    </jaxb:bindings>
 
 </jaxb:bindings>

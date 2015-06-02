@@ -46,6 +46,8 @@
                         <arg>-Xxew:instantiate lazy</arg>
                         <arg>-Xxew:delete</arg>
                         <arg>-Xequals</arg>
+                        <arg>-XhashCode</arg>
+                        <arg>-XtoString</arg>
                     </args>
                     <plugins>
                         <plugin>

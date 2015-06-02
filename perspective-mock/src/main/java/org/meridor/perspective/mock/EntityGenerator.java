@@ -64,6 +64,7 @@ public class EntityGenerator {
         instance.getNetworks().add(getNetwork());
         instance.setImage(getImage());
         instance.setStatus(InstanceStatus.LAUNCHED);
+        instance.setAvailabilityZone(getAvailabilityZone());
         return instance;
     }
 
