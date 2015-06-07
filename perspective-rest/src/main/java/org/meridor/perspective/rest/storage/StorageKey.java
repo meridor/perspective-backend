@@ -4,6 +4,8 @@ import org.meridor.perspective.config.CloudType;
 
 public final class StorageKey {
 
+    public static final String DELETED_INSTANCES = "deleted_instances";
+    
     public static String projectsByCloud(CloudType cloudType) {
         return "projects_" + cloudType;
     }

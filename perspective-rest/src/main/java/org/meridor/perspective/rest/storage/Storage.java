@@ -1,6 +1,9 @@
 package org.meridor.perspective.rest.storage;
 
 
+import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.core.HazelcastInstance;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
@@ -47,8 +50,36 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
     }
     
     public <T> Map<String, T> getMap(String name) {
-        return isAvailable() ? 
-                hazelcastInstance.getMap(name) : Collections.emptyMap();
+        return getMapWithConfig(name, null);
+    }
+    
+    public <T> Map<String, T> getLRUMap(String name) {
+        MapConfig mapConfig = new MapConfig();
+        mapConfig.setName(name);
+        mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
+        MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
+        maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE);
+        maxSizeConfig.setSize(70);
+        mapConfig.setMaxSizeConfig(maxSizeConfig);
+        hazelcastInstance.getConfig().addMapConfig(mapConfig);
+        return getMap(name);
+    }
+
+    public <T> Map<String, T> getIdleMap(String name) {
+        MapConfig mapConfig = new MapConfig();
+        mapConfig.setName(name);
+        mapConfig.setMaxIdleSeconds(30);
+        return getMapWithConfig(name, mapConfig);
+    }
+
+    private <T> Map<String, T> getMapWithConfig(String name, MapConfig mapConfig) {
+        if (isAvailable()) {
+            if (mapConfig != null) {
+                hazelcastInstance.getConfig().addMapConfig(mapConfig);
+            }
+            return hazelcastInstance.getMap(name);
+        }
+        return Collections.emptyMap();
     }
     
     public void saveProject(Project project) {

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <import resource="classpath*:META-INF/spring/context.xml"/>
+    
+    <bean id="configurationProperties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+        <property name="locations">
+            <list>
+                <value>classpath:perspective-test.properties</value>
+            </list>
+        </property>
+        <property name="properties">
+            <util:properties>
+                <prop key="perspective.hazelcast.port">
+                    #{new String(T(org.meridor.perspective.rest.resources.TestUtil).getFreePort())}
+                </prop>
+            </util:properties>
+        </property>
+    </bean>
+    
+</beans>

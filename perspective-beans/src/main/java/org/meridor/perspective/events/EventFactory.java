@@ -23,7 +23,16 @@ public final class EventFactory {
         }
     }
     
-    public static InstanceEvent statusToEvent(InstanceStatus instanceStatus) {
+    public static InstanceEvent instanceToEvent(Instance instance) {
+        InstanceStatus instanceStatus = instance.getStatus();
+        InstanceEvent event = statusToEvent(instanceStatus);
+        event.setInstance(instance);
+        event.setId(uuid());
+        event.setTimestamp(now());
+        return event;
+    }
+    
+    private static InstanceEvent statusToEvent(InstanceStatus instanceStatus) {
         if (instanceStatus == null) {
             throw new IllegalArgumentException("Instance status can't be null");
         }

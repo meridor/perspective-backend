@@ -15,7 +15,12 @@ import static org.meridor.perspective.config.OperationType.*;
 
 @Component
 @Operation(cloud = MOCK, type = {
+        MIGRATE_INSTANCE,
         REBOOT_INSTANCE,
+        REBUILD_INSTANCE,
+        PAUSE_INSTANCE,
+        RESIZE_INSTANCE,
+        RESUME_INSTANCE,
         HARD_REBOOT_INSTANCE,
         SHUTDOWN_INSTANCE,
         SNAPSHOT_INSTANCE

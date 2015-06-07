@@ -2,6 +2,8 @@ package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.rest.storage.Storage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,8 @@ import javax.ws.rs.core.Response;
 @Path("/{cloudType}/project")
 public class ProjectsResource {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectsResource.class);
+    
     @Autowired
     private Storage storage;
     
@@ -24,6 +28,7 @@ public class ProjectsResource {
     @Path("/list")
     public Response getProjects(@PathParam("cloudType") String cloudTypeString) {
         try {
+            LOG.info("Getting projects list for cloud = {}", cloudTypeString);
             CloudType cloudType = CloudType.fromValue(cloudTypeString);
             return Response.ok(storage.getProjects(cloudType)).build();
         } catch (Exception e) {

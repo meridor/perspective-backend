@@ -18,9 +18,15 @@
             <xsd:enumeration value="launchInstance"/>
             <xsd:enumeration value="listProjects"/>
             <xsd:enumeration value="listInstances"/>
+            <xsd:enumeration value="migrateInstance"/>
+            <xsd:enumeration value="pauseInstance"/>
             <xsd:enumeration value="rebootInstance"/>
+            <xsd:enumeration value="rebuildInstance"/>
+            <xsd:enumeration value="resizeInstance"/>
+            <xsd:enumeration value="resumeInstance"/>
             <xsd:enumeration value="shutdownInstance"/>
             <xsd:enumeration value="snapshotInstance"/>
+            <xsd:enumeration value="suspendInstance"/>
         </xsd:restriction>
     </xsd:simpleType>
 

@@ -12,6 +12,13 @@
         <xsd:sequence>
             <xsd:element name="id" type="beans:uuid"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
+            <xsd:element name="sync" type="xsd:boolean">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this is a sync event, i.e. we don't need to do calls to cloud API and should only synchronize storage state.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
     
@@ -40,12 +47,6 @@
                     <xsd:element name="instance" type="beans:instance"/>
                 </xsd:sequence>
             </xsd:extension>
-        </xsd:complexContent>
-    </xsd:complexType>
-
-    <xsd:complexType name="instanceSyncEvent">
-        <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
 
@@ -88,7 +89,13 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
+    <xsd:complexType name="instanceNotAvailableEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instanceEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:complexType name="instancePausedEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>

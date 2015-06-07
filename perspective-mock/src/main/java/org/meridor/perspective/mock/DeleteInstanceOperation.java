@@ -23,7 +23,7 @@ public class DeleteInstanceOperation {
     private InstancesStorage instances;
     
     @EntryPoint
-    public boolean launchInstance(Supplier<Instance> supplier) {
+    public boolean deleteInstance(Supplier<Instance> supplier) {
         Instance instance = supplier.get();
         LOG.debug("Deleting instance {}", instance);
         return instances.remove(instance);

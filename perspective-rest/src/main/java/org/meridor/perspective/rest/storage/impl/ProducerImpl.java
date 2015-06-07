@@ -27,9 +27,9 @@ public class ProducerImpl implements Producer {
             throw new IllegalStateException("Storage key can't be null");
         }
         try {
-            LOG.debug("Putting value {} to queue {}", data, queueName);
+            LOG.trace("Putting value {} to queue {}", data, queueName);
             if (!storage.isAvailable()) {
-                LOG.debug("Storage is not available. Will not put {} to queue {}.", data, queueName);
+                LOG.trace("Storage is not available. Will not put {} to queue {}.", data, queueName);
                 return;
             }
             BlockingQueue<Object> queue = storage.getQueue(queueName);

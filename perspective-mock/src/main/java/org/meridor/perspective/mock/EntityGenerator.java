@@ -3,6 +3,8 @@ package org.meridor.perspective.mock;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 
+import static org.meridor.perspective.events.EventFactory.now;
+
 public class EntityGenerator {
 
     public static Project getProject() {
@@ -59,6 +61,7 @@ public class EntityGenerator {
     public static Instance getInstance() {
         Instance instance = new Instance();
         instance.setId("test-instance");
+        instance.setTimestamp(now());
         instance.setCloudType(CloudType.MOCK);
         instance.setProjectId("test-project");
         instance.setRegionId("test-region");

@@ -199,6 +199,7 @@
             <xsd:enumeration value="rebooting"/>
             <xsd:enumeration value="rebuilding"/>
             <xsd:enumeration value="resizing"/>
+            <xsd:enumeration value="resuming"/>
             <xsd:enumeration value="shutoff"/>
             <xsd:enumeration value="shutting_down"/>
             <xsd:enumeration value="snapshotting"/>

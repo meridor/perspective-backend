@@ -71,7 +71,7 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
         try {
 
             if (method.getParameterCount() != 1) {
-                LOG.debug("Will not consume to method {} because it has more than 1 parameter.");
+                LOG.trace("Will not consume to method {} because it has more than 1 parameter.");
                 return Optional.empty();
             }
 
@@ -89,13 +89,17 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
                         BlockingQueue<Object> queue = storage.getQueue(storageKey);
                         Object item = queue.poll(1000, TimeUnit.MILLISECONDS);
                         if (item != null) {
+                            LOG.trace("Consumed message {} from queue {}", item, storageKey);
                             Class<?> parameterType = method.getParameterTypes()[0];
                             if (parameterType.isAssignableFrom(item.getClass())) {
+                                LOG.trace("Invoking bean {} with argument {}", bean, item);
                                 method.invoke(bean, item);
+                            } else {
+                                LOG.debug("Skipping method {} execution because parameter {} is not assignable from {}", method, parameterType, item.getClass().getCanonicalName());
                             }
                         }
                     } catch (Exception e) {
-                        LOG.debug("Failed to consume message from queue " + destinationName, e);
+                        LOG.trace("Failed to consume message from queue " + destinationName, e);
                     }
                 }
             };
@@ -111,7 +115,7 @@ public class ConsumeBeanPostProcessor implements BeanPostProcessor, ApplicationL
     public void destroy() throws InterruptedException {
         canExecute = false;
         if (executorService != null) {
-            LOG.info("Shutting down consumers");
+            LOG.debug("Shutting down consumers");
             executorService.shutdown();
             executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
         }
