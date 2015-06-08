@@ -1,6 +1,5 @@
 package org.meridor.perspective.rest.resources;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.mock.EntityGenerator;
@@ -26,7 +25,8 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     }
     
     @Test
-    public void testMissingList() {
+    public void testMissingList() throws Exception {
+        Thread.sleep(500);
         List<Instance> instances = target("/mock/project/missing-project/region/missing-region/instance/list")
                 .request()
                 .get(new GenericType<List<Instance>>() {
@@ -35,7 +35,8 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     }
     
     @Test
-    public void testGetById() {
+    public void testGetById() throws Exception {
+        Thread.sleep(500);
         Instance instance = target("/mock/project/missing-project/region/missing-region/instance/test-instance")
                 .request()
                 .get(Instance.class);

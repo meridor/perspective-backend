@@ -82,9 +82,9 @@ public class InstancesProcessor {
                     event.getClass().getSimpleName()
             );
             fsm.fire(event);
-        } else if (event.isSync()) {
+        } else if (event.isSync() && !storage.isInstanceDeleted(cloudType, instanceFromEvent.getId())) {
             LOG.debug(
-                    "Syncing instance {} from cloud = {} with state = {} for the first time",
+                    "Syncing instance {} from cloud {} with state = {} for the first time",
                     event.getInstance().getId(),
                     cloudType,
                     event.getClass().getSimpleName()
@@ -93,7 +93,7 @@ public class InstancesProcessor {
             fsm.fire(event);
         } else {
             LOG.debug(
-                    "Will not update instance {} from cloud = {} as it does not exist",
+                    "Will not update instance {} from cloud = {} as it does not exist or was already deleted",
                     instanceFromEvent.getId(),
                     cloudType
             );

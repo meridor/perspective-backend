@@ -58,7 +58,7 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         mapConfig.setName(name);
         mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
         MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
-        maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE);
+        maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.USED_HEAP_SIZE);
         maxSizeConfig.setSize(70);
         mapConfig.setMaxSizeConfig(maxSizeConfig);
         hazelcastInstance.getConfig().addMapConfig(mapConfig);
@@ -101,10 +101,16 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         getInstancesByProjectAndRegionMap(cloudType, instance.getProjectId(), instance.getRegionId()).put(instance.getId(), instance);
     }
     
+    //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
     public void deleteInstance(Instance instance) {
         CloudType cloudType = instance.getCloudType();
-        getInstancesByIdMap(cloudType).remove(instance.getId());
+        Instance deletedInstance = getInstancesByIdMap(cloudType).remove(instance.getId());
         getInstancesByProjectAndRegionMap(cloudType, instance.getProjectId(), instance.getRegionId()).remove(instance.getId());
+        getDeletedInstancesByIdMap(cloudType).put(deletedInstance.getId(), deletedInstance);
+    }
+    
+    public boolean isInstanceDeleted(CloudType cloudType, String instanceId) {
+        return getDeletedInstancesByIdMap(cloudType).containsKey(instanceId);
     }
     
     public boolean instanceExists(Instance instance) {
@@ -131,6 +137,10 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
 
     private Map<String, Instance> getInstancesByIdMap(CloudType cloudType) {
         return getMap(instancesByCloud(cloudType));
+    }
+    
+    private Map<String, Instance> getDeletedInstancesByIdMap(CloudType cloudType) {
+        return getLRUMap(deletedInstancesByCloud(cloudType));
     }
 
     @Override

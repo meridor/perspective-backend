@@ -21,6 +21,10 @@ public final class StorageKey {
     public static String instancesByCloud(CloudType cloudType){
         return "instances_" + cloudType;
     }
+    
+    public static String deletedInstancesByCloud(CloudType cloudType){
+        return "deleted_instances_" + cloudType;
+    }
 
     public static String instancesSetByCloud(CloudType cloudType){
         return "instances_set_" + cloudType;

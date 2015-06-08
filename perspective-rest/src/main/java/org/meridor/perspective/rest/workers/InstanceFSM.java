@@ -40,6 +40,7 @@ import static org.meridor.perspective.events.EventFactory.instanceEvent;
         @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
+        @Transit(from = InstanceLaunchedEvent.class, on = InstanceDeletingEvent.class, stop = true),
         
         //Instance soft reboot
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceRebootingEvent.class, to = InstanceRebootingEvent.class),
@@ -296,8 +297,7 @@ public class InstanceFSM {
         if (storage.instanceExists(instance)) {
             LOG.info("Deleting cloud {} instance {}", cloudType, instance.getId());
             if (event.isSync() || operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCE, () -> instance)) {
-                instance.setStatus(InstanceStatus.DELETING);
-                storage.saveInstance(instance);
+                storage.deleteInstance(instance);
             } else {
                 throw new InstanceException("Failed to delete", instance);
             }
