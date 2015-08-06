@@ -27,7 +27,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testMissingList() throws Exception {
         Thread.sleep(500);
-        List<Instance> instances = target("/mock/project/missing-project/region/missing-region/instance/list")
+        List<Instance> instances = target("/mock/missing-project/instance/list")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });
@@ -37,7 +37,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testGetById() throws Exception {
         Thread.sleep(500);
-        Instance instance = target("/mock/project/missing-project/region/missing-region/instance/test-instance")
+        Instance instance = target("/mock/missing-project/instance/test-instance")
                 .request()
                 .get(Instance.class);
         assertThat(instance, equalTo(EntityGenerator.getInstance()));
@@ -45,7 +45,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void testGetByMissingId() {
-        Response response = target("/mock/project/missing-project/region/missing-region/instance/missing-id")
+        Response response = target("/mock/missing-project/instance/missing-id")
                 .request()
                 .get();
         assertThat(response.getStatus(), equalTo(Response.Status.NOT_FOUND.getStatusCode()));
@@ -58,7 +58,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
         instance.setName("new-instance");
         instances.add(instance);
         Entity<List<Instance>> entity = Entity.entity(instances, MediaType.APPLICATION_JSON);
-        Response response = target("/mock/project/test-project/region/test-region/instance")
+        Response response = target("/mock/test-project/instance")
                 .request()
                 .post(entity);
         
@@ -98,7 +98,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
             }
         };
         Entity<List<Instance>> entity = Entity.entity(instances, MediaType.APPLICATION_JSON_TYPE);
-        Response deleteResponse = target("/mock/project/test-project/region/test-region/instance/delete")
+        Response deleteResponse = target("/mock/test-project/instance/delete")
                 .request()
                 .post(entity);
 
@@ -106,7 +106,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     }
     
     private List<Instance> listInstances() {
-        return target("/mock/project/test-project/region/test-region/instance/list")
+        return target("/mock/test-project/instance/list")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });

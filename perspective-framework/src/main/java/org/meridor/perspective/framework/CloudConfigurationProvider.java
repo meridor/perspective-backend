@@ -18,10 +18,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class CloudConfigurationProvider {
@@ -36,7 +34,7 @@ public class CloudConfigurationProvider {
     @Value("${perspective.configuration.dir}")
     private Resource configurationDirResource;
     
-    private Map<CloudType, Cloud> cloudsMap = new HashMap<>();
+    private Map<String, Cloud> cloudsMap = new HashMap<>();
     
     @PostConstruct
     public void init() {
@@ -65,7 +63,7 @@ public class CloudConfigurationProvider {
         Clouds clouds = (Clouds) unmarshaller.unmarshal(Files.newInputStream(configurationFilePath));
         clouds.getClouds().stream()
                 .filter(Cloud::isEnabled)
-                .forEach(c -> cloudsMap.put(c.getType(), c));
+                .forEach(c -> cloudsMap.put(c.getName(), c));
     }
     
     private void addMockCloud() {
@@ -77,15 +75,15 @@ public class CloudConfigurationProvider {
         cloud.setEndpoint("useless");
         cloud.setIdentity("useless");
         cloud.setCredential("useless");
-        cloudsMap.put(cloudType, cloud);
+        cloudsMap.put(cloud.getName(), cloud);
     }
     
-    public Optional<Cloud> getConfiguration(CloudType cloudType) {
-        return Optional.ofNullable(cloudsMap.get(cloudType));
+    public Optional<Cloud> getCloud(String cloudName) {
+        return Optional.ofNullable(cloudsMap.get(cloudName));
     }
     
-    public Set<CloudType> getSupportedClouds() {
-        return cloudsMap.keySet();
+    public Set<CloudType> getCloudTypes() {
+        return cloudsMap.values().stream().map(Cloud::getType).distinct().collect(Collectors.toSet());
     }
     
 }

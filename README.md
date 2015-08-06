@@ -2,44 +2,43 @@
 
 ## API
 ### Project
-* GET /cloud/$id/projects/list - list projects with enabled regions [+]
+* GET /projects - list projects [+]
 
 // These urls probably aren't needed!
 * GET /projects/$id/access - return endpoint urls for project services available
-* GET /projects/$id/regions/$id/rcfile - get Openstack RC file
+* GET /projects/$id/rcfile - get Openstack RC file
 * GET /keypairs - list current user keypairs
 * POST /keypairs - add keypair
 * DELETE /keypairs/$id - delete keypair
 
-### Instances
-* GET /project/$id/region/$id/instance/list - list project instance [+]
-* POST /project/$id/region/$id/instance - launch instance [+]
-* GET /project/$id/region/$id/instance/$id - show instance information [+]
-* GET /project/$id/region/$id/instance/$id/console - redirect to instance console
-* GET /project/$id/region/$id/instance/$id/log - return instance log
-* POST /project/$id/region/$id/instance/selection - create instance selection
-* POST /project/$id/region/$id/instance/delete - delete (terminate) instances [+]
-* PUT /project/$id/region/$id/instance/rebuild - rebuild instance
-* PUT /project/$id/region/$id/instance/reboot - reboot instance [+]
-* PUT /project/$id/region/$id/instance/hard-reboot - hard reboot instance [+]
-* PUT /project/$id/region/$id/instance/resize - resize instance
-* PUT /project/$id/region/$id/instance/snapshot - snapshot instance
-* PUT /project/$id/region/$id/instance/pause - pause instance
-* PUT /project/$id/region/$id/instance/resume - resume instance
-* PUT /project/$id/region/$id/instance/suspend - suspend instance
-* PUT /project/$id/region/$id/instance/shutdown - shutdown instance
-* POST /project/$id/region/$id/instance/tag - add tags to instance
-* DELETE /project/$id/region/$id/instance/tag - remove instance tags
-* PUT /project/$id/region/$id/instance/lock - lock instance
-* PUT /project/$id/region/$id/instance/unlock - unlock instance
-* PUT /project/$id/region/$id/instance/ip - add ip to instance
-* DELETE /project/$id/region/$id/instance/ip - remove instance ip
+### Instances (/instance)
+* GET /list?query - list project instance [+]
+* POST / - launch instance [+]
+* GET /$id - show instance information [+]
+* GET /$id/console - redirect to instance console
+* GET /$id/log - return instance log
+* POST /delete?query - delete (terminate) instances [+]
+* PUT /rebuild?query - rebuild instance
+* PUT /instance/reboot?query - reboot instance [+]
+* PUT /instance/hard-reboot?query - hard reboot instance [+]
+* PUT /instance/resize?query - resize instance
+* PUT /instance/snapshot?query - snapshot instance
+* PUT /instance/pause?query - pause instance
+* PUT /instance/resume?query - resume instance
+* PUT /instance/suspend?query - suspend instance
+* PUT /instance/shutdown?query - shutdown instance
+* POST /instance/tag?query - add tags to instance
+* DELETE /instance/tag?query - remove instance tags
+* PUT /instance/lock?query - lock instance
+* PUT /instance/unlock?query - unlock instance
+* PUT /instance/ip?query - add ip to instance
+* DELETE /instance/ip?query - remove instance ip
  
 ### Images
-* GET /project/$id/region/$id/image/list - list project images
-* GET /project/$id/region/$id/image/$id - show image info
-* PUT /project/$id/region/$id/image - modify images
-* DELETE /project/$id/region/$id/image - delete images
+* GET /image/list?query - list project images
+* GET /image/$id - show image info
+* PUT /image?query - modify images
+* DELETE /image?query - delete images
 
 # Преимущества Perspective по сравнению со стандартным Openstack API
 

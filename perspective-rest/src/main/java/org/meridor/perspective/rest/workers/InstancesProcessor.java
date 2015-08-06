@@ -44,7 +44,7 @@ public class InstancesProcessor {
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.instances}")
     @IfNotLocked
     public void fetchInstances() {
-        cloudConfigurationProvider.getSupportedClouds().forEach(t -> {
+        cloudConfigurationProvider.getCloudTypes().forEach(t -> {
             LOG.debug("Fetching instances list for cloud type {}", t);
             Set<Instance> instances = new HashSet<>();
             try {

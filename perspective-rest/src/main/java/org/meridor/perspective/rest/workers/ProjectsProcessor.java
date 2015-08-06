@@ -38,7 +38,7 @@ public class ProjectsProcessor {
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.projects}")
     @IfNotLocked
     public void fetchProjects() {
-        cloudConfigurationProvider.getSupportedClouds().forEach(t -> {
+        cloudConfigurationProvider.getCloudTypes().forEach(t -> {
             LOG.debug("Fetching projects list for cloud type {}", t);
             try {
                 Set<Project> projects = new HashSet<>();

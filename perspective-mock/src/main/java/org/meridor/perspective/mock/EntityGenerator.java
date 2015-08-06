@@ -9,22 +9,13 @@ public class EntityGenerator {
 
     public static Project getProject() {
         Project project = new Project();
-        project.setName("test-project");
+        project.setName("test-project - test-region");
         project.setId("test-project");
         project.setCloudType(CloudType.MOCK);
-        Region region = getRegion();
-        project.getRegions().add(region);
+        project.getFlavors().add(getFlavor());
+        project.getNetworks().add(getNetwork());
+        project.getAvailabilityZones().add(getAvailabilityZone());
         return project;
-    }
-
-    public static Region getRegion() {
-        Region region = new Region();
-        region.setId("test-region");
-        region.setName("test-region");
-        region.getFlavors().add(getFlavor());
-        region.getAvailabilityZones().add(getAvailabilityZone());
-        region.getNetworks().add(getNetwork());
-        return region;
     }
 
     public static Flavor getFlavor() {
@@ -64,7 +55,6 @@ public class EntityGenerator {
         instance.setTimestamp(now());
         instance.setCloudType(CloudType.MOCK);
         instance.setProjectId("test-project");
-        instance.setRegionId("test-region");
         instance.setName("test-instance");
         instance.setFlavor(getFlavor());
         instance.getNetworks().add(getNetwork());

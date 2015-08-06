@@ -14,8 +14,8 @@ public final class StorageKey {
         return "projects_set_" + cloudType;
     }
 
-    public static String instancesSetByProjectAndRegion(CloudType cloudType, String projectId, String regionId) {
-        return cloudType + "_project_" + projectId + "_region_" + regionId;
+    public static String instancesSetByProject(CloudType cloudType, String projectId) {
+        return cloudType + "_project_" + projectId;
     }
 
     public static String instancesByCloud(CloudType cloudType){

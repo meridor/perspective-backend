@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>perspective-rest</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>Perspective Backend REST API</name>
     <description>REST API for Perspective</description>

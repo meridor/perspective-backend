@@ -98,14 +98,14 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
     public void saveInstance(Instance instance) {
         CloudType cloudType = instance.getCloudType();
         getInstancesByIdMap(cloudType).put(instance.getId(), instance);
-        getInstancesByProjectAndRegionMap(cloudType, instance.getProjectId(), instance.getRegionId()).put(instance.getId(), instance);
+        getInstancesByProject(cloudType, instance.getProjectId()).put(instance.getId(), instance);
     }
     
     //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
     public void deleteInstance(Instance instance) {
         CloudType cloudType = instance.getCloudType();
         Instance deletedInstance = getInstancesByIdMap(cloudType).remove(instance.getId());
-        getInstancesByProjectAndRegionMap(cloudType, instance.getProjectId(), instance.getRegionId()).remove(instance.getId());
+        getInstancesByProject(cloudType, instance.getProjectId()).remove(instance.getId());
         getDeletedInstancesByIdMap(cloudType).put(deletedInstance.getId(), deletedInstance);
     }
     
@@ -119,8 +119,8 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         return getInstancesByIdMap(cloudType).containsKey(instanceId);
     }
     
-    public Collection<Instance> getInstances(CloudType cloudType, String projectId, String regionId) {
-        return getInstancesByProjectAndRegionMap(cloudType, projectId, regionId).values();
+    public Collection<Instance> getInstances(CloudType cloudType, String projectId) {
+        return getInstancesByProject(cloudType, projectId).values();
     }
     
     public Optional<Instance> getInstance(CloudType cloudType, String instanceId) {
@@ -131,8 +131,8 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         return getMap(projectsByCloud(cloudType));
     }
     
-    private Map<String, Instance> getInstancesByProjectAndRegionMap(CloudType cloudType, String projectId, String regionId) {
-        return getMap(instancesSetByProjectAndRegion(cloudType, projectId, regionId));
+    private Map<String, Instance> getInstancesByProject(CloudType cloudType, String projectId) {
+        return getMap(instancesSetByProject(cloudType, projectId));
     }
 
     private Map<String, Instance> getInstancesByIdMap(CloudType cloudType) {

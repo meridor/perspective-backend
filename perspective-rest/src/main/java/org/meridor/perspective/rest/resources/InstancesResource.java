@@ -22,12 +22,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.meridor.perspective.beans.DestinationName.INSTANCES;
-import static org.meridor.perspective.events.EventFactory.instanceEvent;
-import static org.meridor.perspective.events.EventFactory.now;
-import static org.meridor.perspective.events.EventFactory.uuid;
+import static org.meridor.perspective.events.EventFactory.*;
 
 @Component
-@Path("/{cloudType}/project/{projectId}/region/{regionId}/instance")
+@Path("/{cloudType}/{projectId}/instance")
 public class InstancesResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstancesResource.class);
@@ -43,13 +41,12 @@ public class InstancesResource {
     @Path("/list")
     public Response getInstances(
             @PathParam("cloudType") String cloudTypeString,
-            @PathParam("projectId") String projectId,
-            @PathParam("regionId") String regionId
+            @PathParam("projectId") String projectId
     ) {
         try {
-            LOG.info("Getting instances list for cloud = {}, projectId = {}, regionId = {}", cloudTypeString, projectId, regionId);
+            LOG.info("Getting instances list for cloud = {}, projectId = {}", cloudTypeString, projectId);
             CloudType cloudType = CloudType.fromValue(cloudTypeString);
-            return Response.ok(storage.getInstances(cloudType, projectId, regionId)).build();
+            return Response.ok(storage.getInstances(cloudType, projectId)).build();
         } catch (Exception e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -79,16 +76,14 @@ public class InstancesResource {
     public Response launchInstances(
             @PathParam("cloudType") String cloudTypeString,
             @PathParam("projectId") String projectId,
-            @PathParam("regionId") String regionId,
             List<Instance> instances
     ) {
         CloudType cloudType = CloudType.fromValue(cloudTypeString);
         for (Instance instance : instances) {
-            LOG.info("Queuing instance {} for launch in cloud = {}, projectId = {}, regionId = {}", instance, cloudTypeString, projectId, regionId);
+            LOG.info("Queuing instance {} for launch in cloud = {}, projectId = {}", instance, cloudTypeString, projectId);
             instance.setId(uuid());
             instance.setCloudType(cloudType);
             instance.setProjectId(projectId);
-            instance.setRegionId(regionId);
             instance.setCreated(now());
             instance.setStatus(InstanceStatus.QUEUED);
             storage.saveInstance(instance);
