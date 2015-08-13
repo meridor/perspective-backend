@@ -1,7 +1,7 @@
 package org.meridor.perspective.events;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceStatus;
+import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.beans.Project;
 
 import java.time.ZonedDateTime;
@@ -24,19 +24,19 @@ public final class EventFactory {
     }
     
     public static InstanceEvent instanceToEvent(Instance instance) {
-        InstanceStatus instanceStatus = instance.getStatus();
-        InstanceEvent event = statusToEvent(instanceStatus);
+        InstanceState instanceState = instance.getState();
+        InstanceEvent event = stateToEvent(instanceState);
         event.setInstance(instance);
         event.setId(uuid());
         event.setTimestamp(now());
         return event;
     }
     
-    private static InstanceEvent statusToEvent(InstanceStatus instanceStatus) {
-        if (instanceStatus == null) {
+    private static InstanceEvent stateToEvent(InstanceState instanceState) {
+        if (instanceState == null) {
             throw new IllegalArgumentException("Instance status can't be null");
         }
-        switch (instanceStatus) {
+        switch (instanceState) {
             case DELETING: return new InstanceDeletingEvent();
             case ERROR: return new InstanceErrorEvent();
             case HARD_REBOOTING: return new InstanceHardRebootingEvent();

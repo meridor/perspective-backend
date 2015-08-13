@@ -132,7 +132,7 @@
             <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="subnets" type="tns:subnets"/>
-            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="state" type="xsd:string"/>
             <xsd:element name="isShared" type="xsd:boolean"/>
         </xsd:all>
     </xsd:complexType>
@@ -171,7 +171,7 @@
 
     <xsd:element name="project" type="tns:project"/>
 
-    <xsd:simpleType name="instanceStatus">
+    <xsd:simpleType name="instanceState">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="deleting"/>
             <xsd:enumeration value="error"/>
@@ -214,7 +214,7 @@
             <xsd:element name="image" type="tns:image"/>
             <xsd:element name="keypair" type="tns:keypair"/>
             <xsd:element name="networks" type="tns:networks"/>
-            <xsd:element name="status" type="tns:instanceStatus" minOccurs="1"/>
+            <xsd:element name="state" type="tns:instanceState" minOccurs="1"/>
             <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>

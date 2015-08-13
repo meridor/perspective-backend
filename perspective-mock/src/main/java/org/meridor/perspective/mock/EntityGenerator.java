@@ -59,7 +59,7 @@ public class EntityGenerator {
         instance.setFlavor(getFlavor());
         instance.getNetworks().add(getNetwork());
         instance.setImage(getImage());
-        instance.setStatus(InstanceStatus.LAUNCHED);
+        instance.setState(InstanceState.LAUNCHED);
         instance.setAvailabilityZone(getAvailabilityZone());
         return instance;
     }

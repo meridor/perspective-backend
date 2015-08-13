@@ -1,8 +1,7 @@
 package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceStatus;
-import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.events.InstanceDeletingEvent;
 import org.meridor.perspective.events.InstanceHardRebootingEvent;
 import org.meridor.perspective.events.InstanceLaunchingEvent;
@@ -66,7 +65,7 @@ public class InstancesResource {
             LOG.info("Queuing instance {} for launch", instance);
             instance.setId(uuid());
             instance.setCreated(now());
-            instance.setStatus(InstanceStatus.QUEUED);
+            instance.setState(InstanceState.QUEUED);
             storage.saveInstance(instance);
             InstanceLaunchingEvent event = instanceEvent(InstanceLaunchingEvent.class, instance);
             producer.produce(event);

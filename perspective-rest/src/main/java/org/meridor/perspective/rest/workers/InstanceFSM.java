@@ -1,7 +1,7 @@
 package org.meridor.perspective.rest.workers;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceStatus;
+import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
@@ -117,7 +117,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.debug("Marking cloud {} instance {} as queued", instance.getCloudType(), instance.getId());
-            instance.setStatus(InstanceStatus.QUEUED);
+            instance.setState(InstanceState.QUEUED);
             storage.saveInstance(instance);
         }
     }
@@ -128,7 +128,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Launching cloud {} instance {}", instance.getCloudType(), instance);
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.LAUNCH_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.LAUNCHING);
+            instance.setState(InstanceState.LAUNCHING);
             storage.saveInstance(instance);
         } else {
             throw new InstanceException("Failed to launch", instance);
@@ -139,7 +139,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.debug("Marking cloud {} instance {} as launched", instance.getCloudType(), instance.getId());
-            instance.setStatus(InstanceStatus.LAUNCHED);
+            instance.setState(InstanceState.LAUNCHED);
             storage.saveInstance(instance);
         }
     }
@@ -150,7 +150,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Rebooting cloud {} instance {}", instance.getCloudType(), instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.REBOOT_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.REBOOTING);
+            instance.setState(InstanceState.REBOOTING);
         } else {
             instance.setErrorReason("Failed to reboot");
         }
@@ -163,7 +163,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Hard rebooting cloud {} instance {}", instance.getCloudType(), instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.HARD_REBOOT_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.HARD_REBOOTING);
+            instance.setState(InstanceState.HARD_REBOOTING);
         } else {
             instance.setErrorReason("Failed to hard reboot");
         }
@@ -176,7 +176,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Shutting down cloud {} instance {}", instance.getCloudType(), instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.SHUTDOWN_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.SHUTTING_DOWN);
+            instance.setState(InstanceState.SHUTTING_DOWN);
         } else {
             instance.setErrorReason("Failed to shut down");
         }
@@ -188,7 +188,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.debug("Marking cloud {} instance {} as shutoff", instance.getCloudType(), instance.getId());
-            instance.setStatus(InstanceStatus.SHUTOFF);
+            instance.setState(InstanceState.SHUTOFF);
             storage.saveInstance(instance);
         }
     }
@@ -198,7 +198,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Pausing cloud {} instance {}", cloudType, instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.PAUSE_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.PAUSING);
+            instance.setState(InstanceState.PAUSING);
         } else {
             instance.setErrorReason("Failed to pause");
         }
@@ -210,7 +210,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.debug("Marking cloud {} instance {} as paused", instance.getCloudType(), instance.getId());
-            instance.setStatus(InstanceStatus.PAUSED);
+            instance.setState(InstanceState.PAUSED);
             storage.saveInstance(instance);
         }
     }
@@ -221,7 +221,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Resuming cloud {} instance {}", cloudType, instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.RESUME_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.RESUMING);
+            instance.setState(InstanceState.RESUMING);
         } else {
             instance.setErrorReason("Failed to resume");
         }
@@ -234,7 +234,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Rebuilding cloud {} instance {}", cloudType, instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.REBUILD_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.REBUILDING);
+            instance.setState(InstanceState.REBUILDING);
         } else {
             instance.setErrorReason("Failed to rebuild");
         }
@@ -247,7 +247,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Resizing cloud {} instance {}", cloudType, instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.RESIZE_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.RESIZING);
+            instance.setState(InstanceState.RESIZING);
         } else {
             instance.setErrorReason("Failed to resize");
         }
@@ -260,7 +260,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Suspending cloud {} instance {}", instance.getCloudType(), instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.SUSPEND_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.SUSPENDING);
+            instance.setState(InstanceState.SUSPENDING);
         } else {
             instance.setErrorReason("Failed to suspend");
         }
@@ -272,7 +272,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.debug("Marking cloud {} instance {} as suspended", instance.getCloudType(), instance.getId());
-            instance.setStatus(InstanceStatus.SUSPENDED);
+            instance.setState(InstanceState.SUSPENDED);
             storage.saveInstance(instance);
         }
     }
@@ -283,7 +283,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Migrating cloud {} instance {}", cloudType, instance.getId());
         if (event.isSync() || operationProcessor.supply(cloudType, OperationType.MIGRATE_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.MIGRATING);
+            instance.setState(InstanceState.MIGRATING);
         } else {
             instance.setErrorReason("Failed to migrate");
         }
@@ -312,7 +312,7 @@ public class InstanceFSM {
         CloudType cloudType = instance.getCloudType();
         LOG.info("Taking cloud {} instance {} snapshot", cloudType, instance.getId());
         if (operationProcessor.supply(cloudType, OperationType.SNAPSHOT_INSTANCE, () -> instance)) {
-            instance.setStatus(InstanceStatus.SNAPSHOTTING);
+            instance.setState(InstanceState.SNAPSHOTTING);
         } else {
             instance.setErrorReason("Failed to take snapshot");
         }
@@ -323,7 +323,7 @@ public class InstanceFSM {
     public void onInstanceError(InstanceErrorEvent event) {
         Instance instance = event.getInstance();
         LOG.info("Changing cloud {} instance {} status to error", instance.getCloudType(), instance.getId());
-        instance.setStatus(InstanceStatus.ERROR);
+        instance.setState(InstanceState.ERROR);
         instance.setErrorReason(event.getErrorReason());
         storage.saveInstance(instance);
     }

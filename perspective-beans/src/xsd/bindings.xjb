@@ -74,7 +74,7 @@
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='status']">
+                <jaxb:bindings node="./xsd:element[@name='state']">
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
