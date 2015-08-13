@@ -68,7 +68,7 @@ public class InstancesProcessor {
     public void processInstances(InstanceEvent event) {
         Instance instanceFromEvent = event.getInstance();
         CloudType cloudType = instanceFromEvent.getCloudType();
-        Optional<Instance> instanceOrEmpty = storage.getInstance(cloudType, instanceFromEvent.getId());
+        Optional<Instance> instanceOrEmpty = storage.getInstance(instanceFromEvent.getId());
         if (instanceOrEmpty.isPresent()) {
             Instance instance = instanceOrEmpty.get();
             InstanceEvent currentState = instanceToEvent(instance);
@@ -82,7 +82,7 @@ public class InstancesProcessor {
                     event.getClass().getSimpleName()
             );
             fsm.fire(event);
-        } else if (event.isSync() && !storage.isInstanceDeleted(cloudType, instanceFromEvent.getId())) {
+        } else if (event.isSync() && !storage.isInstanceDeleted(instanceFromEvent.getId())) {
             LOG.debug(
                     "Syncing instance {} from cloud {} with state = {} for the first time",
                     event.getInstance().getId(),

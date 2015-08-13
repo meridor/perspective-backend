@@ -6,8 +6,8 @@ public final class StorageKey {
 
     public static final String DELETED_INSTANCES = "deleted_instances";
     
-    public static String projectsByCloud(CloudType cloudType) {
-        return "projects_" + cloudType;
+    public static String projectsById() {
+        return "projects_by_id";
     }
 
     public static String projectsSetByCloud(CloudType cloudType) {
@@ -18,12 +18,12 @@ public final class StorageKey {
         return cloudType + "_project_" + projectId;
     }
 
-    public static String instancesByCloud(CloudType cloudType){
-        return "instances_" + cloudType;
+    public static String instancesById(){
+        return "instances_by_id";
     }
     
-    public static String deletedInstancesByCloud(CloudType cloudType){
-        return "deleted_instances_" + cloudType;
+    public static String deletedInstancesByCloud(){
+        return "deleted_instances";
     }
 
     public static String instancesSetByCloud(CloudType cloudType){

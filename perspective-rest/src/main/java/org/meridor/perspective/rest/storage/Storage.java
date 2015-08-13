@@ -5,9 +5,12 @@ import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
+import com.hazelcast.query.Predicate;
+import com.hazelcast.query.SqlPredicate;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.rest.storage.impl.EmptyIMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -49,11 +51,11 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         return hazelcastInstance.getLock(name);
     }
     
-    public <T> Map<String, T> getMap(String name) {
+    private <T> IMap<String, T> getMap(String name) {
         return getMapWithConfig(name, null);
     }
     
-    public <T> Map<String, T> getLRUMap(String name) {
+    private <T> IMap<String, T> getLRUMap(String name) {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setName(name);
         mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
@@ -65,82 +67,88 @@ public class Storage implements ApplicationListener<ContextClosedEvent> {
         return getMap(name);
     }
 
-    public <T> Map<String, T> getIdleMap(String name) {
+    private <T> Map<String, T> getIdleMap(String name) {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setName(name);
         mapConfig.setMaxIdleSeconds(30);
         return getMapWithConfig(name, mapConfig);
     }
 
-    private <T> Map<String, T> getMapWithConfig(String name, MapConfig mapConfig) {
+    private <T> IMap<String, T> getMapWithConfig(String name, MapConfig mapConfig) {
         if (isAvailable()) {
             if (mapConfig != null) {
                 hazelcastInstance.getConfig().addMapConfig(mapConfig);
             }
             return hazelcastInstance.getMap(name);
         }
-        return Collections.emptyMap();
+        return new EmptyIMap<>();
     }
     
     public void saveProject(Project project) {
-        CloudType cloudType = project.getCloudType();
-        getProjectsByIdMap(cloudType).put(project.getId(), project);
+        getProjectsByIdMap().put(project.getId(), project);
     }
     
-    public Collection<Project> getProjects(CloudType cloudType) {
-        return getProjectsByIdMap(cloudType).values();
+    public Collection<Project> getProjects(Optional<String> query) throws IllegalQueryException {
+        if (query.isPresent() && !query.get().isEmpty()) {
+            Predicate predicate = getPredicateFromQuery(query.get());
+            return getProjectsByIdMap().values(predicate);
+        }
+        return getProjectsByIdMap().values();
     }
 
-    public Optional<Project> getProject(CloudType cloudType, String projectId) {
-        return Optional.ofNullable(getProjectsByIdMap(cloudType).get(projectId));
+    public Optional<Project> getProject(String projectId) {
+        return Optional.ofNullable(getProjectsByIdMap().get(projectId));
     }
 
     public void saveInstance(Instance instance) {
-        CloudType cloudType = instance.getCloudType();
-        getInstancesByIdMap(cloudType).put(instance.getId(), instance);
-        getInstancesByProject(cloudType, instance.getProjectId()).put(instance.getId(), instance);
+        getInstancesByIdMap().put(instance.getId(), instance);
     }
     
     //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
     public void deleteInstance(Instance instance) {
-        CloudType cloudType = instance.getCloudType();
-        Instance deletedInstance = getInstancesByIdMap(cloudType).remove(instance.getId());
-        getInstancesByProject(cloudType, instance.getProjectId()).remove(instance.getId());
-        getDeletedInstancesByIdMap(cloudType).put(deletedInstance.getId(), deletedInstance);
+        Instance deletedInstance = getInstancesByIdMap().remove(instance.getId());
+        getDeletedInstancesByIdMap().put(deletedInstance.getId(), deletedInstance);
     }
     
-    public boolean isInstanceDeleted(CloudType cloudType, String instanceId) {
-        return getDeletedInstancesByIdMap(cloudType).containsKey(instanceId);
+    public boolean isInstanceDeleted(String instanceId) {
+        return getDeletedInstancesByIdMap().containsKey(instanceId);
     }
     
     public boolean instanceExists(Instance instance) {
         String instanceId = instance.getId();
-        CloudType cloudType = instance.getCloudType();
-        return getInstancesByIdMap(cloudType).containsKey(instanceId);
+        return getInstancesByIdMap().containsKey(instanceId);
     }
     
-    public Collection<Instance> getInstances(CloudType cloudType, String projectId) {
-        return getInstancesByProject(cloudType, projectId).values();
-    }
-    
-    public Optional<Instance> getInstance(CloudType cloudType, String instanceId) {
-        return Optional.ofNullable(getInstancesByIdMap(cloudType).get(instanceId));
-    }
-    
-    private Map<String, Project> getProjectsByIdMap(CloudType cloudType) {
-        return getMap(projectsByCloud(cloudType));
-    }
-    
-    private Map<String, Instance> getInstancesByProject(CloudType cloudType, String projectId) {
-        return getMap(instancesSetByProject(cloudType, projectId));
+    public Collection<Instance> getInstances(Optional<String> query) throws IllegalQueryException {
+        if (query.isPresent() && !query.get().isEmpty()) {
+            Predicate predicate = getPredicateFromQuery(query.get());
+            return getInstancesByIdMap().values(predicate);
+        }
+        return getInstancesByIdMap().values();
     }
 
-    private Map<String, Instance> getInstancesByIdMap(CloudType cloudType) {
-        return getMap(instancesByCloud(cloudType));
+    public Optional<Instance> getInstance(String instanceId) {
+        return Optional.ofNullable(getInstancesByIdMap().get(instanceId));
     }
     
-    private Map<String, Instance> getDeletedInstancesByIdMap(CloudType cloudType) {
-        return getLRUMap(deletedInstancesByCloud(cloudType));
+    private IMap<String, Project> getProjectsByIdMap() {
+        return getMap(projectsById());
+    }
+    
+    private IMap<String, Instance> getInstancesByIdMap() {
+        return getMap(instancesById());
+    }
+    
+    private Map<String, Instance> getDeletedInstancesByIdMap() {
+        return getLRUMap(deletedInstancesByCloud());
+    }
+    
+    private Predicate getPredicateFromQuery(String query) throws IllegalQueryException {
+        try {
+            return new SqlPredicate(query);
+        } catch (Exception e) {
+            throw new IllegalQueryException(e);
+        }
     }
 
     @Override

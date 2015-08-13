@@ -2,6 +2,7 @@ package org.meridor.perspective.rest.resources;
 
 import org.junit.Test;
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.mock.EntityGenerator;
 
 import javax.ws.rs.client.Entity;
@@ -27,7 +28,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testMissingList() throws Exception {
         Thread.sleep(500);
-        List<Instance> instances = target("/mock/missing-project/instance/list")
+        List<Instance> instances = target("/instances")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });
@@ -37,7 +38,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testGetById() throws Exception {
         Thread.sleep(500);
-        Instance instance = target("/mock/missing-project/instance/test-instance")
+        Instance instance = target("/instances/test-instance")
                 .request()
                 .get(Instance.class);
         assertThat(instance, equalTo(EntityGenerator.getInstance()));
@@ -45,7 +46,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void testGetByMissingId() {
-        Response response = target("/mock/missing-project/instance/missing-id")
+        Response response = target("/instances/missing-id")
                 .request()
                 .get();
         assertThat(response.getStatus(), equalTo(Response.Status.NOT_FOUND.getStatusCode()));
@@ -56,9 +57,11 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
         List<Instance> instances = new ArrayList<>();
         Instance instance = EntityGenerator.getInstance();
         instance.setName("new-instance");
+        instance.setCloudType(CloudType.MOCK);
+        instance.setProjectId("test-project");
         instances.add(instance);
         Entity<List<Instance>> entity = Entity.entity(instances, MediaType.APPLICATION_JSON);
-        Response response = target("/mock/test-project/instance")
+        Response response = target("/instance")
                 .request()
                 .post(entity);
         
@@ -83,6 +86,8 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     public void testDeleteMissingInstances() throws Exception {
         Instance missingInstance = EntityGenerator.getInstance();
         missingInstance.setId("missing-id");
+        missingInstance.setCloudType(CloudType.MOCK);
+        missingInstance.setProjectId("missing-project");
         deleteInstance(missingInstance);
 
         Thread.sleep(500);
@@ -98,7 +103,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
             }
         };
         Entity<List<Instance>> entity = Entity.entity(instances, MediaType.APPLICATION_JSON_TYPE);
-        Response deleteResponse = target("/mock/test-project/instance/delete")
+        Response deleteResponse = target("/instances/delete")
                 .request()
                 .post(entity);
 
@@ -106,7 +111,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     }
     
     private List<Instance> listInstances() {
-        return target("/mock/test-project/instance/list")
+        return target("/instances")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });

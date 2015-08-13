@@ -8,6 +8,7 @@ import org.meridor.perspective.events.InstanceHardRebootingEvent;
 import org.meridor.perspective.events.InstanceLaunchingEvent;
 import org.meridor.perspective.events.InstanceRebootingEvent;
 import org.meridor.perspective.rest.storage.Destination;
+import org.meridor.perspective.rest.storage.IllegalQueryException;
 import org.meridor.perspective.rest.storage.Producer;
 import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ import static org.meridor.perspective.beans.DestinationName.INSTANCES;
 import static org.meridor.perspective.events.EventFactory.*;
 
 @Component
-@Path("/{cloudType}/{projectId}/instance")
+@Path("/instances")
 public class InstancesResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstancesResource.class);
@@ -38,52 +39,32 @@ public class InstancesResource {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    @Path("/list")
-    public Response getInstances(
-            @PathParam("cloudType") String cloudTypeString,
-            @PathParam("projectId") String projectId
-    ) {
+    public Response getInstances(@QueryParam("query") String query) {
         try {
-            LOG.info("Getting instances list for cloud = {}, projectId = {}", cloudTypeString, projectId);
-            CloudType cloudType = CloudType.fromValue(cloudTypeString);
-            return Response.ok(storage.getInstances(cloudType, projectId)).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            LOG.info("Getting instances list for query = {}", query);
+            return Response.ok(storage.getInstances(Optional.ofNullable(query))).build();
+        } catch (IllegalQueryException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
     
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Path("/{instanceId}")
-    public Response getInstance(
-            @PathParam("cloudType") String cloudTypeString,
-            @PathParam("instanceId") String instanceId
-    ) {
-        try {
-            LOG.info("Getting instance for cloud = {}, instanceId = {}", cloudTypeString, instanceId);
-            CloudType cloudType = CloudType.fromValue(cloudTypeString);
-            Optional<Instance> instance = storage.getInstance(cloudType, instanceId);
-            return instance.isPresent() ?
-                    Response.ok(instance.get()).build() :
-                    Response.status(Response.Status.NOT_FOUND).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+    public Response getInstanceById(@PathParam("instanceId") String instanceId) {
+        LOG.info("Getting instance for instanceId = {}", instanceId);
+        Optional<Instance> instance = storage.getInstance(instanceId);
+        return instance.isPresent() ?
+                Response.ok(instance.get()).build() :
+                Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response launchInstances(
-            @PathParam("cloudType") String cloudTypeString,
-            @PathParam("projectId") String projectId,
-            List<Instance> instances
-    ) {
-        CloudType cloudType = CloudType.fromValue(cloudTypeString);
+    public Response launchInstances(List<Instance> instances) {
         for (Instance instance : instances) {
-            LOG.info("Queuing instance {} for launch in cloud = {}, projectId = {}", instance, cloudTypeString, projectId);
+            LOG.info("Queuing instance {} for launch", instance);
             instance.setId(uuid());
-            instance.setCloudType(cloudType);
-            instance.setProjectId(projectId);
             instance.setCreated(now());
             instance.setStatus(InstanceStatus.QUEUED);
             storage.saveInstance(instance);

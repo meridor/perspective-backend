@@ -11,8 +11,8 @@
 * POST /keypairs - add keypair
 * DELETE /keypairs/$id - delete keypair
 
-### Instances (/instance)
-* GET /list?query - list project instance [+]
+### Instances (/instances)
+* GET /?query - list project instance [+]
 * POST / - launch instance [+]
 * GET /$id - show instance information [+]
 * GET /$id/console - redirect to instance console
