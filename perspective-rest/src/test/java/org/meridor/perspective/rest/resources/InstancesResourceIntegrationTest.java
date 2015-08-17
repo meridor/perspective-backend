@@ -21,7 +21,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     @Test
     public void testList() {
         List<Instance> instances = listInstances();
-        assertThat(instances, hasSize(1));
+        assertThat(instances, hasSize(2));
         assertThat(instances.get(0), equalTo(EntityGenerator.getInstance()));
     }
     
@@ -29,6 +29,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
     public void testMissingList() throws Exception {
         Thread.sleep(500);
         List<Instance> instances = target("/instances")
+                .queryParam("query", "state = 'PAUSED'")
                 .request()
                 .get(new GenericType<List<Instance>>() {
                 });
@@ -61,7 +62,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
         instance.setProjectId("test-project");
         instances.add(instance);
         Entity<List<Instance>> entity = Entity.entity(instances, MediaType.APPLICATION_JSON);
-        Response response = target("/instance")
+        Response response = target("/instances")
                 .request()
                 .post(entity);
         
