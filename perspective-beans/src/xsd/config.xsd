@@ -32,6 +32,7 @@
 
     <xsd:complexType name="cloud">
         <xsd:all>
+            <xsd:element name="id" type="xsd:string" minOccurs="1"/>
             <xsd:element name="name" type="xsd:string" minOccurs="1"/>
             <xsd:element name="type" type="tns:cloudType" minOccurs="1"/>
             <xsd:element name="endpoint" type="xsd:string"/>

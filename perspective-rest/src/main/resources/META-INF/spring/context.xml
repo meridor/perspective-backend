@@ -15,7 +15,7 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
-    <context:component-scan base-package="org.meridor.perspective"/>
+    <context:component-scan base-package="org.meridor.perspective" name-generator="org.meridor.perspective.rest.misc.PerspectiveBeanNameGenerator"/>
     <aop:aspectj-autoproxy/>
     
     <!-- Properties -->

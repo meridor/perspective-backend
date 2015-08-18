@@ -63,26 +63,42 @@ public class CloudConfigurationProvider {
         Clouds clouds = (Clouds) unmarshaller.unmarshal(Files.newInputStream(configurationFilePath));
         clouds.getClouds().stream()
                 .filter(Cloud::isEnabled)
-                .forEach(c -> cloudsMap.put(c.getName(), c));
+                .forEach(c -> cloudsMap.put(c.getId(), c));
     }
     
     private void addMockCloud() {
         CloudType cloudType = CloudType.MOCK;
         Cloud cloud = new Cloud();
         cloud.setType(cloudType);
+        cloud.setId(cloudType.name());
         cloud.setName(cloudType.name());
         cloud.setEnabled(true);
         cloud.setEndpoint("useless");
         cloud.setIdentity("useless");
         cloud.setCredential("useless");
-        cloudsMap.put(cloud.getName(), cloud);
+        cloudsMap.put(cloud.getId(), cloud);
     }
     
-    public Optional<Cloud> getCloud(String cloudName) {
-        return Optional.ofNullable(cloudsMap.get(cloudName));
+    public Cloud getCloud(String cloudId) {
+        if (!cloudsMap.containsKey(cloudId)) {
+            throw new IllegalArgumentException(String.format("Cloud with id = %s does not exist", cloudId)); 
+        }
+        return cloudsMap.get(cloudId);
     }
     
-    public Set<CloudType> getCloudTypes() {
+    public Collection<String> getCloudIds() {
+        return cloudsMap.keySet();
+    }
+    
+    public Collection<Cloud> getCloudsByType(CloudType cloudType) {
+        return cloudsMap.values().stream().filter(c -> c.getType().equals(cloudType)).collect(Collectors.toSet());
+    }
+    
+    public Collection<Cloud> getClouds() {
+        return cloudsMap.values();
+    }
+    
+    public Collection<CloudType> getCloudTypes() {
         return cloudsMap.values().stream().map(Cloud::getType).distinct().collect(Collectors.toSet());
     }
     

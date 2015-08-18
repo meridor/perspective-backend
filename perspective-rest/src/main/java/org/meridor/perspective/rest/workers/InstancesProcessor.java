@@ -44,22 +44,23 @@ public class InstancesProcessor {
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.instances}")
     @IfNotLocked
     public void fetchInstances() {
-        cloudConfigurationProvider.getCloudTypes().forEach(t -> {
-            LOG.debug("Fetching instances list for cloud type {}", t);
+        cloudConfigurationProvider.getClouds().forEach(c -> {
+            LOG.debug("Fetching instances list for cloud type {}", c);
             Set<Instance> instances = new HashSet<>();
             try {
-                if (!operationProcessor.<Set<Instance>>consume(t, OperationType.LIST_INSTANCES, instances::addAll)) {
+                if (!operationProcessor.<Set<Instance>>consume(c, OperationType.LIST_INSTANCES, instances::addAll)) {
                     throw new RuntimeException("Failed to get instances list from the cloud");
                 }
                 for (Instance instance : instances) {
-                    instance.setCloudType(t);
+                    instance.setCloudType(c.getType());
+                    instance.setCloudId(c.getId());
                     InstanceEvent event = instanceToEvent(instance);
                     event.setSync(true);
                     producer.produce(event);
                 }
-                LOG.debug("Saved instances state for cloud {} to queue", t);
+                LOG.debug("Saved instances state for cloud {} to queue", c);
             } catch (Exception e) {
-                LOG.error("Error while fetching instances list for cloud type " + t, e);
+                LOG.error("Error while fetching instances list for cloud type " + c, e);
             }
         });
     }

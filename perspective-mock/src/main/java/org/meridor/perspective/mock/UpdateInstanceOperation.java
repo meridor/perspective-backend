@@ -1,6 +1,7 @@
 package org.meridor.perspective.mock;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class UpdateInstanceOperation {
     private InstancesStorage instances;
     
     @EntryPoint
-    public boolean updateInstances(Supplier<Instance> supplier) throws InterruptedException {
+    public boolean updateInstances(Cloud cloud, Supplier<Instance> supplier) throws InterruptedException {
         Instance instance = supplier.get();
         LOG.debug("Updating instance {}", instance);
         return !instances.add(instance); // We expect that instance is already present in the set

@@ -2,10 +2,12 @@ package org.meridor.perspective.rest.workers;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
 import org.meridor.perspective.events.*;
+import org.meridor.perspective.framework.CloudConfigurationProvider;
 import org.meridor.perspective.rest.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +105,9 @@ public class InstanceFSM {
 
     @Autowired
     private OperationProcessor operationProcessor;
+    
+    @Autowired
+    private CloudConfigurationProvider cloudConfigurationProvider;
 
     @Autowired
     private Storage storage;
@@ -125,9 +130,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceLaunching(InstanceLaunchingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Launching cloud {} instance {}", instance.getCloudType(), instance);
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.LAUNCH_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Launching cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.LAUNCH_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.LAUNCHING);
             storage.saveInstance(instance);
         } else {
@@ -147,9 +153,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceRebooting(InstanceRebootingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Rebooting cloud {} instance {}", instance.getCloudType(), instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.REBOOT_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Rebooting cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.REBOOT_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.REBOOTING);
         } else {
             instance.setErrorReason("Failed to reboot");
@@ -160,9 +167,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceHardRebooting(InstanceHardRebootingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Hard rebooting cloud {} instance {}", instance.getCloudType(), instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.HARD_REBOOT_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Hard rebooting cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.HARD_REBOOT_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.HARD_REBOOTING);
         } else {
             instance.setErrorReason("Failed to hard reboot");
@@ -173,9 +181,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceShuttingDown(InstanceShuttingDownEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Shutting down cloud {} instance {}", instance.getCloudType(), instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.SHUTDOWN_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Shutting down cloud {} instance {}", cloud.getId(), instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.SHUTDOWN_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.SHUTTING_DOWN);
         } else {
             instance.setErrorReason("Failed to shut down");
@@ -187,7 +196,7 @@ public class InstanceFSM {
     public void onInstanceShutoff(InstanceShutOffEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as shutoff", instance.getCloudType(), instance.getId());
+            LOG.debug("Marking cloud {} instance {} as shutoff", instance.getCloudId(), instance.getId());
             instance.setState(InstanceState.SHUTOFF);
             storage.saveInstance(instance);
         }
@@ -195,9 +204,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstancePausing(InstancePausingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Pausing cloud {} instance {}", cloudType, instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.PAUSE_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Pausing cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.PAUSE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.PAUSING);
         } else {
             instance.setErrorReason("Failed to pause");
@@ -209,7 +219,7 @@ public class InstanceFSM {
     public void onInstancePaused(InstancePausedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as paused", instance.getCloudType(), instance.getId());
+            LOG.debug("Marking cloud {} instance {} as paused", instance.getCloudId(), instance.getId());
             instance.setState(InstanceState.PAUSED);
             storage.saveInstance(instance);
         }
@@ -218,9 +228,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceResuming(InstanceResumingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Resuming cloud {} instance {}", cloudType, instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.RESUME_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Resuming cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.RESUME_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.RESUMING);
         } else {
             instance.setErrorReason("Failed to resume");
@@ -231,9 +242,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceRebuilding(InstanceRebuildingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Rebuilding cloud {} instance {}", cloudType, instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.REBUILD_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Rebuilding cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.REBUILD_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.REBUILDING);
         } else {
             instance.setErrorReason("Failed to rebuild");
@@ -244,9 +256,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceResizing(InstanceResizingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Resizing cloud {} instance {}", cloudType, instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.RESIZE_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Resizing cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.RESIZE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.RESIZING);
         } else {
             instance.setErrorReason("Failed to resize");
@@ -257,9 +270,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceSuspending(InstanceSuspendingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Suspending cloud {} instance {}", instance.getCloudType(), instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.SUSPEND_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Suspending cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.SUSPEND_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.SUSPENDING);
         } else {
             instance.setErrorReason("Failed to suspend");
@@ -280,9 +294,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceMigrating(InstanceMigratingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Migrating cloud {} instance {}", cloudType, instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloudType, OperationType.MIGRATE_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Migrating cloud {} instance {}", cloudId, instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.MIGRATE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.MIGRATING);
         } else {
             instance.setErrorReason("Failed to migrate");
@@ -293,10 +308,11 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceDeleting(InstanceDeletingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
         if (storage.instanceExists(instance)) {
-            LOG.info("Deleting cloud {} instance {}", cloudType, instance.getId());
-            if (event.isSync() || operationProcessor.supply(cloudType, OperationType.DELETE_INSTANCE, () -> instance)) {
+            LOG.info("Deleting cloud {} instance {}", cloudId, instance.getId());
+            if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
                 storage.deleteInstance(instance);
             } else {
                 throw new InstanceException("Failed to delete", instance);
@@ -309,9 +325,10 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceSnapshotting(InstanceSnapshottingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        CloudType cloudType = instance.getCloudType();
-        LOG.info("Taking cloud {} instance {} snapshot", cloudType, instance.getId());
-        if (operationProcessor.supply(cloudType, OperationType.SNAPSHOT_INSTANCE, () -> instance)) {
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Taking cloud {} instance {} snapshot", cloudId, instance.getId());
+        if (operationProcessor.supply(cloud, OperationType.SNAPSHOT_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.SNAPSHOTTING);
         } else {
             instance.setErrorReason("Failed to take snapshot");
@@ -322,7 +339,7 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceError(InstanceErrorEvent event) {
         Instance instance = event.getInstance();
-        LOG.info("Changing cloud {} instance {} status to error", instance.getCloudType(), instance.getId());
+        LOG.info("Changing cloud {} instance {} status to error", instance.getCloudId(), instance.getId());
         instance.setState(InstanceState.ERROR);
         instance.setErrorReason(event.getErrorReason());
         storage.saveInstance(instance);

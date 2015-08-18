@@ -161,6 +161,7 @@
         <xsd:all>
             <xsd:element name="id" type="xsd:string"/>
             <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="cloudId" type="xsd:string"/>
             <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
             <xsd:element name="flavors" type="tns:flavors"/>
@@ -207,6 +208,7 @@
             <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
             <xsd:element name="created" type="xsd:dateTime"/>
+            <xsd:element name="cloudId" type="xsd:string"/>
             <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="projectId" type="tns:uuid" minOccurs="1"/>
             <xsd:element name="name" type="xsd:string"/>

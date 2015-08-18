@@ -10,11 +10,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>perspective-openstack</artifactId>
+    <name>Perspective Openstack Operations</name>
 
     <dependencies>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jclouds.api</groupId>
+            <artifactId>openstack-nova</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jclouds.driver</groupId>
+            <artifactId>jclouds-slf4j</artifactId>
         </dependency>
     </dependencies>
 

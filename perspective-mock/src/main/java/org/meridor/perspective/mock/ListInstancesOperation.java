@@ -1,6 +1,7 @@
 package org.meridor.perspective.mock;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class ListInstancesOperation {
     private InstancesStorage instances;
     
     @EntryPoint
-    public boolean listInstances(Consumer<Set<Instance>> consumer) {
+    public boolean listInstances(Cloud cloud, Consumer<Set<Instance>> consumer) {
         consumer.accept(instances);
         return true;
     }

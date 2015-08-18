@@ -1,5 +1,6 @@
 package org.meridor.perspective.engine.impl;
 
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationProcessor;
@@ -17,22 +18,23 @@ public class OperationProcessorImpl implements OperationProcessor {
     private OperationsAware operationsAware;
     
     @Override
-    public <T> boolean consume(CloudType cloudType, OperationType operationType, Consumer<T> consumer) throws Exception {
-        doChecks(cloudType, operationType, consumer);
-        return operationsAware.consume(cloudType, operationType, consumer);
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
+        doChecks(cloud, operationType, consumer);
+        return operationsAware.consume(cloud, operationType, consumer);
     }
 
     @Override
-    public <T> boolean supply(CloudType cloudType, OperationType operationType, Supplier<T> supplier) throws Exception {
-        doChecks(cloudType, operationType, supplier);
-        return operationsAware.supply(cloudType, operationType, supplier);
+    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
+        doChecks(cloud, operationType, supplier);
+        return operationsAware.supply(cloud, operationType, supplier);
     }
     
-    private void doChecks(CloudType cloudType, OperationType operationType, Object consumerOrProducer) {
+    private void doChecks(Cloud cloud, OperationType operationType, Object consumerOrProducer) {
         if (consumerOrProducer == null) {
             throw new IllegalArgumentException("Consumer or producer can't be null");
         }
 
+        CloudType cloudType = cloud.getType();
         if (!operationsAware.isOperationSupported(cloudType, operationType)) {
             throw new UnsupportedOperationException(String.format("No operation %s defined for cloud %s", operationType, cloudType));
         }

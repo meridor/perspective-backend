@@ -1,5 +1,6 @@
 package org.meridor.perspective.engine.impl;
 
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.engine.OperationsAware;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -85,10 +85,19 @@ public class OperationsAwareImpl implements OperationsAware {
     private Optional<Method> getOperationMethod(Object bean) {
         return Arrays
                 .stream(bean.getClass().getMethods())
-                .filter(m -> m.isAnnotationPresent(EntryPoint.class) && m.getParameterCount() == 1)
+                .filter(this::isOperationMethodValid)
                 .findFirst();
     }
-
+    
+    private boolean isOperationMethodValid(Method method) {
+        Class<?> cloudClass = method.getParameters()[0].getType();
+        Class<?> consumerOsSupplierClass = method.getParameters()[1].getType();
+        boolean cloudClassCorrect = Cloud.class.isAssignableFrom(cloudClass);
+        boolean consumerSupplierClassCorrect = 
+                Consumer.class.isAssignableFrom(consumerOsSupplierClass) || Supplier.class.isAssignableFrom(consumerOsSupplierClass);
+        return method.isAnnotationPresent(EntryPoint.class) && method.getParameterCount() == 2 && cloudClassCorrect && consumerSupplierClassCorrect;
+    }
+    
     @Override
     public boolean isOperationSupported(CloudType cloudType, OperationType operationType) {
         OperationId operationId = getOperationId(cloudType, operationType);
@@ -96,34 +105,24 @@ public class OperationsAwareImpl implements OperationsAware {
     }
 
     @Override
-    public <T> boolean consume(CloudType cloudType, OperationType operationType, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloudType, OperationType operationType, Consumer<T> consumer) throws Exception {
         return doAct(cloudType, operationType, consumer);
     }
     
     @Override
-    public <T> boolean supply(CloudType cloudType, OperationType operationType, Supplier<T> supplier) throws Exception {
-        return doAct(cloudType, operationType, supplier);
+    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
+        return doAct(cloud, operationType, supplier);
     }
 
-    private boolean doAct(CloudType cloudType, OperationType operationType, Object consumerOrSupplier) throws Exception {
-        OperationId operationId = getOperationId(cloudType, operationType);
+    private boolean doAct(Cloud cloud, OperationType operationType, Object consumerOrSupplier) throws Exception {
+        OperationId operationId = getOperationId(cloud.getType(), operationType);
         Object operationInstance = operationInstances.get(operationId);
         Method method = operationMethods.get(operationId);
-        Class<?> parameterClass = method.getParameters()[0].getType();
-        if (!Consumer.class.isAssignableFrom(parameterClass) && !Supplier.class.isAssignableFrom(parameterClass)) {
-            throw new UnsupportedOperationException(String.format(
-                    "Operation class entry point should have one parameter of Consumer<T> or Supplier<T> type. However for cloud %s operation %s this type is %s",
-                    cloudType,
-                    operationType,
-                    parameterClass.getClass().getCanonicalName()
-            ));
-        }
-
         Class<?> booleanClass = ClassUtils.forName("boolean", null);
         if (method.getReturnType().equals(booleanClass)) {
-            return (boolean) method.invoke(operationInstance, consumerOrSupplier);
+            return (boolean) method.invoke(operationInstance, cloud, consumerOrSupplier);
         }
-        method.invoke(operationInstance, consumerOrSupplier);
+        method.invoke(operationInstance, cloud, consumerOrSupplier);
         return true;
     }
 

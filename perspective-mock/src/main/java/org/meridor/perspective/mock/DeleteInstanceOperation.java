@@ -1,6 +1,7 @@
 package org.meridor.perspective.mock;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.framework.EntryPoint;
 import org.meridor.perspective.framework.Operation;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class DeleteInstanceOperation {
     private InstancesStorage instances;
     
     @EntryPoint
-    public boolean deleteInstance(Supplier<Instance> supplier) {
+    public boolean deleteInstance(Cloud cloud, Supplier<Instance> supplier) {
         Instance instance = supplier.get();
         LOG.debug("Deleting instance {}", instance);
         return instances.remove(instance);

@@ -38,21 +38,22 @@ public class ProjectsProcessor {
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.projects}")
     @IfNotLocked
     public void fetchProjects() {
-        cloudConfigurationProvider.getCloudTypes().forEach(t -> {
-            LOG.debug("Fetching projects list for cloud type {}", t);
+        cloudConfigurationProvider.getClouds().forEach(c -> {
+            LOG.debug("Fetching projects list for cloud type {}", c);
             try {
                 Set<Project> projects = new HashSet<>();
-                if (!operationProcessor.<Set<Project>>consume(t, OperationType.LIST_PROJECTS, projects::addAll)) {
+                if (!operationProcessor.<Set<Project>>consume(c, OperationType.LIST_PROJECTS, projects::addAll)) {
                     throw new RuntimeException("Failed to get projects list from the cloud");
                 }
                 for (Project project : projects) {
-                    project.setCloudType(t);
+                    project.setCloudId(c.getId());
+                    project.setCloudType(c.getType());
                     ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
                     producer.produce(event);
                 }
-                LOG.debug("Saved projects for cloud type {} to queue", t);
+                LOG.debug("Saved projects for cloud type {} to queue", c);
             } catch (Exception e) {
-                LOG.error("Error while fetching projects list for cloud " + t, e);
+                LOG.error("Error while fetching projects list for cloud " + c, e);
             }
         });
     }
