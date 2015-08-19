@@ -5,6 +5,7 @@
         xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
         xmlns:equals="http://jaxb2-commons.dev.java.net/basic/equals"
         xmlns:hashCode="http://jaxb2-commons.dev.java.net/basic/hashCode"
+        xmlns:toString="http://jaxb2-commons.dev.java.net/basic/toString"
         version="2.1">
 
     <jaxb:globalBindings>
@@ -111,6 +112,16 @@
                 <jaxb:bindings node="./xsd:element[@name='name']">
                     <equals:ignored/>
                     <hashCode:ignored/>
+                </jaxb:bindings>
+            </jaxb:bindings>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="config.xsd">
+        <jaxb:bindings node="/xsd:schema">
+            <jaxb:bindings node="./xsd:complexType[@name='cloud']/xsd:all">
+                <jaxb:bindings node="./xsd:element[@name='credential']">
+                    <toString:ignored/>
                 </jaxb:bindings>
             </jaxb:bindings>
         </jaxb:bindings>

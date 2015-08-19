@@ -175,6 +175,17 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.apache.jclouds.labs</groupId>
+                <artifactId>openstack-neutron</artifactId>
+                <version>${jclouds.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.ws.rs</groupId>
+                        <artifactId>jsr311-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             
             <!-- Misc -->
             <dependency>
