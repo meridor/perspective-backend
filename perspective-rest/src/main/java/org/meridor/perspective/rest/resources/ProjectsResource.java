@@ -1,7 +1,7 @@
 package org.meridor.perspective.rest.resources;
 
-import org.meridor.perspective.rest.storage.IllegalQueryException;
-import org.meridor.perspective.rest.storage.Storage;
+import org.meridor.perspective.framework.storage.IllegalQueryException;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +20,19 @@ import java.util.Optional;
 public class ProjectsResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsResource.class);
-    
+
     @Autowired
-    private Storage storage;
+    private ProjectsAware storage;
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getProjects(@QueryParam("query") String query) {
         try {
-            LOG.info("Getting projects list");
+            LOG.info("Getting projects list for query = {}", query);
             return Response.ok(storage.getProjects(Optional.ofNullable(query))).build();
         } catch (IllegalQueryException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
-    
+
 }

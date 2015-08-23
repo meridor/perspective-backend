@@ -8,6 +8,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="mock"/>
             <xsd:enumeration value="openstack"/>
+            <xsd:enumeration value="docker"/>
         </xsd:restriction>
     </xsd:simpleType>
 
@@ -34,11 +35,10 @@
         <xsd:all>
             <xsd:element name="id" type="xsd:string" minOccurs="1"/>
             <xsd:element name="name" type="xsd:string" minOccurs="1"/>
-            <xsd:element name="type" type="tns:cloudType" minOccurs="1"/>
             <xsd:element name="endpoint" type="xsd:string"/>
             <xsd:element name="identity" type="xsd:string"/>
             <xsd:element name="credential" type="xsd:string"/>
-            <xsd:element name="enabled" type="xsd:boolean" default="true"/>
+            <xsd:element name="enabled" type="xsd:boolean" minOccurs="0" default="true"/>
         </xsd:all>
     </xsd:complexType>
 
@@ -50,5 +50,5 @@
     </xsd:complexType>
 
     <xsd:element name="clouds" type="tns:clouds"/>
-    
+
 </xsd:schema>

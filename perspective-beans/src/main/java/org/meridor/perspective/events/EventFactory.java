@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public final class EventFactory {
-    
+
     public static <T extends InstanceEvent> T instanceEvent(Class<T> eventClass, Instance instance) {
         try {
             T event = eventClass.newInstance();
@@ -22,7 +22,7 @@ public final class EventFactory {
             throw new RuntimeException(e);
         }
     }
-    
+
     public static InstanceEvent instanceToEvent(Instance instance) {
         InstanceState instanceState = instance.getState();
         InstanceEvent event = stateToEvent(instanceState);
@@ -31,30 +31,47 @@ public final class EventFactory {
         event.setTimestamp(now());
         return event;
     }
-    
+
     private static InstanceEvent stateToEvent(InstanceState instanceState) {
         if (instanceState == null) {
             throw new IllegalArgumentException("Instance status can't be null");
         }
         switch (instanceState) {
-            case DELETING: return new InstanceDeletingEvent();
-            case ERROR: return new InstanceErrorEvent();
-            case HARD_REBOOTING: return new InstanceHardRebootingEvent();
-            case LAUNCHED: return new InstanceLaunchedEvent();
-            case LAUNCHING: return new InstanceLaunchingEvent();
-            case MIGRATING: return new InstanceMigratingEvent();
+            case DELETING:
+                return new InstanceDeletingEvent();
+            case ERROR:
+                return new InstanceErrorEvent();
+            case HARD_REBOOTING:
+                return new InstanceHardRebootingEvent();
+            case LAUNCHED:
+                return new InstanceLaunchedEvent();
+            case LAUNCHING:
+                return new InstanceLaunchingEvent();
+            case MIGRATING:
+                return new InstanceMigratingEvent();
             default:
-            case PAUSED: return new InstancePausedEvent();
-            case PAUSING: return new InstancePausingEvent();
-            case QUEUED: return new InstanceQueuedEvent();
-            case REBOOTING: return new InstanceRebootingEvent();
-            case REBUILDING: return new InstanceRebuildingEvent();
-            case RESIZING: return new InstanceResizingEvent();
-            case SHUTOFF: return new InstanceShutOffEvent();
-            case SHUTTING_DOWN: return new InstanceShuttingDownEvent();
-            case SNAPSHOTTING: return new InstanceSnapshottingEvent();
-            case SUSPENDING: return new InstanceSuspendingEvent();
-            case SUSPENDED: return new InstanceSuspendedEvent();
+            case PAUSED:
+                return new InstancePausedEvent();
+            case PAUSING:
+                return new InstancePausingEvent();
+            case QUEUED:
+                return new InstanceQueuedEvent();
+            case REBOOTING:
+                return new InstanceRebootingEvent();
+            case REBUILDING:
+                return new InstanceRebuildingEvent();
+            case RESIZING:
+                return new InstanceResizingEvent();
+            case SHUTOFF:
+                return new InstanceShutOffEvent();
+            case SHUTTING_DOWN:
+                return new InstanceShuttingDownEvent();
+            case SNAPSHOTTING:
+                return new InstanceSnapshottingEvent();
+            case SUSPENDING:
+                return new InstanceSuspendingEvent();
+            case SUSPENDED:
+                return new InstanceSuspendedEvent();
         }
     }
 
@@ -80,5 +97,6 @@ public final class EventFactory {
         return ZonedDateTime.now();
     }
 
-    private EventFactory(){}
+    private EventFactory() {
+    }
 }

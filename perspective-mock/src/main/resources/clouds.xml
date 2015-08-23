@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<clouds xmlns="urn:config.perspective.meridor.org">
+    <cloud>
+        <id>mock</id>
+        <name>mock</name>
+        <endpoint>useless</endpoint>
+        <identity>useless</identity>
+        <credential>useless</credential>
+        <enabled>true</enabled>
+    </cloud>
+</clouds>

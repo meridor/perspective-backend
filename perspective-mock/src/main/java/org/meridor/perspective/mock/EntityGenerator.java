@@ -3,8 +3,6 @@ package org.meridor.perspective.mock;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 
-import java.time.ZonedDateTime;
-
 import static org.meridor.perspective.events.EventFactory.now;
 
 public class EntityGenerator {
@@ -42,7 +40,7 @@ public class EntityGenerator {
         network.getSubnets().add("5.255.210.0/24");
         return network;
     }
-    
+
     public static Image getImage() {
         Image image = new Image();
         image.setId("test-image");
@@ -50,7 +48,7 @@ public class EntityGenerator {
         image.setIsProtected(true);
         return image;
     }
-    
+
     public static Instance getInstance() {
         Instance instance = new Instance();
         instance.setId("test-instance");
@@ -65,7 +63,7 @@ public class EntityGenerator {
         instance.setAvailabilityZone(getAvailabilityZone());
         return instance;
     }
-    
+
     public static Instance getErrorInstance() {
         Instance instance = getInstance();
         instance.setTimestamp(now().minusDays(3));

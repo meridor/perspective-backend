@@ -20,14 +20,14 @@ public abstract class BaseIntegrationTest extends JerseyTest {
     protected <T> T getBean(Class<T> beanClass) {
         return getBean(null, beanClass);
     }
-    
+
     protected <T> T getBean(String beanName, Class<T> beanClass) {
         BeanFactory beanFactory = ContextLoader
                 .getCurrentWebApplicationContext()
                 .getAutowireCapableBeanFactory();
-                return (beanName != null) ?
-                        beanFactory.getBean(beanName, beanClass) :
-                        beanFactory.getBean(beanClass);
+        return (beanName != null) ?
+                beanFactory.getBean(beanName, beanClass) :
+                beanFactory.getBean(beanClass);
     }
 
 }

@@ -15,5 +15,5 @@ public class InstancesStorage extends HashSet<Instance> {
         add(getInstance());
         add(getErrorInstance());
     }
-    
+
 }

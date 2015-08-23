@@ -12,8 +12,8 @@ import org.jclouds.openstack.nova.v2_0.features.FlavorApi;
 import org.meridor.perspective.beans.AvailabilityZone;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.framework.EntryPoint;
-import org.meridor.perspective.framework.Operation;
+import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,51 +21,52 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.meridor.perspective.config.CloudType.OPENSTACK;
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 
 @Component
-@Operation(cloud = OPENSTACK, type = LIST_PROJECTS)
-public class ListProjectsOperation {
-    
+public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
+
     private static Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
-    
+
     @Autowired
     private OpenstackApiProvider apiProvider;
-    
-    @EntryPoint
-    public void listProjects(Cloud cloud, Consumer<Set<Project>> consumer) {
-        
+
+    @Override
+    public boolean perform(Cloud cloud, Consumer<Set<Project>> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud); NeutronApi neutronApi = apiProvider.getNeutronApi(cloud)) {
             Set<Project> projects = new HashSet<>();
             for (String region : novaApi.getConfiguredRegions()) {
                 Project project = createProject(cloud, region);
-                
+
                 FlavorApi flavorApi = novaApi.getFlavorApi(region);
                 addFlavors(project, flavorApi);
 
                 NetworkApi networkApi = neutronApi.getNetworkApi(region);
                 addNetworks(project, networkApi);
-                
+
 //                Optional<AvailabilityZoneApi> availabilityZoneApi = novaApi.getAvailabilityZoneApi(region);
 //                if (availabilityZoneApi.isPresent()) {
 //                    addAvailabilityZones(availabilityZoneApi.get(), project);
 //                }
-                
+
                 projects.add(project);
             }
             LOG.debug("Fetched {} projects from Openstack API", projects.size());
             consumer.accept(projects);
+            return true;
         } catch (IOException e) {
             LOG.error("Failed to fetch projects", e);
-            consumer.accept(Collections.emptySet());
+            return false;
         }
-        
+    }
+
+    @Override
+    public OperationType[] getTypes() {
+        return new OperationType[]{LIST_PROJECTS};
     }
 
     private Project createProject(Cloud cloud, String region) {
@@ -76,7 +77,7 @@ public class ListProjectsOperation {
         project.setTimestamp(ZonedDateTime.now());
         return project;
     }
-    
+
     private void addFlavors(Project project, FlavorApi flavorApi) {
         for (Flavor flavor : flavorApi.listInDetail().concat()) {
             org.meridor.perspective.beans.Flavor flavorToAdd = new org.meridor.perspective.beans.Flavor();
@@ -92,7 +93,7 @@ public class ListProjectsOperation {
             project.getFlavors().add(flavorToAdd);
         }
     }
-    
+
     private void addNetworks(Project project, NetworkApi networkApi) {
         for (Network network : networkApi.list().concat()) {
             org.meridor.perspective.beans.Network networkToAdd = new org.meridor.perspective.beans.Network();
@@ -106,7 +107,7 @@ public class ListProjectsOperation {
             project.getNetworks().add(networkToAdd);
         }
     }
-    
+
     private void addAvailabilityZones(AvailabilityZoneApi availabilityZoneApi, Project project) {
         for (AvailabilityZoneDetails az : availabilityZoneApi.listInDetail()) {
             AvailabilityZone availabilityZone = new AvailabilityZone();
@@ -114,5 +115,5 @@ public class ListProjectsOperation {
             project.getAvailabilityZones().add(availabilityZone);
         }
     }
-    
+
 }

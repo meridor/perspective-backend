@@ -9,7 +9,7 @@
         version="2.1">
 
     <jaxb:globalBindings>
-        <jaxb:javaType 
+        <jaxb:javaType
                 name="java.time.ZonedDateTime"
                 xmlType="xsd:dateTime"
                 parseMethod="org.meridor.perspective.beans.DateTimeAdapter.parseDate"

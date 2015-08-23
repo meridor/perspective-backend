@@ -4,7 +4,7 @@
             xmlns:beans="urn:beans.perspective.meridor.org"
             targetNamespace="urn:events.perspective.meridor.org"
             elementFormDefault="qualified">
-    
+
     <xsd:import schemaLocation="beans.xsd" namespace="urn:beans.perspective.meridor.org"/>
 
 
@@ -15,13 +15,14 @@
             <xsd:element name="sync" type="xsd:boolean">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Whether this is a sync event, i.e. we don't need to do calls to cloud API and should only synchronize storage state.
+                        Whether this is a sync event, i.e. we don't need to do calls to cloud API and should only
+                        synchronize storage state.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <!-- Projects events -->
     <xsd:complexType name="projectEvent" abstract="true">
         <xsd:complexContent>
@@ -38,7 +39,7 @@
             <xsd:extension base="events:projectEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <!-- Instances events -->
     <xsd:complexType name="instanceEvent" abstract="true">
         <xsd:complexContent>
@@ -55,7 +56,7 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceErrorEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent">
@@ -77,13 +78,13 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceLaunchingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceMigratingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
@@ -101,7 +102,7 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instancePausingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
@@ -113,19 +114,19 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceRebootingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceRebuildingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceResizingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
@@ -143,29 +144,29 @@
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceShuttingDownEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceSnapshottingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceSuspendingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="instanceSuspendedEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
 </xsd:schema>

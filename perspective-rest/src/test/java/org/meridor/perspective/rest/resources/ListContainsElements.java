@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ListContainsElements<T> extends TypeSafeMatcher<List<T>> {
-    
+
     private final Predicate<T> predicate;
 
     public ListContainsElements(Predicate<T> predicate) {
@@ -25,7 +25,7 @@ public class ListContainsElements<T> extends TypeSafeMatcher<List<T>> {
     public void describeTo(Description description) {
         description.appendText("matches given predicate");
     }
-    
+
     public static <T> Matcher<List<T>> containsElements(Predicate<T> predicate) {
         return new ListContainsElements<T>(predicate);
     }

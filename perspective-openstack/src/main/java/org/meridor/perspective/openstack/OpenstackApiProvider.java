@@ -8,21 +8,21 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OpenstackApiProvider {
-    
+
     //TODO: probably implement API pooling
-    
+
     public NovaApi getNovaApi(Cloud cloud) {
         return ContextBuilder.newBuilder("openstack-nova")
                 .endpoint(cloud.getEndpoint())
                 .credentials(cloud.getIdentity(), cloud.getCredential())
                 .buildApi(NovaApi.class);
     }
-    
+
     public NeutronApi getNeutronApi(Cloud cloud) {
         return ContextBuilder.newBuilder("openstack-neutron")
                 .endpoint(cloud.getEndpoint())
                 .credentials(cloud.getIdentity(), cloud.getCredential())
                 .buildApi(NeutronApi.class);
     }
-    
+
 }
