@@ -13,11 +13,7 @@
 
     <name>Perspective Backend REST API</name>
     <description>REST API for Perspective</description>
-
-    <properties>
-        <jersey.version>2.21</jersey.version>
-    </properties>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -68,6 +64,66 @@
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <!-- TODO: this one is expected to produce Swagger JSON file -->
+            <!--<plugin>-->
+                <!--<groupId>com.sebastian-daschner</groupId>-->
+                <!--<artifactId>jaxrs-analyzer-maven-plugin</artifactId>-->
+                <!--<version>0.8-SNAPSHOT</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<goals>-->
+                            <!--<goal>analyze-jaxrs</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<backend>swagger</backend>-->
+                            <!--<deployedDomain>localhost</deployedDomain>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+            <plugin>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>maven-wadl-plugin</artifactId>
+                <version>1.19</version>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <wadlFile>${project.build.outputDirectory}/application.wadl
+                    </wadlFile>
+                    <formatWadlFile>true</formatWadlFile>
+                    <baseUri>http://localhost:8080/</baseUri>
+                    <packagesResourceConfig>
+                        <param>org.meridor.perspective.rest.resources</param>
+                    </packagesResourceConfig>
+                    <wadlGenerators>
+                        <wadlGeneratorDescription>
+                            <className>com.sun.jersey.server.wadl.generators.WadlGeneratorGrammarsSupport
+                            </className>
+                            <properties>
+                                <property>
+                                    <name>grammarsFile</name>
+                                    <value>${project.basedir}/src/wadl/application-grammars.xml</value>
+                                </property>
+                            </properties>
+                        </wadlGeneratorDescription>
+                    </wadlGenerators>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                        <version>2.11.0</version>
+                        <!--<scope>test</scope>-->
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

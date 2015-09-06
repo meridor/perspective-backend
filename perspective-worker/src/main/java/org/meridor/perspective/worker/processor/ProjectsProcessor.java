@@ -1,5 +1,6 @@
 package org.meridor.perspective.worker.processor;
 
+import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.events.ProjectEvent;
 import org.meridor.perspective.events.ProjectSyncEvent;
 import org.meridor.perspective.framework.messaging.Message;
@@ -25,7 +26,9 @@ public class ProjectsProcessor implements Processor {
         LOG.trace("Processing message {}", message.getId());
         Optional<ProjectEvent> projectEvent = message.getPayload(ProjectEvent.class);
         if (projectEvent.isPresent() && projectEvent.get() instanceof ProjectSyncEvent) {
-            storage.saveProject(projectEvent.get().getProject());
+            Project project = projectEvent.get().getProject();
+            LOG.info("Syncing project state for project {}", project.getId());
+            storage.saveProject(project);
         } else {
             LOG.error("Skipping empty message {}", message.getId());
         }

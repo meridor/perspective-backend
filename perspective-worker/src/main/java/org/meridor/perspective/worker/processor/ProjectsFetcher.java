@@ -44,7 +44,7 @@ public class ProjectsFetcher {
     @IfNotLocked
     public void fetchProjects() {
         cloudConfigurationProvider.getClouds().forEach(c -> {
-            LOG.debug("Fetching projects list for cloud {}", c.getName());
+            LOG.info("Fetching projects list for cloud {}", c.getName());
             try {
                 Set<Project> projects = new HashSet<>();
                 if (!operationProcessor.<Set<Project>>consume(c, OperationType.LIST_PROJECTS, projects::addAll)) {

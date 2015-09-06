@@ -26,10 +26,12 @@
         <mockito.version>1.9.5</mockito.version>
         <stecker.version>1.0.1</stecker.version>
         <spring.version>4.2.0.RELEASE</spring.version>
+        <spring-shell.version>1.1.0.RELEASE</spring-shell.version>
         <hazelcast.version>3.5.1</hazelcast.version>
         <aspectj.version>1.8.5</aspectj.version>
         <yatomata.version>1.7</yatomata.version>
         <jclouds.version>1.9.1</jclouds.version>
+        <jersey.version>2.21</jersey.version>
     </properties>
 
     <modules>
@@ -41,6 +43,8 @@
         <module>perspective-docker</module>
         <module>perspective-worker</module>
         <module>perspective-storage</module>
+        <module>perspective-shell</module>
+        <module>perspective-java-client</module>
     </modules>
 
     <dependencyManagement>
@@ -70,6 +74,11 @@
             <dependency>
                 <groupId>org.meridor.perspective</groupId>
                 <artifactId>perspective-mock</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.meridor.perspective</groupId>
+                <artifactId>perspective-java-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

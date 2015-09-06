@@ -44,7 +44,7 @@ public class InstancesFetcher {
     @IfNotLocked
     public void fetchInstances() {
         cloudConfigurationProvider.getClouds().forEach(c -> {
-            LOG.debug("Fetching instances list for cloud {}", c.getName());
+            LOG.info("Fetching instances list for cloud {}", c.getName());
             Set<Instance> instances = new HashSet<>();
             try {
                 if (!operationProcessor.<Set<Instance>>consume(c, OperationType.LIST_INSTANCES, instances::addAll)) {

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ -z "$PERSPECTIVE_HOME" ]; then
+
+    SOURCE="${BASH_SOURCE[0]}"
+    while [ -h "$SOURCE" ]; do
+        DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+        SOURCE="$(readlink "$SOURCE")"
+        [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+    done
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    PERSPECTIVE_HOME="$DIR/.."
+
+fi
+
+PERSPECTIVE_SHELL_JAR="$PERSPECTIVE_HOME/lib/allure-cli.jar"
+
+if [ ! -f "$PERSPECTIVE_SHELL_JAR" ]; then
+
+    echo "$PERSPECTIVE_HOME: is not a valid Perspective home directory"
+    exit 1
+
+fi
+
+java -jar ${PERSPECTIVE_SHELL_JAR} $@

@@ -11,8 +11,9 @@ public class Storage {
 
     public static void main(String[] args) {
         LOG.info("Starting storage");
-        AbstractApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/context.xml");
-        context.start();
+        AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext("META-INF/spring/context.xml");
+        applicationContext.registerShutdownHook();
+        applicationContext.start();
     }
 
 }

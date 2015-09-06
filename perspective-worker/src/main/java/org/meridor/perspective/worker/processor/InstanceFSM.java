@@ -144,7 +144,7 @@ public class InstanceFSM {
     public void onInstanceLaunched(InstanceLaunchedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as launched", instance.getCloudType(), instance.getId());
+            LOG.info("Marking cloud {} instance {} as launched", instance.getCloudType(), instance.getId());
             instance.setState(InstanceState.LAUNCHED);
             storage.saveInstance(instance);
         }
@@ -196,7 +196,7 @@ public class InstanceFSM {
     public void onInstanceShutoff(InstanceShutOffEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as shutoff", instance.getCloudId(), instance.getId());
+            LOG.info("Marking cloud {} instance {} as shutoff", instance.getCloudId(), instance.getId());
             instance.setState(InstanceState.SHUTOFF);
             storage.saveInstance(instance);
         }
@@ -220,7 +220,7 @@ public class InstanceFSM {
     public void onInstancePaused(InstancePausedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as paused", instance.getCloudId(), instance.getId());
+            LOG.info("Marking cloud {} instance {} as paused", instance.getCloudId(), instance.getId());
             instance.setState(InstanceState.PAUSED);
             storage.saveInstance(instance);
         }
@@ -286,7 +286,7 @@ public class InstanceFSM {
     public void onInstanceSuspended(InstanceSuspendedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as suspended", instance.getCloudType(), instance.getId());
+            LOG.info("Marking cloud {} instance {} as suspended", instance.getCloudType(), instance.getId());
             instance.setState(InstanceState.SUSPENDED);
             storage.saveInstance(instance);
         }

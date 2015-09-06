@@ -12,6 +12,7 @@ public class Worker {
     public static void main(String[] args) {
         LOG.info("Starting worker process");
         AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext("META-INF/spring/context.xml");
+        applicationContext.registerShutdownHook();
         applicationContext.start();
     }
 
