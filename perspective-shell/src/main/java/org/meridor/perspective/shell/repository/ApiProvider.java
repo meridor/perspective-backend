@@ -1,8 +1,8 @@
-package org.meridor.perspective.shell.client;
+package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.client.Perspective;
-import org.meridor.perspective.shell.misc.ShellException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
@@ -18,8 +18,18 @@ public class ApiProvider {
         try {
             return Perspective.projects(Perspective.createClient(), new URI(baseUrl));
         } catch (URISyntaxException e) {
-            throw new ShellException("Failed to fetch projects", e);
+            throw new ShellException(String.format("Wrong base URL: %s", baseUrl), e);
         }
     }
+    
+    public Perspective.Instances getInstancesApi() {
+        try {
+            return Perspective.instances(Perspective.createClient(), new URI(baseUrl));
+        } catch (URISyntaxException e) {
+            throw new ShellException(String.format("Wrong base URL: %s", baseUrl), e);
+        }
+    }
+    
+    
     
 }

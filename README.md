@@ -40,6 +40,46 @@
 * PUT /image?query - modify images
 * DELETE /image?query - delete images
 
+
+## Shell
+
+### Generic show commands
+* show projects [+]
+* show networks [+]
+* show instances
+* show images
+* show flavors [+]
+* show networks [+]
+
+### Add commands
+* add instances
+* add images
+
+### Delete commands
+* delete instances
+* delete images
+
+### Set commands
+Filters - e.g. ```set project test-project```
+Settings - e.g. ```set log_file /var/log/shell.log```
+* set key1 = value1, value2, value3; key2 = value3, value4 [+]
+* unset key1 ; key2 [+]
+* show settings [+]
+* show filters [+]
+
+### Groups commands
+E.g. error, active, running and stopped instances.
+* define group where <predicate> 
+* show group <name>
+* show groups
+
+### SQL statements
+* show tables
+* select ...
+* insert ...
+* delete ...
+* show columns <table>
+
 # Преимущества Perspective по сравнению со стандартным Openstack API
 
 * Очень быстрое асинхронное API (за счет кеширования в память определенной информации наподобие списка флаворов, сетей и т.п.)

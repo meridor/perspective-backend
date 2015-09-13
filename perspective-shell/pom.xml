@@ -36,6 +36,8 @@
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>org.meridor.perspective.shell.Main</mainClass>
                             <useUniqueVersions>false</useUniqueVersions>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>

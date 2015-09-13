@@ -16,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +44,8 @@ public class InstancesResource {
     public Response getInstances(@QueryParam("query") String query) {
         try {
             LOG.info("Getting instances list for query = {}", query);
-            return Response.ok(instancesAware.getInstances(Optional.ofNullable(query))).build();
+            List<Instance> instances = new ArrayList<>(instancesAware.getInstances(Optional.ofNullable(query)));
+            return Response.ok(new GenericEntity<List<Instance>>(instances){}).build();
         } catch (IllegalQueryException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
