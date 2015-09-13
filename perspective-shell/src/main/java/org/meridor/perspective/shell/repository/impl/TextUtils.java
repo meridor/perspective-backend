@@ -11,7 +11,7 @@ public final class TextUtils {
     private static final String SEMICOLON = ";";
     private static final String EQUALITY = "=";
     private static final String COMMA = ",";
-    private static final String SPACE = "\\s";
+    private static final String SPACE = " ";
     
     private static final Logger LOG = HandlerUtils.getLogger(TextUtils.class);
     

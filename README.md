@@ -43,6 +43,8 @@
 
 ## Shell
 
+~/.perspective/rc (/etc/perspective/shell/rc) file support
+
 ### Generic show commands
 * show projects [+]
 * show networks [+]
