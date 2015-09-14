@@ -11,7 +11,12 @@ import java.util.Optional;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ShellInformationProvider implements BannerProvider, HistoryFileNameProvider, PromptProvider {
+public class ShellInformationProvider implements BannerProvider, HistoryFileNameProvider, PromptProvider, PromptManager {
+    
+    private static final String DEFAULT_PROMPT = "perspective>";
+    
+    private Optional<String> prompt = Optional.empty();
+    
     @Override
     public String getBanner() {
         return "";
@@ -40,6 +45,16 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
 
     @Override
     public String getPrompt() {
-        return "perspective>";
+        return prompt.isPresent() ? prompt.get() : DEFAULT_PROMPT;
+    }
+
+    @Override
+    public void setPrompt(String prompt) {
+        this.prompt = Optional.ofNullable(prompt);
+    }
+
+    @Override
+    public void resetPrompt() {
+        this.prompt = Optional.empty();
     }
 }
