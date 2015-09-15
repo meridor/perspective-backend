@@ -8,19 +8,19 @@ import java.lang.annotation.Annotation;
 public class PositiveIntegerValidator implements Validator {
     
     @Override
-    public boolean validate(Object value) {
+    public boolean validate(Annotation annotation, Object value) {
         return (value != null) &&
                 Integer.class.isAssignableFrom(value.getClass()) &&
                 Integer.valueOf(value.toString()) > 0;
     }
 
     @Override
-    public Class<? extends Annotation> getAnnotation() {
+    public Class<? extends Annotation> getAnnotationClass() {
         return Positive.class;
     }
 
     @Override
-    public String getMessage(String fieldName, Object value) {
+    public String getMessage(Annotation annotation, String fieldName, Object value) {
         return String.format("%s should be positive integer: %s given", fieldName, value.toString());
     }
 

@@ -3,14 +3,15 @@ package org.meridor.perspective.shell.repository;
 import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.shell.repository.query.ShowFlavorsQuery;
+import org.meridor.perspective.shell.repository.query.ShowNetworksQuery;
+import org.meridor.perspective.shell.repository.query.ShowProjectsQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Repository
@@ -19,48 +20,28 @@ public class ProjectsRepository {
     @Autowired
     private ApiProvider apiProvider;
     
-    public List<Project> listProjects(Optional<String> projectName, Optional<String> cloud) {
+    public List<Project> showProjects(ShowProjectsQuery query) {
         GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
         List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
-        return allProjects.stream().filter(getProjectPredicate(projectName, cloud)).collect(Collectors.toList());
+        return allProjects.stream().filter(query.getPayload()).collect(Collectors.toList());
     }
     
-    private Predicate<Project> getProjectPredicate(Optional<String> projectName, Optional<String> cloud) {
-        return project -> 
-                ( !projectName.isPresent() || project.getName().contains(projectName.get()) ) &&
-                ( !cloud.isPresent() || project.getCloudType().value().contains(cloud.get().toUpperCase()) );
-    }
-
-    public List<Flavor> listFlavors(
-            Optional<String> name,
-            Optional<String> projectName,
-            Optional<String> cloud
-    ) {
-        List<Project> projects = listProjects(projectName, cloud);
+    public List<Flavor> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showFlavorsQuery.getProjectName(), showFlavorsQuery.getCloud());
+        List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getFlavors().stream())
-                .filter(getFlavorPredicate(name))
+                .filter(showFlavorsQuery.getPayload())
                 .collect(Collectors.toList());
     }
     
-    private Predicate<Flavor> getFlavorPredicate(Optional<String> name) {
-        return flavor -> (!name.isPresent() || flavor.getName().contains(name.get()));
-    }
-    
-    public List<Network> listNetworks(
-            Optional<String> name,
-            Optional<String> projectName,
-            Optional<String> cloud
-    ) {
-        List<Project> projects = listProjects(projectName, cloud);
+    public List<Network> showNetworks(ShowNetworksQuery showNetworksQuery) {
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showNetworksQuery.getProjectName(), showNetworksQuery.getCloud());
+        List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getNetworks().stream())
-                .filter(getNetworkPredicate(name))
+                .filter(showNetworksQuery.getPayload())
                 .collect(Collectors.toList());
     }
 
-    private Predicate<Network> getNetworkPredicate(Optional<String> name) {
-        return network -> (!name.isPresent() || network.getName().contains(name.get()));
-    }
-    
 }

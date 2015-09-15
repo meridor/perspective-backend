@@ -4,10 +4,10 @@ import java.lang.annotation.Annotation;
 
 public interface Validator {
     
-    boolean validate(Object value);
+    boolean validate(Annotation annotation, Object value);
+
+    Class<? extends Annotation> getAnnotationClass();
     
-    Class<? extends Annotation> getAnnotation();
-    
-    String getMessage(String fieldName, Object value);
+    String getMessage(Annotation annotation, String fieldName, Object value);
     
 }

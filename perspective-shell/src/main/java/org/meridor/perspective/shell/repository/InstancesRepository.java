@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.query.LaunchInstancesQuery;
+import org.meridor.perspective.shell.repository.query.ShowInstancesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -16,44 +17,21 @@ public class InstancesRepository {
     @Autowired
     private ApiProvider apiProvider;
 
-    public List<Instance> listInstances(
-            Optional<String> instanceName,
-            Optional<String> flavor,
-            Optional<String> image,
-            Optional<String> state,
-            Optional<String> cloud
-    ) {
+    public List<Instance> showInstances(ShowInstancesQuery showInstancesQuery) {
         GenericType<ArrayList<Instance>> instanceListType = new GenericType<ArrayList<Instance>>() {};
         List<Instance> instances = apiProvider.getInstancesApi().getAsXml(instanceListType);
         
-        return instances.stream().filter(getInstancePredicate(
-                instanceName,
-                flavor,
-                image,
-                state,
-                cloud
-        )).collect(Collectors.toList());
+        return instances.stream().filter(showInstancesQuery.getPayload()).collect(Collectors.toList());
     }
-
-    private Predicate<Instance> getInstancePredicate(
-            Optional<String> instanceName,
-            Optional<String> flavor,
-            Optional<String> image,
-            Optional<String> state,
-            Optional<String> cloud
-    ) {
-        return instance ->
-                ( !instanceName.isPresent() || instance.getName().contains(instanceName.get()) ) &&
-                ( !flavor.isPresent() || instance.getFlavor().getName().contains(flavor.get()) ) &&
-                ( !image.isPresent() || instance.getImage().getName().contains(image.get()) ) &&
-                ( !state.isPresent() || instance.getState().value().contains(state.get().toUpperCase()) ) &&
-                ( !cloud.isPresent() || instance.getCloudType().value().contains(cloud.get()));
-    }
-
 
     public Set<String> launchInstances(LaunchInstancesQuery launchInstancesQuery) {
         List<Instance> instances = launchInstancesQuery.getPayload();
         apiProvider.getInstancesApi().postXmlAs(instances, String.class);
+        return Collections.emptySet();
+    }
+    
+    public Set<String> deleteInstances() {
+//        apiProvider.getInstancesApi().delete().postXmlAs(instances, String.class);
         return Collections.emptySet();
     }
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 @Component
@@ -27,9 +28,10 @@ public abstract class BaseQuery<T> implements Query<T> {
     public Set<String> validate() {
         Set<String> errors = new HashSet<>();
         getValidators().forEach(v -> Arrays.stream(getClass().getDeclaredFields())
-                .filter(f -> f.isAnnotationPresent(v.getAnnotation()))
+                .filter(f -> f.isAnnotationPresent(v.getAnnotationClass()))
                 .forEach(f -> {
                     String filterName = f.getName();
+                    Annotation annotation = f.getAnnotation(v.getAnnotationClass());
                     try {
                         Object value;
                         
@@ -43,8 +45,8 @@ public abstract class BaseQuery<T> implements Query<T> {
                         } else {
                             value = f.get(this);
                         }
-                        if (!v.validate(value)) {
-                            errors.add(v.getMessage(filterName, value));
+                        if (!v.validate(annotation, value)) {
+                            errors.add(v.getMessage(annotation, filterName, value));
                         }
                     } catch (IllegalAccessException e) {
                         errors.add(String.format(

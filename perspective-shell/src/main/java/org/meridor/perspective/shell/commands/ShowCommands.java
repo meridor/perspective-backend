@@ -7,21 +7,25 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.repository.query.ShowFlavorsQuery;
+import org.meridor.perspective.shell.repository.query.ShowInstancesQuery;
+import org.meridor.perspective.shell.repository.query.ShowNetworksQuery;
+import org.meridor.perspective.shell.repository.query.ShowProjectsQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.nothingToShow;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 @Component
-public class ShowCommand implements CommandMarker {
+public class ShowCommands implements CommandMarker {
     
     @Autowired
     private ProjectsRepository projectsRepository;
@@ -33,33 +37,38 @@ public class ShowCommand implements CommandMarker {
     private TableRenderer tableRenderer;
     
     @CliCommand(value = "show projects", help = "Show available projects")
-    public String showProjects(
+    public void showProjects(
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        List<Project> projects = projectsRepository.listProjects(
-                Optional.ofNullable(name),
-                Optional.ofNullable(cloud)
-        );
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(name, cloud);
+        Set<String> validationErrors = showProjectsQuery.validate();
+        if (!validationErrors.isEmpty()) {
+            error(joinLines(validationErrors));
+        }
+        List<Project> projects = projectsRepository.showProjects(showProjectsQuery);
         List<String[]> projectData = projects.stream()
                 .map(p -> new String[]{p.getId(), p.getName(), p.getCloudType().value()})
                 .collect(Collectors.toList());
-        return !projectData.isEmpty() ? 
+        String message = !projectData.isEmpty() ? 
                 tableRenderer.render(new String[]{"Id", "Name", "Cloud"}, projectData) :
                 nothingToShow();
+        ok(message);
     }
     
     @CliCommand(value = "show flavors", help = "Show available flavors")
-    public String showFlavors(
+    public void showFlavors(
             @CliOption(key = "name", help = "Flavor name") String name,
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        List<Flavor> flavors = projectsRepository.listFlavors(
-                Optional.ofNullable(name),
-                Optional.ofNullable(cloud),
-                Optional.ofNullable(projectName)
-        );
+        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(name, projectName, cloud);
+        Set<String> validationErrors = showFlavorsQuery.validate();
+        if (!validationErrors.isEmpty()) {
+            error(joinLines(validationErrors));
+        }
+
+        List<Flavor> flavors = projectsRepository.showFlavors(showFlavorsQuery);
         List<String[]> flavorData = flavors.stream()
                 .map(f -> new String[]{
                         f.getId(), f.getName(),
@@ -67,22 +76,26 @@ public class ShowCommand implements CommandMarker {
                         String.valueOf(f.getRootDisk()), String.valueOf(f.getEphemeralDisk())
                 })
                 .collect(Collectors.toList());
-        return !flavorData.isEmpty() ?
+        String message = !flavorData.isEmpty() ?
                 tableRenderer.render(new String[]{"Id", "Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"}, flavorData) :
                 nothingToShow();
+        ok(message);
     }
     
     @CliCommand(value = "show networks", help = "Show available networks")
-    public String showNetworks(
+    public void showNetworks(
             @CliOption(key = "name", help = "Network name") String name,
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        List<Network> networks = projectsRepository.listNetworks(
-                Optional.ofNullable(name),
-                Optional.ofNullable(cloud),
-                Optional.ofNullable(projectName)
-        );
+
+        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(name, projectName, cloud);
+        Set<String> validationErrors = showNetworksQuery.validate();
+        if (!validationErrors.isEmpty()) {
+            error(joinLines(validationErrors));
+        }
+
+        List<Network> networks = projectsRepository.showNetworks(showNetworksQuery);
         List<String[]> networkData = networks.stream()
                 .map(n -> new String[]{
                         n.getId(), n.getName(),
@@ -90,13 +103,14 @@ public class ShowCommand implements CommandMarker {
                         n.getState(), String.valueOf(n.isIsShared())
                 })
                 .collect(Collectors.toList());
-        return !networkData.isEmpty() ? 
+        String message = !networkData.isEmpty() ? 
                 tableRenderer.render(new String[]{"Id", "Name", "Subnets", "State", "Is Shared"}, networkData) :
                 nothingToShow();
+        ok(message);
     }
     
     @CliCommand(value = "show instances", help = "Show instances")
-    public String showInstances(
+    public void showInstances(
             @CliOption(key = "name", help = "Network name") String name,
             @CliOption(key = "flavor", help = "Flavor name") String flavor,
             @CliOption(key = "image", help = "Image name") String image,
@@ -104,13 +118,13 @@ public class ShowCommand implements CommandMarker {
             @CliOption(key = "cloud", help = "Cloud type") String cloud
 
     ) {
-        List<Instance> instances = instancesRepository.listInstances(
-                Optional.ofNullable(name),
-                Optional.ofNullable(flavor),
-                Optional.ofNullable(image),
-                Optional.ofNullable(state),
-                Optional.ofNullable(cloud)
-        );
+        ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(name, flavor, image, state, cloud);
+        Set<String> validationErrors = showInstancesQuery.validate();
+        if (!validationErrors.isEmpty()) {
+            error(joinLines(validationErrors));
+        }
+
+        List<Instance> instances = instancesRepository.showInstances(showInstancesQuery);
         List<String[]> instancesData = instances.stream()
                 .map(n -> new String[]{
                         n.getId(), n.getName(),
@@ -120,9 +134,10 @@ public class ShowCommand implements CommandMarker {
                         n.getTimestamp().toString()
                 })
                 .collect(Collectors.toList());
-        return !instancesData.isEmpty() ?
+        String message = !instancesData.isEmpty() ?
                 tableRenderer.render(new String[]{"Id", "Name", "Image", "Flavor", "State", "Last modified"}, instancesData) :
                 nothingToShow();
+        ok(message);
     }
     
 }

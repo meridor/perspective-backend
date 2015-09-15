@@ -6,7 +6,8 @@ public enum Field {
     FLAVOR,
     IMAGE,
     NETWORK,
-    STATUS,
+    INSTANCE_STATE,
+    CLOUD,
     NAME;
 
     public static boolean contains(String name) {

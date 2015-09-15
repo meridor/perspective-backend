@@ -17,7 +17,11 @@ public final class TextUtils {
     
 
     public static void ok() {
-        LOG.info("OK");
+        ok("OK");
+    }
+    
+    public static void ok(String message) {
+        LOG.info(message);
     }
     
     public static void error(String message) {

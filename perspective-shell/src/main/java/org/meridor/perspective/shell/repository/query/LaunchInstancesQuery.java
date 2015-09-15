@@ -4,7 +4,6 @@ import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.shell.repository.query.validator.Field;
 import org.meridor.perspective.shell.repository.query.validator.Filter;
 import org.meridor.perspective.shell.repository.query.validator.Positive;
 import org.meridor.perspective.shell.repository.query.validator.Required;

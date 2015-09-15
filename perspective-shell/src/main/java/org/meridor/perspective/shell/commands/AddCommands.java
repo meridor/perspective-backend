@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 @Component
-public class AddCommand implements CommandMarker {
+public class AddCommands implements CommandMarker {
     
     @Autowired
     private InstancesRepository instancesRepository;

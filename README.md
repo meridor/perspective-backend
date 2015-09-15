@@ -55,11 +55,24 @@
 
 ### Add commands
 * add instances
-* add images
+* add images (включает в себя snapshot и upload)
 
 ### Delete commands
 * delete instances
 * delete images
+
+### Instances commands
+* reboot instances (--hard)
+* rebuild instances
+* resize instances
+* migrate instances
+* pause instances
+* resume instances
+* lock instances
+* unlock instances
+* shutdown instances
+* start instances (включить из состояния shutdown или suspended)
+* suspend instances
 
 ### Set commands
 Filters - e.g. ```set project test-project```
