@@ -5,12 +5,10 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.SqlPredicate;
+import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.storage.IllegalQueryException;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.ProjectsAware;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.framework.storage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 import static org.meridor.perspective.framework.storage.impl.StorageKey.*;
 
 @Component
-public class StorageImpl implements ApplicationListener<ContextClosedEvent>, InstancesAware, ProjectsAware, Storage {
+public class StorageImpl implements ApplicationListener<ContextClosedEvent>, InstancesAware, ProjectsAware, ImagesAware, Storage {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageImpl.class);
 
@@ -114,6 +112,38 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return Optional.ofNullable(getInstancesByIdMap().get(instanceId));
     }
 
+    @Override
+    public boolean imageExists(Image image) {
+        String imageId = image.getId();
+        return getImagesByIdMap().containsKey(imageId);
+    }
+
+    @Override
+    public Collection<Image> getImages(Optional<String> query) throws IllegalQueryException {
+        return null;
+    }
+
+    @Override
+    public Optional<Image> getImage(String imageId) {
+        return Optional.ofNullable(getImagesByIdMap().get(imageId));
+    }
+
+    @Override
+    public void saveImage(Image image) {
+        getImagesByIdMap().put(image.getId(), image);
+    }
+
+    @Override
+    public boolean isImageDeleted(String imageId) {
+        return getDeletedImagesByIdMap().containsKey(imageId);
+    }
+
+    @Override
+    public void deleteImage(Image image) {
+        Image deletedImage = getImagesByIdMap().remove(image.getId());
+        getDeletedImagesByIdMap().put(deletedImage.getId(), deletedImage);
+    }
+
     private IMap<String, Project> getProjectsByIdMap() {
         return getMap(projectsById());
     }
@@ -122,8 +152,16 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return getMap(instancesById());
     }
 
+    private IMap<String, Image> getImagesByIdMap() {
+        return getMap(imagesById());
+    }
+
     private Map<String, Instance> getDeletedInstancesByIdMap() {
         return getMap(deletedInstancesByCloud());
+    }
+
+    private Map<String, Image> getDeletedImagesByIdMap() {
+        return getMap(deletedImagesByCloud());
     }
 
     private Predicate getPredicateFromQuery(String query) throws IllegalQueryException {

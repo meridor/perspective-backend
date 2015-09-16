@@ -6,7 +6,7 @@ import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.concurrent.Callable;
 
 @Repository
 public class ApiProvider {
@@ -15,21 +15,23 @@ public class ApiProvider {
     private String baseUrl;
     
     public Perspective.Projects getProjectsApi() {
-        try {
-            return Perspective.projects(Perspective.createClient(), new URI(baseUrl));
-        } catch (URISyntaxException e) {
-            throw new ShellException(String.format("Wrong base URL: %s", baseUrl), e);
-        }
+        return getApiOrException(() -> Perspective.projects(Perspective.createClient(), new URI(baseUrl)));
     }
     
     public Perspective.Instances getInstancesApi() {
+        return getApiOrException(() -> Perspective.instances(Perspective.createClient(), new URI(baseUrl)));
+    }
+    
+    public Perspective.Images getImagesApi() {
+        return getApiOrException(() -> Perspective.images(Perspective.createClient(), new URI(baseUrl)));
+    }
+    
+    private <T> T getApiOrException(Callable<T> apiSupplier) {
         try {
-            return Perspective.instances(Perspective.createClient(), new URI(baseUrl));
-        } catch (URISyntaxException e) {
+            return apiSupplier.call();
+        } catch (Exception e) {
             throw new ShellException(String.format("Wrong base URL: %s", baseUrl), e);
         }
     }
-    
-    
     
 }

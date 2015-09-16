@@ -1,6 +1,7 @@
 package org.meridor.perspective.worker.processor;
 
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.ProjectSyncEvent;
@@ -41,27 +42,29 @@ public class ProjectsFetcher {
     private CloudConfigurationProvider cloudConfigurationProvider;
 
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.projects}")
-    @IfNotLocked
     public void fetchProjects() {
-        cloudConfigurationProvider.getClouds().forEach(c -> {
-            LOG.info("Fetching projects list for cloud {}", c.getName());
-            try {
-                Set<Project> projects = new HashSet<>();
-                if (!operationProcessor.<Set<Project>>consume(c, OperationType.LIST_PROJECTS, projects::addAll)) {
-                    throw new RuntimeException("Failed to get projects list from the cloud");
-                }
-                CloudType cloudType = workerMetadata.getCloudType();
-                for (Project project : projects) {
-                    project.setCloudId(c.getId());
-                    project.setCloudType(cloudType);
-                    ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
-                    producer.produce(message(cloudType, event));
-                }
-                LOG.debug("Saved projects for cloud {} to queue", c.getName());
-            } catch (Exception e) {
-                LOG.error("Error while fetching projects list for cloud " + c.getName(), e);
+        cloudConfigurationProvider.getClouds().forEach(this::fetchCloudProjects);
+    }
+    
+    @IfNotLocked
+    protected void fetchCloudProjects(Cloud cloud) {
+        LOG.info("Fetching projects list for cloud {}", cloud.getName());
+        try {
+            Set<Project> projects = new HashSet<>();
+            if (!operationProcessor.<Set<Project>>consume(cloud, OperationType.LIST_PROJECTS, projects::addAll)) {
+                throw new RuntimeException("Failed to get projects list from the cloud");
             }
-        });
+            CloudType cloudType = workerMetadata.getCloudType();
+            for (Project project : projects) {
+                project.setCloudId(cloud.getId());
+                project.setCloudType(cloudType);
+                ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
+                producer.produce(message(cloudType, event));
+            }
+            LOG.debug("Saved projects for cloud {} to queue", cloud.getName());
+        } catch (Exception e) {
+            LOG.error("Error while fetching projects list for cloud " + cloud.getName(), e);
+        }
     }
 
 }

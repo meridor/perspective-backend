@@ -48,18 +48,18 @@
 ### Generic show commands
 * show projects [+]
 * show networks [+]
-* show instances
-* show images
+* show instances [+]
+* show images [+]
 * show flavors [+]
 * show networks [+]
 
 ### Add commands
-* add instances
-* add images (включает в себя snapshot и upload)
+* add instances [+]
+* add images (включает в себя snapshot и upload) [+]
 
 ### Delete commands
 * delete instances
-* delete images
+* delete images [+]
 
 ### Instances commands
 * reboot instances (--hard)

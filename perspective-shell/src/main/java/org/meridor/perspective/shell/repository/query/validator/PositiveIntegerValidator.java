@@ -9,9 +9,9 @@ public class PositiveIntegerValidator implements Validator {
     
     @Override
     public boolean validate(Annotation annotation, Object value) {
-        return (value != null) &&
-                Integer.class.isAssignableFrom(value.getClass()) &&
-                Integer.valueOf(value.toString()) > 0;
+        return (value == null) ||
+                (Integer.class.isAssignableFrom(value.getClass()) &&
+                Integer.valueOf(value.toString()) > 0);
     }
 
     @Override

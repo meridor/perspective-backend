@@ -1,16 +1,11 @@
 package org.meridor.perspective.shell.commands;
 
-import org.meridor.perspective.beans.Flavor;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.*;
+import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
-import org.meridor.perspective.shell.misc.TableRenderer;
-import org.meridor.perspective.shell.repository.query.ShowFlavorsQuery;
-import org.meridor.perspective.shell.repository.query.ShowInstancesQuery;
-import org.meridor.perspective.shell.repository.query.ShowNetworksQuery;
-import org.meridor.perspective.shell.repository.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.repository.query.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -18,7 +13,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +26,9 @@ public class ShowCommands implements CommandMarker {
     
     @Autowired
     private InstancesRepository instancesRepository;
+    
+    @Autowired
+    private ImagesRepository imagesRepository;
     
     @Autowired
     private TableRenderer tableRenderer;
@@ -111,14 +108,14 @@ public class ShowCommands implements CommandMarker {
     
     @CliCommand(value = "show instances", help = "Show instances")
     public void showInstances(
-            @CliOption(key = "name", help = "Network name") String name,
+            @CliOption(key = "id", help = "Instance id") String id,
+            @CliOption(key = "name", help = "Instance name") String name,
             @CliOption(key = "flavor", help = "Flavor name") String flavor,
             @CliOption(key = "image", help = "Image name") String image,
             @CliOption(key = "state", help = "Instance state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
-
     ) {
-        ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(name, flavor, image, state, cloud);
+        ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(id, name, flavor, image, state, cloud);
         Set<String> validationErrors = showInstancesQuery.validate();
         if (!validationErrors.isEmpty()) {
             error(joinLines(validationErrors));
@@ -136,6 +133,33 @@ public class ShowCommands implements CommandMarker {
                 .collect(Collectors.toList());
         String message = !instancesData.isEmpty() ?
                 tableRenderer.render(new String[]{"Id", "Name", "Image", "Flavor", "State", "Last modified"}, instancesData) :
+                nothingToShow();
+        ok(message);
+    }
+    
+    @CliCommand(value = "show images", help = "Show images")
+    public void showImages(
+            @CliOption(key = "id", help = "Image id") String id,
+            @CliOption(key = "name", help = "Image name") String name,
+            @CliOption(key = "cloud", help = "Cloud type") String cloud
+    ) {
+        ShowImagesQuery showImagesQuery = new ShowImagesQuery(id, name, cloud);
+        Set<String> validationErrors = showImagesQuery.validate();
+        if (!validationErrors.isEmpty()) {
+            error(joinLines(validationErrors));
+        }
+
+        List<Image> images = imagesRepository.showImages(showImagesQuery);
+        List<String[]> imagesData = images.stream()
+                .map(n -> new String[]{
+                        n.getId(), n.getName(),
+                        n.getState().value(),
+                        String.valueOf(n.getSize()),
+                        n.getTimestamp().toString()
+                })
+                .collect(Collectors.toList());
+        String message = !imagesData.isEmpty() ?
+                tableRenderer.render(new String[]{"Id", "Name", "State", "Size", "Last modified"}, imagesData) :
                 nothingToShow();
         ok(message);
     }

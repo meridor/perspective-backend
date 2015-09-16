@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.repository.query;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.repository.query.validator.SupportedCloud;
 import org.meridor.perspective.shell.repository.query.validator.Filter;
+import org.meridor.perspective.shell.repository.query.validator.SupportedCloud;
 import org.meridor.perspective.shell.repository.query.validator.SupportedInstanceState;
 
 import java.util.Optional;
@@ -11,6 +11,8 @@ import java.util.function.Predicate;
 import static org.meridor.perspective.shell.repository.query.validator.Field.*;
 
 public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
+    
+    private String id;
     
     private String name;
     
@@ -28,7 +30,12 @@ public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
     @Filter(CLOUD)
     private String cloud;
 
-    public ShowInstancesQuery(String name, String flavor, String image, String state, String cloud) {
+    public ShowInstancesQuery(String id, String name) {
+        this(id, name, null, null, null, null);
+    }
+    
+    public ShowInstancesQuery(String id, String name, String flavor, String image, String state, String cloud) {
+        this.id = id;
         this.name = name;
         this.flavor = flavor;
         this.image = image;
@@ -39,6 +46,7 @@ public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
     @Override
     public Predicate<Instance> getPayload() {
         return getInstancePredicate(
+                Optional.ofNullable(id),
                 Optional.ofNullable(name),
                 Optional.ofNullable(flavor),
                 Optional.ofNullable(image),
@@ -49,6 +57,7 @@ public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
 
     //TODO: we may probably want to add project name
     private Predicate<Instance> getInstancePredicate(
+            Optional<String> id,
             Optional<String> name,
             Optional<String> flavor,
             Optional<String> image,
@@ -56,11 +65,12 @@ public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
             Optional<String> cloud
     ) {
         return instance ->
+                ( !id.isPresent() || instance.getId().contains(id.get()) ) &&
                 ( !name.isPresent() || instance.getName().contains(name.get()) ) &&
-                        ( !flavor.isPresent() || instance.getFlavor().getName().contains(flavor.get()) ) &&
-                        ( !image.isPresent() || instance.getImage().getName().contains(image.get()) ) &&
-                        ( !state.isPresent() || instance.getState().value().contains(state.get().toUpperCase()) ) &&
-                        ( !cloud.isPresent() || instance.getCloudType().value().contains(cloud.get()));
+                ( !flavor.isPresent() || instance.getFlavor().getName().contains(flavor.get()) ) &&
+                ( !image.isPresent() || instance.getImage().getName().contains(image.get()) ) &&
+                ( !state.isPresent() || instance.getState().value().contains(state.get().toUpperCase()) ) &&
+                ( !cloud.isPresent() || instance.getCloudType().value().contains(cloud.get()));
     }
 
 }

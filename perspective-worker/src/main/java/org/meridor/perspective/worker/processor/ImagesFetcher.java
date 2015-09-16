@@ -1,10 +1,10 @@
 package org.meridor.perspective.worker.processor;
 
-import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.events.InstanceEvent;
+import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.framework.messaging.Destination;
 import org.meridor.perspective.framework.messaging.IfNotLocked;
 import org.meridor.perspective.framework.messaging.Producer;
@@ -21,13 +21,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.meridor.perspective.beans.DestinationName.TASKS;
-import static org.meridor.perspective.events.EventFactory.instanceToEvent;
+import static org.meridor.perspective.events.EventFactory.imageToEvent;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
 @Component
-public class InstancesFetcher {
+public class ImagesFetcher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InstancesFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImagesFetcher.class);
 
     @Autowired
     private CloudConfigurationProvider cloudConfigurationProvider;
@@ -41,30 +41,30 @@ public class InstancesFetcher {
     @Autowired
     private WorkerMetadata workerMetadata;
 
-    @Scheduled(fixedDelayString = "${perspective.fetch.delay.instances}")
-    public void fetchInstances() {
-        cloudConfigurationProvider.getClouds().forEach(this::fetchCloudInstances);
+    @Scheduled(fixedDelayString = "${perspective.fetch.delay.images}")
+    public void fetchImages() {
+        cloudConfigurationProvider.getClouds().forEach(this::fetchCloudImages);
     }
     
     @IfNotLocked
-    protected void fetchCloudInstances(Cloud c) {
-        LOG.info("Fetching instances list for cloud {}", c.getName());
-        Set<Instance> instances = new HashSet<>();
+    protected void fetchCloudImages(Cloud cloud) {
+        LOG.info("Fetching images list for cloud {}", cloud.getName());
+        Set<Image> images = new HashSet<>();
         try {
-            if (!operationProcessor.<Set<Instance>>consume(c, OperationType.LIST_INSTANCES, instances::addAll)) {
-                throw new RuntimeException("Failed to get instances list from the cloud");
+            if (!operationProcessor.<Set<Image>>consume(cloud, OperationType.LIST_IMAGES, images::addAll)) {
+                throw new RuntimeException("Failed to get images list from the cloud");
             }
             CloudType cloudType = workerMetadata.getCloudType();
-            for (Instance instance : instances) {
-                instance.setCloudType(cloudType);
-                instance.setCloudId(c.getId());
-                InstanceEvent event = instanceToEvent(instance);
+            for (Image image : images) {
+                image.setCloudType(cloudType);
+                image.setCloudId(cloud.getId());
+                ImageEvent event = imageToEvent(image);
                 event.setSync(true);
                 producer.produce(message(cloudType, event));
             }
-            LOG.debug("Saved instances state for cloud {} to queue", c.getName());
+            LOG.debug("Saved images state for cloud {} to queue", cloud.getName());
         } catch (Exception e) {
-            LOG.error("Error while fetching instances list for cloud " + c.getName(), e);
+            LOG.error("Error while fetching images list for cloud " + cloud.getName(), e);
         }
     }
 

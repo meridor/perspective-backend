@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.meridor.perspective.shell.repository.query.validator.Field.*;
 
-public class LaunchInstancesQuery extends BaseQuery<List<Instance>> {
+public class AddInstancesQuery extends BaseQuery<List<Instance>> {
     
     @Required
     private String name;
@@ -35,7 +35,7 @@ public class LaunchInstancesQuery extends BaseQuery<List<Instance>> {
     
     private String options;
 
-    public LaunchInstancesQuery(String name, String projectId, String flavorId, String imageId, String networkId, Integer count, String options) {
+    public AddInstancesQuery(String name, String projectId, String flavorId, String imageId, String networkId, Integer count, String options) {
         this.name = name;
         this.projectId = projectId;
         this.flavorId = flavorId;

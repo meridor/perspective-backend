@@ -120,7 +120,7 @@ public class InstanceFSM {
     public void onInstanceQueued(InstanceQueuedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
-            LOG.debug("Marking cloud {} instance {} as queued", instance.getCloudType(), instance.getId());
+            LOG.info("Marking cloud {} instance {} as queued", instance.getCloudType(), instance.getId());
             instance.setState(InstanceState.QUEUED);
             storage.saveInstance(instance);
         }

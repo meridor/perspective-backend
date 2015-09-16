@@ -1,8 +1,6 @@
 package org.meridor.perspective.events;
 
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceState;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.*;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -25,14 +23,14 @@ public final class EventFactory {
 
     public static InstanceEvent instanceToEvent(Instance instance) {
         InstanceState instanceState = instance.getState();
-        InstanceEvent event = stateToEvent(instanceState);
+        InstanceEvent event = instanceStateToEvent(instanceState);
         event.setInstance(instance);
         event.setId(uuid());
         event.setTimestamp(now());
         return event;
     }
 
-    private static InstanceEvent stateToEvent(InstanceState instanceState) {
+    private static InstanceEvent instanceStateToEvent(InstanceState instanceState) {
         if (instanceState == null) {
             throw new IllegalArgumentException("Instance status can't be null");
         }
@@ -72,6 +70,48 @@ public final class EventFactory {
                 return new InstanceSuspendingEvent();
             case SUSPENDED:
                 return new InstanceSuspendedEvent();
+        }
+    }
+
+    public static <T extends ImageEvent> T imageEvent(Class<T> eventClass, Image image) {
+        try {
+            T event = eventClass.newInstance();
+            ZonedDateTime now = now();
+            event.setId(uuid());
+            event.setTimestamp(now);
+            image.setTimestamp(now);
+            event.setImage(image);
+            return event;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ImageEvent imageToEvent(Image image) {
+        ImageState imageState = image.getState();
+        ImageEvent event = imageStateToEvent(imageState);
+        event.setImage(image);
+        event.setId(uuid());
+        event.setTimestamp(now());
+        return event;
+    }
+    
+    private static ImageEvent imageStateToEvent(ImageState imageState) {
+        if (imageState == null) {
+            throw new IllegalArgumentException("Instance status can't be null");
+        }
+        switch (imageState) {
+            case DELETING:
+                return new ImageDeletingEvent();
+            case ERROR:
+                return new ImageErrorEvent();
+            case QUEUED:
+                return new ImageQueuedEvent();
+            case SAVING:
+                return new ImageSavingEvent();
+            default:
+            case SAVED:
+                return new ImageSavedEvent();
         }
     }
 

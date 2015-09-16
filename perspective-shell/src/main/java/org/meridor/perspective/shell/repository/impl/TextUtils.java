@@ -42,7 +42,7 @@ public final class TextUtils {
 
     /**
      * Parses the following strings: key1 = value1, value2, value3; key2 = value4, value5
-     * @param data a string of the spectified format
+     * @param data a string of the specified format
      * @return a map with parsed keys and values
      */
     public static Map<String, Set<String>> parseAssignment(String data) {
@@ -71,6 +71,15 @@ public final class TextUtils {
             ret.put(key, value);
         }
         return ret;
+    }
+
+    /**
+     * Returns space separated collection of entries as an array
+     * @param data space separated values
+     * @return an array with values
+     */
+    public static String[] parseEnumeration(String data) {
+        return data.split(SPACE);
     }
     
     private static boolean isKeyDelimiter(String token) {
