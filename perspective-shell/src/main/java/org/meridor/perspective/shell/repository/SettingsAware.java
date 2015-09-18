@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.repository;
 
-import org.meridor.perspective.shell.repository.query.validator.Setting;
+import org.meridor.perspective.shell.validator.Setting;
 
 import java.util.Map;
 import java.util.Set;

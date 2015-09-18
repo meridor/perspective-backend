@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.repository.query.validator;
+package org.meridor.perspective.shell.validator;
 
 import java.lang.annotation.Annotation;
 

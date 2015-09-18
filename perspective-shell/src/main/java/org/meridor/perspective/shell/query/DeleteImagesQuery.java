@@ -1,19 +1,20 @@
-package org.meridor.perspective.shell.repository.query;
+package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.repository.ImagesRepository;
-import org.meridor.perspective.shell.repository.query.validator.Field;
-import org.meridor.perspective.shell.repository.query.validator.Filter;
-import org.meridor.perspective.shell.repository.query.validator.Required;
-import org.meridor.perspective.shell.repository.query.validator.SupportedCloud;
+import org.meridor.perspective.shell.validator.Field;
+import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.Required;
+import org.meridor.perspective.shell.validator.SupportedCloud;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 
-public class DeleteImagesQuery extends BaseQuery<List<Image>> {
+public class DeleteImagesQuery implements Query<List<Image>> {
 
     private ImagesRepository imagesRepository;
 
@@ -32,8 +33,8 @@ public class DeleteImagesQuery extends BaseQuery<List<Image>> {
 
     @Override
     public List<Image> getPayload() {
-        String[] tokens = parseEnumeration(names);
-        return Arrays.stream(tokens).flatMap(t -> {
+        Set<String> tokens = parseEnumeration(names);
+        return tokens.stream().flatMap(t -> {
             ShowImagesQuery showImagesQuery = new ShowImagesQuery(t, t, cloud);
             return imagesRepository.showImages(showImagesQuery).stream();
         }).collect(Collectors.toList());

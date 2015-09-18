@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.repository.query.validator;
+package org.meridor.perspective.shell.validator;
 
 import org.meridor.perspective.beans.InstanceState;
 import org.springframework.stereotype.Component;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class SupportedInstanceStateValidator extends RangeValidator {
+public class SupportedInstanceStateValidator extends EnumerationValidator {
     @Override
-    protected List<String> getRange(Annotation annotation) {
+    protected List<String> getValues(Annotation annotation) {
         SupportedInstanceState ann = SupportedInstanceState.class.cast(annotation);
         InstanceState[] acceptedInstanceStates = ann.value();
         return acceptedInstanceStates.length > 0 ?

@@ -1,16 +1,16 @@
-package org.meridor.perspective.shell.repository.query;
+package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.repository.query.validator.Filter;
-import org.meridor.perspective.shell.repository.query.validator.SupportedCloud;
-import org.meridor.perspective.shell.repository.query.validator.SupportedInstanceState;
+import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.SupportedCloud;
+import org.meridor.perspective.shell.validator.SupportedInstanceState;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static org.meridor.perspective.shell.repository.query.validator.Field.*;
+import static org.meridor.perspective.shell.validator.Field.*;
 
-public class ShowInstancesQuery extends BaseQuery<Predicate<Instance>> {
+public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     
     private String id;
     

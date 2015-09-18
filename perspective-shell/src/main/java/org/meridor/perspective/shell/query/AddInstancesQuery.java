@@ -1,19 +1,19 @@
-package org.meridor.perspective.shell.repository.query;
+package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.shell.repository.query.validator.Filter;
-import org.meridor.perspective.shell.repository.query.validator.Positive;
-import org.meridor.perspective.shell.repository.query.validator.Required;
+import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.Positive;
+import org.meridor.perspective.shell.validator.Required;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.meridor.perspective.shell.repository.query.validator.Field.*;
+import static org.meridor.perspective.shell.validator.Field.*;
 
-public class AddInstancesQuery extends BaseQuery<List<Instance>> {
+public class AddInstancesQuery implements Query<List<Instance>> {
     
     @Required
     private String name;

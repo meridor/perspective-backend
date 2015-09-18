@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.repository.query.validator;
+package org.meridor.perspective.shell.validator;
 
 import org.meridor.perspective.config.CloudType;
 import org.springframework.stereotype.Component;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class SupportedCloudValidator extends RangeValidator {
+public class SupportedCloudValidator extends EnumerationValidator {
     @Override
-    protected List<String> getRange(Annotation annotation) {
+    protected List<String> getValues(Annotation annotation) {
         SupportedCloud ann = SupportedCloud.class.cast(annotation);
         CloudType[] acceptedCloudTypes = ann.value();
         return acceptedCloudTypes.length > 0 ?

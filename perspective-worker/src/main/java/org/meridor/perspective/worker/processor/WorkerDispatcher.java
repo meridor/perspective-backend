@@ -1,5 +1,6 @@
 package org.meridor.perspective.worker.processor;
 
+import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.events.InstanceEvent;
 import org.meridor.perspective.events.ProjectEvent;
 import org.meridor.perspective.framework.messaging.Dispatcher;
@@ -19,6 +20,9 @@ public class WorkerDispatcher implements Dispatcher {
 
     @Autowired
     private InstancesProcessor instancesProcessor;
+    
+    @Autowired
+    private ImagesProcessor imagesProcessor;
 
     @Override
     public void dispatch(Message message) {
@@ -31,6 +35,8 @@ public class WorkerDispatcher implements Dispatcher {
             instancesProcessor.process(message);
         } else if (payload instanceof ProjectEvent) {
             projectsProcessor.process(message);
+        } else if (payload instanceof ImageEvent) {
+            imagesProcessor.process(message);
         } else {
             LOG.warn("Skipping message {} as no corresponding processor exist", message.getId());
         }

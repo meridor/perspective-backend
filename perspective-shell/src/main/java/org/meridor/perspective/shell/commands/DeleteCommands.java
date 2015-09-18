@@ -2,18 +2,14 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.repository.query.DeleteImagesQuery;
+import org.meridor.perspective.shell.query.DeleteImagesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
-import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
-
 @Component
-public class DeleteCommands {
+public class DeleteCommands extends BaseCommands {
 
     @Autowired
     private InstancesRepository instancesRepository;
@@ -36,16 +32,7 @@ public class DeleteCommands {
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         DeleteImagesQuery deleteImagesQuery = new DeleteImagesQuery(patterns, cloud, imagesRepository);
-        Set<String> validationErrors = deleteImagesQuery.validate();
-        if (!validationErrors.isEmpty()) {
-            error(joinLines(validationErrors));
-        }
-
-        Set<String> deletionErrors = imagesRepository.deleteImages(deleteImagesQuery);
-        if (!deletionErrors.isEmpty()) {
-            error(joinLines(deletionErrors));
-        }
-        ok();
+        validateExecuteShowStatus(deleteImagesQuery, imagesRepository::deleteImages);
     }
 
 

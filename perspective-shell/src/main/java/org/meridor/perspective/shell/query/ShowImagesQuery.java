@@ -1,15 +1,15 @@
-package org.meridor.perspective.shell.repository.query;
+package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.repository.query.validator.Filter;
-import org.meridor.perspective.shell.repository.query.validator.SupportedCloud;
+import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.SupportedCloud;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static org.meridor.perspective.shell.repository.query.validator.Field.CLOUD;
+import static org.meridor.perspective.shell.validator.Field.CLOUD;
 
-public class ShowImagesQuery extends BaseQuery<Predicate<Image>> {
+public class ShowImagesQuery implements Query<Predicate<Image>> {
     
     private String id;
     

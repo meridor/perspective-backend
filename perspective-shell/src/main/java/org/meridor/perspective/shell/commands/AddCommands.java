@@ -2,20 +2,15 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.repository.query.AddImagesQuery;
-import org.meridor.perspective.shell.repository.query.AddInstancesQuery;
+import org.meridor.perspective.shell.query.AddImagesQuery;
+import org.meridor.perspective.shell.query.AddInstancesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
-import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
-
 @Component
-public class AddCommands implements CommandMarker {
+public class AddCommands extends BaseCommands {
     
     @Autowired
     private InstancesRepository instancesRepository;
@@ -34,15 +29,7 @@ public class AddCommands implements CommandMarker {
             @CliOption(key = "options", help = "Various instance options") String options
     ) {
         AddInstancesQuery addInstancesQuery = new AddInstancesQuery(name, project, flavor, image, network, count, options);
-        Set<String> validationErrors = addInstancesQuery.validate();
-        if (!validationErrors.isEmpty()) {
-            error(joinLines(validationErrors));
-        }
-        Set<String> addErrors = instancesRepository.addInstances(addInstancesQuery);
-        if (!addErrors.isEmpty()) {
-            error(joinLines(addErrors));
-        }
-        ok();
+        validateExecuteShowStatus(addInstancesQuery, instancesRepository::addInstances);
     }
     
     @CliCommand(value = "add images", help = "Add one or more images to project")
@@ -52,15 +39,7 @@ public class AddCommands implements CommandMarker {
     ) {
         //TODO: implement adding image from file
         AddImagesQuery addImagesQuery = new AddImagesQuery(imageName, names, instancesRepository);
-        Set<String> validationErrors = addImagesQuery.validate();
-        if (!validationErrors.isEmpty()) {
-            error(joinLines(validationErrors));
-        }
-        Set<String> addErrors = imagesRepository.addImages(addImagesQuery);
-        if (!addErrors.isEmpty()) {
-            error(joinLines(addErrors));
-        }
-        ok();
+        validateExecuteShowStatus(addImagesQuery, imagesRepository::addImages);
     }
     
 }

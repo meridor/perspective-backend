@@ -3,9 +3,9 @@ package org.meridor.perspective.shell.repository;
 import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.repository.query.ShowFlavorsQuery;
-import org.meridor.perspective.shell.repository.query.ShowNetworksQuery;
-import org.meridor.perspective.shell.repository.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.query.ShowFlavorsQuery;
+import org.meridor.perspective.shell.query.ShowNetworksQuery;
+import org.meridor.perspective.shell.query.ShowProjectsQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +27,7 @@ public class ProjectsRepository {
     }
     
     public List<Flavor> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showFlavorsQuery.getProjectName(), showFlavorsQuery.getCloud());
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showFlavorsQuery.getProjectNames(), showFlavorsQuery.getClouds());
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getFlavors().stream())
@@ -36,7 +36,7 @@ public class ProjectsRepository {
     }
     
     public List<Network> showNetworks(ShowNetworksQuery showNetworksQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showNetworksQuery.getProjectName(), showNetworksQuery.getCloud());
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showNetworksQuery.getProjectNames(), showNetworksQuery.getClouds());
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getNetworks().stream())

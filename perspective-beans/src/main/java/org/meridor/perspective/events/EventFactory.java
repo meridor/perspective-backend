@@ -32,7 +32,7 @@ public final class EventFactory {
 
     private static InstanceEvent instanceStateToEvent(InstanceState instanceState) {
         if (instanceState == null) {
-            throw new IllegalArgumentException("Instance status can't be null");
+            throw new IllegalArgumentException("Instance state can't be null");
         }
         switch (instanceState) {
             case DELETING:
@@ -98,7 +98,7 @@ public final class EventFactory {
     
     private static ImageEvent imageStateToEvent(ImageState imageState) {
         if (imageState == null) {
-            throw new IllegalArgumentException("Instance status can't be null");
+            throw new IllegalArgumentException("Image state can't be null");
         }
         switch (imageState) {
             case DELETING:

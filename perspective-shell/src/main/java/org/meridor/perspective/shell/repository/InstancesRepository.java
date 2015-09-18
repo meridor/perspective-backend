@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.repository.query.AddInstancesQuery;
-import org.meridor.perspective.shell.repository.query.ShowInstancesQuery;
+import org.meridor.perspective.shell.query.AddInstancesQuery;
+import org.meridor.perspective.shell.query.ShowInstancesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

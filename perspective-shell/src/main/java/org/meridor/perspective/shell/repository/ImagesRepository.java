@@ -1,10 +1,9 @@
 package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.repository.query.AddImagesQuery;
-import org.meridor.perspective.shell.repository.query.DeleteImagesQuery;
-import org.meridor.perspective.shell.repository.query.ShowImagesQuery;
+import org.meridor.perspective.shell.query.AddImagesQuery;
+import org.meridor.perspective.shell.query.DeleteImagesQuery;
+import org.meridor.perspective.shell.query.ShowImagesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

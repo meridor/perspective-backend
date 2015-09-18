@@ -120,7 +120,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
     @Override
     public Collection<Image> getImages(Optional<String> query) throws IllegalQueryException {
-        return null;
+        if (query.isPresent() && !query.get().isEmpty()) {
+            Predicate predicate = getPredicateFromQuery(query.get());
+            return getImagesByIdMap().values(predicate);
+        }
+        return getImagesByIdMap().values();
     }
 
     @Override

@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.shell.repository.impl.TextUtils;
-import org.meridor.perspective.shell.repository.query.validator.Field;
-import org.meridor.perspective.shell.repository.query.validator.Setting;
+import org.meridor.perspective.shell.validator.Field;
+import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

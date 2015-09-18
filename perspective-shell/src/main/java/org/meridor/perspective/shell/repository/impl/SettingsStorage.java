@@ -2,8 +2,8 @@ package org.meridor.perspective.shell.repository.impl;
 
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.repository.SettingsAware;
-import org.meridor.perspective.shell.repository.query.validator.Field;
-import org.meridor.perspective.shell.repository.query.validator.Setting;
+import org.meridor.perspective.shell.validator.Field;
+import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;

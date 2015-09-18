@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.repository.query.validator;
+package org.meridor.perspective.shell.validator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Required {
+public @interface Positive {
 }

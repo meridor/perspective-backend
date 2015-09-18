@@ -1,9 +1,6 @@
 package org.meridor.perspective.shell.repository.impl;
 
-import org.springframework.shell.support.logging.HandlerUtils;
-
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class TextUtils {
@@ -12,25 +9,6 @@ public final class TextUtils {
     private static final String EQUALITY = "=";
     private static final String COMMA = ",";
     private static final String SPACE = " ";
-    
-    private static final Logger LOG = HandlerUtils.getLogger(TextUtils.class);
-    
-
-    public static void ok() {
-        ok("OK");
-    }
-    
-    public static void ok(String message) {
-        LOG.info(message);
-    }
-    
-    public static void error(String message) {
-        LOG.severe(message);
-    }
-    
-    public static String nothingToShow() {
-        return "Nothing to show";
-    }
     
     public static String enumerateValues(Set<String> values) {
         return values.stream().collect(Collectors.joining(COMMA + SPACE));
@@ -76,10 +54,13 @@ public final class TextUtils {
     /**
      * Returns space separated collection of entries as an array
      * @param data space separated values
-     * @return an array with values
+     * @return an set of values or null if null is passed
      */
-    public static String[] parseEnumeration(String data) {
-        return data.split(SPACE);
+    public static Set<String> parseEnumeration(String data) {
+        if (data == null) {
+            return null;
+        }
+        return new HashSet<>(Arrays.asList(data.split(SPACE)));
     }
     
     private static boolean isKeyDelimiter(String token) {

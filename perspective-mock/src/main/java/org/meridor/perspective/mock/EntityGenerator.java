@@ -45,6 +45,7 @@ public class EntityGenerator {
         Image image = new Image();
         image.setId("test-image");
         image.setName("test-image");
+        image.setState(ImageState.SAVED);
         image.setIsProtected(true);
         return image;
     }
