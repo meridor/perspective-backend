@@ -26,8 +26,8 @@ public class ProjectsRepository {
         return allProjects.stream().filter(query.getPayload()).collect(Collectors.toList());
     }
     
-    public List<Flavor> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showFlavorsQuery.getProjectNames(), showFlavorsQuery.getClouds());
+    public List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(projectNames, clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getFlavors().stream())
@@ -35,8 +35,8 @@ public class ProjectsRepository {
                 .collect(Collectors.toList());
     }
     
-    public List<Network> showNetworks(ShowNetworksQuery showNetworksQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(showNetworksQuery.getProjectNames(), showNetworksQuery.getClouds());
+    public List<Network> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(projectNames, clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getNetworks().stream())

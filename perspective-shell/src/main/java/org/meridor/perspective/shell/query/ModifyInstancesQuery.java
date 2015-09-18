@@ -1,7 +1,7 @@
 package org.meridor.perspective.shell.query;
 
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.validator.Field;
 import org.meridor.perspective.shell.validator.Filter;
 import org.meridor.perspective.shell.validator.Required;
@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 
-public class DeleteImagesQuery implements Query<List<Image>> {
+public class ModifyInstancesQuery implements Query<List<Instance>> {
 
-    private ImagesRepository imagesRepository;
+    private InstancesRepository instancesRepository;
 
-    @Filter(Field.IMAGE_NAMES)
+    @Filter(Field.INSTANCE_NAMES)
     @Required
     private Set<String> names;
     
@@ -25,17 +25,17 @@ public class DeleteImagesQuery implements Query<List<Image>> {
     @SupportedCloud
     private String cloud;
 
-    public DeleteImagesQuery(String names, String cloud, ImagesRepository imagesRepository) {
+    public ModifyInstancesQuery(String names, String cloud, InstancesRepository instancesRepository) {
         this.names = parseEnumeration(names);
         this.cloud = cloud;
-        this.imagesRepository = imagesRepository;
+        this.instancesRepository = instancesRepository;
     }
 
     @Override
-    public List<Image> getPayload() {
+    public List<Instance> getPayload() {
         return names.stream().flatMap(t -> {
-            ShowImagesQuery showImagesQuery = new ShowImagesQuery(t, t, cloud);
-            return imagesRepository.showImages(showImagesQuery).stream();
+            ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(t, t, cloud);
+            return instancesRepository.showInstances(showInstancesQuery).stream();
         }).collect(Collectors.toList());
     }
 }

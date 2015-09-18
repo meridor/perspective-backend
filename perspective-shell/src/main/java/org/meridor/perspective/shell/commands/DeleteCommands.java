@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.commands;
 
+import org.meridor.perspective.shell.query.ModifyInstancesQuery;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.query.DeleteImagesQuery;
@@ -20,10 +21,10 @@ public class DeleteCommands extends BaseCommands {
     @CliCommand(value = "delete instances", help = "Completely delete (terminate) instances")
     public void deleteInstances(
             @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String names,
-            @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        
+        ModifyInstancesQuery modifyInstancesQuery = new ModifyInstancesQuery(names, cloud, instancesRepository);
+        validateExecuteShowStatus(modifyInstancesQuery, instancesRepository::deleteInstances);
     }
     
     @CliCommand(value = "delete images", help = "Delete images")

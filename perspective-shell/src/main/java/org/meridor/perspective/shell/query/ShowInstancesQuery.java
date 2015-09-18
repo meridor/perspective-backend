@@ -35,7 +35,11 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     private Set<String> clouds;
 
     public ShowInstancesQuery(String id, String name) {
-        this(id, name, null, null, null, null);
+        this(id, name, null);
+    }
+    
+    public ShowInstancesQuery(String id, String name, String cloud) {
+        this(id, name, null, null, null, cloud);
     }
     
     public ShowInstancesQuery(String id, String name, String flavor, String image, String state, String cloud) {

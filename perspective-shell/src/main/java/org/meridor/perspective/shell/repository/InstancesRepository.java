@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.repository;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.query.AddInstancesQuery;
+import org.meridor.perspective.shell.query.ModifyInstancesQuery;
 import org.meridor.perspective.shell.query.ShowInstancesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,9 +29,19 @@ public class InstancesRepository {
         return Collections.emptySet();
     }
     
-    public Set<String> deleteInstances() {
-//        apiProvider.getInstancesApi().delete().postXmlAs(instances, String.class);
+    public Set<String> deleteInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        apiProvider.getInstancesApi().delete().postXmlAs(modifyInstancesQuery.getPayload(), String.class);
         return Collections.emptySet();
     }
-
+    
+    public Set<String> rebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        apiProvider.getInstancesApi().reboot().putXmlAs(modifyInstancesQuery.getPayload(), String.class);
+        return Collections.emptySet();
+    }
+    
+    public Set<String> hardRebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        apiProvider.getInstancesApi().hardReboot().putXmlAs(modifyInstancesQuery.getPayload(), String.class);
+        return Collections.emptySet();
+    }
+    
 }

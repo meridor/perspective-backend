@@ -52,12 +52,12 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(name, projectName, cloud);
+        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(name);
         validateExecuteShowResult(
                 showFlavorsQuery,
                 new String[]{"Id", "Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
-                    List<Flavor> flavors = projectsRepository.showFlavors(q);
+                    List<Flavor> flavors = projectsRepository.showFlavors(projectName, cloud, q);
                     return flavors.stream()
                             .map(f -> new String[]{
                                     f.getId(), f.getName(),
@@ -75,12 +75,12 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(name, projectName, cloud);
+        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(name);
         validateExecuteShowResult(
                 showNetworksQuery,
                 new String[]{"Id", "Name", "Subnets", "State", "Is Shared"},
                 q -> {
-                    List<Network> networks = projectsRepository.showNetworks(q);
+                    List<Network> networks = projectsRepository.showNetworks(projectName, cloud, q);
                     return networks.stream()
                             .map(n -> new String[]{
                                     n.getId(), n.getName(),

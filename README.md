@@ -58,11 +58,11 @@
 * add images (включает в себя snapshot и upload) [+]
 
 ### Delete commands
-* delete instances
+* delete instances [+]
 * delete images [+]
 
 ### Instances commands
-* reboot instances (--hard)
+* reboot instances (--hard) [+]
 * rebuild instances
 * resize instances
 * migrate instances
