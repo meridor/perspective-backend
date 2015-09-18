@@ -12,11 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.joinLines;
-import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 
 @Component
 public class ShowCommands extends BaseCommands {
@@ -32,12 +30,10 @@ public class ShowCommands extends BaseCommands {
     
     @CliCommand(value = "show projects", help = "Show available projects")
     public void showProjects(
-            @CliOption(key = "names", help = "Project name") String names,
-            @CliOption(key = "clouds", help = "Cloud types") String clouds
+            @CliOption(key = "name", help = "Project name") String name,
+            @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        Set<String> parsedNames = parseEnumeration(names); 
-        Set<String> parsedClouds = parseEnumeration(clouds); 
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(parsedNames, parsedClouds);
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(name, cloud);
         validateExecuteShowResult(
                 showProjectsQuery,
                 new String[]{"Id", "Name", "Cloud"},
@@ -52,14 +48,11 @@ public class ShowCommands extends BaseCommands {
     
     @CliCommand(value = "show flavors", help = "Show available flavors")
     public void showFlavors(
-            @CliOption(key = "names", help = "Flavor name") String names,
-            @CliOption(key = "projectNames", help = "Project name") String projectNames,
-            @CliOption(key = "clouds", help = "Cloud type") String clouds
+            @CliOption(key = "name", help = "Flavor name") String name,
+            @CliOption(key = "projectName", help = "Project name") String projectName,
+            @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        Set<String> parsedNames = parseEnumeration(names);
-        Set<String> parsedProjectNames = parseEnumeration(projectNames);
-        Set<String> parsedClouds = parseEnumeration(clouds);
-        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(parsedNames, parsedProjectNames, parsedClouds);
+        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(name, projectName, cloud);
         validateExecuteShowResult(
                 showFlavorsQuery,
                 new String[]{"Id", "Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
@@ -78,14 +71,11 @@ public class ShowCommands extends BaseCommands {
     
     @CliCommand(value = "show networks", help = "Show available networks")
     public void showNetworks(
-            @CliOption(key = "names", help = "Network name") String names,
-            @CliOption(key = "projectNamess", help = "Project name") String projectNames,
-            @CliOption(key = "clouds", help = "Cloud type") String clouds
+            @CliOption(key = "name", help = "Network name") String name,
+            @CliOption(key = "projectName", help = "Project name") String projectName,
+            @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        Set<String> parsedNames = parseEnumeration(names);
-        Set<String> parsedProjectNames = parseEnumeration(projectNames);
-        Set<String> parsedClouds = parseEnumeration(clouds);
-        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(parsedNames, parsedProjectNames, parsedClouds);
+        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(name, projectName, cloud);
         validateExecuteShowResult(
                 showNetworksQuery,
                 new String[]{"Id", "Name", "Subnets", "State", "Is Shared"},

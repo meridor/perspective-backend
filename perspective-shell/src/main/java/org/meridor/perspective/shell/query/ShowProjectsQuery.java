@@ -8,19 +8,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static org.meridor.perspective.shell.validator.Field.CLOUD;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
+import static org.meridor.perspective.shell.validator.Field.CLOUDS;
 
 public class ShowProjectsQuery implements Query<Predicate<Project>> {
     
     private Set<String> names;
     
     @SupportedCloud
-    @Filter(CLOUD)
+    @Filter(CLOUDS)
     private Set<String> clouds;
 
-    public ShowProjectsQuery(Set<String> names, Set<String> clouds) {
-        this.names = names;
-        this.clouds = clouds;
+    public ShowProjectsQuery(String name, String cloud) {
+        this.names = parseEnumeration(name);
+        this.clouds = parseEnumeration(cloud);
     }
 
     @Override

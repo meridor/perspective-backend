@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.query;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.InstancesRepository;
+import org.meridor.perspective.shell.validator.Filter;
 import org.meridor.perspective.shell.validator.Required;
 
 import java.util.ArrayList;
@@ -18,23 +19,23 @@ public class AddImagesQuery implements Query<List<Image>> {
     private static final String PLACEHOLDER = "$name";
     
     @Required
-    private String names;
+    private Set<String> names;
     
+    @Required
     private String imageName;
     
     private InstancesRepository instancesRepository;
     
     public AddImagesQuery(String imageName, String names, InstancesRepository instancesRepository) {
         this.imageName = imageName;
-        this.names = names;
+        this.names = parseEnumeration(names);
         this.instancesRepository = instancesRepository;
     }
 
     @Override
     public List<Image> getPayload() {
         List<Image> images = new ArrayList<>();
-        Set<String> tokens = parseEnumeration(names);
-        List<Instance> matchingInstances = tokens.stream().flatMap(t -> {
+        List<Instance> matchingInstances = names.stream().flatMap(t -> {
             ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(t, t);
             return instancesRepository.showInstances(showInstancesQuery).stream();
         }).collect(Collectors.toList());

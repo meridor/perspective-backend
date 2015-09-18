@@ -6,71 +6,75 @@ import org.meridor.perspective.shell.validator.SupportedCloud;
 import org.meridor.perspective.shell.validator.SupportedInstanceState;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 
 public class ShowInstancesQuery implements Query<Predicate<Instance>> {
+
+    @Filter(INSTANCE_IDS)
+    private Set<String> ids;
+
+    @Filter(INSTANCE_NAMES)
+    private Set<String> names;
     
-    private String id;
+    @Filter(FLAVOR_NAMES)
+    private Set<String> flavors;
     
-    private String name;
-    
-    @Filter(FLAVOR)
-    private String flavor;
-    
-    @Filter(IMAGE)
-    private String image;
+    @Filter(IMAGE_NAMES)
+    private Set<String> images;
     
     @SupportedInstanceState
-    @Filter(INSTANCE_STATE)
-    private String state;
+    @Filter(INSTANCE_STATES)
+    private Set<String> states;
     
     @SupportedCloud
-    @Filter(CLOUD)
-    private String cloud;
+    @Filter(CLOUDS)
+    private Set<String> clouds;
 
     public ShowInstancesQuery(String id, String name) {
         this(id, name, null, null, null, null);
     }
     
     public ShowInstancesQuery(String id, String name, String flavor, String image, String state, String cloud) {
-        this.id = id;
-        this.name = name;
-        this.flavor = flavor;
-        this.image = image;
-        this.state = state;
-        this.cloud = cloud;
+        this.ids = parseEnumeration(id);
+        this.names = parseEnumeration(name);
+        this.flavors = parseEnumeration(flavor);
+        this.images = parseEnumeration(image);
+        this.states = parseEnumeration(state);
+        this.clouds = parseEnumeration(cloud);
     }
 
     @Override
     public Predicate<Instance> getPayload() {
         return getInstancePredicate(
-                Optional.ofNullable(id),
-                Optional.ofNullable(name),
-                Optional.ofNullable(flavor),
-                Optional.ofNullable(image),
-                Optional.ofNullable(state),
-                Optional.ofNullable(cloud)
+                Optional.ofNullable(ids),
+                Optional.ofNullable(names),
+                Optional.ofNullable(flavors),
+                Optional.ofNullable(images),
+                Optional.ofNullable(states),
+                Optional.ofNullable(clouds)
         );
     }
 
-    //TODO: we may probably want to add project name
+    //TODO: we may probably want to add project names
     private Predicate<Instance> getInstancePredicate(
-            Optional<String> id,
-            Optional<String> name,
-            Optional<String> flavor,
-            Optional<String> image,
-            Optional<String> state,
-            Optional<String> cloud
+            Optional<Set<String>> ids,
+            Optional<Set<String>> names,
+            Optional<Set<String>> flavors,
+            Optional<Set<String>> images,
+            Optional<Set<String>> states,
+            Optional<Set<String>> clouds
     ) {
         return instance ->
-                ( !id.isPresent() || instance.getId().contains(id.get()) ) &&
-                ( !name.isPresent() || instance.getName().contains(name.get()) ) &&
-                ( !flavor.isPresent() || instance.getFlavor().getName().contains(flavor.get()) ) &&
-                ( !image.isPresent() || instance.getImage().getName().contains(image.get()) ) &&
-                ( !state.isPresent() || instance.getState().value().contains(state.get().toUpperCase()) ) &&
-                ( !cloud.isPresent() || instance.getCloudType().value().contains(cloud.get()));
+                ( !ids.isPresent() || ids.get().contains(instance.getId()) ) &&
+                ( !names.isPresent() || names.get().contains(instance.getName()) ) &&
+                ( !flavors.isPresent() || flavors.get().contains(instance.getFlavor().getName()) ) &&
+                ( !images.isPresent() || images.get().contains(instance.getImage().getName()) ) &&
+                ( !states.isPresent() || states.get().contains(instance.getState().value().toLowerCase()) ) &&
+                ( !clouds.isPresent() || clouds.get().contains(instance.getCloudType().value().toLowerCase()));
     }
 
 }

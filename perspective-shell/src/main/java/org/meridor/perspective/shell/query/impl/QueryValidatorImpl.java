@@ -35,35 +35,43 @@ public class QueryValidatorImpl implements QueryValidator {
         getValidators().forEach(v -> Arrays.stream(query.getClass().getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(v.getAnnotationClass()))
                 .forEach(f -> {
-                    String filterName = f.getName();
-                    Annotation annotation = f.getAnnotation(v.getAnnotationClass());
-                    try {
-                        Object value = getValue(query, f);
-                        if (value != null && isSet(value.getClass())) {
-                            Set<?> set = Set.class.cast(value);
-                            set.stream().forEach(val -> {
-                                if (!v.validate(annotation, val)) {
-                                    errors.add(v.getMessage(annotation, filterName, value));
-                                }
-                            });
-                        } else {
-                            if (!v.validate(annotation, value)) {
-                                errors.add(v.getMessage(annotation, filterName, value));
-                            }
-                        }
-                    } catch (IllegalAccessException e) {
-                        errors.add(String.format(
-                                "Failed to read field \"%s\" value",
-                                filterName
-                        ));
-                    }
+                    Set<String> fieldErrors = validateField(v, query, f);
+                    errors.addAll(fieldErrors);
                 }));
+        return errors;
+    }
+    
+    private Set<String> validateField(Validator v, Query<?> query, java.lang.reflect.Field f) {
+        Set<String> errors = new HashSet<>();
+        String filterName = f.getName();
+        Annotation annotation = f.getAnnotation(v.getAnnotationClass());
+        try {
+            Object value = getValue(query, f);
+            if (value != null && isSet(value.getClass())) {
+                Set<?> set = Set.class.cast(value);
+                set.stream().forEach(val -> {
+                    if (!v.validate(annotation, val)) {
+                        errors.add(v.getMessage(annotation, filterName, value));
+                    }
+                });
+            } else {
+                if (!v.validate(annotation, value)) {
+                    errors.add(v.getMessage(annotation, filterName, value));
+                }
+            }
+        } catch (IllegalAccessException e) {
+            errors.add(String.format(
+                    "Failed to read field \"%s\" value",
+                    filterName
+            ));
+        }
         return errors;
     }
     
     private Object getValue(Query<?> query, java.lang.reflect.Field f) throws IllegalAccessException {
         f.setAccessible(true);
-        if (f.isAnnotationPresent(Filter.class)) {
+        Object value = f.get(query);
+        if (value == null && f.isAnnotationPresent(Filter.class)) {
             Field field = f.getAnnotation(Filter.class).value();
             if (filtersAware.hasFilter(field)) {
                 Set<String> filterValues = filtersAware.getFilter(field);
@@ -74,7 +82,7 @@ public class QueryValidatorImpl implements QueryValidator {
                 }
             }
         }
-        return f.get(query);
+        return value;
     }
     
     private boolean isSet(Class<?> cls) {

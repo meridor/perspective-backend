@@ -18,16 +18,16 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Required
     private String name;
     
-    @Filter(PROJECT)
+    @Filter(PROJECTS)
     private String projectId;
     
-    @Filter(FLAVOR)
+    @Filter(FLAVOR_IDS)
     private String flavorId;
     
-    @Filter(IMAGE)
+    @Filter(IMAGE_IDS)
     private String imageId;
     
-    @Filter(NETWORK)
+    @Filter(NETWORK_IDS)
     private String networkId;
     
     @Positive

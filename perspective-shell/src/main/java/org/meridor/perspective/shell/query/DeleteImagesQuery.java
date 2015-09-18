@@ -7,7 +7,6 @@ import org.meridor.perspective.shell.validator.Filter;
 import org.meridor.perspective.shell.validator.Required;
 import org.meridor.perspective.shell.validator.SupportedCloud;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,10 +17,11 @@ public class DeleteImagesQuery implements Query<List<Image>> {
 
     private ImagesRepository imagesRepository;
 
+    @Filter(Field.IMAGE_NAMES)
     @Required
     private String names;
     
-    @Filter(Field.CLOUD)
+    @Filter(Field.CLOUDS)
     @SupportedCloud
     private String cloud;
 

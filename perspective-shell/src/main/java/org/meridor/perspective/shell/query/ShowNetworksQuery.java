@@ -8,24 +8,27 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static org.meridor.perspective.shell.validator.Field.CLOUD;
-import static org.meridor.perspective.shell.validator.Field.PROJECT;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
+import static org.meridor.perspective.shell.validator.Field.CLOUDS;
+import static org.meridor.perspective.shell.validator.Field.NETWORK_NAMES;
+import static org.meridor.perspective.shell.validator.Field.PROJECTS;
 
 public class ShowNetworksQuery implements Query<Predicate<Network>> {
     
+    @Filter(NETWORK_NAMES)
     private Set<String> names;
     
-    @Filter(PROJECT)
+    @Filter(PROJECTS)
     private Set<String> projectNames;
 
     @SupportedCloud
-    @Filter(CLOUD)
+    @Filter(CLOUDS)
     private Set<String> clouds;
 
-    public ShowNetworksQuery(Set<String> names, Set<String> projectNames, Set<String> clouds) {
-        this.names = names;
-        this.projectNames = projectNames;
-        this.clouds = clouds;
+    public ShowNetworksQuery(String name, String projectName, String cloud) {
+        this.names = parseEnumeration(name);
+        this.projectNames = parseEnumeration(projectName);
+        this.clouds = parseEnumeration(cloud);
     }
 
     public Set<String> getProjectNames() {
