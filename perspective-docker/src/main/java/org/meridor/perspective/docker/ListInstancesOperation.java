@@ -8,6 +8,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
@@ -29,6 +29,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private static Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
 
+    @Autowired
+    private IdGenerator idGenerator;
+    
     @Autowired
     private DockerApiProvider apiProvider;
 
@@ -42,7 +45,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 instances.add(createInstance(container));
             }
 
-            LOG.debug("Fetched {} instances from Docker API", instances.size());
+            LOG.debug("Fetched {} instances", instances.size());
             consumer.accept(instances);
             return true;
         } catch (IOException e) {
@@ -58,8 +61,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private Instance createInstance(Container container) {
         Instance instance = new Instance();
-        String id = UUID.fromString(container.id()).toString();
-        instance.setId(id);
+        String instanceId = idGenerator.generate(Instance.class, container.id());
+        instance.setId(instanceId);
         instance.setName(container.name());
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 container.created().toInstant(),

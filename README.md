@@ -49,7 +49,9 @@
 * show projects [+]
 * show networks [+]
 * show instances [+]
+* show instance (показать детали)
 * show images [+]
+* show image (показать детали)
 * show flavors [+]
 * show networks [+]
 

@@ -7,8 +7,10 @@ import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.beans.Keypair;
+import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     @Autowired
     private OpenstackApiProvider apiProvider;
+    
+    @Autowired
+    private IdGenerator idGenerator;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
@@ -39,10 +44,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             for (String region : novaApi.getConfiguredRegions()) {
                 ServerApi serverApi = novaApi.getServerApi(region);
                 FluentIterable<Server> servers = serverApi.listInDetail().concat();
-                servers.forEach(s -> instances.add(createInstance(s)));
+                servers.forEach(s -> instances.add(createInstance(region, s)));
             }
 
-            LOG.debug("Fetched {} instances from Openstack API", instances.size());
+            LOG.debug("Fetched {} instances", instances.size());
             consumer.accept(instances);
             return true;
         } catch (IOException e) {
@@ -56,9 +61,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return new OperationType[]{LIST_INSTANCES};
     }
 
-    private Instance createInstance(Server server) {
+    private Instance createInstance(String region, Server server) {
         Instance instance = new Instance();
-        instance.setId(server.getId());
+        String instanceId = idGenerator.generate(Instance.class, server.getId());
+        instance.setId(instanceId);
         instance.setName(server.getName());
         instance.setState(stateFromStatus(server.getStatus()));
         Keypair keypair = new Keypair();
@@ -74,6 +80,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 ZoneId.systemDefault()
         );
         instance.setTimestamp(timestamp);
+        instance.getMetadata().put(MetadataKey.ID, server.getId());
+        instance.getMetadata().put(MetadataKey.REGION, region);
+        
         //TODO: add information about image and network
         return instance;
     }

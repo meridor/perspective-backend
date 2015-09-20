@@ -26,6 +26,7 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
         Project project = createProject(cloud);
         projects.add(project);
         consumer.accept(projects);
+        LOG.debug("Fetched {} projects", projects.size());
         return true;
     }
 

@@ -5,8 +5,10 @@ import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
+import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,9 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
+    @Autowired
+    private IdGenerator idGenerator;
+    
     @Autowired
     private OpenstackApiProvider apiProvider;
 
@@ -56,7 +61,8 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage) {
         Image image = new Image();
-        image.setId(openstackImage.getId());
+        String imageId = idGenerator.generate(Image.class, openstackImage.getId());
+        image.setId(imageId);
         image.setName(openstackImage.getName());
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime created = ZonedDateTime.ofInstant(
@@ -70,6 +76,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 ZoneId.systemDefault()
         );
         image.setTimestamp(timestamp);
+        image.getMetadata().put(MetadataKey.ID, openstackImage.getId());
         return image;
     }
 

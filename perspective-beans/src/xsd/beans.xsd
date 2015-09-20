@@ -53,6 +53,32 @@
         <xsd:attribute name="prefixSize" type="xsd:unsignedInt"/>
     </xsd:complexType>
 
+    <xsd:simpleType name="metadataKey">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="architecture"/>
+            <xsd:enumeration value="author"/>
+            <xsd:enumeration value="command"/>
+            <xsd:enumeration value="id"/>
+            <xsd:enumeration value="parent"/>
+            <xsd:enumeration value="region"/>
+            <xsd:enumeration value="operating_system"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="metadata">
+        <xsd:sequence>
+            <xsd:element name="entry" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="key" type="tns:metadataKey"/>
+                        <xsd:element name="value" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="xsd:string"/>
+    </xsd:complexType>
+
     <xsd:complexType name="availabilityZones">
         <xsd:sequence>
             <xsd:element name="availabilityZones" type="tns:availabilityZone" maxOccurs="unbounded"/>
@@ -107,6 +133,7 @@
             <xsd:element name="isProtected" type="xsd:boolean"/>
             <xsd:element name="checksum" type="tns:checksum"/>
             <xsd:element name="errorReason" type="xsd:string"/>
+            <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
 
@@ -235,6 +262,7 @@
             <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
+            <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
 

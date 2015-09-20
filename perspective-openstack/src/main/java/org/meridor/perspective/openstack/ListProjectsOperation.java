@@ -55,7 +55,7 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
 
                 projects.add(project);
             }
-            LOG.debug("Fetched {} projects from Openstack API", projects.size());
+            LOG.debug("Fetched {} projects", projects.size());
             consumer.accept(projects);
             return true;
         } catch (IOException e) {

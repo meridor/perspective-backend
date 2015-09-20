@@ -53,6 +53,13 @@
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='metadata']">
+                    <jaxb:property>
+                        <jaxb:baseType name="org.meridor.perspective.beans.MetadataMap" />
+                    </jaxb:property>
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
             </jaxb:bindings>
             <jaxb:bindings node="./xsd:complexType[@name='instance']/xsd:all">
                 <jaxb:bindings node="./xsd:element[@name='projectId']">
@@ -100,6 +107,13 @@
                     <hashCode:ignored/>
                 </jaxb:bindings>
                 <jaxb:bindings node="./xsd:element[@name='isLocked']">
+                    <equals:ignored/>
+                    <hashCode:ignored/>
+                </jaxb:bindings>
+                <jaxb:bindings node="./xsd:element[@name='metadata']">
+                    <jaxb:property>
+                        <jaxb:baseType name="org.meridor.perspective.beans.MetadataMap" />
+                    </jaxb:property>
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>

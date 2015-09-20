@@ -14,7 +14,7 @@ public final class TextUtils {
         return values.stream().collect(Collectors.joining(COMMA + SPACE));
     }
     
-    public static String joinLines(Set<String> values) {
+    public static String joinLines(Collection<String> values) {
         return values.stream().collect(Collectors.joining("\n"));
     }
 
