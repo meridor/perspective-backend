@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.humanizedDuration;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.joinLines;
 
 @Component
@@ -110,10 +111,10 @@ public class ShowCommands extends BaseCommands {
                     return instances.stream()
                             .map(n -> new String[]{
                                     n.getId(), n.getName(),
-                                    n.getImage().getName(),
-                                    n.getFlavor().getName(),
+                                    (n.getImage() != null) ? n.getImage().getName() : "-",
+                                    (n.getFlavor() != null) ? n.getFlavor().getName() : "-",
                                     n.getState().value(),
-                                    n.getTimestamp().toString()
+                                    humanizedDuration(n.getTimestamp())
                             })
                             .collect(Collectors.toList());
 

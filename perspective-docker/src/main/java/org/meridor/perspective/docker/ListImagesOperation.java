@@ -61,11 +61,13 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         String imageId = idGenerator.generate(Image.class, dockerImage.id());
         image.setId(imageId);
         image.setSize(dockerImage.size());
-        image.getMetadata().put(MetadataKey.AUTHOR, dockerImage.author());
-        image.getMetadata().put(MetadataKey.ARCHITECTURE, dockerImage.architecture());
-        image.getMetadata().put(MetadataKey.ID, imageId);
-        image.getMetadata().put(MetadataKey.OPERATING_SYSTEM, dockerImage.os());
-        image.getMetadata().put(MetadataKey.PARENT, dockerImage.parent());
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.AUTHOR, dockerImage.author());
+        metadata.put(MetadataKey.ARCHITECTURE, dockerImage.architecture());
+        metadata.put(MetadataKey.ID, dockerImage.id());
+        metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImage.os());
+        metadata.put(MetadataKey.PARENT, dockerImage.parent());
+        image.setMetadata(metadata);
         image.setName(dockerImage.comment());
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 dockerImage.created().toInstant(),

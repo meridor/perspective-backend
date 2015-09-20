@@ -6,6 +6,7 @@ import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
@@ -40,16 +41,22 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
             Set<Image> images = new HashSet<>();
             for (String region : novaApi.getConfiguredRegions()) {
-                ImageApi imageApi = novaApi.getImageApi(region);
-                FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
-                imagesList.forEach(img -> images.add(createImage(img)));
+                try {
+                    ImageApi imageApi = novaApi.getImageApi(region);
+                    FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
+                    Integer count = 0;
+                    imagesList.forEach(img -> images.add(createImage(img)));
+                    LOG.debug("Fetched images for cloud = {}, region = {}", cloud.getName(), region);
+                } catch (Exception e) {
+                    LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
+                }
             }
 
-            LOG.debug("Fetched {} images from Openstack API", images.size());
+            LOG.info("Fetched {} images overall for cloud = {}", images.size(), cloud.getName());
             consumer.accept(images);
             return true;
         } catch (IOException e) {
-            LOG.error("Failed to fetch images", e);
+            LOG.error("Failed to fetch images for cloud = " + cloud.getName(), e);
             return false;
         }
     }
@@ -76,7 +83,9 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 ZoneId.systemDefault()
         );
         image.setTimestamp(timestamp);
-        image.getMetadata().put(MetadataKey.ID, openstackImage.getId());
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.ID, openstackImage.getId());
+        image.setMetadata(metadata);
         return image;
     }
 

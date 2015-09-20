@@ -40,26 +40,30 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud); NeutronApi neutronApi = apiProvider.getNeutronApi(cloud)) {
             Set<Project> projects = new HashSet<>();
             for (String region : novaApi.getConfiguredRegions()) {
-                Project project = createProject(cloud, region);
+                try {
+                    Project project = createProject(cloud, region);
 
-                FlavorApi flavorApi = novaApi.getFlavorApi(region);
-                addFlavors(project, flavorApi);
+                    FlavorApi flavorApi = novaApi.getFlavorApi(region);
+                    addFlavors(project, flavorApi);
 
-                NetworkApi networkApi = neutronApi.getNetworkApi(region);
-                addNetworks(project, networkApi);
+                    NetworkApi networkApi = neutronApi.getNetworkApi(region);
+                    addNetworks(project, networkApi);
 
 //                Optional<AvailabilityZoneApi> availabilityZoneApi = novaApi.getAvailabilityZoneApi(region);
 //                if (availabilityZoneApi.isPresent()) {
 //                    addAvailabilityZones(availabilityZoneApi.get(), project);
 //                }
 
-                projects.add(project);
+                    projects.add(project);
+                } catch (Exception e) {
+                    LOG.error("Failed to fetch information for cloud = {}, region = {}", cloud.getName(), region);
+                }
             }
-            LOG.debug("Fetched {} projects", projects.size());
+            LOG.info("Fetched {} projects for cloud = {}", projects.size(), cloud.getName());
             consumer.accept(projects);
             return true;
         } catch (IOException e) {
-            LOG.error("Failed to fetch projects", e);
+            LOG.error("Failed to fetch projects for cloud = " + cloud.getName(), e);
             return false;
         }
     }

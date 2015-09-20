@@ -24,7 +24,7 @@ public class TableRenderer {
 
         V2_AsciiTableRenderer renderer = new V2_AsciiTableRenderer();
         renderer.setTheme(V2_E_TableThemes.UTF_LIGHT.get());
-        renderer.setWidth(new WidthAbsoluteEven(120));
+        renderer.setWidth(new WidthAbsoluteEven(180));
         return renderer.render(table).toString();
     }
     

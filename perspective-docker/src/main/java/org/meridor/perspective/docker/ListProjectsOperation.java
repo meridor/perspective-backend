@@ -18,7 +18,7 @@ import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Project>> consumer) {
@@ -26,7 +26,7 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
         Project project = createProject(cloud);
         projects.add(project);
         consumer.accept(projects);
-        LOG.debug("Fetched {} projects", projects.size());
+        LOG.info("Fetched {} projects for cloud = {}", projects.size(), cloud.getName());
         return true;
     }
 

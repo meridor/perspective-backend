@@ -1,5 +1,8 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,15 @@ public final class TextUtils {
         return values.stream().collect(Collectors.joining("\n"));
     }
 
+    public static String humanizedDuration(ZonedDateTime zonedDateTime) {
+        //TODO: this one seems to show incorrect result if duration > 1 year
+        ZonedDateTime now = ZonedDateTime.now();
+        Date currentDate = Date.from(zonedDateTime.toInstant());
+        Date nowDate = Date.from(now.toInstant());
+        PrettyTime pt = new PrettyTime(nowDate);
+        return pt.format(currentDate);
+    }
+    
     /**
      * Parses the following strings: key1 = value1, value2, value3; key2 = value4, value5
      * @param data a string of the specified format

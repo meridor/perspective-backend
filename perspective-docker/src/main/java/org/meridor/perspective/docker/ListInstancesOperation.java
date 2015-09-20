@@ -6,6 +6,8 @@ import org.jclouds.docker.domain.ContainerSummary;
 import org.jclouds.docker.features.ContainerApi;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
+import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
@@ -45,11 +47,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 instances.add(createInstance(container));
             }
 
-            LOG.debug("Fetched {} instances", instances.size());
+            LOG.debug("Fetched {} instances for cloud = {}", instances.size(), cloud.getName());
             consumer.accept(instances);
             return true;
         } catch (IOException e) {
-            LOG.error("Failed to fetch instances", e);
+            LOG.error("Failed to fetch instances for cloud = " + cloud.getName(), e);
             return false;
         }
     }
@@ -71,7 +73,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setCreated(created);
         instance.setState(stateFromStatus(container.status()));
         instance.setTimestamp(created);
-        //TODO: add information about image and network
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.ID, container.id());
+        instance.setMetadata(metadata);
         return instance;
     }
 

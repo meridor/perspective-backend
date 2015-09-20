@@ -4,10 +4,7 @@ import com.google.common.collect.FluentIterable;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.domain.Server;
 import org.jclouds.openstack.nova.v2_0.features.ServerApi;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceState;
-import org.meridor.perspective.beans.Keypair;
-import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
@@ -42,16 +39,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
             Set<Instance> instances = new HashSet<>();
             for (String region : novaApi.getConfiguredRegions()) {
-                ServerApi serverApi = novaApi.getServerApi(region);
-                FluentIterable<Server> servers = serverApi.listInDetail().concat();
-                servers.forEach(s -> instances.add(createInstance(region, s)));
+                try {
+                    ServerApi serverApi = novaApi.getServerApi(region);
+                    FluentIterable<Server> servers = serverApi.listInDetail().concat();
+                    servers.forEach(s -> instances.add(createInstance(region, s)));
+                    LOG.debug("Fetched instances for cloud = {}, region = {}", cloud.getName(), region);
+                } catch (Exception e) {
+                    LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
+                }
             }
 
-            LOG.debug("Fetched {} instances", instances.size());
+            LOG.info("Fetched {} instances overall for cloud = {}", instances.size(), cloud.getName());
             consumer.accept(instances);
             return true;
         } catch (IOException e) {
-            LOG.error("Failed to fetch instances", e);
+            LOG.error("Failed to fetch instances for cloud = " + cloud.getName(), e);
             return false;
         }
     }
@@ -80,8 +82,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 ZoneId.systemDefault()
         );
         instance.setTimestamp(timestamp);
-        instance.getMetadata().put(MetadataKey.ID, server.getId());
-        instance.getMetadata().put(MetadataKey.REGION, region);
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.ID, server.getId());
+        metadata.put(MetadataKey.REGION, region);
+        instance.setMetadata(metadata);
         
         //TODO: add information about image and network
         return instance;

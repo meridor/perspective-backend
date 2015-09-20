@@ -12,6 +12,10 @@
     <artifactId>perspective-shell</artifactId>
     <name>Perspective Interactive Shell</name>
 
+    <properties>
+        <prettytime.version>4.0.0.Final</prettytime.version>
+    </properties>
+    
     <build>
         <plugins>
             <plugin>
@@ -77,6 +81,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ocpsoft.prettytime</groupId>
+            <artifactId>prettytime</artifactId>
+            <version>${prettytime.version}</version>
         </dependency>
     </dependencies>
 
