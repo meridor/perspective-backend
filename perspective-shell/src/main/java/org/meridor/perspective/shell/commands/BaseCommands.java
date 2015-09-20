@@ -30,11 +30,15 @@ public abstract class BaseCommands implements CommandMarker {
         ok("OK");
     }
 
-    protected static void ok(String message) {
+    public static void ok(String message) {
         LOG.info(message);
     }
-
-    protected static void error(String message) {
+    
+    public static void warn(String message) {
+        LOG.warning(message);
+    }
+    
+    public static void error(String message) {
         LOG.severe(message);
     }
 
