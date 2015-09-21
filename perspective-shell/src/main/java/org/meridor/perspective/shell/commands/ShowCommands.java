@@ -109,12 +109,12 @@ public class ShowCommands extends BaseCommands {
                 q -> {
                     List<Instance> instances = instancesRepository.showInstances(q);
                     return instances.stream()
-                            .map(n -> new String[]{
-                                    n.getId(), n.getName(),
-                                    (n.getImage() != null) ? n.getImage().getName() : "-",
-                                    (n.getFlavor() != null) ? n.getFlavor().getName() : "-",
-                                    n.getState().value(),
-                                    humanizedDuration(n.getTimestamp())
+                            .map(i -> new String[]{
+                                    i.getId(), i.getName(),
+                                    (i.getImage() != null) ? i.getImage().getName() : "-",
+                                    (i.getFlavor() != null) ? i.getFlavor().getName() : "-",
+                                    i.getState().value(),
+                                    humanizedDuration(i.getTimestamp())
                             })
                             .collect(Collectors.toList());
 
@@ -135,11 +135,11 @@ public class ShowCommands extends BaseCommands {
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
                     return images.stream()
-                            .map(n -> new String[]{
-                                    n.getId(), n.getName(),
-                                    n.getState().value(),
-                                    String.valueOf(n.getSize()),
-                                    n.getTimestamp().toString()
+                            .map(i -> new String[]{
+                                    i.getId(), i.getName(),
+                                    i.getState().value(),
+                                    String.valueOf(i.getSize()),
+                                    humanizedDuration(i.getTimestamp())
                             })
                             .collect(Collectors.toList());
                 }

@@ -47,6 +47,8 @@ public class EntityGenerator {
         image.setName("test-image");
         image.setState(ImageState.SAVED);
         image.setIsProtected(true);
+        image.setCreated(now().minusDays(2));
+        image.setTimestamp(now().minusHours(4));
         return image;
     }
 
@@ -54,6 +56,7 @@ public class EntityGenerator {
         Instance instance = new Instance();
         instance.setId("test-instance");
         instance.setTimestamp(now());
+        instance.setCreated(now());
         instance.setCloudType(CloudType.MOCK);
         instance.setProjectId("test-project");
         instance.setName("test-instance");
@@ -67,6 +70,7 @@ public class EntityGenerator {
 
     public static Instance getErrorInstance() {
         Instance instance = getInstance();
+        instance.setCreated(now().minusDays(5));
         instance.setTimestamp(now().minusDays(3));
         instance.setId("error-instance");
         instance.setName("error-instance");

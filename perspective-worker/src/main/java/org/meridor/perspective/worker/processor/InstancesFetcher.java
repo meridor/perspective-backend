@@ -14,6 +14,7 @@ import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +42,7 @@ public class InstancesFetcher {
     @Autowired
     private WorkerMetadata workerMetadata;
 
+    @Async
     @Scheduled(fixedDelayString = "${perspective.fetch.delay.instances}")
     public void fetchInstances() {
         cloudConfigurationProvider.getClouds().forEach(this::fetchCloudInstances);

@@ -22,11 +22,8 @@ public final class TextUtils {
     }
 
     public static String humanizedDuration(ZonedDateTime zonedDateTime) {
-        //TODO: this one seems to show incorrect result if duration > 1 year
-        ZonedDateTime now = ZonedDateTime.now();
         Date currentDate = Date.from(zonedDateTime.toInstant());
-        Date nowDate = Date.from(now.toInstant());
-        PrettyTime pt = new PrettyTime(nowDate);
+        PrettyTime pt = new PrettyTime();
         return pt.format(currentDate);
     }
     
