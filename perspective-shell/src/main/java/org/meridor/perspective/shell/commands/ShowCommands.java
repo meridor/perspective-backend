@@ -131,14 +131,13 @@ public class ShowCommands extends BaseCommands {
         ShowImagesQuery showImagesQuery = new ShowImagesQuery(id, name, cloud);
         validateExecuteShowResult(
                 showImagesQuery,
-                new String[]{"Id", "Name", "State", "Size", "Last modified"},
+                new String[]{"Id", "Name", "State", "Last modified"},
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
                     return images.stream()
                             .map(i -> new String[]{
                                     i.getId(), i.getName(),
                                     i.getState().value(),
-                                    String.valueOf(i.getSize()),
                                     humanizedDuration(i.getTimestamp())
                             })
                             .collect(Collectors.toList());

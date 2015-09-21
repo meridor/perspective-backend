@@ -46,9 +46,11 @@ public class EntityGenerator {
         image.setId("test-image");
         image.setName("test-image");
         image.setState(ImageState.SAVED);
-        image.setIsProtected(true);
         image.setCreated(now().minusDays(2));
         image.setTimestamp(now().minusHours(4));
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.ID, "test-image");
+        image.setMetadata(metadata);
         return image;
     }
 

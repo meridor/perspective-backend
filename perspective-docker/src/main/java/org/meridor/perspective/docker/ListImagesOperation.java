@@ -60,7 +60,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         Image image = new Image();
         String imageId = idGenerator.generate(Image.class, dockerImage.id());
         image.setId(imageId);
-        image.setSize(dockerImage.size());
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.AUTHOR, dockerImage.author());
         metadata.put(MetadataKey.ARCHITECTURE, dockerImage.architecture());

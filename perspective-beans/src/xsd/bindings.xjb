@@ -33,22 +33,6 @@
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='size']">
-                    <equals:ignored/>
-                    <hashCode:ignored/>
-                </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='minFlavor']">
-                    <equals:ignored/>
-                    <hashCode:ignored/>
-                </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='isPublic']">
-                    <equals:ignored/>
-                    <hashCode:ignored/>
-                </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='isProtected']">
-                    <equals:ignored/>
-                    <hashCode:ignored/>
-                </jaxb:bindings>
                 <jaxb:bindings node="./xsd:element[@name='checksum']">
                     <equals:ignored/>
                     <hashCode:ignored/>

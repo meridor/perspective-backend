@@ -44,7 +44,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 try {
                     ImageApi imageApi = novaApi.getImageApi(region);
                     FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
-                    Integer count = 0;
                     imagesList.forEach(img -> images.add(createImage(img)));
                     LOG.debug("Fetched images for cloud = {}, region = {}", cloud.getName(), region);
                 } catch (Exception e) {

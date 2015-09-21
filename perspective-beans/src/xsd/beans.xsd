@@ -127,15 +127,13 @@
             <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="state" type="tns:imageState"/>
-            <xsd:element name="size" type="xsd:double"/>
-            <xsd:element name="minFlavor" type="tns:flavor"/>
-            <xsd:element name="isPublic" type="xsd:boolean"/>
-            <xsd:element name="isProtected" type="xsd:boolean"/>
             <xsd:element name="checksum" type="tns:checksum"/>
             <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
+
+    <xsd:element name="image" type="tns:image"/>
 
     <xsd:complexType name="quota">
         <xsd:attribute name="maxInstances" type="xsd:unsignedInt"/>
