@@ -64,7 +64,7 @@ public class ImagesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response saveImages(List<Image> images) {
         for (Image image : images) {
-            LOG.info("Queuing image {} for saving", image);
+            LOG.info("Queuing image {} ({}) for saving", image.getName(), image.getId());
             image.setId(uuid());
             image.setCreated(now());
             image.setState(ImageState.QUEUED);
@@ -80,7 +80,7 @@ public class ImagesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response deleteImages(List<Image> images) {
         for (Image image : images) {
-            LOG.debug("Queuing image {} for removal", image);
+            LOG.debug("Queuing image {} ({}) for removal", image.getName(), image.getId());
             ImageDeletingEvent event = imageEvent(ImageDeletingEvent.class, image);
             producer.produce(message(image.getCloudType(), event));
         }

@@ -9,24 +9,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 
 @Component
-public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
+public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Override
-    public boolean perform(Cloud cloud, Consumer<Set<Project>> consumer) {
-        Set<Project> projects = new HashSet<>();
+    public boolean perform(Cloud cloud, Consumer<Project> consumer) {
         Project project = createProject(cloud);
-        projects.add(project);
-        consumer.accept(projects);
-        LOG.info("Fetched {} projects for cloud = {}", projects.size(), cloud.getName());
+        consumer.accept(project);
+        LOG.info("Fetched project {} for cloud = {}", project.getName(), cloud.getName());
         return true;
     }
 

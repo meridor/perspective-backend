@@ -1,7 +1,6 @@
 package org.meridor.perspective.worker.processor;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.framework.messaging.Message;
 import org.meridor.perspective.framework.messaging.Processor;
@@ -40,35 +39,33 @@ public class ImagesProcessor implements Processor {
 
     private void processImages(ImageEvent event) {
         Image imageFromEvent = event.getImage();
-        CloudType cloudType = imageFromEvent.getCloudType();
         Optional<Image> imageOrEmpty = storage.getImage(imageFromEvent.getId());
         if (imageOrEmpty.isPresent()) {
             Image image = imageOrEmpty.get();
             ImageEvent currentState = imageToEvent(image);
             Yatomata<ImageFSM> fsm = fsmBuilderAware.get(ImageFSM.class).build(currentState);
-            event.setImage(image);
             LOG.debug(
-                    "Updating image {} from cloud {} from state = {} to state = {}",
+                    "Updating image {} ({}) from state = {} to state = {}",
+                    image.getName(),
                     image.getId(),
-                    cloudType,
                     currentState.getClass().getSimpleName(),
                     event.getClass().getSimpleName()
             );
             fsm.fire(event);
         } else if (event.isSync() && !storage.isImageDeleted(imageFromEvent.getId())) {
             LOG.debug(
-                    "Syncing image {} from cloud {} with state = {} for the first time",
+                    "Syncing image {} ({}) with state = {} for the first time",
+                    event.getImage().getName(),
                     event.getImage().getId(),
-                    cloudType,
                     event.getClass().getSimpleName()
             );
             Yatomata<ImageFSM> fsm = fsmBuilderAware.get(ImageFSM.class).build();
             fsm.fire(event);
         } else {
             LOG.debug(
-                    "Will not update image {} from cloud = {} as it does not exist or was already deleted",
-                    imageFromEvent.getId(),
-                    cloudType
+                    "Will not update image {} ({}) as it does not exist or was already deleted",
+                    imageFromEvent.getName(),
+                    imageFromEvent.getId()
             );
         }
     }

@@ -6,11 +6,6 @@ public class InstanceException extends RuntimeException {
 
     private final Instance instance;
 
-    public InstanceException(String message, Throwable cause, Instance instance) {
-        super(message, cause);
-        this.instance = instance;
-    }
-
     public InstanceException(String message, Instance instance) {
         super(message);
         this.instance = instance;

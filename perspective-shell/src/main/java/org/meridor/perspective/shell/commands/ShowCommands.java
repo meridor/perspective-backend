@@ -105,12 +105,12 @@ public class ShowCommands extends BaseCommands {
         ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(id, name, flavor, image, state, cloud);
         validateExecuteShowResult(
                 showInstancesQuery,
-                new String[]{"Id", "Name", "Image", "Flavor", "State", "Last modified"},
+                new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
                 q -> {
                     List<Instance> instances = instancesRepository.showInstances(q);
                     return instances.stream()
                             .map(i -> new String[]{
-                                    i.getId(), i.getName(),
+                                    i.getName(),
                                     (i.getImage() != null) ? i.getImage().getName() : "-",
                                     (i.getFlavor() != null) ? i.getFlavor().getName() : "-",
                                     i.getState().value(),
@@ -131,12 +131,12 @@ public class ShowCommands extends BaseCommands {
         ShowImagesQuery showImagesQuery = new ShowImagesQuery(id, name, cloud);
         validateExecuteShowResult(
                 showImagesQuery,
-                new String[]{"Id", "Name", "State", "Last modified"},
+                new String[]{"Name", "State", "Last modified"},
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
                     return images.stream()
                             .map(i -> new String[]{
-                                    i.getId(), i.getName(),
+                                    i.getName(),
                                     i.getState().value(),
                                     humanizedDuration(i.getTimestamp())
                             })

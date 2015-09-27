@@ -18,8 +18,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.meridor.perspective.beans.DestinationName.TASKS;
 import static org.meridor.perspective.events.EventFactory.instanceToEvent;
@@ -49,25 +49,29 @@ public class InstancesFetcher {
     }
     
     @IfNotLocked
-    protected void fetchCloudInstances(Cloud c) {
-        LOG.info("Fetching instances list for cloud {}", c.getName());
-        Set<Instance> instances = new HashSet<>();
+    protected void fetchCloudInstances(Cloud cloud) {
+        LOG.info("Fetching instances list for cloud = {}", cloud.getName());
         try {
-            if (!operationProcessor.<Set<Instance>>consume(c, OperationType.LIST_INSTANCES, instances::addAll)) {
-                throw new RuntimeException("Failed to get instances list from the cloud");
+            if (!operationProcessor.consume(cloud, OperationType.LIST_INSTANCES, getConsumer(cloud))) {
+                throw new RuntimeException("Failed to get instances list from cloud = " + cloud.getName());
             }
+        } catch (Exception e) {
+            LOG.error("Error while fetching instances list for cloud = " + cloud.getName(), e);
+        }
+    }
+    
+    private Consumer<Set<Instance>> getConsumer(Cloud cloud) {
+        return instances -> {
             CloudType cloudType = workerMetadata.getCloudType();
             for (Instance instance : instances) {
                 instance.setCloudType(cloudType);
-                instance.setCloudId(c.getId());
+                instance.setCloudId(cloud.getId());
                 InstanceEvent event = instanceToEvent(instance);
                 event.setSync(true);
                 producer.produce(message(cloudType, event));
             }
-            LOG.debug("Saved instances state for cloud {} to queue", c.getName());
-        } catch (Exception e) {
-            LOG.error("Error while fetching instances list for cloud " + c.getName(), e);
-        }
+            LOG.debug("Saved {} fetched instances for cloud = {} to queue", instances.size(), cloud.getName());
+        };
     }
 
 }

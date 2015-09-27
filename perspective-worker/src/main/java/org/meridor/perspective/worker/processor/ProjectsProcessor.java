@@ -27,7 +27,7 @@ public class ProjectsProcessor implements Processor {
         Optional<ProjectEvent> projectEvent = message.getPayload(ProjectEvent.class);
         if (projectEvent.isPresent() && projectEvent.get() instanceof ProjectSyncEvent) {
             Project project = projectEvent.get().getProject();
-            LOG.info("Syncing project state for project {}", project.getId());
+            LOG.info("Syncing project state for project {} ({})", project.getName(), project.getId());
             storage.saveProject(project);
         } else {
             LOG.error("Skipping empty message {}", message.getId());

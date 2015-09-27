@@ -10,6 +10,8 @@ import org.jclouds.openstack.nova.v2_0.domain.regionscoped.AvailabilityZoneDetai
 import org.jclouds.openstack.nova.v2_0.extensions.AvailabilityZoneApi;
 import org.jclouds.openstack.nova.v2_0.features.FlavorApi;
 import org.meridor.perspective.beans.AvailabilityZone;
+import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
@@ -21,24 +23,24 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 
 @Component
-public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
+public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private static Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Autowired
     private OpenstackApiProvider apiProvider;
+    
+    @Autowired
+    private OpenstackUtils openstackUtils;
 
     @Override
-    public boolean perform(Cloud cloud, Consumer<Set<Project>> consumer) {
+    public boolean perform(Cloud cloud, Consumer<Project> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud); NeutronApi neutronApi = apiProvider.getNeutronApi(cloud)) {
-            Set<Project> projects = new HashSet<>();
             for (String region : novaApi.getConfiguredRegions()) {
                 try {
                     Project project = createProject(cloud, region);
@@ -54,13 +56,12 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
 //                    addAvailabilityZones(availabilityZoneApi.get(), project);
 //                }
 
-                    projects.add(project);
+                    LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName(), region);
+                    consumer.accept(project);
                 } catch (Exception e) {
-                    LOG.error("Failed to fetch information for cloud = {}, region = {}", cloud.getName(), region);
+                    LOG.error("Failed to fetch project for cloud = {}, region = {}", cloud.getName(), region);
                 }
             }
-            LOG.info("Fetched {} projects for cloud = {}", projects.size(), cloud.getName());
-            consumer.accept(projects);
             return true;
         } catch (IOException e) {
             LOG.error("Failed to fetch projects for cloud = " + cloud.getName(), e);
@@ -74,11 +75,16 @@ public class ListProjectsOperation implements SupplyingOperation<Set<Project>> {
     }
 
     private Project createProject(Cloud cloud, String region) {
-        String projectId = String.format("%s - %s", cloud.getName(), region);
+        String projectId = openstackUtils.getProjectId(cloud, region);
         Project project = new Project();
         project.setId(projectId);
-        project.setName(projectId);
+        project.setName(openstackUtils.getProjectName(cloud, region));
         project.setTimestamp(ZonedDateTime.now());
+
+        MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.REGION, region);
+        
+        project.setMetadata(metadata);
         return project;
     }
 

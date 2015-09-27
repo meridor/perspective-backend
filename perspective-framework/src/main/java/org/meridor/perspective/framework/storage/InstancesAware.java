@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface InstancesAware {
 
 
-    boolean instanceExists(Instance instance);
+    boolean instanceExists(String instanceId);
 
     Collection<Instance> getInstances(Optional<String> query) throws IllegalQueryException;
 

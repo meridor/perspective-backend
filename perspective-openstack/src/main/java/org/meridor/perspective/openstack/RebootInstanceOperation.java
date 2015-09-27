@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.function.Supplier;
+
 import static org.meridor.perspective.config.OperationType.REBOOT_INSTANCE;
 
 @Component

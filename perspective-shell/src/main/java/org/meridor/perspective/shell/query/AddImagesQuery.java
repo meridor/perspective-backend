@@ -3,11 +3,9 @@ package org.meridor.perspective.shell.query;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.validator.Filter;
 import org.meridor.perspective.shell.validator.Required;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

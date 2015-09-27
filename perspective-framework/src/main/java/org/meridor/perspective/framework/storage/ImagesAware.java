@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ImagesAware {
 
 
-    boolean imageExists(Image image);
+    boolean imageExists(String imageId);
 
     Collection<Image> getImages(Optional<String> query) throws IllegalQueryException;
 

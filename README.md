@@ -90,6 +90,18 @@ E.g. error, active, running and stopped instances.
 * show group <name>
 * show groups
 
+### Triggers
+Показывает предупреждение или выполняет действие, если выполняется какое-то условие (например, больше 3 инстансов в состоянии Error).
+* define trigger where
+* show trigger <name>
+* show triggers
+
+### Views
+Показывает таблицу, соответствующую определенному SQL запросу.
+* define view where
+* show view <name>
+* show views
+
 ### SQL statements
 * show tables
 * select ...

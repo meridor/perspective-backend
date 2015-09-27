@@ -39,20 +39,23 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
-            Set<Image> images = new HashSet<>();
+            Integer overallImagesCount = 0;
             for (String region : novaApi.getConfiguredRegions()) {
+                Set<Image> images = new HashSet<>();
                 try {
                     ImageApi imageApi = novaApi.getImageApi(region);
                     FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
                     imagesList.forEach(img -> images.add(createImage(img)));
-                    LOG.debug("Fetched images for cloud = {}, region = {}", cloud.getName(), region);
+                    Integer regionImagesCount = images.size();
+                    overallImagesCount += regionImagesCount;
+                    LOG.debug("Fetched {} images for cloud = {}, region = {}", regionImagesCount, cloud.getName(), region);
+                    consumer.accept(images);
                 } catch (Exception e) {
                     LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
                 }
             }
 
-            LOG.info("Fetched {} images overall for cloud = {}", images.size(), cloud.getName());
-            consumer.accept(images);
+            LOG.info("Fetched {} images overall for cloud = {}", overallImagesCount, cloud.getName());
             return true;
         } catch (IOException e) {
             LOG.error("Failed to fetch images for cloud = " + cloud.getName(), e);

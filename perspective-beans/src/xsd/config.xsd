@@ -17,7 +17,7 @@
             <xsd:enumeration value="deleteInstance"/>
             <xsd:enumeration value="deleteImage"/>
             <xsd:enumeration value="hardRebootInstance"/>
-            <xsd:enumeration value="launchInstance"/>
+            <xsd:enumeration value="addInstance"/>
             <xsd:enumeration value="listProjects"/>
             <xsd:enumeration value="listInstances"/>
             <xsd:enumeration value="listImages"/>
@@ -27,7 +27,7 @@
             <xsd:enumeration value="rebuildInstance"/>
             <xsd:enumeration value="resizeInstance"/>
             <xsd:enumeration value="resumeInstance"/>
-            <xsd:enumeration value="saveImage"/>
+            <xsd:enumeration value="addImage"/>
             <xsd:enumeration value="shutdownInstance"/>
             <xsd:enumeration value="snapshotInstance"/>
             <xsd:enumeration value="suspendInstance"/>

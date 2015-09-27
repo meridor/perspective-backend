@@ -7,6 +7,8 @@ import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -18,8 +20,11 @@ import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
 
@@ -33,24 +38,36 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Autowired
     private IdGenerator idGenerator;
+    
+    @Autowired
+    private ProjectsAware projects;
+    
+    @Autowired
+    private ImagesAware images;
+    
+    @Autowired
+    private OpenstackUtils openstackUtils;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
-            Set<Instance> instances = new HashSet<>();
+            Integer overallInstancesCount = 0;
             for (String region : novaApi.getConfiguredRegions()) {
+                Set<Instance> instances = new HashSet<>();
                 try {
                     ServerApi serverApi = novaApi.getServerApi(region);
                     FluentIterable<Server> servers = serverApi.listInDetail().concat();
-                    servers.forEach(s -> instances.add(createInstance(region, s)));
-                    LOG.debug("Fetched instances for cloud = {}, region = {}", cloud.getName(), region);
+                    servers.forEach(s -> instances.add(createInstance(cloud, region, s)));
+                    Integer regionInstancesCount = instances.size();
+                    overallInstancesCount += regionInstancesCount;
+                    LOG.debug("Fetched {} instances for cloud = {}, region = {}", regionInstancesCount, cloud.getName(), region);
+                    consumer.accept(instances);
                 } catch (Exception e) {
                     LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
                 }
             }
 
-            LOG.info("Fetched {} instances overall for cloud = {}", instances.size(), cloud.getName());
-            consumer.accept(instances);
+            LOG.info("Fetched {} instances overall for cloud = {}", overallInstancesCount, cloud.getName());
             return true;
         } catch (IOException e) {
             LOG.error("Failed to fetch instances for cloud = " + cloud.getName(), e);
@@ -63,7 +80,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return new OperationType[]{LIST_INSTANCES};
     }
 
-    private Instance createInstance(String region, Server server) {
+    private Instance createInstance(Cloud cloud, String region, Server server) {
         Instance instance = new Instance();
         String instanceId = idGenerator.generate(Instance.class, server.getId());
         instance.setId(instanceId);
@@ -86,11 +103,35 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         metadata.put(MetadataKey.ID, server.getId());
         metadata.put(MetadataKey.REGION, region);
         instance.setMetadata(metadata);
+
+        String projectId = openstackUtils.getProjectId(cloud, region);
+        Optional<Project> projectCandidate = getProject(projectId);
+        if (projectCandidate.isPresent()) {
+            instance.setProjectId(projectId);
+            Project project = projectCandidate.get();
+            List<Flavor> matchingFlavors = project.getFlavors().stream()
+                    .filter(f -> f.getId().equals(server.getFlavor().getId()))
+                    .collect(Collectors.toList());
+            if (!matchingFlavors.isEmpty()) {
+                instance.setFlavor(matchingFlavors.get(0));
+            }
+            
+            //TODO: add information about network
+        }
         
-        //TODO: add information about image and network
+        String imageId = idGenerator.generate(Image.class, server.getImage().getId());
+        Optional<Image> imageCandidate = images.getImage(imageId);
+        if (imageCandidate.isPresent()) {
+            instance.setImage(imageCandidate.get());
+        }
+        
         return instance;
     }
-
+    
+    private Optional<Project> getProject(String projectId) {
+        return projects.getProject(projectId);
+    }
+    
     private static InstanceState stateFromStatus(Server.Status status) {
         switch (status) {
             case PASSWORD:

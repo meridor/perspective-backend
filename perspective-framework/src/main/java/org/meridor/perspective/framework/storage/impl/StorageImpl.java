@@ -93,8 +93,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public boolean instanceExists(Instance instance) {
-        String instanceId = instance.getId();
+    public boolean instanceExists(String instanceId) {
         return getInstancesByIdMap().containsKey(instanceId);
     }
 
@@ -113,8 +112,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public boolean imageExists(Image image) {
-        String imageId = image.getId();
+    public boolean imageExists(String imageId) {
         return getImagesByIdMap().containsKey(imageId);
     }
 

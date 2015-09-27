@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.validator;
 public enum Setting {
     
     //Contains all supported shell settings
+    API_URL,
     LOG_LEVEL;
 
     public static boolean contains(String name) {

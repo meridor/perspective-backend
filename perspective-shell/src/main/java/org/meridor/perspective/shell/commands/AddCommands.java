@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.commands;
 
-import org.meridor.perspective.shell.repository.ImagesRepository;
-import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.query.AddImagesQuery;
 import org.meridor.perspective.shell.query.AddInstancesQuery;
+import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;

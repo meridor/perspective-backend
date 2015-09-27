@@ -208,6 +208,7 @@
             <xsd:element name="flavors" type="tns:flavors"/>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="availabilityZones" type="tns:availabilityZones"/>
+            <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
 

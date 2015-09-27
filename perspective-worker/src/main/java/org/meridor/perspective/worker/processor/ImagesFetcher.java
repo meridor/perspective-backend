@@ -18,8 +18,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.meridor.perspective.beans.DestinationName.TASKS;
 import static org.meridor.perspective.events.EventFactory.imageToEvent;
@@ -50,12 +50,18 @@ public class ImagesFetcher {
     
     @IfNotLocked
     protected void fetchCloudImages(Cloud cloud) {
-        LOG.info("Fetching images list for cloud {}", cloud.getName());
-        Set<Image> images = new HashSet<>();
+        LOG.info("Fetching images list for cloud = {}", cloud.getName());
         try {
-            if (!operationProcessor.<Set<Image>>consume(cloud, OperationType.LIST_IMAGES, images::addAll)) {
-                throw new RuntimeException("Failed to get images list from the cloud");
+            if (!operationProcessor.consume(cloud, OperationType.LIST_IMAGES, getConsumer(cloud))) {
+                throw new RuntimeException("Failed to get images list from cloud = " + cloud.getName());
             }
+        } catch (Exception e) {
+            LOG.error("Error while fetching images list for cloud = " + cloud.getName(), e);
+        }
+    }
+    
+    private Consumer<Set<Image>> getConsumer(Cloud cloud) {
+        return images -> {
             CloudType cloudType = workerMetadata.getCloudType();
             for (Image image : images) {
                 image.setCloudType(cloudType);
@@ -64,10 +70,8 @@ public class ImagesFetcher {
                 event.setSync(true);
                 producer.produce(message(cloudType, event));
             }
-            LOG.debug("Saved images state for cloud {} to queue", cloud.getName());
-        } catch (Exception e) {
-            LOG.error("Error while fetching images list for cloud " + cloud.getName(), e);
-        }
+            LOG.debug("Saved {} fetched images for cloud = {} to queue", images.size(), cloud.getName());
+        };
     }
 
 }

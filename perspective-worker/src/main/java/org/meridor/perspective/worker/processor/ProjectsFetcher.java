@@ -18,8 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.meridor.perspective.beans.DestinationName.TASKS;
 import static org.meridor.perspective.events.EventFactory.projectEvent;
@@ -50,23 +49,25 @@ public class ProjectsFetcher {
     
     @IfNotLocked
     protected void fetchCloudProjects(Cloud cloud) {
-        LOG.info("Fetching projects list for cloud {}", cloud.getName());
+        LOG.info("Fetching projects list for cloud = {}", cloud.getName());
         try {
-            Set<Project> projects = new HashSet<>();
-            if (!operationProcessor.<Set<Project>>consume(cloud, OperationType.LIST_PROJECTS, projects::addAll)) {
-                throw new RuntimeException("Failed to get projects list from the cloud");
+            if (!operationProcessor.consume(cloud, OperationType.LIST_PROJECTS, getConsumer(cloud))) {
+                throw new RuntimeException("Failed to get projects list from cloud = " + cloud.getName());
             }
-            CloudType cloudType = workerMetadata.getCloudType();
-            for (Project project : projects) {
-                project.setCloudId(cloud.getId());
-                project.setCloudType(cloudType);
-                ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
-                producer.produce(message(cloudType, event));
-            }
-            LOG.debug("Saved projects for cloud {} to queue", cloud.getName());
         } catch (Exception e) {
-            LOG.error("Error while fetching projects list for cloud " + cloud.getName(), e);
+            LOG.error("Error while fetching projects list for cloud = " + cloud.getName(), e);
         }
+    }
+    
+    private Consumer<Project> getConsumer(Cloud cloud) {
+        return project -> {
+            CloudType cloudType = workerMetadata.getCloudType();
+            project.setCloudId(cloud.getId());
+            project.setCloudType(cloudType);
+            ProjectSyncEvent event = projectEvent(ProjectSyncEvent.class, project);
+            producer.produce(message(cloudType, event));
+            LOG.debug("Saved project {} for cloud = {} to queue", project.getName(), cloud.getName());
+        };
     }
 
 }

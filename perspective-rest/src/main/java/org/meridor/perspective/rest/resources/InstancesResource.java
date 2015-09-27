@@ -82,7 +82,7 @@ public class InstancesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response rebootInstances(List<Instance> instances) {
         for (Instance instance : instances) {
-            LOG.info("Queuing instance {} for reboot", instance);
+            LOG.info("Queuing instance {} ({}) for reboot", instance.getName(), instance.getId());
             InstanceRebootingEvent event = instanceEvent(InstanceRebootingEvent.class, instance);
             producer.produce(message(instance.getCloudType(), event));
         }
@@ -94,7 +94,7 @@ public class InstancesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response hardRebootInstances(List<Instance> instances) {
         for (Instance instance : instances) {
-            LOG.debug("Queuing instance {} for hard reboot", instance);
+            LOG.debug("Queuing instance {} ({}) for hard reboot", instance.getName(), instance.getId());
             InstanceHardRebootingEvent event = instanceEvent(InstanceHardRebootingEvent.class, instance);
             producer.produce(message(instance.getCloudType(), event));
         }
@@ -106,7 +106,7 @@ public class InstancesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response deleteInstances(List<Instance> instances) {
         for (Instance instance : instances) {
-            LOG.debug("Queuing instance {} for removal", instance);
+            LOG.debug("Queuing instance {} ({}) for removal", instance.getName(), instance.getId());
             InstanceDeletingEvent event = instanceEvent(InstanceDeletingEvent.class, instance);
             producer.produce(message(instance.getCloudType(), event));
         }

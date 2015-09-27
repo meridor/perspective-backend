@@ -25,6 +25,11 @@ import static org.meridor.perspective.events.EventFactory.imageEvent;
         @Transit(from = ImageNotAvailableEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
         @Transit(from = ImageNotAvailableEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
         @Transit(from = ImageNotAvailableEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
+        @Transit(from = ImageQueuedEvent.class, on = ImageQueuedEvent.class, to = ImageQueuedEvent.class),
+        @Transit(from = ImageSavingEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
+        @Transit(from = ImageSavedEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
+        @Transit(from = ImageErrorEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
+        @Transit(from = ImageDeletingEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
 
         //Image save
         @Transit(from = ImageQueuedEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
@@ -57,7 +62,7 @@ public class ImageFSM {
     public void onImageQueued(ImageQueuedEvent event) {
         if (event.isSync()) {
             Image instance = event.getImage();
-            LOG.info("Marking cloud {} instance {} as queued", instance.getCloudType(), instance.getId());
+            LOG.info("Marking instance {} ({}) as queued", instance.getName(), instance.getId());
             instance.setState(ImageState.QUEUED);
             storage.saveImage(instance);
         }
@@ -68,8 +73,8 @@ public class ImageFSM {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        LOG.info("Launching cloud {} image {}", cloudId, image.getId());
-        if (event.isSync() || operationProcessor.supply(cloud, OperationType.LAUNCH_INSTANCE, () -> image)) {
+        LOG.info("Launching image {} ({})", image.getName(), image.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.ADD_IMAGE, () -> image)) {
             image.setState(ImageState.SAVING);
             storage.saveImage(image);
         } else {
@@ -81,7 +86,7 @@ public class ImageFSM {
     public void onImageSaved(ImageSavedEvent event) {
         if (event.isSync()) {
             Image image = event.getImage();
-            LOG.info("Marking cloud {} image {} as saved", image.getCloudType(), image.getId());
+            LOG.info("Marking image {} ({}) as saved", image.getName(), image.getId());
             image.setState(ImageState.SAVED);
             storage.saveImage(image);
         }
@@ -92,22 +97,22 @@ public class ImageFSM {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        if (storage.imageExists(image)) {
-            LOG.info("Deleting cloud {} image {}", cloudId, image.getId());
-            if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> image)) {
+        if (storage.imageExists(image.getId())) {
+            LOG.info("Deleting image {} ({})", image.getName(), image.getId());
+            if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_IMAGE, () -> image)) {
                 storage.deleteImage(image);
             } else {
                 throw new ImageException("Failed to delete", image);
             }
         } else {
-            LOG.error("Can't delete image {} - not exists", image.getId());
+            LOG.error("Can't delete image {} ({}) - not exists", image.getName(), image.getId());
         }
     }
 
     @OnTransit
     public void onImageError(ImageErrorEvent event) {
         Image image = event.getImage();
-        LOG.info("Changing cloud {} image {} status to error", image.getCloudId(), image.getId());
+        LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId(), event.getErrorReason());
         image.setState(ImageState.ERROR);
         image.setErrorReason(event.getErrorReason());
         storage.saveImage(image);

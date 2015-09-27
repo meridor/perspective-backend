@@ -33,12 +33,12 @@ public class WorkerDispatcher implements Dispatcher {
         }
         if (payload instanceof InstanceEvent) {
             instancesProcessor.process(message);
-        } else if (payload instanceof ProjectEvent) {
-            projectsProcessor.process(message);
         } else if (payload instanceof ImageEvent) {
             imagesProcessor.process(message);
+        } else if (payload instanceof ProjectEvent) {
+            projectsProcessor.process(message);
         } else {
-            LOG.warn("Skipping message {} as no corresponding processor exist", message.getId());
+            LOG.warn("Skipping message {} as no corresponding processor exists", message.getId());
         }
     }
 }

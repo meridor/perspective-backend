@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
-import static org.meridor.perspective.config.OperationType.LAUNCH_INSTANCE;
+import static org.meridor.perspective.config.OperationType.ADD_INSTANCE;
 
 @Component
-public class LaunchInstanceOperation implements ConsumingOperation<Instance> {
+public class AddInstanceOperation implements ConsumingOperation<Instance> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LaunchInstanceOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
     @Autowired
     private InstancesStorage instances;
@@ -30,6 +30,6 @@ public class LaunchInstanceOperation implements ConsumingOperation<Instance> {
 
     @Override
     public OperationType[] getTypes() {
-        return new OperationType[]{LAUNCH_INSTANCE};
+        return new OperationType[]{ADD_INSTANCE};
     }
 }
