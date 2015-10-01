@@ -69,6 +69,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         metadata.put(MetadataKey.ID, dockerImage.id());
         metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImage.os());
         metadata.put(MetadataKey.PARENT, dockerImage.parent());
+        metadata.put(MetadataKey.INSTANCE_ID, dockerImage.container());
         image.setMetadata(metadata);
         image.setName(dockerImage.comment());
         ZonedDateTime created = ZonedDateTime.ofInstant(
