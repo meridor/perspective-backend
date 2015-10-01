@@ -2,10 +2,7 @@ package org.meridor.perspective.worker.operation.impl;
 
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.operation.ConsumingOperation;
-import org.meridor.perspective.worker.operation.Operation;
-import org.meridor.perspective.worker.operation.OperationsAware;
-import org.meridor.perspective.worker.operation.SupplyingOperation;
+import org.meridor.perspective.worker.operation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
@@ -100,4 +97,16 @@ public class OperationsAwareImpl implements OperationsAware {
         }
     }
 
+    @Override
+    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
+        Operation operation = getOperation(operationType);
+        if (operation instanceof ProcessingOperation) {
+            @SuppressWarnings("unchecked")
+            O result = ((ProcessingOperation<I, O>) operation).perform(cloud, supplier);
+            return Optional.ofNullable(result);
+        } else {
+            LOG.error("Operation {} should be a consuming operation", operationType);
+            return Optional.empty();
+        }
+    }
 }

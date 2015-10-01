@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
+import java.util.Optional;
+
 import static org.meridor.perspective.events.EventFactory.imageEvent;
 
 @Component
@@ -73,13 +75,21 @@ public class ImageFSM {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        LOG.info("Launching image {} ({})", image.getName(), image.getId());
-        if (event.isSync() || operationProcessor.supply(cloud, OperationType.ADD_IMAGE, () -> image)) {
+        if (event.isSync()) {
+            LOG.info("Marking image {} ({}) as saving", image.getName(), image.getId());
             image.setState(ImageState.SAVING);
             storage.saveImage(image);
         } else {
-            throw new ImageException("Failed to launch", image);
+            LOG.info("Adding image {} ({})", image.getName(), image.getId());
+            Optional<Image> updatedImageCandidate = operationProcessor.process(cloud, OperationType.ADD_IMAGE, () -> image);
+            if (!updatedImageCandidate.isPresent()) {
+                throw new ImageException("Failed to add", image);
+            }
+            Image updatedImage = updatedImageCandidate.get();
+            updatedImage.setState(ImageState.SAVING);
+            storage.saveImage(updatedImage);
         }
+        
     }
 
     @OnTransit

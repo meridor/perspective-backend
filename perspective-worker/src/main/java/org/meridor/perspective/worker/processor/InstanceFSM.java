@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
+import java.util.Optional;
+
 import static org.meridor.perspective.events.EventFactory.instanceEvent;
 
 @Component
@@ -147,12 +149,19 @@ public class InstanceFSM {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        LOG.info("Launching instance {}", instance.getName());
-        if (event.isSync() || operationProcessor.supply(cloud, OperationType.ADD_INSTANCE, () -> instance)) {
+        if (event.isSync()) {
+            LOG.info("Marking instance {} ({}) as launching", instance.getName(), instance.getId());
             instance.setState(InstanceState.LAUNCHING);
             storage.saveInstance(instance);
         } else {
-            throw new InstanceException("Failed to launch", instance);
+            LOG.info("Adding instance {} ({})", instance.getName(), instance.getId());
+            Optional<Instance> updatedInstanceCandidate = operationProcessor.process(cloud, OperationType.ADD_INSTANCE, () -> instance);
+            if (!updatedInstanceCandidate.isPresent()) {
+                throw new InstanceException("Failed to add", instance);
+            }
+            Instance updatedImage = updatedInstanceCandidate.get();
+            updatedImage.setState(InstanceState.LAUNCHING);
+            storage.saveInstance(updatedImage);
         }
     }
 

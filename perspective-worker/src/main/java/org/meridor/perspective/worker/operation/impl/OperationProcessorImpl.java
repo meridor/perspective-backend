@@ -7,7 +7,9 @@ import org.meridor.perspective.worker.operation.OperationsAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
@@ -28,13 +30,19 @@ public class OperationProcessorImpl implements OperationProcessor {
         return operationsAware.supply(cloud, operationType, supplier);
     }
 
-    private void doChecks(OperationType operationType, Object consumerOrProducer) {
-        if (consumerOrProducer == null) {
-            throw new IllegalArgumentException("Consumer or producer can't be null");
+    @Override
+    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
+        doChecks(operationType, supplier);
+        return operationsAware.process(cloud, operationType, supplier);
+    }
+
+    private void doChecks(OperationType operationType, Object processor) {
+        if (processor == null) {
+            throw new IllegalArgumentException("Processor can't be null");
         }
 
         if (!operationsAware.isOperationSupported(operationType)) {
-            throw new UnsupportedOperationException(String.format("No operation %s defined", operationType));
+            throw new UnsupportedOperationException(String.format("No operation = %s defined", operationType));
         }
     }
 }
