@@ -1,9 +1,9 @@
 package org.meridor.perspective.docker;
 
-import org.jclouds.docker.DockerApi;
-import org.jclouds.docker.domain.Container;
-import org.jclouds.docker.domain.ContainerSummary;
-import org.jclouds.docker.features.ContainerApi;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.messages.Container;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ContainerState;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.beans.MetadataKey;
@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -39,18 +39,19 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
-        try (DockerApi dockerApi = apiProvider.getApi(cloud)) {
+        try {
+            DockerClient dockerApi = apiProvider.getApi(cloud);
             Set<Instance> instances = new HashSet<>();
-            ContainerApi containerApi = dockerApi.getContainerApi();
-            for (ContainerSummary containerSummary : containerApi.listContainers()) {
-                Container container = containerApi.inspectContainer(containerSummary.id());
-                instances.add(createInstance(container));
+            List<Container> containers = dockerApi.listContainers(DockerClient.ListContainersParam.allContainers());
+            for (Container container : containers) {
+                ContainerInfo containerInfo = dockerApi.inspectContainer(container.id());
+                instances.add(createInstance(containerInfo));
             }
 
             LOG.debug("Fetched {} instances for cloud = {}", instances.size(), cloud.getName());
             consumer.accept(instances);
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to fetch instances for cloud = " + cloud.getName(), e);
             return false;
         }
@@ -61,7 +62,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return new OperationType[]{LIST_INSTANCES};
     }
 
-    private Instance createInstance(Container container) {
+    private Instance createInstance(ContainerInfo container) {
         Instance instance = new Instance();
         String instanceId = idGenerator.generate(Instance.class, container.id());
         instance.setId(instanceId);
@@ -71,7 +72,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 ZoneId.systemDefault()
         );
         instance.setCreated(created);
-        instance.setState(stateFromStatus(container.status()));
+        instance.setState(createState(container.state()));
         instance.setTimestamp(created);
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.ID, container.id());
@@ -79,17 +80,15 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
 
-    private static InstanceState stateFromStatus(String status) {
-        switch (status) {
-            case "running":
-                return InstanceState.LAUNCHED;
-            case "paused":
-                return InstanceState.PAUSED;
-            case "restarting":
-                return InstanceState.REBOOTING;
-            default:
-            case "exited":
-                return InstanceState.SHUTOFF;
+    private static InstanceState createState(ContainerState state) {
+        if (state.running()) {
+            return InstanceState.LAUNCHED;
+        } else if (state.paused()) {
+            return InstanceState.PAUSED;
+        } else if (state.restarting()) {
+            return InstanceState.REBOOTING;
+        } else {
+            return InstanceState.SHUTOFF; 
         }
     }
 

@@ -12,6 +12,10 @@
     <artifactId>perspective-docker</artifactId>
     <name>Perspective Docker Worker</name>
 
+    <properties>
+        <spotify-client.version>3.1.5</spotify-client.version>
+    </properties>
+    
     <build>
         <plugins>
             <plugin>
@@ -49,9 +53,9 @@
             <artifactId>perspective-worker</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>docker</artifactId>
-            <version>${jclouds.version}</version>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>${spotify-client.version}</version>
         </dependency>
     </dependencies>
 
