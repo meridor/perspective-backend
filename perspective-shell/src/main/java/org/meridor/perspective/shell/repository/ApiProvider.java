@@ -38,8 +38,7 @@ public class ApiProvider {
     
     private String getBaseUri() {
         if (settingsAware.hasSetting(Setting.API_URL)) {
-            Set<String> apiUrl = settingsAware.getSetting(Setting.API_URL);
-            return apiUrl.toArray(new String[apiUrl.size()])[0];
+            return settingsAware.getSettingAs(Setting.API_URL, String.class);
         }
         return "http://localhost:8080/";
     }

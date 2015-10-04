@@ -12,7 +12,13 @@ public final class TextUtils {
     private static final String EQUALITY = "=";
     private static final String COMMA = ",";
     private static final String SPACE = " ";
-    
+    private static final String ENTER = "\n";
+    private static final String NEXT = "n";
+    private static final String LESS_PREVIOUS = "w";
+    private static final String PREVIOUS = "p";
+    private static final String QUIT = "q";
+
+
     public static String enumerateValues(Set<String> values) {
         return values.stream().collect(Collectors.joining(COMMA + SPACE));
     }
@@ -78,6 +84,42 @@ public final class TextUtils {
     
     private static boolean isValueDelimiter(String token) {
         return EQUALITY.equals(token) || COMMA.equals(token);
+    }
+    
+    public static boolean isNextElementKey(String key) {
+        return ENTER.equals(key) || SPACE.equals(key) || NEXT.equals(key);
+    }
+    
+    public static boolean isPrevElementKey(String key) {
+        return PREVIOUS.equals(key) || LESS_PREVIOUS.equals(key);
+    }
+    
+    public static boolean isExitKey(String key) {
+        return QUIT.equals(key);
+    }
+    
+    public static boolean isNumericKey(String key) {
+        if (key == null) {
+            return false;
+        }
+        int length = key.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (key.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = key.charAt(i);
+            if (c <= '/' || c >= ':') {
+                return false;
+            }
+        }
+        return true;
     }
     
     private TextUtils() {

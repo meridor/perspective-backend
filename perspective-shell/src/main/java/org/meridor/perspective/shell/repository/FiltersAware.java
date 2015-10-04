@@ -14,6 +14,8 @@ public interface FiltersAware {
     void unsetFilter(Field field);
     
     Set<String> getFilter(Field field);
+
+    <T> T getFilterAs(Field field, Class<T> cls);
     
     Map<String, String> getFilters();
     

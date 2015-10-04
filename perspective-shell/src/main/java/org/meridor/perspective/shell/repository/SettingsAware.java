@@ -15,6 +15,8 @@ public interface SettingsAware {
 
     Set<String> getSetting(Setting setting);
     
+    <T> T getSettingAs(Setting setting, Class<T> cls);
+    
     Map<String, String> getSettings();
 
 }
