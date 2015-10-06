@@ -40,10 +40,10 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         try {
             DockerClient dockerApi = apiProvider.getApi(cloud);
             Set<Image> instances = new HashSet<>();
-            List<com.spotify.docker.client.messages.Image> images = dockerApi.listImages(DockerClient.ListImagesParam.allImages());
-            for (com.spotify.docker.client.messages.Image image : images) {
+            List<com.spotify.docker.client.messages.Image> dockerImages = dockerApi.listImages(DockerClient.ListImagesParam.allImages(false));
+            for (com.spotify.docker.client.messages.Image image : dockerImages) {
                 ImageInfo imageInfo = dockerApi.inspectImage(image.id());
-                instances.add(createImage(imageInfo));
+                instances.add(createImage(image, imageInfo));
             }
             LOG.debug("Fetched {} images", instances.size());
             consumer.accept(instances);
@@ -59,21 +59,30 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return new OperationType[]{LIST_IMAGES};
     }
 
-    private Image createImage(ImageInfo dockerImage) {
+    private Image createImage(com.spotify.docker.client.messages.Image dockerImage, ImageInfo dockerImageInfo) {
         Image image = new Image();
-        String imageId = idGenerator.generate(Image.class, dockerImage.id());
+        String imageId = idGenerator.generate(Image.class, dockerImageInfo.id());
         image.setId(imageId);
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.AUTHOR, dockerImage.author());
-        metadata.put(MetadataKey.ARCHITECTURE, dockerImage.architecture());
-        metadata.put(MetadataKey.ID, dockerImage.id());
-        metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImage.os());
-        metadata.put(MetadataKey.PARENT, dockerImage.parent());
-        metadata.put(MetadataKey.INSTANCE_ID, dockerImage.container());
+        metadata.put(MetadataKey.AUTHOR, dockerImageInfo.author());
+        metadata.put(MetadataKey.ARCHITECTURE, dockerImageInfo.architecture());
+        metadata.put(MetadataKey.ID, dockerImageInfo.id());
+        metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImageInfo.os());
+        metadata.put(MetadataKey.PARENT, dockerImageInfo.parent());
+        metadata.put(MetadataKey.INSTANCE_ID, dockerImageInfo.container());
+        metadata.put(MetadataKey.SIZE, dockerImage.virtualSize().toString());
         image.setMetadata(metadata);
-        image.setName(dockerImage.comment());
+        String imageName = dockerImage.repoTags().isEmpty() ?
+                String.format(
+                        "docker-%s-%s-%s",
+                        dockerImageInfo.os(),
+                        dockerImageInfo.architecture(),
+                        dockerImageInfo.id().substring(0, Math.min(dockerImageInfo.size().intValue(), 8))
+                ) :
+                dockerImage.repoTags().get(0);
+        image.setName(imageName);
         ZonedDateTime created = ZonedDateTime.ofInstant(
-                dockerImage.created().toInstant(),
+                dockerImageInfo.created().toInstant(),
                 ZoneId.systemDefault()
         );
         image.setCreated(created);
