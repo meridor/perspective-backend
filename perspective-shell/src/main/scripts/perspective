@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PERSPECTIVE_HOME="../data"
+PERSPECTIVE_SHELL_JAR="$PERSPECTIVE_HOME/perspective-shell.jar"
+
+if [ ! -f "$PERSPECTIVE_SHELL_JAR" ]; then
+    echo "$PERSPECTIVE_HOME: is not a valid Perspective Shell home directory"
+    exit 1
+fi
+
+java -jar ${PERSPECTIVE_SHELL_JAR} $@
