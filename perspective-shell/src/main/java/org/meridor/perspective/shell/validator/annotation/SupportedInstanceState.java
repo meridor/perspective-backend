@@ -1,6 +1,4 @@
-package org.meridor.perspective.shell.validator;
-
-import org.meridor.perspective.config.CloudType;
+package org.meridor.perspective.shell.validator.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SupportedCloud {
+public @interface SupportedInstanceState {
     
-    CloudType[] value() default {};
+    org.meridor.perspective.beans.InstanceState[] value() default {};
     
 }

@@ -2,6 +2,7 @@ package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
+import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.events.InstanceDeletingEvent;
 import org.meridor.perspective.events.InstanceHardRebootingEvent;
 import org.meridor.perspective.events.InstanceLaunchingEvent;
@@ -10,6 +11,7 @@ import org.meridor.perspective.framework.messaging.Destination;
 import org.meridor.perspective.framework.messaging.Producer;
 import org.meridor.perspective.framework.storage.IllegalQueryException;
 import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,8 @@ import java.util.Optional;
 import static org.meridor.perspective.beans.DestinationName.TASKS;
 import static org.meridor.perspective.events.EventFactory.*;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.rest.resources.ResponseUtils.clientError;
+import static org.meridor.perspective.rest.resources.ResponseUtils.notFound;
 
 @Component
 @Path("/instances")
@@ -35,6 +39,9 @@ public class InstancesResource {
 
     @Autowired
     private InstancesAware instancesAware;
+    
+    @Autowired
+    private ProjectsAware projectsAware;
 
     @Destination(TASKS)
     private Producer producer;
@@ -47,7 +54,7 @@ public class InstancesResource {
             List<Instance> instances = new ArrayList<>(instancesAware.getInstances(Optional.ofNullable(query)));
             return Response.ok(new GenericEntity<List<Instance>>(instances){}).build();
         } catch (IllegalQueryException e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return clientError(String.format("Illegal request %s", query));
         }
     }
 
@@ -59,17 +66,27 @@ public class InstancesResource {
         Optional<Instance> instance = instancesAware.getInstance(instanceId);
         return instance.isPresent() ?
                 Response.ok(instance.get()).build() :
-                Response.status(Response.Status.NOT_FOUND).build();
+                notFound(String.format("Instance with id = %s not found", instanceId));
     }
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response launchInstances(List<Instance> instances) {
-        for (Instance instance : instances) {
+        for (final Instance instance : instances) {
             LOG.info("Queuing instance {} for launch", instance);
             instance.setId(uuid());
             instance.setCreated(now());
             instance.setState(InstanceState.QUEUED);
+            if (instance.getCloudType() == null) {
+                Optional<Project> projectCandidate = projectsAware.getProject(instance.getProjectId());
+                if (projectCandidate.isPresent()) {
+                    Project project = projectCandidate.get();
+                    instance.setCloudType(project.getCloudType());
+                    instance.setCloudId(project.getCloudId());
+                } else {
+                    return clientError(String.format("Project %s not found", instance.getProjectId()));
+                }
+            }
             instancesAware.saveInstance(instance);
             InstanceLaunchingEvent event = instanceEvent(InstanceLaunchingEvent.class, instance);
             producer.produce(message(instance.getCloudType(), event));

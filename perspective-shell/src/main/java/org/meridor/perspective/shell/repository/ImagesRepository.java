@@ -7,6 +7,7 @@ import org.meridor.perspective.shell.query.ShowImagesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,13 +29,17 @@ public class ImagesRepository {
 
     public Set<String> addImages(AddImagesQuery addImagesQuery) {
         List<Image> images = addImagesQuery.getPayload();
-        apiProvider.getImagesApi().postXmlAs(images, String.class);
+        GenericEntity<List<Image>> data = new GenericEntity<List<Image>>(images) {
+        };
+        apiProvider.getImagesApi().postXmlAs(data, String.class);
         return Collections.emptySet();
     }
     
     public Set<String> deleteImages(DeleteImagesQuery deleteImagesQuery) {
         List<Image> images = deleteImagesQuery.getPayload();
-        apiProvider.getInstancesApi().delete().postXmlAs(images, String.class);
+        GenericEntity<List<Image>> data = new GenericEntity<List<Image>>(images) {
+        };
+        apiProvider.getInstancesApi().delete().postXmlAs(data, String.class);
         return Collections.emptySet();
     }
 

@@ -24,6 +24,8 @@ import java.util.Optional;
 import static org.meridor.perspective.beans.DestinationName.TASKS;
 import static org.meridor.perspective.events.EventFactory.*;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.rest.resources.ResponseUtils.clientError;
+import static org.meridor.perspective.rest.resources.ResponseUtils.notFound;
 
 @Component
 @Path("/images")
@@ -45,7 +47,7 @@ public class ImagesResource {
             List<Image> images = new ArrayList<>(imagesAware.getImages(Optional.ofNullable(query)));
             return Response.ok(new GenericEntity<List<Image>>(images){}).build();
         } catch (IllegalQueryException e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return clientError(String.format("Illegal query %s", query));
         }
     }
 
@@ -57,7 +59,7 @@ public class ImagesResource {
         Optional<Image> image = imagesAware.getImage(imageId);
         return image.isPresent() ?
                 Response.ok(image.get()).build() :
-                Response.status(Response.Status.NOT_FOUND).build();
+                notFound(String.format("Image with id = %s not found", imageId));
     }
 
     @POST

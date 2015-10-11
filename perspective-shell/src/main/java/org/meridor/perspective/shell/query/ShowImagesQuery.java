@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.validator.Filter;
-import org.meridor.perspective.shell.validator.SupportedCloud;
+import org.meridor.perspective.shell.validator.annotation.Filter;
+import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 
 import java.util.Optional;
 import java.util.Set;

@@ -18,8 +18,26 @@ public final class TextUtils {
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
 
+    public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
+        String ret = template;
+        for (Placeholder placeholder : values.keySet()) {
+            String placeholderValue = values.get(placeholder);
+            if (placeholderValue != null) {
+                ret = template.replace(getPlaceholder(placeholder), placeholderValue);
+            }
+        }
+        return ret;
+    }
 
-    public static String enumerateValues(Set<String> values) {
+    private static String getPlaceholder(Placeholder placeholder) {
+        return String.format("$%s", placeholder.name().toLowerCase());
+    }
+    
+    public static boolean containsPlaceholder(final String template, Placeholder placeholder) {
+        return template.contains(getPlaceholder(placeholder));
+    }
+
+    public static String enumerateValues(Collection<String> values) {
         return values.stream().collect(Collectors.joining(COMMA + SPACE));
     }
     
@@ -40,28 +58,30 @@ public final class TextUtils {
      */
     public static Map<String, Set<String>> parseAssignment(String data) {
         Map<String, Set<String>> ret = new HashMap<>();
-        StringTokenizer stringTokenizer = new StringTokenizer(data, String.format("%s%s%s", EQUALITY, COMMA, SEMICOLON), true);
-        String key = null;
-        Set<String> value = new HashSet<>();
-        int counter = 0;
-        while (stringTokenizer.hasMoreTokens()) {
-            String token = stringTokenizer.nextToken();
-            if (isValueDelimiter(token)) {
-                continue;
-            } else if (isKeyDelimiter(token) && key != null) {
-                ret.put(key, value);
-                counter = 0;
-                key = null;
-                continue;
-            } else if (counter == 0) {
-                key = token.trim();
-            } else {
-                value.add(token.trim());
+        if (data != null) {
+            StringTokenizer stringTokenizer = new StringTokenizer(data, String.format("%s%s%s", EQUALITY, COMMA, SEMICOLON), true);
+            String key = null;
+            Set<String> value = new HashSet<>();
+            int counter = 0;
+            while (stringTokenizer.hasMoreTokens()) {
+                String token = stringTokenizer.nextToken();
+                if (isValueDelimiter(token)) {
+                    continue;
+                } else if (isKeyDelimiter(token) && key != null) {
+                    ret.put(key, value);
+                    counter = 0;
+                    key = null;
+                    continue;
+                } else if (counter == 0) {
+                    key = token.trim();
+                } else {
+                    value.add(token.trim());
+                }
+                counter++;
             }
-            counter++;
-        }
-        if (key != null) {
-            ret.put(key, value);
+            if (key != null) {
+                ret.put(key, value);
+            }
         }
         return ret;
     }
@@ -72,10 +92,14 @@ public final class TextUtils {
      * @return an set of values or null if null is passed
      */
     public static Set<String> parseEnumeration(String data) {
+        return parseEnumeration(data, SPACE);
+    }
+    
+    public static Set<String> parseEnumeration(String data, String delimiter) {
         if (data == null) {
             return null;
         }
-        return new HashSet<>(Arrays.asList(data.split(SPACE)));
+        return new HashSet<>(Arrays.asList(data.split(delimiter)));
     }
     
     private static boolean isKeyDelimiter(String token) {

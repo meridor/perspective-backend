@@ -4,7 +4,7 @@ import org.meridor.perspective.shell.query.Query;
 import org.meridor.perspective.shell.query.QueryValidator;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.validator.Field;
-import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -50,12 +50,12 @@ public class QueryValidatorImpl implements QueryValidator {
             if (value != null && isSet(value.getClass())) {
                 Set<?> set = Set.class.cast(value);
                 set.stream().forEach(val -> {
-                    if (!v.validate(annotation, val)) {
+                    if (!v.validate(query, annotation, val)) {
                         errors.add(v.getMessage(annotation, filterName, value));
                     }
                 });
             } else {
-                if (!v.validate(annotation, value)) {
+                if (!v.validate(query, annotation, value)) {
                     errors.add(v.getMessage(annotation, filterName, value));
                 }
             }

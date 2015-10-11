@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class EnumerationValidator implements Validator {
     
     @Override
-    public boolean validate(Annotation annotation, Object value) {
+    public boolean validate(Object instance, Annotation annotation, Object value) {
         List<String> values = getValues(annotation);
         return (value == null) || values.contains(value.toString());
     }

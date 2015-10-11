@@ -1,7 +1,7 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Flavor;
-import org.meridor.perspective.shell.validator.Filter;
+import org.meridor.perspective.shell.validator.annotation.Filter;
 
 import java.util.Optional;
 import java.util.Set;

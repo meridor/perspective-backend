@@ -6,6 +6,9 @@ import org.meridor.perspective.framework.messaging.impl.MessageImpl;
 public class MessageUtils {
 
     public static Message message(CloudType cloudType, Object payload) {
+        if (cloudType == null) {
+            throw new IllegalArgumentException("Cloud type can't be null");
+        }
         return new MessageImpl(cloudType, payload);
     }
 

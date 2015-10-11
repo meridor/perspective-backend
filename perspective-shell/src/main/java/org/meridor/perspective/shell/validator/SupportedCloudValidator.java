@@ -1,6 +1,7 @@
 package org.meridor.perspective.shell.validator;
 
 import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;

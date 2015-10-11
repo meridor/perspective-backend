@@ -23,12 +23,16 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "name", mandatory = true, help = "Instance name") String name,
             @CliOption(key = "project", help = "Name of the project to launch instance in") String project,
             @CliOption(key = "flavor", help = "Instance flavor") String flavor,
-            @CliOption(key = "flavor", help = "Instance flavor") String image,
+            @CliOption(key = "image", help = "Instance image") String image,
             @CliOption(key = "network", help = "Name of ID of the network to use") String network,
+            @CliOption(key = "from", help = "Instance name start number") Integer from,
+            @CliOption(key = "to", help = "Instance name end number") Integer to,
             @CliOption(key = "count", help = "How many instances to launch") Integer count,
             @CliOption(key = "options", help = "Various instance options") String options
     ) {
-        AddInstancesQuery addInstancesQuery = new AddInstancesQuery(name, project, flavor, image, network, count, options);
+        AddInstancesQuery addInstancesQuery = (count != null) ?
+                new AddInstancesQuery(name, project, flavor, image, network, count, options) :
+                new AddInstancesQuery(name, project, flavor, image, network, from, to, options);
         validateExecuteShowStatus(addInstancesQuery, instancesRepository::addInstances);
     }
     

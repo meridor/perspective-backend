@@ -7,6 +7,7 @@ import org.meridor.perspective.shell.query.ShowInstancesQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,22 +29,30 @@ public class InstancesRepository {
 
     public Set<String> addInstances(AddInstancesQuery addInstancesQuery) {
         List<Instance> instances = addInstancesQuery.getPayload();
-        apiProvider.getInstancesApi().postXmlAs(instances, String.class);
+        GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(instances) {
+        };
+        apiProvider.getInstancesApi().postXmlAs(data, String.class);
         return Collections.emptySet();
     }
     
     public Set<String> deleteInstances(ModifyInstancesQuery modifyInstancesQuery) {
-        apiProvider.getInstancesApi().delete().postXmlAs(modifyInstancesQuery.getPayload(), String.class);
+        GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
+        };
+        apiProvider.getInstancesApi().delete().postXmlAs(data, String.class);
         return Collections.emptySet();
     }
     
     public Set<String> rebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
-        apiProvider.getInstancesApi().reboot().putXmlAs(modifyInstancesQuery.getPayload(), String.class);
+        GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
+        };
+        apiProvider.getInstancesApi().reboot().putXmlAs(data, String.class);
         return Collections.emptySet();
     }
     
     public Set<String> hardRebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
-        apiProvider.getInstancesApi().hardReboot().putXmlAs(modifyInstancesQuery.getPayload(), String.class);
+        GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
+        };
+        apiProvider.getInstancesApi().hardReboot().putXmlAs(data, String.class);
         return Collections.emptySet();
     }
     

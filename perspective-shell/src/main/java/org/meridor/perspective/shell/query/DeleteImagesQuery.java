@@ -3,9 +3,9 @@ package org.meridor.perspective.shell.query;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.validator.Field;
-import org.meridor.perspective.shell.validator.Filter;
-import org.meridor.perspective.shell.validator.Required;
-import org.meridor.perspective.shell.validator.SupportedCloud;
+import org.meridor.perspective.shell.validator.annotation.Filter;
+import org.meridor.perspective.shell.validator.annotation.Required;
+import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 
 import java.util.List;
 import java.util.Set;

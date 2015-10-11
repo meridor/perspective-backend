@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.meridor.perspective.rest.resources.ResponseUtils.clientError;
+
 @Component
 @Path("/projects")
 public class ProjectsResource {
@@ -36,7 +38,7 @@ public class ProjectsResource {
             List<Project> projects = new ArrayList<>(storage.getProjects(Optional.ofNullable(query)));
             return Response.ok(new GenericEntity<List<Project>>(projects){}).build();
         } catch (IllegalQueryException e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return clientError(String.format("Illegal query %s", query));
         }
     }
 

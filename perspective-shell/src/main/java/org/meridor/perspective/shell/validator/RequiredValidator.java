@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.validator;
 
+import org.meridor.perspective.shell.validator.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
@@ -8,7 +9,7 @@ import java.lang.annotation.Annotation;
 public class RequiredValidator implements Validator {
     
     @Override
-    public boolean validate(Annotation annotation, Object value) {
+    public boolean validate(Object instance, Annotation annotation, Object value) {
         return value != null;
     }
 

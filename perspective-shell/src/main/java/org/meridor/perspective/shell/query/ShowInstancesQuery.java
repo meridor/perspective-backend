@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.validator.Filter;
-import org.meridor.perspective.shell.validator.SupportedCloud;
-import org.meridor.perspective.shell.validator.SupportedInstanceState;
+import org.meridor.perspective.shell.validator.annotation.Filter;
+import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
+import org.meridor.perspective.shell.validator.annotation.SupportedInstanceState;
 
 import java.util.Optional;
 import java.util.Set;

@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 
 public interface Validator {
     
-    boolean validate(Annotation annotation, Object value);
+    boolean validate(Object instance, Annotation annotation, Object value);
 
     Class<? extends Annotation> getAnnotationClass();
     

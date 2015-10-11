@@ -3,7 +3,7 @@ package org.meridor.perspective.shell.query;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.validator.Required;
+import org.meridor.perspective.shell.validator.annotation.Required;
 
 import java.util.ArrayList;
 import java.util.List;

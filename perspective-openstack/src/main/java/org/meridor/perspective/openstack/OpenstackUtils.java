@@ -17,7 +17,7 @@ public class OpenstackUtils {
     }
     
     public String getProjectName(Cloud cloud, String region) {
-        return String.format("%s - %s", cloud.getName(), region);
+        return String.format("%s_%s", cloud.getName(), region);
     }
     
     private OpenstackUtils() {

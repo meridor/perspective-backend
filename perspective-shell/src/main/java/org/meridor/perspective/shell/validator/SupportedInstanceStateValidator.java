@@ -1,6 +1,7 @@
 package org.meridor.perspective.shell.validator;
 
 import org.meridor.perspective.beans.InstanceState;
+import org.meridor.perspective.shell.validator.annotation.SupportedInstanceState;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
