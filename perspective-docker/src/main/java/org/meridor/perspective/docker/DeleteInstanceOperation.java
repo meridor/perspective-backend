@@ -2,7 +2,6 @@ package org.meridor.perspective.docker;
 
 import com.spotify.docker.client.DockerClient;
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
@@ -26,7 +25,7 @@ public class DeleteInstanceOperation implements ConsumingOperation<Instance> {
         try {
             DockerClient dockerApi = apiProvider.getApi(cloud);
             Instance instance = supplier.get();
-            String instanceId = instance.getMetadata().get(MetadataKey.ID);
+            String instanceId = instance.getRealId();
             dockerApi.removeContainer(instanceId);
             LOG.debug("Deleted instance {} ({})", instance.getName(), instance.getId());
             return true;

@@ -63,10 +63,10 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         Image image = new Image();
         String imageId = idGenerator.generate(Image.class, dockerImageInfo.id());
         image.setId(imageId);
+        image.setRealId(dockerImageInfo.id());
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.AUTHOR, dockerImageInfo.author());
         metadata.put(MetadataKey.ARCHITECTURE, dockerImageInfo.architecture());
-        metadata.put(MetadataKey.ID, dockerImageInfo.id());
         metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImageInfo.os());
         metadata.put(MetadataKey.PARENT, dockerImageInfo.parent());
         metadata.put(MetadataKey.INSTANCE_ID, dockerImageInfo.container());

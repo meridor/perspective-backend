@@ -6,7 +6,6 @@ import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.ContainerState;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
-import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
@@ -66,6 +65,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         Instance instance = new Instance();
         String instanceId = idGenerator.generate(Instance.class, container.id());
         instance.setId(instanceId);
+        instance.setRealId(container.id());
         instance.setName(container.name());
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 container.created().toInstant(),
@@ -75,7 +75,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setState(createState(container.state()));
         instance.setTimestamp(created);
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.ID, container.id());
         instance.setMetadata(metadata);
         return instance;
     }

@@ -5,6 +5,7 @@ import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -109,13 +110,7 @@ public class ShowCommands extends BaseCommands {
                 q -> {
                     List<Instance> instances = instancesRepository.showInstances(q);
                     return instances.stream()
-                            .map(i -> new String[]{
-                                    i.getName(),
-                                    (i.getImage() != null) ? i.getImage().getName() : "-",
-                                    (i.getFlavor() != null) ? i.getFlavor().getName() : "-",
-                                    i.getState().value(),
-                                    humanizedDuration(i.getTimestamp())
-                            })
+                            .map(TextUtils::instanceToRow)
                             .collect(Collectors.toList());
 
                 }

@@ -84,6 +84,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         Instance instance = new Instance();
         String instanceId = idGenerator.generate(Instance.class, server.getId());
         instance.setId(instanceId);
+        instance.setRealId(server.getId());
         instance.setName(server.getName());
         instance.setState(stateFromStatus(server.getStatus()));
         Keypair keypair = new Keypair();
@@ -100,7 +101,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         );
         instance.setTimestamp(timestamp);
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.ID, server.getId());
         metadata.put(MetadataKey.REGION, region);
         instance.setMetadata(metadata);
 

@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.validator;
 public enum Setting {
     
     //Contains all supported shell settings
+    ALWAYS_SAY_YES,
     API_URL,
     LOG_LEVEL,
     PAGE_SIZE;

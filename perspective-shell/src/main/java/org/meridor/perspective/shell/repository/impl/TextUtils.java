@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.beans.Instance;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.ZonedDateTime;
@@ -13,10 +15,13 @@ public final class TextUtils {
     private static final String COMMA = ",";
     private static final String SPACE = " ";
     private static final String ENTER = "\n";
+    private static final String YES = "y";
+    private static final String NO = "n";
     private static final String NEXT = "n";
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
+    private static final String NONE = "-";
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
         String ret = template;
@@ -120,6 +125,32 @@ public final class TextUtils {
     
     public static boolean isExitKey(String key) {
         return QUIT.equals(key);
+    }
+    
+    public static boolean isYesKey(String key) {
+        return YES.equals(key);
+    }
+    
+    public static boolean isNoKey(String key) {
+        return NO.equals(key);
+    }
+    
+    public static String[] instanceToRow(Instance instance) {
+        return new String[]{
+                instance.getName(),
+                (instance.getImage() != null) ? instance.getImage().getName() : NONE,
+                (instance.getFlavor() != null) ? instance.getFlavor().getName() : NONE,
+                (instance.getState() != null) ?  instance.getState().value() : NONE,
+                (instance.getTimestamp() != null) ? humanizedDuration(instance.getTimestamp()) : NONE
+        };
+    }
+    
+    public static String[] imageToRow(Image image) {
+        return new String[]{
+                image.getName(),
+                (image.getState() != null) ? image.getState().value() : NONE,
+                (image.getTimestamp() != null) ? humanizedDuration(image.getTimestamp()) : NONE
+        };
     }
     
     public static boolean isNumericKey(String key) {

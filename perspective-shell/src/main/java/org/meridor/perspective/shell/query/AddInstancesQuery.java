@@ -23,20 +23,20 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Required
     @ExistingEntity(PROJECT)
     @Filter(PROJECTS)
-    private String projectId;
+    private String project;
     
     @ExistingEntity(FLAVOR)
     @Filter(FLAVOR_IDS)
-    private String flavorId;
+    private String flavor;
     
     @Required
     @ExistingEntity(IMAGE)
     @Filter(IMAGE_IDS)
-    private String imageId;
+    private String image;
     
     @ExistingEntity(NETWORK)
     @Filter(NETWORK_IDS)
-    private String networkId;
+    private String network;
     
     @RelativeToNumber(relation = GREATER_THAN, number = 0)
     private Integer from;
@@ -47,19 +47,19 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Metadata
     private String options;
 
-    public AddInstancesQuery(String name, String projectId, String flavorId, String imageId, String networkId, Integer from, Integer to, String options) {
+    public AddInstancesQuery(String name, String project, String flavor, String image, String network, Integer from, Integer to, String options) {
         this.name = name;
-        this.projectId = projectId;
-        this.flavorId = flavorId;
-        this.imageId = imageId;
-        this.networkId = networkId;
+        this.project = project;
+        this.flavor = flavor;
+        this.image = image;
+        this.network = network;
         this.from = from;
         this.to = to;
         this.options = options;
     }
     
-    public AddInstancesQuery(String name, String projectId, String flavorId, String imageId, String networkId, Integer count, String options) {
-        this(name, projectId, flavorId, imageId, networkId, 1, count, options);
+    public AddInstancesQuery(String name, String project, String flavor, String image, String network, Integer count, String options) {
+        this(name, project, flavor, image, network, 1, count, options);
     }
 
     @Override
@@ -75,10 +75,10 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                             }
                         }) :
                         String.format("%s-%s", name, i);
-                instances.add(createInstance(instanceName, projectId, flavorId, imageId, networkId, options));
+                instances.add(createInstance(instanceName, project, flavor, image, network, options));
             }
         } else {
-            instances.add(createInstance(name, projectId, flavorId, imageId, networkId, options));
+            instances.add(createInstance(name, project, flavor, image, network, options));
         }
         return instances;
     }

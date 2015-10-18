@@ -7,7 +7,6 @@ import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 @Repository

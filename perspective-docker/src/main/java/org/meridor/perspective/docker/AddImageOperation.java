@@ -41,7 +41,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
                     null
             );
             String imageId = createdImage.id();
-            image.getMetadata().put(MetadataKey.ID, imageId);
+            image.setRealId(imageId);
             LOG.debug("Added image {} ({})", image.getName(), image.getId());
             return image;
         } catch (Exception e) {

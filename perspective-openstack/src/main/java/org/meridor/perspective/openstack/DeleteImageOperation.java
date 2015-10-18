@@ -31,7 +31,7 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
             Image image = supplier.get();
             String region = image.getMetadata().get(MetadataKey.REGION);
             ImageApi imageApi = novaApi.getImageApi(region);
-            String imageId = image.getMetadata().get(MetadataKey.ID);
+            String imageId = image.getRealId();
             imageApi.delete(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;

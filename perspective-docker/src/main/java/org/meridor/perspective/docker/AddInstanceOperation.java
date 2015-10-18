@@ -31,14 +31,14 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         try {
             DockerClient dockerApi = apiProvider.getApi(cloud);
             String command = instance.getMetadata().get(MetadataKey.COMMAND);
-            String imageId = instance.getImage().getMetadata().get(MetadataKey.ID);
+            String imageId = instance.getImage().getRealId();
             ContainerConfig containerConfig = ContainerConfig.builder()
                     .cmd(command)
                     .image(imageId)
                     .build();
             ContainerCreation createdContainer = dockerApi.createContainer(containerConfig, instance.getName());
             String instanceId = createdContainer.id();
-            instance.getMetadata().put(MetadataKey.ID, instanceId);
+            instance.setRealId(instanceId);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
         } catch (Exception e) {

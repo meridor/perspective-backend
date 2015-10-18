@@ -33,7 +33,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
             ServerApi serverApi = novaApi.getServerApi(region);
             String instanceId = image.getMetadata().get(MetadataKey.INSTANCE_ID);
             String imageId = serverApi.createImageFromServer(image.getName(), instanceId);
-            image.getMetadata().put(MetadataKey.ID, imageId);
+            image.setRealId(imageId);
             LOG.debug("Added image {} ({})", image.getName(), image.getId());
             return image;
         } catch (IOException e) {

@@ -29,7 +29,7 @@ public class DeleteInstanceOperation implements ConsumingOperation<Instance> {
             Instance instance = supplier.get();
             String region = instance.getMetadata().get(MetadataKey.REGION);
             ServerApi serverApi = novaApi.getServerApi(region);
-            String instanceId = instance.getMetadata().get(MetadataKey.ID);
+            String instanceId = instance.getRealId();
             serverApi.delete(instanceId);
             LOG.debug("Deleted instance {} ({})", instance.getName(), instance.getId());
             return true;

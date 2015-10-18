@@ -5,7 +5,6 @@ import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
-import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
@@ -72,6 +71,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         Image image = new Image();
         String imageId = idGenerator.generate(Image.class, openstackImage.getId());
         image.setId(imageId);
+        image.setRealId(openstackImage.getId());
         image.setName(openstackImage.getName());
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime created = ZonedDateTime.ofInstant(
@@ -86,7 +86,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         );
         image.setTimestamp(timestamp);
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.ID, openstackImage.getId());
         image.setMetadata(metadata);
         return image;
     }

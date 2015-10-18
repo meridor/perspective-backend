@@ -41,7 +41,7 @@ public abstract class BaseCommands implements CommandMarker {
      * Shows pages one by one allowing to navigate back and forth
      * @param pages each page contents
      */
-    public static void page(List<String> pages) {
+    protected static void page(List<String> pages) {
         try {
             ConsoleReader consoleReader = new ConsoleReader();
             final int NUM_PAGES = pages.size();
@@ -138,19 +138,63 @@ public abstract class BaseCommands implements CommandMarker {
                 DEFAULT_PAGE_SIZE;
     }
     
+    private boolean alwaysSayYes() {
+        return (settingsStorage.hasSetting(Setting.ALWAYS_SAY_YES));
+    }
+    
     private List<String> preparePages(Integer pageSize, String[] columns, List<String[]> rows) {
         return Lists.partition(rows, pageSize).stream().
                 map(b -> tableRenderer.render(columns, b))
                 .collect(Collectors.toList());
     }
     
-    protected <T extends Query<?>> void validateExecuteShowStatus(T query, Function<T, Set<String>> task) {
+    protected <T, Q extends Query<T>> void validateConfirmExecuteShowStatus(
+            Q query,
+            Function<T, String> confirmationMessageProvider,
+            Function<T, String[]> confirmationColumnsProvider,
+            Function<T, List<String[]>> confirmationRowsProvider,
+            Function<Q, Set<String>> task
+    ) {
         Set<String> validationErrors = queryValidator.validate(query);
         if (!validationErrors.isEmpty()) {
             error(joinLines(validationErrors));
         } else {
-            Set<String> errors = task.apply(query);
-            okOrShowErrors(errors);
+            T payload = query.getPayload();
+            String confirmationMessage = confirmationMessageProvider.apply(payload);
+            String[] columns = confirmationColumnsProvider.apply(payload);
+            List<String[]> rows = confirmationRowsProvider.apply(payload);
+            ok(confirmationMessage);
+            tableOrNothing(columns, rows);
+            if (confirmOperation()) {
+                Set<String> errors = task.apply(query);
+                okOrShowErrors(errors);
+            } else {
+                warn("Aborted.");
+            }
+        }
+    }
+
+    private boolean confirmOperation() {
+        try {
+            ok("Press y to proceed, n or q to abort operation.");
+            if (alwaysSayYes()) {
+                ok("Proceeding as always_say_yes mode is enabled.");
+                return true;
+            }
+            ConsoleReader consoleReader = new ConsoleReader();
+            while (true) {
+                String key = String.valueOf((char) consoleReader.readCharacter());
+                if (isYesKey(key)) {
+                    return true;
+                } else if (isNoKey(key) || isExitKey(key)) {
+                    return false;
+                } else {
+                    warn(String.format("Invalid key: %s. Please try again.", key));
+                }
+            }
+        } catch (IOException e) {
+            error(String.format("Failed to confirm action: %s", e.getMessage()));
+            return false;
         }
     }
     

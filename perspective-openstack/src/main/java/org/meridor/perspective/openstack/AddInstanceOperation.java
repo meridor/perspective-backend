@@ -5,10 +5,12 @@ import org.jclouds.openstack.nova.v2_0.domain.Network;
 import org.jclouds.openstack.nova.v2_0.domain.ServerCreated;
 import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.jclouds.openstack.nova.v2_0.options.CreateServerOptions;
-import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.AvailabilityZone;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.Keypair;
+import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.operation.ConsumingOperation;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +65,7 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
             CreateServerOptions[] options = optionsList.toArray(new CreateServerOptions[optionsList.size()]);
             ServerCreated createdServer = serverApi.create(instanceName, flavorId, imageId, options);
             String instanceId = createdServer.getId();
-            instance.getMetadata().put(MetadataKey.ID, instanceId);
+            instance.setRealId(instanceId);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
         } catch (IOException e) {

@@ -4,10 +4,13 @@ import org.meridor.perspective.shell.query.AddImagesQuery;
 import org.meridor.perspective.shell.query.AddInstancesQuery;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
+import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 @Component
 public class AddCommands extends BaseCommands {
@@ -33,7 +36,13 @@ public class AddCommands extends BaseCommands {
         AddInstancesQuery addInstancesQuery = (count != null) ?
                 new AddInstancesQuery(name, project, flavor, image, network, count, options) :
                 new AddInstancesQuery(name, project, flavor, image, network, from, to, options);
-        validateExecuteShowStatus(addInstancesQuery, instancesRepository::addInstances);
+        validateConfirmExecuteShowStatus(
+                addInstancesQuery,
+                instances -> String.format("Going to add %d instances.", instances.size()),
+                instances -> new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
+                instances -> instances.stream().map(TextUtils::instanceToRow).collect(Collectors.toList()),
+                instancesRepository::addInstances
+        );
     }
     
     @CliCommand(value = "add images", help = "Add one or more images to project")
@@ -43,7 +52,13 @@ public class AddCommands extends BaseCommands {
     ) {
         //TODO: implement adding image from file
         AddImagesQuery addImagesQuery = new AddImagesQuery(imageName, names, instancesRepository);
-        validateExecuteShowStatus(addImagesQuery, imagesRepository::addImages);
+        validateConfirmExecuteShowStatus(
+                addImagesQuery,
+                images -> String.format("Going to add %d images.", images.size()),
+                images -> new String[]{"Name", "State", "Last modified"},
+                images -> images.stream().map(TextUtils::imageToRow).collect(Collectors.toList()),
+                imagesRepository::addImages
+        );
     }
     
 }
