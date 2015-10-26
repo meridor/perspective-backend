@@ -19,6 +19,14 @@ public class ShowProjectsQuery implements Query<Predicate<Project>> {
     @Filter(CLOUDS)
     private Set<String> clouds;
 
+    public ShowProjectsQuery() {
+        this(null, null);
+    }
+    
+    public ShowProjectsQuery(String name) {
+        this(name, null);
+    }
+    
     public ShowProjectsQuery(String name, String cloud) {
         this.names = parseEnumeration(name);
         this.clouds = parseEnumeration(cloud);

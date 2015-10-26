@@ -6,6 +6,7 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
@@ -18,6 +19,9 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
+    @Autowired
+    private DockerUtils dockerUtils;
+    
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
         Project project = createProject(cloud);
@@ -33,8 +37,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private Project createProject(Cloud cloud) {
         Project project = new Project();
-        project.setId(cloud.getId());
-        project.setName(cloud.getName());
+        project.setId(dockerUtils.getProjectId(cloud));
+        project.setName(dockerUtils.getProjectName(cloud));
         project.setTimestamp(ZonedDateTime.now());
         return project;
     }

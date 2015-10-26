@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.wizard.impl;
+package org.meridor.perspective.shell.wizard;
 
 import org.meridor.perspective.shell.wizard.Step;
 import org.meridor.perspective.shell.wizard.Wizard;

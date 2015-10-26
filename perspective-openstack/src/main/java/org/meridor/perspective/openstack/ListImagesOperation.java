@@ -8,7 +8,6 @@ import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
-    private IdGenerator idGenerator;
+    private OpenstackUtils openstackUtils;
     
     @Autowired
     private OpenstackApiProvider apiProvider;
@@ -44,7 +43,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 try {
                     ImageApi imageApi = novaApi.getImageApi(region);
                     FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
-                    imagesList.forEach(img -> images.add(createImage(img)));
+                    imagesList.forEach(img -> images.add(createImage(img, cloud, region)));
                     Integer regionImagesCount = images.size();
                     overallImagesCount += regionImagesCount;
                     LOG.debug("Fetched {} images for cloud = {}, region = {}", regionImagesCount, cloud.getName(), region);
@@ -67,11 +66,13 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return new OperationType[]{LIST_IMAGES};
     }
 
-    private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage) {
+    private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
         Image image = new Image();
-        String imageId = idGenerator.generate(Image.class, openstackImage.getId());
+        String imageId = openstackUtils.getImageId(openstackImage.getId());
+        String projectId = openstackUtils.getProjectId(cloud, region);
         image.setId(imageId);
         image.setRealId(openstackImage.getId());
+        image.setProjectId(projectId);
         image.setName(openstackImage.getName());
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime created = ZonedDateTime.ofInstant(

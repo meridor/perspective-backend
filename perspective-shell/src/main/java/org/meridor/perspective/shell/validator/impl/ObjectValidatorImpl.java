@@ -1,7 +1,6 @@
-package org.meridor.perspective.shell.query.impl;
+package org.meridor.perspective.shell.validator.impl;
 
-import org.meridor.perspective.shell.query.Query;
-import org.meridor.perspective.shell.query.QueryValidator;
+import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.validator.Field;
 import org.meridor.perspective.shell.validator.Validator;
@@ -17,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class QueryValidatorImpl implements QueryValidator {
+public class ObjectValidatorImpl implements ObjectValidator {
 
     @Autowired
     private FiltersAware filtersAware;
@@ -30,32 +29,32 @@ public class QueryValidatorImpl implements QueryValidator {
     }
 
     @Override
-    public Set<String> validate(Query<?> query) {
+    public Set<String> validate(Object object) {
         Set<String> errors = new HashSet<>();
-        getValidators().forEach(v -> Arrays.stream(query.getClass().getDeclaredFields())
+        getValidators().forEach(v -> Arrays.stream(object.getClass().getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(v.getAnnotationClass()))
                 .forEach(f -> {
-                    Set<String> fieldErrors = validateField(v, query, f);
+                    Set<String> fieldErrors = validateField(v, object, f);
                     errors.addAll(fieldErrors);
                 }));
         return errors;
     }
     
-    private Set<String> validateField(Validator v, Query<?> query, java.lang.reflect.Field f) {
+    private Set<String> validateField(Validator v, Object object, java.lang.reflect.Field f) {
         Set<String> errors = new HashSet<>();
         String filterName = f.getName();
         Annotation annotation = f.getAnnotation(v.getAnnotationClass());
         try {
-            Object value = getValue(query, f);
+            Object value = getValue(object, f);
             if (value != null && isSet(value.getClass())) {
                 Set<?> set = Set.class.cast(value);
                 set.stream().forEach(val -> {
-                    if (!v.validate(query, annotation, val)) {
+                    if (!v.validate(object, annotation, val)) {
                         errors.add(v.getMessage(annotation, filterName, value));
                     }
                 });
             } else {
-                if (!v.validate(query, annotation, value)) {
+                if (!v.validate(object, annotation, value)) {
                     errors.add(v.getMessage(annotation, filterName, value));
                 }
             }
@@ -68,17 +67,17 @@ public class QueryValidatorImpl implements QueryValidator {
         return errors;
     }
     
-    private Object getValue(Query<?> query, java.lang.reflect.Field f) throws IllegalAccessException {
+    private Object getValue(Object object, java.lang.reflect.Field f) throws IllegalAccessException {
         f.setAccessible(true);
-        Object value = f.get(query);
+        Object value = f.get(object);
         if (value == null && f.isAnnotationPresent(Filter.class)) {
             Field field = f.getAnnotation(Filter.class).value();
             if (filtersAware.hasFilter(field)) {
                 Set<String> filterValues = filtersAware.getFilter(field);
                 if (isSet(f.getType())) {
-                    f.set(query, filterValues);
+                    f.set(object, filterValues);
                 } else if (filterValues.size() > 0) {
-                    f.set(query, filterValues.iterator().next());
+                    f.set(object, filterValues.iterator().next());
                 }
             }
         }

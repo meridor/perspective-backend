@@ -1,6 +1,4 @@
-package org.meridor.perspective.shell.wizard.step;
-
-import org.meridor.perspective.shell.wizard.Step;
+package org.meridor.perspective.shell.wizard;
 
 import static org.meridor.perspective.shell.misc.LoggingUtils.warn;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
@@ -22,10 +20,10 @@ public abstract class YesNoStep implements Step {
     @Override
     public boolean run() {
         printMessageWithDefaultAnswer();
-        String answer = waitForInput();
+        String answer = waitForAnswer();
         while (!validateAnswer(answer)) {
             warn("Answer should be y or n. Please try again or type q to quit:");
-            answer = waitForInput();
+            answer = waitForAnswer();
         }
         if (isExitKey(answer)) {
             return false;

@@ -45,6 +45,7 @@ public class EntityGenerator {
         Image image = new Image();
         image.setId("test-image");
         image.setRealId("test-image");
+        image.setProjectId(getProject().getId());
         image.setName("test-image");
         image.setState(ImageState.SAVED);
         image.setCreated(now().minusDays(2));

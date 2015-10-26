@@ -41,7 +41,7 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Project> getProjectsById(String id) {
-        return projectsRepository.showProjects(new ShowProjectsQuery(id, null));
+        return projectsRepository.showProjects(new ShowProjectsQuery(id));
     }
     
     private Collection<Flavor> getFlavorsById(String id) {

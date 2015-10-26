@@ -1,9 +1,15 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import com.google.common.collect.Lists;
+import jline.console.ConsoleReader;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.shell.commands.BaseCommands;
+import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.validator.Setting;
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +28,7 @@ public final class TextUtils {
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
     private static final String NONE = "-";
+    public static final Integer DEFAULT_PAGE_SIZE = 20;
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
         String ret = template;
@@ -34,7 +41,7 @@ public final class TextUtils {
         return ret;
     }
 
-    private static String getPlaceholder(Placeholder placeholder) {
+    public static String getPlaceholder(Placeholder placeholder) {
         return String.format("$%s", placeholder.name().toLowerCase());
     }
     
@@ -177,8 +184,75 @@ public final class TextUtils {
         return true;
     }
     
+    public static boolean isPositiveInt(String key) {
+        try {
+            return Integer.parseUnsignedInt(key) > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    
     private TextUtils() {
         
     }
 
+    /**
+     * Shows pages one by one allowing to navigate back and forth
+     * @param pages each page contents
+     */
+    public static void page(List<String> pages) {
+        try {
+            ConsoleReader consoleReader = new ConsoleReader();
+            final int NUM_PAGES = pages.size();
+            int currentPage = 1;
+            showPage(currentPage, NUM_PAGES, pages); //Always showing first page
+            while (currentPage <= NUM_PAGES) {
+                boolean pageNumberChanged = false;
+                String key = String.valueOf((char) consoleReader.readCharacter());
+                if (isExitKey(key)) {
+                    break;
+                } else if (isNextElementKey(key)) {
+                    if (currentPage == NUM_PAGES) {
+                        break;
+                    }
+                    currentPage++;
+                    pageNumberChanged = true;
+                } else if (isPrevElementKey(key) && currentPage > 1) {
+                    currentPage--;
+                    pageNumberChanged = true;
+                } else if (isNumericKey(key)) {
+                    Integer pageNumber = Integer.valueOf(key);
+                    if (pageNumber < 1 || pageNumber > NUM_PAGES) {
+                        BaseCommands.warn(String.format("Wrong page number: %d. Should be one of 1..%d.", pageNumber, NUM_PAGES));
+                        continue;
+                    } else if (pageNumber != currentPage) {
+                        currentPage = pageNumber;
+                        pageNumberChanged = true;
+                    }
+                }
+                if (pageNumberChanged) {
+                    showPage(currentPage, NUM_PAGES, pages);
+                }
+            }
+        } catch (IOException e) {
+            BaseCommands.error(String.format("Failed to show pages: %s", e.getMessage()));
+        }
+    }
+
+    private static void showPage(final int pageNumber, final int numPages, List<String> entries) {
+        BaseCommands.ok(String.format("Showing page %d of %d:", pageNumber, numPages));
+        BaseCommands.ok(entries.get(pageNumber - 1));
+    }
+
+    public static Integer getPageSize(SettingsStorage settingsStorage) {
+        return (settingsStorage.hasSetting(Setting.PAGE_SIZE)) ?
+                settingsStorage.getSettingAs(Setting.PAGE_SIZE, Integer.class) :
+                DEFAULT_PAGE_SIZE;
+    }
+
+    public static List<String> preparePages(TableRenderer tableRenderer, Integer pageSize, String[] columns, List<String[]> rows) {
+        return Lists.partition(rows, pageSize).stream().
+                map(b -> tableRenderer.render(columns, b))
+                .collect(Collectors.toList());
+    }
 }

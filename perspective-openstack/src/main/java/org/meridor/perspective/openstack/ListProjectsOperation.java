@@ -6,13 +6,12 @@ import org.jclouds.openstack.neutron.v2.domain.Network;
 import org.jclouds.openstack.neutron.v2.features.NetworkApi;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.domain.Flavor;
+import org.jclouds.openstack.nova.v2_0.domain.KeyPair;
 import org.jclouds.openstack.nova.v2_0.domain.regionscoped.AvailabilityZoneDetails;
 import org.jclouds.openstack.nova.v2_0.extensions.AvailabilityZoneApi;
+import org.jclouds.openstack.nova.v2_0.extensions.KeyPairApi;
 import org.jclouds.openstack.nova.v2_0.features.FlavorApi;
-import org.meridor.perspective.beans.AvailabilityZone;
-import org.meridor.perspective.beans.MetadataKey;
-import org.meridor.perspective.beans.MetadataMap;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
@@ -50,6 +49,11 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
                     NetworkApi networkApi = neutronApi.getNetworkApi(region);
                     addNetworks(project, networkApi);
+
+                    Optional<KeyPairApi> keyPairApi = novaApi.getKeyPairApi(region);
+                    if (keyPairApi.isPresent()) {
+                        addKeyPairs(keyPairApi.get(), project);
+                    }
 
 //                Optional<AvailabilityZoneApi> availabilityZoneApi = novaApi.getAvailabilityZoneApi(region);
 //                if (availabilityZoneApi.isPresent()) {
@@ -123,6 +127,14 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             AvailabilityZone availabilityZone = new AvailabilityZone();
             availabilityZone.setName(az.getName());
             project.getAvailabilityZones().add(availabilityZone);
+        }
+    }
+    
+    private void addKeyPairs(KeyPairApi keyPairApi, Project project) {
+        for (KeyPair keyPair : keyPairApi.list()) {
+            Keypair keypair = new Keypair();
+            keypair.setName(keyPair.getName());
+            keypair.setFingerprint(keyPair.getFingerprint());
         }
     }
 

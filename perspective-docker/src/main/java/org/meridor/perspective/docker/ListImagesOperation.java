@@ -8,7 +8,6 @@ import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
-    private IdGenerator idGenerator;
+    private DockerUtils dockerUtils;
     
     @Autowired
     private DockerApiProvider apiProvider;
@@ -43,7 +42,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
             List<com.spotify.docker.client.messages.Image> dockerImages = dockerApi.listImages(DockerClient.ListImagesParam.allImages(false));
             for (com.spotify.docker.client.messages.Image image : dockerImages) {
                 ImageInfo imageInfo = dockerApi.inspectImage(image.id());
-                instances.add(createImage(image, imageInfo));
+                instances.add(createImage(image, imageInfo, cloud));
             }
             LOG.debug("Fetched {} images", instances.size());
             consumer.accept(instances);
@@ -59,11 +58,13 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return new OperationType[]{LIST_IMAGES};
     }
 
-    private Image createImage(com.spotify.docker.client.messages.Image dockerImage, ImageInfo dockerImageInfo) {
+    private Image createImage(com.spotify.docker.client.messages.Image dockerImage, ImageInfo dockerImageInfo, Cloud cloud) {
         Image image = new Image();
-        String imageId = idGenerator.generate(Image.class, dockerImageInfo.id());
+        String imageId = dockerUtils.getImageId(dockerImageInfo.id());
+        String projectId = dockerUtils.getProjectId(cloud);
         image.setId(imageId);
         image.setRealId(dockerImageInfo.id());
+        image.setProjectId(projectId);
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.AUTHOR, dockerImageInfo.author());
         metadata.put(MetadataKey.ARCHITECTURE, dockerImageInfo.architecture());

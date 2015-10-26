@@ -128,6 +128,7 @@
             <xsd:element name="created" type="xsd:dateTime"/>
             <xsd:element name="cloudId" type="xsd:string"/>
             <xsd:element name="cloudType" type="config:cloudType"/>
+            <xsd:element name="projectId" type="xsd:string"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="state" type="tns:imageState"/>
             <xsd:element name="checksum" type="tns:checksum"/>
@@ -201,6 +202,12 @@
         </xsd:all>
     </xsd:complexType>
 
+    <xsd:complexType name="keypairs">
+        <xsd:sequence>
+            <xsd:element name="keypairs" type="tns:keypair" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
     <xsd:complexType name="project">
         <xsd:all>
             <xsd:element name="id" type="xsd:string"/>
@@ -211,6 +218,7 @@
             <xsd:element name="flavors" type="tns:flavors"/>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="availabilityZones" type="tns:availabilityZones"/>
+            <xsd:element name="keypairs" type="tns:keypairs"/>
             <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
