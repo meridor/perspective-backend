@@ -1,6 +1,6 @@
-package org.meridor.perspective.shell.wizard.instances;
+package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.beans.Network;
+import org.meridor.perspective.beans.Keypair;
 import org.meridor.perspective.shell.query.ShowProjectsQuery;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.wizard.ChoiceStep;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class NetworkStep extends ChoiceStep {
+public class KeypairStep extends ChoiceStep {
     
     @Autowired
     private ProjectsRepository projectsRepository;
@@ -19,14 +19,14 @@ public class NetworkStep extends ChoiceStep {
     @Override
     protected List<String> getPossibleChoices() {
         return projectsRepository.showProjects(new ShowProjectsQuery()).stream()
-                .flatMap(p -> p.getNetworks().stream())
-                .map(Network::getName)
+                .flatMap(p -> p.getKeypairs().stream())
+                .map(Keypair::getName)
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getMessage() {
-        return "Select network to use for instances.";
+        return "Select keypair to use for instances.";
     }
     
 }

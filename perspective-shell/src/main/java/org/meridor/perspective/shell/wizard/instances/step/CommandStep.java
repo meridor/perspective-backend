@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.wizard.instances;
+package org.meridor.perspective.shell.wizard.instances.step;
 
 import org.meridor.perspective.shell.validator.annotation.Required;
 import org.meridor.perspective.shell.wizard.FreeInputStep;

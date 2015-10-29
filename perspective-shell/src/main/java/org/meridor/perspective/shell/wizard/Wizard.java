@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 public interface Wizard extends Iterator<WizardScreen>, Iterable<WizardScreen> {
     
-    boolean run();
+    boolean runSteps();
     
-    String getCommand();
+    void runCommand();
     
 }

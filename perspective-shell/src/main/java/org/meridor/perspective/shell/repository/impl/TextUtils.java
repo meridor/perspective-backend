@@ -14,6 +14,8 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.shell.misc.LoggingUtils.error;
+
 public final class TextUtils {
 
     private static final String SEMICOLON = ";";
@@ -22,7 +24,7 @@ public final class TextUtils {
     private static final String SPACE = " ";
     private static final String ENTER = "\n";
     private static final String YES = "y";
-    private static final String NO = "n";
+    public static final String NO = "n";
     private static final String NEXT = "n";
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
@@ -35,7 +37,7 @@ public final class TextUtils {
         for (Placeholder placeholder : values.keySet()) {
             String placeholderValue = values.get(placeholder);
             if (placeholderValue != null) {
-                ret = template.replace(getPlaceholder(placeholder), placeholderValue);
+                ret = ret.replace(getPlaceholder(placeholder), placeholderValue);
             }
         }
         return ret;
@@ -50,7 +52,11 @@ public final class TextUtils {
     }
 
     public static String enumerateValues(Collection<String> values) {
-        return values.stream().collect(Collectors.joining(COMMA + SPACE));
+        return enumerateValues(values, COMMA + SPACE);
+    }
+    
+    public static String enumerateValues(Collection<String> values, String delimiter) {
+        return values.stream().collect(Collectors.joining(delimiter));
     }
     
     public static String joinLines(Collection<String> values) {
@@ -61,6 +67,15 @@ public final class TextUtils {
         Date currentDate = Date.from(zonedDateTime.toInstant());
         PrettyTime pt = new PrettyTime();
         return pt.format(currentDate);
+    }
+    
+    public static String createAssignment(Map<String, Set<String>> data) {
+        return enumerateValues(
+                data.keySet().stream()
+                .map(k -> String.format("%s%s%s", k, EQUALITY, enumerateValues(data.get(k), COMMA)))
+                .collect(Collectors.toList()),
+                SEMICOLON
+        );
     }
     
     /**
@@ -83,6 +98,7 @@ public final class TextUtils {
                     ret.put(key, value);
                     counter = 0;
                     key = null;
+                    value = new HashSet<>();
                     continue;
                 } else if (counter == 0) {
                     key = token.trim();
@@ -235,7 +251,7 @@ public final class TextUtils {
                 }
             }
         } catch (IOException e) {
-            BaseCommands.error(String.format("Failed to show pages: %s", e.getMessage()));
+            error(String.format("Failed to show pages: %s", e.getMessage()));
         }
     }
 
