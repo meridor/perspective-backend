@@ -5,6 +5,8 @@ import org.meridor.perspective.shell.repository.impl.Placeholder;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.meridor.perspective.shell.validator.annotation.*;
 import org.meridor.perspective.shell.validator.annotation.Metadata;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -14,7 +16,10 @@ import static org.meridor.perspective.shell.validator.Entity.*;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.meridor.perspective.shell.validator.NumberRelation.GREATER_THAN;
 import static org.meridor.perspective.shell.validator.NumberRelation.GREATER_THAN_EQUAL;
+import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
+@Component
+@Scope(SCOPE_PROTOTYPE)
 public class AddInstancesQuery implements Query<List<Instance>> {
     
     @Required
@@ -47,19 +52,50 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Metadata
     private String options;
 
-    public AddInstancesQuery(String name, String project, String flavor, String image, String network, Integer from, Integer to, String options) {
+    public AddInstancesQuery withName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public AddInstancesQuery withProject(String project) {
         this.project = project;
+        return this;
+    }
+
+    public AddInstancesQuery withFlavor(String flavor) {
         this.flavor = flavor;
+        return this;
+    }
+
+    public AddInstancesQuery withImage(String image) {
         this.image = image;
+        return this;
+    }
+
+    public AddInstancesQuery withNetwork(String network) {
         this.network = network;
-        this.from = from;
+        return this;
+    }
+
+    public AddInstancesQuery withTo(Integer to) {
         this.to = to;
-        this.options = options;
+        return this;
     }
     
-    public AddInstancesQuery(String name, String project, String flavor, String image, String network, Integer count, String options) {
-        this(name, project, flavor, image, network, 1, count, options);
+    public AddInstancesQuery withCount(Integer count) {
+        this.from = 1;
+        this.to = count;
+        return this;
+    }
+
+    public AddInstancesQuery withFrom(Integer from) {
+        this.from = from;
+        return this;
+    }
+
+    public AddInstancesQuery withOptions(String options) {
+        this.options = options;
+        return this;
     }
 
     @Override

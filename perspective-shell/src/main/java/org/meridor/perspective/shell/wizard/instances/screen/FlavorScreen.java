@@ -19,7 +19,7 @@ public class FlavorScreen implements WizardScreen {
     private NetworkScreen networkScreen;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return flavorStep;
     }
 

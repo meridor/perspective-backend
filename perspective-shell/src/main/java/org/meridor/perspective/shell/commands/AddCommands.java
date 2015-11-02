@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.query.AddImagesQuery;
 import org.meridor.perspective.shell.query.AddInstancesQuery;
+import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
@@ -24,7 +25,10 @@ public class AddCommands extends BaseCommands {
     
     @Autowired
     private AddInstancesWizard addInstancesWizard;
-    
+
+    @Autowired
+    private QueryProvider queryProvider;
+
     @CliCommand(value = "add instances", help = "Add one or more instances to project")
     public void addInstance(
             @CliOption(key = "name", help = "Instance name") String name,
@@ -38,9 +42,17 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "options", help = "Various instance options") String options
     ) {
         if (name != null) {
-            AddInstancesQuery addInstancesQuery = (count != null) ?
-                    new AddInstancesQuery(name, project, flavor, image, network, count, options) :
-                    new AddInstancesQuery(name, project, flavor, image, network, from, to, options);
+            AddInstancesQuery addInstancesQuery = queryProvider.get(AddInstancesQuery.class)
+                    .withName(name)
+                    .withProject(project)
+                    .withFlavor(flavor)
+                    .withImage(image)
+                    .withNetwork(network)
+                    .withOptions(options);
+            addInstancesQuery = (count != null) ?
+                    addInstancesQuery.withCount(count) :
+                    addInstancesQuery.withFrom(from).withTo(to);
+            
             validateConfirmExecuteShowStatus(
                     addInstancesQuery,
                     instances -> String.format("Going to add %d instances.", instances.size()),
@@ -60,7 +72,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "name", mandatory = true, help = "Image name") String imageName
     ) {
         //TODO: implement adding image from file
-        AddImagesQuery addImagesQuery = new AddImagesQuery(imageName, names, instancesRepository);
+        AddImagesQuery addImagesQuery = queryProvider.get(AddImagesQuery.class).withInstanceNames(names).withName(imageName);
         validateConfirmExecuteShowStatus(
                 addImagesQuery,
                 images -> String.format("Going to add %d images.", images.size()),

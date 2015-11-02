@@ -12,20 +12,20 @@ import static org.meridor.perspective.shell.repository.impl.TextUtils.isPositive
 @Component
 public class EndNumberStep extends FreeInputStep {
     
-    private final Integer from;
+    private Integer from = 0;
     
-    @RelativeToNumericField(relation = NumberRelation.GREATER_THAN, field = "from")
+    @RelativeToNumericField(relation = NumberRelation.GREATER_THAN_EQUAL, field = "from")
     private Integer to = 0;
-
-    public EndNumberStep(Integer from) {
-        this.from = from;
-    }
 
     @Override
     protected void saveAnswerToFields(String answer) {
         if (isPositiveInt(answer)) {
             to = Integer.valueOf(answer);
         }
+    }
+
+    public void setFrom(Integer from) {
+        this.from = from;
     }
 
     @Override
@@ -35,6 +35,6 @@ public class EndNumberStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return "Select instance end number.";
+        return "Select instance end number ([$default_answer]):";
     }
 }

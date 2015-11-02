@@ -26,7 +26,7 @@ public class KeypairStep extends ChoiceStep {
 
     @Override
     public String getMessage() {
-        return "Select keypair to use for instances.";
+        return "Select keypair to use for instances:";
     }
     
 }

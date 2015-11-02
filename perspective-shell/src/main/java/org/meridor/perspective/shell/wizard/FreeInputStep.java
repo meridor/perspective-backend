@@ -4,6 +4,7 @@ import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.meridor.perspective.shell.misc.LoggingUtils.warn;
@@ -21,22 +22,36 @@ public abstract class FreeInputStep implements Step {
     @Override
     public boolean run() {
         printMessageWithDefaultAnswer();
-        String answer = waitForAnswer();
-        saveAnswerToFields(answer);
-        while (!validateAnswerAndShowErrors()) {
-            answer = waitForAnswer();
-        }
-        if (isExitKey(answer)) {
+        Optional<String> answer = processAnswer();
+        if (!answer.isPresent()) {
             return false;
         }
-        this.answer = answer;
+        while (!validateAnswerAndShowErrors()) {
+            answer = processAnswer();
+            if (!answer.isPresent()) {
+                return false;
+            }
+        }
+        this.answer = answer.get();
         return true;
+    }
+    
+    private Optional<String> processAnswer() {
+        String answer = waitForAnswer();
+        if (isExitKey(answer)) {
+            return Optional.empty();
+        }
+        saveAnswerToFields(answer);
+        return Optional.of(answer);
     }
 
     private boolean validateAnswerAndShowErrors() {
         Set<String> errors = objectValidator.validate(this);
-        warn(String.format("Invalid data provided: %s\n Please try again or type q to quit:", joinLines(errors)));
-        return errors.size() == 0;
+        boolean isValid = (errors.size() == 0);
+        if (!isValid) {
+            warn(String.format("Invalid data provided: %s\n Please try again or type q to quit:", joinLines(errors)));
+        }
+        return isValid;
     }
 
     protected abstract void saveAnswerToFields(String answer);

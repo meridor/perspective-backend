@@ -16,7 +16,7 @@ public class KeypairScreen implements WizardScreen {
     private KeypairStep keypairStep;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return keypairStep;
     }
 

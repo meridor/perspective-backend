@@ -15,7 +15,7 @@ public class CommandScreen implements WizardScreen {
     private CommandStep commandStep;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return commandStep;
     }
 

@@ -4,10 +4,7 @@ import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.query.ShowFlavorsQuery;
-import org.meridor.perspective.shell.query.ShowImagesQuery;
-import org.meridor.perspective.shell.query.ShowNetworksQuery;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.validator.annotation.ExistingEntity;
@@ -26,7 +23,10 @@ public class ExistingEntityValidator implements Validator {
     
     @Autowired
     private ImagesRepository imagesRepository;
-    
+
+    @Autowired
+    private QueryProvider queryProvider;
+
     @Override
     public boolean validate(Object instance, Annotation annotation, Object value) {
         if (value == null) {
@@ -41,19 +41,19 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Project> getProjectsById(String id) {
-        return projectsRepository.showProjects(new ShowProjectsQuery(id));
+        return projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(id));
     }
     
     private Collection<Flavor> getFlavorsById(String id) {
-        return projectsRepository.showFlavors(null, null, new ShowFlavorsQuery(id));
+        return projectsRepository.showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(id));
     }
     
     private Collection<Network> getNetworksById(String id) {
-        return projectsRepository.showNetworks(null, null, new ShowNetworksQuery(id));
+        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(id));
     }
     
     private Collection<Image> getImagesById(String id) {
-        return imagesRepository.showImages(new ShowImagesQuery(null, id, null));
+        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withIds(id));
     }
     
     private Collection<?> getEntitiesList(Entity entity, String entityId) {

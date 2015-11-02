@@ -20,6 +20,6 @@ public class NameStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return String.format("Specify instance name. Use %s marker to inject instance number to name.", getPlaceholder(Placeholder.NUMBER));
+        return String.format("Specify instance name. Use %s marker to inject instance number to name:", getPlaceholder(Placeholder.NUMBER));
     }
 }

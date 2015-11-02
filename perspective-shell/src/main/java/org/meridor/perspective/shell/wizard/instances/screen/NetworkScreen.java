@@ -19,7 +19,7 @@ public class NetworkScreen implements WizardScreen {
     private KeypairScreen keypairScreen;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return flavorStep;
     }
 

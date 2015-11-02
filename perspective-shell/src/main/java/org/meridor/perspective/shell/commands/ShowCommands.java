@@ -30,12 +30,17 @@ public class ShowCommands extends BaseCommands {
     @Autowired
     private ImagesRepository imagesRepository;
     
+    @Autowired
+    private QueryProvider queryProvider;
+    
     @CliCommand(value = "show projects", help = "Show available projects")
     public void showProjects(
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(name, cloud);
+        ShowProjectsQuery showProjectsQuery = queryProvider.get(ShowProjectsQuery.class)
+                .withNames(name)
+                .withClouds(cloud);
         validateExecuteShowResult(
                 showProjectsQuery,
                 new String[]{"Id", "Name", "Cloud"},
@@ -54,7 +59,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowFlavorsQuery showFlavorsQuery = new ShowFlavorsQuery(name);
+        ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class).withNames(name);
         validateExecuteShowResult(
                 showFlavorsQuery,
                 new String[]{"Id", "Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
@@ -77,7 +82,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowNetworksQuery showNetworksQuery = new ShowNetworksQuery(name);
+        ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name);
         validateExecuteShowResult(
                 showNetworksQuery,
                 new String[]{"Id", "Name", "Subnets", "State", "Is Shared"},
@@ -103,7 +108,13 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "state", help = "Instance state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowInstancesQuery showInstancesQuery = new ShowInstancesQuery(id, name, flavor, image, state, cloud);
+        ShowInstancesQuery showInstancesQuery = queryProvider.get(ShowInstancesQuery.class)
+                .withIds(id)
+                .withNames(name)
+                .withFlavors(flavor)
+                .withImages(image)
+                .withStates(state)
+                .withClouds(cloud);
         validateExecuteShowResult(
                 showInstancesQuery,
                 new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
@@ -123,7 +134,10 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Image name") String name,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowImagesQuery showImagesQuery = new ShowImagesQuery(id, name, cloud);
+        ShowImagesQuery showImagesQuery = queryProvider.get(ShowImagesQuery.class)
+                .withIds(id)
+                .withNames(name)
+                .withCloudNames(cloud);
         validateExecuteShowResult(
                 showImagesQuery,
                 new String[]{"Name", "State", "Last modified"},

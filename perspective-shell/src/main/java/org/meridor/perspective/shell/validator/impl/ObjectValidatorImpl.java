@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.validator.impl;
 
-import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.validator.Field;
+import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.validator.Validator;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.springframework.beans.factory.annotation.Autowired;

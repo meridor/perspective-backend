@@ -27,7 +27,7 @@ public class ProjectsRepository {
     }
     
     public List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(projectNames, clouds);
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getFlavors().stream())
@@ -36,7 +36,7 @@ public class ProjectsRepository {
     }
     
     public List<Network> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery(projectNames, clouds);
+        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
                 .flatMap(p -> p.getNetworks().stream())

@@ -16,7 +16,7 @@ public class CommandBuilderTest {
     public void testAddArgumentWithValue() {
         CommandBuilder commandBuilder = new CommandBuilder(COMMAND);
         commandBuilder.addArgument(CommandArgument.NAME, "value");
-        assertThat(commandBuilder.getCommand(), equalTo("command --name=value"));
+        assertThat(commandBuilder.getCommand(), equalTo("command --name value"));
     }
     
     @Test

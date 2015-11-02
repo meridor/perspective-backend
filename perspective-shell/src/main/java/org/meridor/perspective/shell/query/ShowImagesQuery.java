@@ -1,18 +1,23 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.validator.annotation.ExistingEntity;
+import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
-import static org.meridor.perspective.shell.validator.Entity.PROJECT;
 import static org.meridor.perspective.shell.validator.Field.*;
+import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
+@Component
+@Scope(SCOPE_PROTOTYPE)
 public class ShowImagesQuery implements Query<Predicate<Image>> {
     
     @Filter(IMAGE_IDS)
@@ -25,24 +30,32 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
     @Filter(CLOUDS)
     private Set<String> clouds;
 
-    @ExistingEntity(PROJECT)
-    @Filter(PROJECTS)
-    private Set<String> projects;
+    private String projects;
+    
+    @Autowired
+    private ProjectsRepository projectsRepository;
+    
+    @Autowired
+    private QueryProvider queryProvider;
 
-
-    public ShowImagesQuery(String project) {
-        this(null, null, null, project);
+    public ShowImagesQuery withIds(String imageIds) {
+        this.ids = parseEnumeration(imageIds);
+        return this;
     }
     
-    public ShowImagesQuery(String id, String name, String cloud) {
-        this(id, name, cloud, null);
+    public ShowImagesQuery withNames(String names) {
+        this.names = parseEnumeration(names);
+        return this;
+    }
+
+    public ShowImagesQuery withCloudNames(String cloudNames) {
+        this.clouds = parseEnumeration(cloudNames);
+        return this;
     }
     
-    public ShowImagesQuery(String id, String name, String cloud, String project) {
-        this.ids = parseEnumeration(id);
-        this.names = parseEnumeration(name);
-        this.clouds = parseEnumeration(cloud);
-        this.projects = parseEnumeration(project);
+    public ShowImagesQuery withProjectNames(String projectNames) {
+        this.projects = projectNames;
+        return this;
     }
 
     @Override
@@ -59,14 +72,22 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
             Optional<Set<String>> id,
             Optional<Set<String>> name,
             Optional<Set<String>> cloud,
-            Optional<Set<String>> project
+            Optional<String> project
             
     ) {
         return image -> 
                 ( !id.isPresent() || id.get().contains(image.getId()) ) &&
                 ( !name.isPresent() || name.get().contains(image.getName()) ) &&
                 ( !cloud.isPresent() || cloud.get().contains(image.getCloudType().value().toLowerCase())) &&
-                ( !project.isPresent() || project.get().contains(image.getProjectId()));
+                ( !project.isPresent() || projectMatches(project.get(), image.getProjectId()));
+    }
+    
+    private boolean projectMatches(String projects, String projectIdFromImage) {
+        return projectsRepository
+                .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projects))
+                .stream().filter(
+                        p -> p.getId().equals(projectIdFromImage)
+                ).count() > 0;
     }
 
 }

@@ -18,6 +18,7 @@ public class FlavorStep extends ChoiceStep {
     
     @Override
     protected List<String> getPossibleChoices() {
+        //TODO: use selected project
         return projectsRepository.showProjects(new ShowProjectsQuery()).stream()
                 .flatMap(p -> p.getFlavors().stream())
                 .map(Flavor::getName)
@@ -26,7 +27,7 @@ public class FlavorStep extends ChoiceStep {
 
     @Override
     public String getMessage() {
-        return "Select flavor to use for instances.";
+        return "Select flavor to use for instances:";
     }
     
 }

@@ -19,13 +19,13 @@ public class ProjectStep extends ChoiceStep {
     @Override
     protected List<String> getPossibleChoices() {
         return projectsRepository.showProjects(new ShowProjectsQuery()).stream()
-                .map(Project::getId)
+                .map(Project::getName)
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getMessage() {
-        return "Select project to launch instances in.";
+        return "Select project to launch instances in:";
     }
     
 }

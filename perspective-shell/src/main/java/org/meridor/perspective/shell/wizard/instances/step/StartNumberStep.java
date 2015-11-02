@@ -29,6 +29,6 @@ public class StartNumberStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return "Select instance start number.";
+        return "Select instance start number ([$default_answer]):";
     }
 }

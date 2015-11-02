@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.wizard.instances.step;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.query.ShowImagesQuery;
 import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.shell.validator.annotation.Required;
 import org.meridor.perspective.shell.wizard.ChoiceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,22 +17,23 @@ public class ImageStep extends ChoiceStep {
     @Autowired
     private ImagesRepository imagesRepository;
     
-    private final String projectId;
+    @Required
+    private String projectName;
 
-    public ImageStep(String projectId) {
-        this.projectId = projectId;
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     @Override
     protected List<String> getPossibleChoices() {
-        return imagesRepository.showImages(new ShowImagesQuery(projectId)).stream()
-                .map(Image::getId)
+        return imagesRepository.showImages(new ShowImagesQuery().withProjectNames(projectName)).stream()
+                .map(Image::getName)
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getMessage() {
-        return "Select image to launch instances from.";
+        return "Select image to launch instances from:";
     }
     
 }

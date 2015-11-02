@@ -23,7 +23,7 @@ public class CountOrNumberScreen implements WizardScreen {
     private CountScreen countScreen;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return countOrNumberStep;
     }
 

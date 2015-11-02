@@ -26,7 +26,7 @@ public class NetworkStep extends ChoiceStep {
 
     @Override
     public String getMessage() {
-        return "Select network to use for instances.";
+        return "Select network to use for instances:";
     }
     
 }

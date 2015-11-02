@@ -16,7 +16,7 @@ public class CommandBuilder {
     }
     
     public void addArgument(CommandArgument commandArgument, String value) {
-        command.append(String.format(" --%s=%s", commandArgument, value));
+        command.append(String.format(" --%s %s", commandArgument, value));
     }
     
     public void addArgument(CommandArgument commandArgument) {

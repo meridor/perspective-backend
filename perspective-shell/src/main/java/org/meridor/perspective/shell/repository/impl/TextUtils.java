@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.misc.LoggingUtils.error;
+import static org.meridor.perspective.shell.misc.LoggingUtils.ok;
 
 public final class TextUtils {
 
@@ -23,7 +24,7 @@ public final class TextUtils {
     private static final String COMMA = ",";
     private static final String SPACE = " ";
     private static final String ENTER = "\n";
-    private static final String YES = "y";
+    public static final String YES = "y";
     public static final String NO = "n";
     private static final String NEXT = "n";
     private static final String LESS_PREVIOUS = "w";
@@ -218,8 +219,12 @@ public final class TextUtils {
      */
     public static void page(List<String> pages) {
         try {
-            ConsoleReader consoleReader = new ConsoleReader();
             final int NUM_PAGES = pages.size();
+            if (NUM_PAGES == 0) {
+                ok("Zero results provided: nothing to show.");
+                return;
+            }
+            ConsoleReader consoleReader = new ConsoleReader();
             int currentPage = 1;
             showPage(currentPage, NUM_PAGES, pages); //Always showing first page
             while (currentPage <= NUM_PAGES) {

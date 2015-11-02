@@ -28,24 +28,33 @@ public class ImageScreen implements WizardScreen {
     
     @Autowired
     private ProjectsRepository projectsRepository;
-    
+
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+        String projectName = previousAnswers.get(ProjectStep.class);
+        imageStep.setProjectName(projectName);
         return imageStep;
     }
 
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
-        String projectId = previousAnswers.get(ProjectStep.class);
-        List<Project> projects = projectsRepository.showProjects(new ShowProjectsQuery(projectId));
-        if (projects.size() == 1) {
-            Project project = projects.get(0);
-            switch (project.getCloudType()) {
+        String projectName = previousAnswers.get(ProjectStep.class);
+        Optional<Project> maybeProject = getProject(projectName);
+        if (maybeProject.isPresent()) {
+            switch (maybeProject.get().getCloudType()) {
                 case OPENSTACK: return Optional.of(flavorScreen);
-                case MOCK:
                 case DOCKER: return Optional.of(commandScreen);
+                default: return Optional.empty();
             }
         }
         return Optional.empty();
+    }
+    
+    private Optional<Project> getProject(String projectName) {
+        List<Project> projects = projectsRepository.showProjects(new ShowProjectsQuery().withNames(projectName));
+        return ((projects.size() >= 1)) ?
+                Optional.of(projects.get(0)) :
+                Optional.empty();
+                
     }
 }

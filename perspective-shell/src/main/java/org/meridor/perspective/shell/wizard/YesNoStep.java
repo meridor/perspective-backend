@@ -7,14 +7,21 @@ public abstract class YesNoStep implements Step {
     
     private String yes;
     
+    private final boolean proceedAnyway;
+    
     private final boolean proceedOnYes;
 
-    public YesNoStep(boolean proceedOnYes) {
+    public YesNoStep(boolean proceedAnyway, boolean proceedOnYes) {
+        this.proceedAnyway = proceedAnyway;
         this.proceedOnYes = proceedOnYes;
     }
 
+    public YesNoStep(boolean proceedAnyway) {
+        this(proceedAnyway, true);
+    }
+    
     public YesNoStep() {
-        this(true);
+        this(false, true);
     }
 
     @Override
@@ -29,11 +36,11 @@ public abstract class YesNoStep implements Step {
             return false;
         }
         yes = answer;
-        return proceedOnYes && isYesKey(yes);
+        return proceedAnyway || (proceedOnYes && isYesKey(yes));
     }
     
     private boolean validateAnswer(String answer) {
-        return isYesKey(answer) || isNoKey(answer);
+        return isYesKey(answer) || isNoKey(answer) || isExitKey(answer);
     }
 
     @Override

@@ -4,6 +4,8 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 import org.meridor.perspective.shell.validator.annotation.SupportedInstanceState;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.Set;
@@ -11,7 +13,10 @@ import java.util.function.Predicate;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
+import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
+@Component
+@Scope(SCOPE_PROTOTYPE)
 public class ShowInstancesQuery implements Query<Predicate<Instance>> {
 
     @Filter(INSTANCE_IDS)
@@ -34,21 +39,34 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     @Filter(CLOUDS)
     private Set<String> clouds;
 
-    public ShowInstancesQuery(String id, String name) {
-        this(id, name, null);
+    public ShowInstancesQuery withIds(String ids) {
+        this.ids = parseEnumeration(ids);
+        return this;
     }
     
-    public ShowInstancesQuery(String id, String name, String cloud) {
-        this(id, name, null, null, null, cloud);
+    public ShowInstancesQuery withNames(String names) {
+        this.names = parseEnumeration(names);
+        return this;
     }
     
-    public ShowInstancesQuery(String id, String name, String flavor, String image, String state, String cloud) {
-        this.ids = parseEnumeration(id);
-        this.names = parseEnumeration(name);
-        this.flavors = parseEnumeration(flavor);
-        this.images = parseEnumeration(image);
-        this.states = parseEnumeration(state);
-        this.clouds = parseEnumeration(cloud);
+    public ShowInstancesQuery withClouds(String clouds) {
+        this.clouds = parseEnumeration(clouds);
+        return this;
+    }
+    
+    public ShowInstancesQuery withImages(String images) {
+        this.images = parseEnumeration(images);
+        return this;
+    }
+    
+    public ShowInstancesQuery withFlavors(String flavors) {
+        this.flavors = parseEnumeration(flavors);
+        return this;
+    }
+    
+    public ShowInstancesQuery withStates(String states) {
+        this.states = parseEnumeration(states);
+        return this;
     }
 
     @Override

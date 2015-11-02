@@ -1,11 +1,12 @@
 package org.meridor.perspective.shell.wizard;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.JLineShellComponent;
+import org.springframework.shell.core.AbstractShell;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
+
+import static org.meridor.perspective.shell.misc.LoggingUtils.ok;
 
 @Component
 public abstract class BaseWizard implements Wizard {
@@ -15,17 +16,13 @@ public abstract class BaseWizard implements Wizard {
     private WizardScreen currentScreen;
 
     @Autowired
-    private JLineShellComponent jLineShellComponent;
-
-    @PostConstruct
-    public void init() {
-        this.currentScreen = getFirstScreen();
-    }
+    private AbstractShell shell;
 
     @Override
     public boolean runSteps() {
+        reset();
         for (WizardScreen wizardScreen : this) {
-            Step currentStep = wizardScreen.getStep();
+            Step currentStep = wizardScreen.getStep(getAnswers());
             if (!currentStep.run()) {
                 return false;
             }
@@ -36,6 +33,10 @@ public abstract class BaseWizard implements Wizard {
         return true;
     }
 
+    private void reset() {
+        this.currentScreen = null;
+    }
+
     protected abstract WizardScreen getFirstScreen();
     
     protected Map<Class<? extends Step>, String> getAnswers() {
@@ -44,19 +45,22 @@ public abstract class BaseWizard implements Wizard {
 
     @Override
     public boolean hasNext() {
-        return (currentScreen != null) && currentScreen.getNextScreen(getAnswers()).isPresent();
+        return
+                ( (currentScreen != null) && currentScreen.getNextScreen(getAnswers()).isPresent() ) ||
+                (getFirstScreen() != null);
     }
 
     @Override
     public WizardScreen next() {
         if (currentScreen == null) {
-            throw new IllegalArgumentException("Current screen can't be null");
+            currentScreen = getFirstScreen();
+        } else {
+            Optional<WizardScreen> nextScreen = currentScreen.getNextScreen(getAnswers());
+            if (!nextScreen.isPresent()) {
+                throw new NoSuchElementException("Last wizard screen reached");
+            }
+            currentScreen = nextScreen.get();
         }
-        Optional<WizardScreen> nextScreen = currentScreen.getNextScreen(getAnswers());
-        if (!nextScreen.isPresent()) {
-            throw new NoSuchElementException("Last wizard screen reached");
-        }
-        currentScreen = nextScreen.get();
         return currentScreen;
     }
 
@@ -70,7 +74,8 @@ public abstract class BaseWizard implements Wizard {
     @Override
     public void runCommand() {
         String command = getCommand();
-        jLineShellComponent.executeCommand(command);
+        ok(String.format("Executing command: %s", command));
+        shell.executeCommand(command);
     }
 
 }

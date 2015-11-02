@@ -19,7 +19,7 @@ public class CountScreen implements WizardScreen {
     private ImageScreen imageScreen;
     
     @Override
-    public Step getStep() {
+    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return countStep;
     }
 

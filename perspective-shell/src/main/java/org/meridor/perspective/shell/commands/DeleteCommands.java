@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.query.DeleteImagesQuery;
 import org.meridor.perspective.shell.query.ModifyInstancesQuery;
+import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
@@ -20,13 +21,18 @@ public class DeleteCommands extends BaseCommands {
     
     @Autowired
     private ImagesRepository imagesRepository;
-    
+
+    @Autowired
+    private QueryProvider queryProvider;
+
     @CliCommand(value = "delete instances", help = "Completely delete (terminate) instances")
     public void deleteInstances(
             @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String names,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ModifyInstancesQuery modifyInstancesQuery = new ModifyInstancesQuery(names, cloud, instancesRepository);
+        ModifyInstancesQuery modifyInstancesQuery = queryProvider.get(ModifyInstancesQuery.class)
+                .withNames(names)
+                .withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 modifyInstancesQuery,
                 instances -> String.format("Going to delete %d instances.", instances.size()),
@@ -41,7 +47,7 @@ public class DeleteCommands extends BaseCommands {
             @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String patterns,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        DeleteImagesQuery deleteImagesQuery = new DeleteImagesQuery(patterns, cloud, imagesRepository);
+        DeleteImagesQuery deleteImagesQuery = queryProvider.get(DeleteImagesQuery.class).withNames(patterns).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 deleteImagesQuery,
                 images -> String.format("Going to delete %d images.", images.size()),

@@ -1,8 +1,7 @@
 package org.meridor.perspective.shell.misc;
 
-import org.meridor.perspective.shell.commands.BaseCommands;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.JLineShellComponent;
+import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.event.ShellStatus;
 import org.springframework.shell.event.ShellStatusListener;
 import org.springframework.shell.support.logging.HandlerUtils;
@@ -23,10 +22,10 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
 
     private static final Logger LOG = HandlerUtils.getLogger(RuntimeConfigurationProvider.class);
     
-    private static final Logger COMMAND_LOG = HandlerUtils.getLogger(BaseCommands.class);
+    private static final Logger COMMAND_LOG = HandlerUtils.getLogger(LoggingUtils.class);
     
     @Autowired
-    private JLineShellComponent shell;
+    private AbstractShell shell;
     
     private Path getRCFilePath() {
         return Paths.get(System.getProperty("user.home")).resolve(".perspective").resolve("rc");
