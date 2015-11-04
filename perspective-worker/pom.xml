@@ -24,6 +24,7 @@
     </build>
 
     <dependencies>
+        <!-- Own modules -->
         <dependency>
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-beans</artifactId>
@@ -32,6 +33,7 @@
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-framework</artifactId>
         </dependency>
+        
         <dependency>
             <groupId>ru.yandex.qatools</groupId>
             <artifactId>yatomata</artifactId>
@@ -43,6 +45,24 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
         </dependency>
     </dependencies>
 

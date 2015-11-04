@@ -60,10 +60,6 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
         return cloudsMap.get(cloudId);
     }
 
-    public Collection<String> getCloudIds() {
-        return cloudsMap.keySet();
-    }
-
     public Collection<Cloud> getClouds() {
         return cloudsMap.values();
     }
