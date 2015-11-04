@@ -35,7 +35,7 @@ public class ApiProvider {
         }
     }
     
-    private String getBaseUri() {
+    public String getBaseUri() {
         if (settingsAware.hasSetting(Setting.API_URL)) {
             return settingsAware.getSettingAs(Setting.API_URL, String.class);
         }

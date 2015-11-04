@@ -70,6 +70,7 @@
     </build>
 
     <dependencies>
+        <!-- Own modules -->
         <dependency>
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-beans</artifactId>
@@ -78,6 +79,8 @@
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-java-client</artifactId>
         </dependency>
+        
+        <!-- Spring -->
         <dependency>
             <groupId>org.springframework.shell</groupId>
             <artifactId>spring-shell</artifactId>
@@ -93,6 +96,7 @@
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
+
         <dependency>
             <groupId>de.vandermeer</groupId>
             <artifactId>asciitable</artifactId>
