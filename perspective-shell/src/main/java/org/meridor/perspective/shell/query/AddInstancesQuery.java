@@ -1,17 +1,19 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.repository.impl.Placeholder;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.meridor.perspective.shell.validator.annotation.*;
 import org.meridor.perspective.shell.validator.annotation.Metadata;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.containsPlaceholder;
-import static org.meridor.perspective.shell.repository.impl.TextUtils.replacePlaceholders;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 import static org.meridor.perspective.shell.validator.Entity.*;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.meridor.perspective.shell.validator.NumberRelation.GREATER_THAN;
@@ -31,16 +33,16 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     private String project;
     
     @ExistingEntity(FLAVOR)
-    @Filter(FLAVOR_IDS)
+    @Filter(FLAVOR_NAMES)
     private String flavor;
     
     @Required
     @ExistingEntity(IMAGE)
-    @Filter(IMAGE_IDS)
+    @Filter(IMAGE_NAMES)
     private String image;
     
     @ExistingEntity(NETWORK)
-    @Filter(NETWORK_IDS)
+    @Filter(NETWORK_NAMES)
     private String network;
     
     @RelativeToNumber(relation = GREATER_THAN, number = 0)
@@ -50,7 +52,16 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     private Integer to;
     
     @Metadata
-    private String options;
+    private Map<String, Set<String>> options;
+    
+    @Autowired
+    private ProjectsRepository projectsRepository;
+    
+    @Autowired
+    private ImagesRepository imagesRepository;
+    
+    @Autowired
+    private QueryProvider queryProvider;
 
     public AddInstancesQuery withName(String name) {
         this.name = name;
@@ -94,7 +105,7 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     }
 
     public AddInstancesQuery withOptions(String options) {
-        this.options = options;
+        this.options = parseAssignment(options);
         return this;
     }
 
@@ -119,35 +130,42 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         return instances;
     }
     
-    private static Instance createInstance(String name, String projectId, String flavorId, String imageId, String networkId, String options) {
+    private Instance createInstance(String name, String projectName, String flavorName, String imageName, String networkName, Map<String, Set<String>> options) {
         Instance instance = new Instance();
         instance.setName(name);
-        instance.setProjectId(projectId);
+
+        List<Project> projects = projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectName));
+        Project project = projects.get(0);
+        instance.setProjectId(project.getId());
+        instance.setCloudId(project.getCloudId());
+        instance.setCloudType(project.getCloudType());
         
-        if (flavorId != null) {
-            Flavor flavor = new Flavor();
-            flavor.setId(flavorId);
-            instance.setFlavor(flavor);
+        if (flavorName != null) {
+            List<Flavor> flavors = projectsRepository.showFlavors(
+                    project.getName(),
+                    project.getCloudType().name().toLowerCase(),
+                    queryProvider.get(ShowFlavorsQuery.class).withNames(flavorName)
+            );
+            instance.setFlavor(flavors.get(0));
         }
+
+        List<Image> images = imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withNames(imageName));
+        instance.setImage(images.get(0));
         
-        Image image = new Image();
-        image.setId(imageId);
-        instance.setImage(image);
-        
-        if (networkId != null) {
-            Network network = new Network();
-            network.setId(networkId);
-            List<Network> networks = new ArrayList<>();
-            networks.add(network);
+        if (networkName != null) {
+            List<Network> networks = projectsRepository.showNetworks(
+                    project.getName(),
+                    project.getCloudType().name().toLowerCase(),
+                    queryProvider.get(ShowNetworksQuery.class).withNames(networkName)
+            );
             instance.setNetworks(networks);
         }
 
-        Map<String, Set<String>> parsedOptions = TextUtils.parseAssignment(options);
         MetadataMap metadataMap = new MetadataMap();
-        parsedOptions.keySet().forEach(
+        options.keySet().forEach(
                 k -> {
                     MetadataKey metadataKey = MetadataKey.fromValue(k);
-                    Set<String> value = parsedOptions.get(k);
+                    Set<String> value = options.get(k);
                     String metadataValue = TextUtils.enumerateValues(value);
                     metadataMap.put(metadataKey, metadataValue);
                 }

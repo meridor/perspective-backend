@@ -41,6 +41,7 @@ public class TextUtilsTest {
         Set<String> values = new LinkedHashSet<>(Arrays.asList("value1", "value2"));
         assertThat(enumerateValues(values), equalTo("value1, value2"));
         assertThat(enumerateValues(values, "#"), equalTo("value1#value2"));
+        assertThat(enumerateValues(Collections.singletonList("value")), equalTo("value"));
     }
 
     @Test
@@ -52,6 +53,7 @@ public class TextUtilsTest {
         assertThat(splittedLines, hasSize(2));
         assertThat(splittedLines.get(0), equalTo("line1"));
         assertThat(splittedLines.get(1), equalTo("line2"));
+        assertThat(joinLines(Collections.singletonList("line")), equalTo("line"));
     }
 
     @Test

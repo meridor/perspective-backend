@@ -1,6 +1,7 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
 import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.query.ShowImagesQuery;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.validator.annotation.Required;
@@ -17,6 +18,9 @@ public class ImageStep extends ChoiceStep {
     @Autowired
     private ImagesRepository imagesRepository;
     
+    @Autowired
+    private QueryProvider queryProvider;
+    
     @Required
     private String projectName;
 
@@ -26,7 +30,7 @@ public class ImageStep extends ChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return imagesRepository.showImages(new ShowImagesQuery().withProjectNames(projectName)).stream()
+        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withProjectNames(projectName)).stream()
                 .map(Image::getName)
                 .collect(Collectors.toList());
     }

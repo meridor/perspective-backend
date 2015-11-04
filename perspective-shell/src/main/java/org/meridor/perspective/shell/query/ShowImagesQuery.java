@@ -13,14 +13,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
-import static org.meridor.perspective.shell.validator.Field.*;
+import static org.meridor.perspective.shell.validator.Field.CLOUDS;
+import static org.meridor.perspective.shell.validator.Field.IMAGE_NAMES;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
 public class ShowImagesQuery implements Query<Predicate<Image>> {
     
-    @Filter(IMAGE_IDS)
     private Set<String> ids;
     
     @Filter(IMAGE_NAMES)

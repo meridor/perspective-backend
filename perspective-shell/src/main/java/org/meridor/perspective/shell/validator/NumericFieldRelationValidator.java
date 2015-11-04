@@ -21,7 +21,8 @@ public class NumericFieldRelationValidator implements Validator {
         String fieldName = ann.field();
         double doubleValue = Double.valueOf(value.toString());
         try {
-            java.lang.reflect.Field field = instance.getClass().getField(fieldName);
+            java.lang.reflect.Field field = instance.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
             double fieldValue = Double.valueOf(field.get(instance).toString());
             return relationChecker.checkDoubleRelation(doubleValue, fieldValue, ann.relation());
         } catch (Exception e) {

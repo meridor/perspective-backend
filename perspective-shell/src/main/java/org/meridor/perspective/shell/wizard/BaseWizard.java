@@ -14,13 +14,14 @@ public abstract class BaseWizard implements Wizard {
     private final Map<Class<? extends Step>, String> answers = new HashMap<>(); 
     
     private WizardScreen currentScreen;
-
+    
+    private boolean isFirstScreen = true;
+    
     @Autowired
     private AbstractShell shell;
 
     @Override
     public boolean runSteps() {
-        reset();
         for (WizardScreen wizardScreen : this) {
             Step currentStep = wizardScreen.getStep(getAnswers());
             if (!currentStep.run()) {
@@ -33,12 +34,8 @@ public abstract class BaseWizard implements Wizard {
         return true;
     }
 
-    private void reset() {
-        this.currentScreen = null;
-    }
-
     protected abstract WizardScreen getFirstScreen();
-    
+
     protected Map<Class<? extends Step>, String> getAnswers() {
         return answers;
     }
@@ -47,13 +44,14 @@ public abstract class BaseWizard implements Wizard {
     public boolean hasNext() {
         return
                 ( (currentScreen != null) && currentScreen.getNextScreen(getAnswers()).isPresent() ) ||
-                (getFirstScreen() != null);
+                (isFirstScreen && getFirstScreen() != null);
     }
 
     @Override
     public WizardScreen next() {
         if (currentScreen == null) {
             currentScreen = getFirstScreen();
+            isFirstScreen = false;
         } else {
             Optional<WizardScreen> nextScreen = currentScreen.getNextScreen(getAnswers());
             if (!nextScreen.isPresent()) {
@@ -66,11 +64,18 @@ public abstract class BaseWizard implements Wizard {
 
     @Override
     public Iterator<WizardScreen> iterator() {
+        reset();
         return this;
     }
-    
+
+    private void reset() {
+        this.currentScreen = null;
+        isFirstScreen = true;
+        getAnswers().clear();
+    }
+
     protected abstract String getCommand();
-    
+
     @Override
     public void runCommand() {
         String command = getCommand();

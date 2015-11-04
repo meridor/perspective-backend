@@ -19,7 +19,6 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class ShowInstancesQuery implements Query<Predicate<Instance>> {
 
-    @Filter(INSTANCE_IDS)
     private Set<String> ids;
 
     @Filter(INSTANCE_NAMES)

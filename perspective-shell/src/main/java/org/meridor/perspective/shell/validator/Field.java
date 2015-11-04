@@ -4,20 +4,11 @@ public enum Field {
 
     PROJECTS,
     CLOUDS,
-
-    NETWORK_IDS,
     NETWORK_NAMES,
-
-    FLAVOR_IDS,
     FLAVOR_NAMES,
-    
     INSTANCE_STATES,
     INSTANCE_NAMES,
-    INSTANCE_IDS,
-    
-    IMAGE_IDS,
-    IMAGE_NAMES,
-    IMAGE_STATES;
+    IMAGE_NAMES;
 
     public static boolean contains(String name) {
         for (Field c : values()) {

@@ -55,9 +55,9 @@ public class AddCommands extends BaseCommands {
             
             validateConfirmExecuteShowStatus(
                     addInstancesQuery,
-                    instances -> String.format("Going to add %d instances.", instances.size()),
-                    instances -> new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
-                    instances -> instances.stream().map(TextUtils::instanceToRow).collect(Collectors.toList()),
+                    instances -> String.format("Going to add %d instances:", instances.size()),
+                    instances -> new String[]{"Name", "Image", "Flavor", "More"},
+                    instances -> instances.stream().map(TextUtils::newInstanceToRow).collect(Collectors.toList()),
                     instancesRepository::addInstances
             );
         } else if (addInstancesWizard.runSteps()) {

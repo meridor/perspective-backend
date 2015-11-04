@@ -40,28 +40,28 @@ public class ExistingEntityValidator implements Validator {
         return entities.size() >= minCount && entities.size() <= maxCount;
     }
     
-    private Collection<Project> getProjectsById(String id) {
-        return projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(id));
+    private Collection<Project> getProjectsByName(String name) {
+        return projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(name));
     }
     
-    private Collection<Flavor> getFlavorsById(String id) {
-        return projectsRepository.showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(id));
+    private Collection<Flavor> getFlavorsByName(String name) {
+        return projectsRepository.showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name));
     }
     
-    private Collection<Network> getNetworksById(String id) {
-        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(id));
+    private Collection<Network> getNetworksByName(String name) {
+        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(name));
     }
     
-    private Collection<Image> getImagesById(String id) {
-        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withIds(id));
+    private Collection<Image> getImagesByName(String name) {
+        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withNames(name));
     }
     
     private Collection<?> getEntitiesList(Entity entity, String entityId) {
         switch (entity) {
-            case PROJECT: return getProjectsById(entityId);
-            case FLAVOR: return getFlavorsById(entityId);
-            case NETWORK: return getNetworksById(entityId);
-            case IMAGE: return getImagesById(entityId);
+            case PROJECT: return getProjectsByName(entityId);
+            case FLAVOR: return getFlavorsByName(entityId);
+            case NETWORK: return getNetworksByName(entityId);
+            case IMAGE: return getImagesByName(entityId);
         }
         return Collections.emptyList();
     }
@@ -80,8 +80,8 @@ public class ExistingEntityValidator implements Validator {
         Collection<?> entities = getEntitiesList(ann.value(), entityId);
         String entity = ann.value().name().toLowerCase();
         if (entities.size() < minCount) {
-            return String.format("At least %d %s with ID or name = %s should exist", minCount, entity, entityId);
+            return String.format("At least %d %s with name = %s should exist", minCount, entity, entityId);
         }
-        return String.format("No more than %d %s with ID or name = %s should exist", maxCount, entity, entityId);
+        return String.format("No more than %d %s with name = %s should exist", maxCount, entity, entityId);
     }
 }

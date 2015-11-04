@@ -32,6 +32,7 @@ public class MetadataValidator implements Validator {
                     return false;
                 }
             }
+            return true;
         }
         return false;
     }
@@ -44,7 +45,7 @@ public class MetadataValidator implements Validator {
     @Override
     public String getMessage(Annotation annotation, String fieldName, Object value) {
         String correctValues = TextUtils.enumerateValues(ALL_METADATA_KEYS);
-        return String.format("%s should be one of %s: %s given", fieldName, correctValues, value.toString());
+        return String.format("\"%s\" should be one of [%s]: \"%s\" given", fieldName, correctValues, value.toString());
     }
     
 }

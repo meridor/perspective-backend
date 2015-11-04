@@ -32,6 +32,9 @@ public class DeleteImagesQuery implements Query<List<Image>> {
     @SupportedCloud
     private String clouds;
 
+    @Autowired
+    private QueryProvider queryProvider;
+
     public DeleteImagesQuery withNames(String names) {
         this.names = parseEnumeration(names);
         return this;
@@ -45,7 +48,7 @@ public class DeleteImagesQuery implements Query<List<Image>> {
     @Override
     public List<Image> getPayload() {
         return names.stream().flatMap(n -> {
-            ShowImagesQuery showImagesQuery = new ShowImagesQuery()
+            ShowImagesQuery showImagesQuery = queryProvider.get(ShowImagesQuery.class)
                     .withNames(n)
                     .withCloudNames(clouds);
             return imagesRepository.showImages(showImagesQuery).stream();

@@ -169,6 +169,15 @@ public final class TextUtils {
         };
     }
     
+    public static String[] newInstanceToRow(Instance instance) {
+        return new String[]{
+                instance.getName(),
+                (instance.getImage() != null) ? instance.getImage().getName() : NONE,
+                (instance.getFlavor() != null) ? instance.getFlavor().getName() : NONE,
+                (instance.getMetadata() != null) ? instance.getMetadata().toString() : NONE 
+        };
+    }
+    
     public static String[] imageToRow(Image image) {
         return new String[]{
                 image.getName(),
