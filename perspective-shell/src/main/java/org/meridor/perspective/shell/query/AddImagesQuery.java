@@ -2,6 +2,8 @@ package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.impl.Placeholder;
 import org.meridor.perspective.shell.validator.annotation.Required;
@@ -62,7 +64,12 @@ public class AddImagesQuery implements Query<List<Image>> {
         image.setName(finalImageName);
         image.setCloudId(instance.getCloudId());
         image.setCloudType(instance.getCloudType());
-        //TODO: complete this, use instance ID
+        image.setProjectId(instance.getProjectId());
+        image.setCloudId(instance.getCloudId());
+        image.setCloudType(instance.getCloudType());
+        MetadataMap metadataMap = new MetadataMap();
+        metadataMap.put(MetadataKey.INSTANCE_ID, instance.getId());
+        image.setMetadata(metadataMap);
         return image;
     }
 

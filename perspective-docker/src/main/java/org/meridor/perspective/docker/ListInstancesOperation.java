@@ -28,7 +28,7 @@ import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
 @Component
 public class ListInstancesOperation implements SupplyingOperation<Set<Instance>> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
 
     @Autowired
     private IdGenerator idGenerator;
@@ -44,7 +44,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             List<Container> containers = dockerApi.listContainers(DockerClient.ListContainersParam.allContainers());
             for (Container container : containers) {
                 ContainerInfo containerInfo = dockerApi.inspectContainer(container.id());
-                instances.add(createInstance(containerInfo));
+                instances.add(createInstance(cloud, containerInfo));
             }
 
             LOG.debug("Fetched {} instances for cloud = {}", instances.size(), cloud.getName());
@@ -61,9 +61,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return new OperationType[]{LIST_INSTANCES};
     }
 
-    private Instance createInstance(ContainerInfo container) {
+    private Instance createInstance(Cloud cloud, ContainerInfo container) {
         Instance instance = new Instance();
-        String instanceId = idGenerator.generate(Instance.class, container.id());
+        String instanceId = idGenerator.getInstanceId(cloud, container.id());
         instance.setId(instanceId);
         instance.setRealId(container.id());
         instance.setName(container.name());

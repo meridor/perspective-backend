@@ -14,6 +14,7 @@ import org.jclouds.openstack.nova.v2_0.features.FlavorApi;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     private OpenstackApiProvider apiProvider;
     
     @Autowired
-    private OpenstackUtils openstackUtils;
+    private IdGenerator idGenerator;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
@@ -79,10 +80,10 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     }
 
     private Project createProject(Cloud cloud, String region) {
-        String projectId = openstackUtils.getProjectId(cloud, region);
+        String projectId = idGenerator.getProjectId(cloud, region);
         Project project = new Project();
         project.setId(projectId);
-        project.setName(openstackUtils.getProjectName(cloud, region));
+        project.setName(getProjectName(cloud, region));
         project.setTimestamp(ZonedDateTime.now());
 
         MetadataMap metadata = new MetadataMap();
@@ -90,6 +91,10 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         
         project.setMetadata(metadata);
         return project;
+    }
+
+    private String getProjectName(Cloud cloud, String region) {
+        return String.format("%s_%s", cloud.getName(), region);
     }
 
     private void addFlavors(Project project, FlavorApi flavorApi) {

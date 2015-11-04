@@ -7,6 +7,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
 
     @Autowired
     private DockerApiProvider apiProvider;
+    
+    @Autowired
+    private IdGenerator idGenerator;
 
     @Override
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {
@@ -39,6 +43,8 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
             ContainerCreation createdContainer = dockerApi.createContainer(containerConfig, instance.getName());
             String instanceId = createdContainer.id();
             instance.setRealId(instanceId);
+            String id = idGenerator.getInstanceId(cloud, instanceId);
+            instance.setId(id);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
         } catch (Exception e) {

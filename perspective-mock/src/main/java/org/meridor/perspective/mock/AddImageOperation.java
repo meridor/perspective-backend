@@ -3,6 +3,7 @@ package org.meridor.perspective.mock;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,17 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
 
     @Autowired
     private ImagesStorage images;
+    
+    @Autowired
+    private IdGenerator idGenerator;
 
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
         if (images.add(image)) {
+            String id = idGenerator.getImageId(cloud, image.getName());
+            image.setId(id);
+            image.setRealId(id);
             LOG.info("Added image {} ({})", image.getName(), image.getId());
             return image; 
         } else {

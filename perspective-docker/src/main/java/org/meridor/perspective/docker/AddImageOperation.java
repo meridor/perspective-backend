@@ -7,6 +7,7 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,9 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     @Autowired
     private DockerApiProvider apiProvider;
     
+    @Autowired
+    private IdGenerator idGenerator;
+    
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
@@ -42,6 +46,8 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
             );
             String imageId = createdImage.id();
             image.setRealId(imageId);
+            String id = idGenerator.getImageId(cloud, imageId);
+            image.setId(id);
             LOG.debug("Added image {} ({})", image.getName(), image.getId());
             return image;
         } catch (Exception e) {

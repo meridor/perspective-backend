@@ -8,6 +8,7 @@ import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
-    private DockerUtils dockerUtils;
+    private IdGenerator idGenerator;
     
     @Autowired
     private DockerApiProvider apiProvider;
@@ -60,8 +61,8 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private Image createImage(com.spotify.docker.client.messages.Image dockerImage, ImageInfo dockerImageInfo, Cloud cloud) {
         Image image = new Image();
-        String imageId = dockerUtils.getImageId(dockerImageInfo.id());
-        String projectId = dockerUtils.getProjectId(cloud);
+        String imageId = idGenerator.getImageId(cloud, dockerImageInfo.id());
+        String projectId = idGenerator.getProjectId(cloud);
         image.setId(imageId);
         image.setRealId(dockerImageInfo.id());
         image.setProjectId(projectId);

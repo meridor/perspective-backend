@@ -8,6 +8,7 @@ import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
-    private OpenstackUtils openstackUtils;
+    private IdGenerator idGenerator;
     
     @Autowired
     private OpenstackApiProvider apiProvider;
@@ -68,8 +69,8 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
         Image image = new Image();
-        String imageId = openstackUtils.getImageId(openstackImage.getId());
-        String projectId = openstackUtils.getProjectId(cloud, region);
+        String imageId = idGenerator.getImageId(cloud, openstackImage.getId());
+        String projectId = idGenerator.getProjectId(cloud, region);
         image.setId(imageId);
         image.setRealId(openstackImage.getId());
         image.setProjectId(projectId);

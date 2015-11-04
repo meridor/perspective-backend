@@ -3,6 +3,7 @@ package org.meridor.perspective.docker;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Autowired
-    private DockerUtils dockerUtils;
+    private IdGenerator idGenerator;
     
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
@@ -37,8 +38,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private Project createProject(Cloud cloud) {
         Project project = new Project();
-        project.setId(dockerUtils.getProjectId(cloud));
-        project.setName(dockerUtils.getProjectName(cloud));
+        project.setId(idGenerator.getProjectId(cloud));
+        project.setName(cloud.getName());
         project.setTimestamp(ZonedDateTime.now());
         return project;
     }

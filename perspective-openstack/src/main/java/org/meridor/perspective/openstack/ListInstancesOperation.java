@@ -45,9 +45,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     @Autowired
     private ImagesAware images;
     
-    @Autowired
-    private OpenstackUtils openstackUtils;
-
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
@@ -82,7 +79,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private Instance createInstance(Cloud cloud, String region, Server server) {
         Instance instance = new Instance();
-        String instanceId = idGenerator.generate(Instance.class, server.getId());
+        String instanceId = idGenerator.getInstanceId(cloud, server.getId());
         instance.setId(instanceId);
         instance.setRealId(server.getId());
         instance.setName(server.getName());
@@ -104,7 +101,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         metadata.put(MetadataKey.REGION, region);
         instance.setMetadata(metadata);
 
-        String projectId = openstackUtils.getProjectId(cloud, region);
+        String projectId = idGenerator.getProjectId(cloud, region);
         Optional<Project> projectCandidate = getProject(projectId);
         if (projectCandidate.isPresent()) {
             instance.setProjectId(projectId);
@@ -119,7 +116,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             //TODO: add information about network
         }
         
-        String imageId = idGenerator.generate(Image.class, server.getImage().getId());
+        String imageId = idGenerator.getImageId(cloud, server.getImage().getId());
         Optional<Image> imageCandidate = images.getImage(imageId);
         if (imageCandidate.isPresent()) {
             instance.setImage(imageCandidate.get());
