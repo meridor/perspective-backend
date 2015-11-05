@@ -12,8 +12,8 @@ import static org.meridor.perspective.mock.EntityGenerator.getInstance;
 public class InstancesStorage extends HashSet<Instance> {
 
     public InstancesStorage() {
-        add(getInstance());
-        add(getErrorInstance());
+        add(EntityGenerator.getInstance());
+        add(EntityGenerator.getErrorInstance());
     }
 
 }

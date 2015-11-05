@@ -16,7 +16,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
-        consumer.accept(getProject());
+        consumer.accept(EntityGenerator.getProject());
         return true;
     }
 

@@ -11,7 +11,7 @@ import static org.meridor.perspective.mock.EntityGenerator.getImage;
 public class ImagesStorage extends HashSet<Image> {
 
     public ImagesStorage() {
-        add(getImage());
+        add(EntityGenerator.getImage());
     }
 
 }

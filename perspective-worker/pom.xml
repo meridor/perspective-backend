@@ -33,6 +33,11 @@
             <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-framework</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-mock</artifactId>
+            <scope>test</scope>
+        </dependency>
         
         <dependency>
             <groupId>ru.yandex.qatools</groupId>

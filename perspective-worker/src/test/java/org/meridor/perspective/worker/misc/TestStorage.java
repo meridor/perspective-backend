@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -107,7 +107,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     @SuppressWarnings("unchecked")
     public <T> BlockingQueue<T> getQueue(String id) {
-        return (BlockingQueue<T>) queues.computeIfAbsent(id, s -> new PriorityBlockingQueue<T>());
+        return (BlockingQueue<T>) queues.computeIfAbsent(id, s -> new ArrayBlockingQueue<>(10));
     }
 
     @Override
