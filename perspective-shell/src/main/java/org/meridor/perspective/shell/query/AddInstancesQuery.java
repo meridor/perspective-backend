@@ -16,8 +16,6 @@ import java.util.*;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 import static org.meridor.perspective.shell.validator.Entity.*;
 import static org.meridor.perspective.shell.validator.Field.*;
-import static org.meridor.perspective.shell.validator.NumberRelation.GREATER_THAN;
-import static org.meridor.perspective.shell.validator.NumberRelation.GREATER_THAN_EQUAL;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
@@ -45,11 +43,8 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Filter(NETWORK_NAMES)
     private String network;
     
-    @RelativeToNumber(relation = GREATER_THAN, number = 0)
-    private Integer from;
-
-    @RelativeToNumericField(relation = GREATER_THAN_EQUAL, field = "from")
-    private Integer to;
+    @NumericRange
+    private String range;
     
     @Metadata
     private Map<String, Set<String>> options;
@@ -88,22 +83,20 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         return this;
     }
 
-    public AddInstancesQuery withTo(Integer to) {
-        this.to = to;
+    public AddInstancesQuery withRange(String range) {
+        this.range = range;
         return this;
     }
     
     public AddInstancesQuery withCount(Integer count) {
-        this.from = 1;
-        this.to = count;
+        this.range = rangeFromCount(count);
         return this;
     }
-
-    public AddInstancesQuery withFrom(Integer from) {
-        this.from = from;
-        return this;
+    
+    private String rangeFromCount(Integer count) {
+        return String.format("1-%d", count);
     }
-
+    
     public AddInstancesQuery withOptions(String options) {
         this.options = parseAssignment(options);
         return this;
@@ -112,8 +105,9 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Override
     public List<Instance> getPayload() {
         List<Instance> instances = new ArrayList<>();
-        if (from != null && to != null && to >= from ) {
-            for (int i = from; i <= to; i++) {
+        Set<Integer> numbers = parseRange(range);
+        if (numbers.size() > 1) {
+            for (Integer i : numbers) {
                 final String number = String.valueOf(i);
                 String instanceName = (containsPlaceholder(name, Placeholder.NUMBER)) ?
                         replacePlaceholders(name, new HashMap<Placeholder, String>(){

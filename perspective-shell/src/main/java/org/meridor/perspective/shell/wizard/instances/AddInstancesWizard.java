@@ -43,9 +43,8 @@ public class AddInstancesWizard extends BaseWizard {
         }
         if (getAnswers().containsKey(CountStep.class)) {
             commandBuilder.addArgument(COUNT, getAnswers().get(CountStep.class));
-        } else if (getAnswers().containsKey(StartNumberStep.class) && getAnswers().containsKey(EndNumberStep.class)) {
-            commandBuilder.addArgument(FROM, getAnswers().get(StartNumberStep.class));
-            commandBuilder.addArgument(TO, getAnswers().get(EndNumberStep.class));
+        } else if (getAnswers().containsKey(RangeStep.class)) {
+            commandBuilder.addArgument(RANGE, getAnswers().get(RangeStep.class));
         }
         
         Map<String, Set<String>> options = new HashMap<>();

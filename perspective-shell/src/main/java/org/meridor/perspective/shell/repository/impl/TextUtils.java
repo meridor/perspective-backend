@@ -30,7 +30,7 @@ public final class TextUtils {
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
-    private static final String NONE = "-";
+    private static final String DASH = "-";
     public static final Integer DEFAULT_PAGE_SIZE = 20;
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
@@ -116,6 +116,61 @@ public final class TextUtils {
     }
 
     /**
+     * Parses the following string: 1, 3-5, 8-10
+     * @param range a string of the range format
+     * @return a set of numbers corresponding to given string
+     */
+    public static Set<Integer> parseRange(String range) {
+        if (range == null) {
+            return Collections.emptySet();
+        }
+        Set<Integer> ret = new LinkedHashSet<>();
+        StringTokenizer stringTokenizer = new StringTokenizer(range, String.format("%s%s", COMMA, DASH), true);
+        Integer from = null;
+        Integer to = null;
+        boolean rangeStarted = false;
+        while (stringTokenizer.hasMoreTokens()) {
+            String token = stringTokenizer.nextToken();
+            if (isValueDelimiter(token)) {
+                ret.addAll(fromToAsSet(from, to));
+                from = null;
+                to = null;
+                rangeStarted = false;
+            } else if (isRangeDelimiter(token)) {
+                rangeStarted = true;
+            } else {
+                String trimmedValue = token.trim();
+                if (!isPositiveInt(trimmedValue)) {
+                    throw new IllegalArgumentException("Range values should be positive numbers.");
+                }
+                Integer parsedInteger = Integer.parseUnsignedInt(trimmedValue);
+                if (rangeStarted) {
+                    to = parsedInteger;
+                } else {
+                    from = parsedInteger;
+                }
+            }
+            if (from != null) {
+                ret.addAll(fromToAsSet(from, to));
+            }
+        }
+
+        return ret;
+    }
+    
+    private static Set<Integer> fromToAsSet(Integer from, Integer to) {
+        Set<Integer> ret = new LinkedHashSet<>();
+        if (to == null) {
+            ret.add(from);
+        } else {
+            for (int i = from; i <= to; i++) {
+                ret.add(i);
+            }
+        }
+        return ret;
+    }
+    
+    /**
      * Returns space separated collection of entries as an array
      * @param data space separated values
      * @return an set of values or null if null is passed
@@ -138,19 +193,23 @@ public final class TextUtils {
     private static boolean isValueDelimiter(String token) {
         return EQUALITY.equals(token) || COMMA.equals(token);
     }
-    
+
+    public static boolean isRangeDelimiter(String key) {
+        return DASH.equals(key);
+    }
+
     public static boolean isNextElementKey(String key) {
         return ENTER.equals(key) || SPACE.equals(key) || NEXT.equals(key);
     }
-    
+
     public static boolean isPrevElementKey(String key) {
         return PREVIOUS.equals(key) || LESS_PREVIOUS.equals(key);
     }
-    
+
     public static boolean isExitKey(String key) {
         return QUIT.equals(key);
     }
-    
+
     public static boolean isYesKey(String key) {
         return YES.equals(key);
     }
@@ -162,27 +221,27 @@ public final class TextUtils {
     public static String[] instanceToRow(Instance instance) {
         return new String[]{
                 instance.getName(),
-                (instance.getImage() != null) ? instance.getImage().getName() : NONE,
-                (instance.getFlavor() != null) ? instance.getFlavor().getName() : NONE,
-                (instance.getState() != null) ?  instance.getState().value() : NONE,
-                (instance.getTimestamp() != null) ? humanizedDuration(instance.getTimestamp()) : NONE
+                (instance.getImage() != null) ? instance.getImage().getName() : DASH,
+                (instance.getFlavor() != null) ? instance.getFlavor().getName() : DASH,
+                (instance.getState() != null) ?  instance.getState().value() : DASH,
+                (instance.getTimestamp() != null) ? humanizedDuration(instance.getTimestamp()) : DASH
         };
     }
     
     public static String[] newInstanceToRow(Instance instance) {
         return new String[]{
                 instance.getName(),
-                (instance.getImage() != null) ? instance.getImage().getName() : NONE,
-                (instance.getFlavor() != null) ? instance.getFlavor().getName() : NONE,
-                (instance.getMetadata() != null) ? instance.getMetadata().toString() : NONE 
+                (instance.getImage() != null) ? instance.getImage().getName() : DASH,
+                (instance.getFlavor() != null) ? instance.getFlavor().getName() : DASH,
+                (instance.getMetadata() != null) ? instance.getMetadata().toString() : DASH 
         };
     }
     
     public static String[] imageToRow(Image image) {
         return new String[]{
                 image.getName(),
-                (image.getState() != null) ? image.getState().value() : NONE,
-                (image.getTimestamp() != null) ? humanizedDuration(image.getTimestamp()) : NONE
+                (image.getState() != null) ? image.getState().value() : DASH,
+                (image.getTimestamp() != null) ? humanizedDuration(image.getTimestamp()) : DASH
         };
     }
     

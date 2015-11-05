@@ -5,8 +5,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
@@ -66,12 +65,28 @@ public class TextUtilsTest {
 
     @Test
     public void testParseAssignment(){
+        assertThat(parseAssignment(null).keySet(), empty());
+        
         String assignmentString = "key1 = value11, value12; key2=value21,value22";
         Map<String, Set<String>> assignmentData = parseAssignment(assignmentString);
         assertThat(assignmentData.keySet(), hasSize(2));
         assertThat(assignmentData.keySet(), containsInAnyOrder("key1", "key2"));
         assertThat(assignmentData.get("key1"), containsInAnyOrder("value11", "value12"));
         assertThat(assignmentData.get("key2"), containsInAnyOrder("value21", "value22"));
+    }
+
+    @Test
+    public void testParseRange() {
+        assertThat(parseRange(null), empty());
+        assertThat(parseRange(""), empty());
+        
+        String range = "1,3- 5, 7 -9";
+        assertThat(parseRange(range), contains(1, 3, 4, 5, 7, 8, 9));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testParseIllegalRange() throws Exception {
+        parseRange("#$%-");
     }
 
     @Test

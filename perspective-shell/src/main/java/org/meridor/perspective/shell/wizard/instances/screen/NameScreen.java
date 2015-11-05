@@ -16,7 +16,7 @@ public class NameScreen implements WizardScreen {
     private NameStep nameStep;
     
     @Autowired
-    private CountOrNumberScreen countOrNumberScreen;
+    private CountOrRangeScreen countOrRangeScreen;
     
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
@@ -25,7 +25,7 @@ public class NameScreen implements WizardScreen {
 
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
-        return Optional.of(countOrNumberScreen);
+        return Optional.of(countOrRangeScreen);
     }
     
 }
