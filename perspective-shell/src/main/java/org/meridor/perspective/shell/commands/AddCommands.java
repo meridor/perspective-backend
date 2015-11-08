@@ -6,6 +6,7 @@ import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
+import org.meridor.perspective.shell.wizard.images.AddImagesWizard;
 import org.meridor.perspective.shell.wizard.instances.AddInstancesWizard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -25,6 +26,9 @@ public class AddCommands extends BaseCommands {
     
     @Autowired
     private AddInstancesWizard addInstancesWizard;
+    
+    @Autowired
+    private AddImagesWizard addImagesWizard;
 
     @Autowired
     private QueryProvider queryProvider;
@@ -67,18 +71,22 @@ public class AddCommands extends BaseCommands {
     
     @CliCommand(value = "add images", help = "Add one or more images to project")
     public void addImage(
-            @CliOption(key = "", mandatory = true, help = "Instance IDs, names or patterns to match against instance name or ID") String names,
-            @CliOption(key = "name", mandatory = true, help = "Image name") String imageName
+            @CliOption(key = "instances", help = "Instance IDs, names or patterns to match against instance name or ID") String instanceNames,
+            @CliOption(key = "name", help = "Image name") String imageName
     ) {
         //TODO: implement adding image from file
-        AddImagesQuery addImagesQuery = queryProvider.get(AddImagesQuery.class).withInstanceNames(names).withName(imageName);
-        validateConfirmExecuteShowStatus(
-                addImagesQuery,
-                images -> String.format("Going to add %d images.", images.size()),
-                images -> new String[]{"Name", "State", "Last modified"},
-                images -> images.stream().map(TextUtils::imageToRow).collect(Collectors.toList()),
-                imagesRepository::addImages
-        );
+        if (instanceNames != null) {
+            AddImagesQuery addImagesQuery = queryProvider.get(AddImagesQuery.class).withInstanceNames(instanceNames).withName(imageName);
+            validateConfirmExecuteShowStatus(
+                    addImagesQuery,
+                    images -> String.format("Going to add %d images.", images.size()),
+                    images -> new String[]{"Name", "State", "Last modified"},
+                    images -> images.stream().map(TextUtils::imageToRow).collect(Collectors.toList()),
+                    imagesRepository::addImages
+            );
+        } else if (addImagesWizard.runSteps()) {
+            addImagesWizard.runCommand();
+        }
     }
     
 }

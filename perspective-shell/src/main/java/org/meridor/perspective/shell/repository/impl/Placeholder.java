@@ -4,6 +4,7 @@ public enum Placeholder {
     
     NUMBER,
     NAME,
+    DATE,
     DEFAULT_ANSWER
     
 }

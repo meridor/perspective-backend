@@ -66,7 +66,7 @@ public class ImagesResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response saveImages(List<Image> images) {
         for (Image image : images) {
-            LOG.info("Queuing image {} ({}) for saving", image.getName(), image.getId());
+            LOG.info("Queuing image {} for saving", image);
             image.setId(uuid());
             image.setCreated(now());
             image.setState(ImageState.QUEUED);

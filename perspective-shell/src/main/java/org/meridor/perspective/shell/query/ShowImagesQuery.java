@@ -69,17 +69,17 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
     }
 
     private Predicate<Image> getImagePredicate(
-            Optional<Set<String>> id,
-            Optional<Set<String>> name,
-            Optional<Set<String>> cloud,
-            Optional<String> project
+            Optional<Set<String>> ids,
+            Optional<Set<String>> names,
+            Optional<Set<String>> clouds,
+            Optional<String> projects
             
     ) {
         return image -> 
-                ( !id.isPresent() || id.get().contains(image.getId()) ) &&
-                ( !name.isPresent() || name.get().contains(image.getName()) ) &&
-                ( !cloud.isPresent() || cloud.get().contains(image.getCloudType().value().toLowerCase())) &&
-                ( !project.isPresent() || projectMatches(project.get(), image.getProjectId()));
+                ( !ids.isPresent() || ids.get().contains(image.getId()) ) &&
+                ( !names.isPresent() || names.get().contains(image.getName()) ) &&
+                ( !clouds.isPresent() || clouds.get().contains(image.getCloudType().value().toLowerCase())) &&
+                ( !projects.isPresent() || projectMatches(projects.get(), image.getProjectId()));
     }
     
     private boolean projectMatches(String projects, String projectIdFromImage) {

@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.commands;
 public enum CommandArgument {
     NAME,
     PROJECT,
+    INSTANCES,
     IMAGE,
     FLAVOR,
     NETWORK,

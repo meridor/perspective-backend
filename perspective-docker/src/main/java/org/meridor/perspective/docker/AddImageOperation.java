@@ -38,7 +38,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
             ContainerConfig containerConfig = ContainerConfig.builder().build();
             ContainerCreation createdImage = dockerApi.commitContainer(
                     instanceId,
-                    "perspective",
+                    image.getName(),
                     null,
                     containerConfig,
                     null,

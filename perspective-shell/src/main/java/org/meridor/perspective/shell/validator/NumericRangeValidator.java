@@ -4,24 +4,15 @@ import org.meridor.perspective.shell.validator.annotation.NumericRange;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.parseRange;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.isRange;
 
 @Component
 public class NumericRangeValidator implements Validator {
 
     @Override
     public boolean validate(Object instance, Annotation annotation, Object value) {
-        if (value == null) {
-            return true;
-        }
-        try {
-            Set<Integer> values = parseRange(value.toString());
-            return values.size() > 0;
-        } catch (Exception e) {
-            return false;
-        }
+        return value == null || isRange(value.toString());
     }
 
     @Override

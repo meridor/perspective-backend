@@ -1,31 +1,31 @@
-package org.meridor.perspective.shell.wizard.instances.screen;
+package org.meridor.perspective.shell.wizard.images.screen;
 
 import org.meridor.perspective.shell.wizard.Step;
 import org.meridor.perspective.shell.wizard.WizardScreen;
-import org.meridor.perspective.shell.wizard.instances.step.NameStep;
+import org.meridor.perspective.shell.wizard.images.step.InstanceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
 
-@Component("instanceNameScreen")
-public class NameScreen implements WizardScreen {
+@Component
+public class InstanceScreen implements WizardScreen {
     
     @Autowired
-    private NameStep nameStep;
+    private InstanceStep instanceStep;
     
     @Autowired
-    private CountOrRangeScreen countOrRangeScreen;
+    private NameScreen nameScreen;
     
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
-        return nameStep;
+        return instanceStep;
     }
 
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
-        return Optional.of(countOrRangeScreen);
+        return Optional.of(nameScreen);
     }
     
 }

@@ -169,6 +169,23 @@ public final class TextUtils {
         }
         return ret;
     }
+
+    /**
+     * Returns whether passed value is a range
+     * @param value string to process
+     * @return true if range, false otherwise
+     */
+    public static boolean isRange(String value) {
+        if (value == null) {
+            return false;
+        }
+        try {
+            Set<Integer> values = parseRange(value);
+            return values.size() > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
     
     /**
      * Returns space separated collection of entries as an array

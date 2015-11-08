@@ -1,9 +1,11 @@
 package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 import org.meridor.perspective.shell.validator.annotation.SupportedInstanceState;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,14 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     @Filter(CLOUDS)
     private Set<String> clouds;
 
+    private String projects;
+
+    @Autowired
+    private ProjectsRepository projectsRepository;
+
+    @Autowired
+    private QueryProvider queryProvider;
+
     public ShowInstancesQuery withIds(String ids) {
         this.ids = parseEnumeration(ids);
         return this;
@@ -50,6 +60,11 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     
     public ShowInstancesQuery withClouds(String clouds) {
         this.clouds = parseEnumeration(clouds);
+        return this;
+    }
+    
+    public ShowInstancesQuery withProjectNames(String projects) {
+        this.projects = projects;
         return this;
     }
     
@@ -76,18 +91,19 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
                 Optional.ofNullable(flavors),
                 Optional.ofNullable(images),
                 Optional.ofNullable(states),
-                Optional.ofNullable(clouds)
+                Optional.ofNullable(clouds),
+                Optional.ofNullable(projects)
         );
     }
 
-    //TODO: we may probably want to add project names
     private Predicate<Instance> getInstancePredicate(
             Optional<Set<String>> ids,
             Optional<Set<String>> names,
             Optional<Set<String>> flavors,
             Optional<Set<String>> images,
             Optional<Set<String>> states,
-            Optional<Set<String>> clouds
+            Optional<Set<String>> clouds,
+            Optional<String> projects
     ) {
         return instance ->
                 ( !ids.isPresent() || ids.get().contains(instance.getId()) ) &&
@@ -95,7 +111,17 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
                 ( !flavors.isPresent() || flavors.get().contains(instance.getFlavor().getName()) ) &&
                 ( !images.isPresent() || images.get().contains(instance.getImage().getName()) ) &&
                 ( !states.isPresent() || states.get().contains(instance.getState().value().toLowerCase()) ) &&
-                ( !clouds.isPresent() || clouds.get().contains(instance.getCloudType().value().toLowerCase()));
+                ( !clouds.isPresent() || clouds.get().contains(instance.getCloudType().value().toLowerCase())) &&
+                ( !projects.isPresent() || projectMatches(projects.get(), instance.getProjectId()));
     }
+
+    private boolean projectMatches(String projects, String projectIdFromInstance) {
+        return projectsRepository
+                .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projects))
+                .stream().filter(
+                        p -> p.getId().equals(projectIdFromInstance)
+                ).count() > 0;
+    }
+
 
 }

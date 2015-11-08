@@ -5,9 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 
-import static org.meridor.perspective.mock.EntityGenerator.getErrorInstance;
-import static org.meridor.perspective.mock.EntityGenerator.getInstance;
-
 @Component
 public class InstancesStorage extends HashSet<Instance> {
 

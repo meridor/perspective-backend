@@ -83,7 +83,16 @@ public class TextUtilsTest {
         String range = "1,3- 5, 7 -9";
         assertThat(parseRange(range), contains(1, 3, 4, 5, 7, 8, 9));
     }
-    
+
+    @Test
+    public void testIsRange() {
+        assertFalse(isRange(null));
+        assertFalse(isRange(""));
+        assertTrue(isRange("1"));
+        assertTrue(isRange("1,3- 5, 7 -9"));
+        assertFalse(isRange("#$%#$%#$"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testParseIllegalRange() throws Exception {
         parseRange("#$%-");

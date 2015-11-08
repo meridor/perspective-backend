@@ -106,7 +106,8 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "flavor", help = "Flavor name") String flavor,
             @CliOption(key = "image", help = "Image name") String image,
             @CliOption(key = "state", help = "Instance state") String state,
-            @CliOption(key = "cloud", help = "Cloud type") String cloud
+            @CliOption(key = "cloud", help = "Cloud type") String cloud,
+            @CliOption(key = "projects", help = "Project names") String projects
     ) {
         ShowInstancesQuery showInstancesQuery = queryProvider.get(ShowInstancesQuery.class)
                 .withIds(id)
@@ -114,7 +115,8 @@ public class ShowCommands extends BaseCommands {
                 .withFlavors(flavor)
                 .withImages(image)
                 .withStates(state)
-                .withClouds(cloud);
+                .withClouds(cloud)
+                .withProjectNames(projects);
         validateExecuteShowResult(
                 showInstancesQuery,
                 new String[]{"Name", "Image", "Flavor", "State", "Last modified"},

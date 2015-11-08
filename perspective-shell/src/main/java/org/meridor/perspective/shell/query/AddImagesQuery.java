@@ -11,12 +11,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.time.temporal.ChronoField.*;
+import static org.meridor.perspective.events.EventFactory.now;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.replacePlaceholders;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -58,6 +62,7 @@ public class AddImagesQuery implements Query<List<Image>> {
                 replacePlaceholders(imageName, new HashMap<Placeholder, String>() {
                     {
                         put(Placeholder.NAME, instance.getName());
+                        put(Placeholder.DATE, getDate());
                     }
                 }) :
                 String.format("%s-image", instance.getName());
@@ -68,9 +73,26 @@ public class AddImagesQuery implements Query<List<Image>> {
         image.setCloudId(instance.getCloudId());
         image.setCloudType(instance.getCloudType());
         MetadataMap metadataMap = new MetadataMap();
-        metadataMap.put(MetadataKey.INSTANCE_ID, instance.getId());
+        metadataMap.put(MetadataKey.INSTANCE_ID, instance.getRealId());
         image.setMetadata(metadataMap);
         return image;
+    }
+    
+    private static String getDate() {
+        return getDateTimeFormatter().format(now());
+    }
+    
+    private static DateTimeFormatter getDateTimeFormatter() {
+        return new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendValue(YEAR, 4)
+                .appendValue(MONTH_OF_YEAR, 2)
+                .appendValue(DAY_OF_MONTH, 2)
+                .appendLiteral("_")
+                .appendValue(HOUR_OF_DAY, 2)
+                .appendValue(MINUTE_OF_HOUR, 2)
+                .appendValue(SECOND_OF_MINUTE, 2)
+                .toFormatter();
     }
 
 }

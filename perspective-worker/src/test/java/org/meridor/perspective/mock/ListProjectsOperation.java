@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
-import static org.meridor.perspective.mock.EntityGenerator.getProject;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {

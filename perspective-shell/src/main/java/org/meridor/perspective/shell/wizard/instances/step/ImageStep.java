@@ -5,7 +5,7 @@ import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.query.ShowImagesQuery;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.validator.annotation.Required;
-import org.meridor.perspective.shell.wizard.ChoiceStep;
+import org.meridor.perspective.shell.wizard.SingleChoiceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class ImageStep extends ChoiceStep {
+public class ImageStep extends SingleChoiceStep {
     
     @Autowired
     private ImagesRepository imagesRepository;

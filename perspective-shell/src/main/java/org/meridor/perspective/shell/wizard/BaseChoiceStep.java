@@ -15,44 +15,38 @@ import static org.meridor.perspective.shell.misc.LoggingUtils.*;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 @Component
-public abstract class ChoiceStep implements Step {
-
-    private String answer;
+public abstract class BaseChoiceStep implements Step {
 
     @Autowired
     private SettingsStorage settingsStorage;
-    
+
     @Autowired
     private TableRenderer tableRenderer;
+
+    private String answer;
+
 
     @Override
     public boolean run() {
         printMessageWithDefaultAnswer();
         Map<Integer, String> choicesMap = getPossibleChoicesMap();
-        if (choicesMap.size() == 0) {
-            error("We're sorry but no possible answers exist. Exiting.");
-            return false;
-        }
-        if (choicesMap.size() == 1) {
-            Integer singleKey = choicesMap.keySet().toArray(new Integer[choicesMap.keySet().size()])[0];
-            String singleAnswer = choicesMap.get(singleKey);
-            ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
-            this.answer = singleAnswer;
-            return true;
+        Optional<Boolean> returnValue = processZeroOrOneChoice(choicesMap);
+        if (returnValue.isPresent()) {
+            return returnValue.get();
         }
         printPossibleChoices(choicesMap);
-        Optional<String> answer = processAnswer();
-        if (!answer.isPresent()) {
+        Optional<String> answerCandidate = processAnswer();
+        if (!answerCandidate.isPresent()) {
             return false;
         }
-        while (!validateAnswer(choicesMap, answer.get())) {
-            warn(String.format("Answer should be one of [%d..%d]. Please try again or type q to quit:", 1, choicesMap.size()));
-            answer = processAnswer();
-            if (!answer.isPresent()) {
+        while (!validateAnswer(choicesMap, answerCandidate.get())) {
+            warn(getIncorrectChoiceMessage(choicesMap));
+            answerCandidate = processAnswer();
+            if (!answerCandidate.isPresent()) {
                 return false;
             }
         }
-        this.answer = choicesMap.get(Integer.parseUnsignedInt(answer.get()));
+        this.answer = getValueToSave(choicesMap, answerCandidate.get());
         return true;
     }
 
@@ -64,8 +58,15 @@ public abstract class ChoiceStep implements Step {
         return Optional.of(answer);
     }
 
+    protected abstract List<String> getPossibleChoices();
+    
+    protected abstract String getValueToSave(Map<Integer, String> choicesMap, String answer);
+    
+    protected abstract String getIncorrectChoiceMessage(Map<Integer, String> choicesMap);
+    
+    protected abstract boolean validateAnswer(Map<Integer, String> choicesMap, String answer);
 
-    private Map<Integer, String> getPossibleChoicesMap() {
+    protected Map<Integer, String> getPossibleChoicesMap() {
         Map<Integer, String> choicesMap = new HashMap<>();
         List<String> possibleChoices = getPossibleChoices();
         for (int i = 1; i <= possibleChoices.size(); i++) {
@@ -73,8 +74,8 @@ public abstract class ChoiceStep implements Step {
         }
         return choicesMap;
     }
-    
-    private void printPossibleChoices(Map<Integer, String> possibleChoices) {
+
+    protected void printPossibleChoices(Map<Integer, String> possibleChoices) {
         List<String[]> choicesRows = possibleChoices.keySet().stream()
                 .map(k -> new String[]{k.toString(), possibleChoices.get(k)})
                 .collect(Collectors.toList());
@@ -82,14 +83,24 @@ public abstract class ChoiceStep implements Step {
         page(preparePages(tableRenderer, PAGE_SIZE, new String[]{"Number", "Name"}, choicesRows));
     }
     
+    protected Optional<Boolean> processZeroOrOneChoice(Map<Integer, String> choicesMap) {
+        if (choicesMap.size() == 0) {
+            error("We're sorry but no possible answers exist. Exiting.");
+            return Optional.of(false);
+        }
+        if (choicesMap.size() == 1) {
+            Integer singleKey = choicesMap.keySet().toArray(new Integer[choicesMap.keySet().size()])[0];
+            String singleAnswer = choicesMap.get(singleKey);
+            ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
+            this.answer = singleAnswer;
+            return Optional.of(true);
+        }
+        return Optional.empty();
+    }
+
     @Override
     public String getAnswer() {
         return answer;
     }
 
-    private boolean validateAnswer(Map<Integer, String> choicesMap, String answer) {
-        return isExitKey(answer) || isPositiveInt(answer) && choicesMap.containsKey(Integer.parseUnsignedInt(answer));
-    }
-    
-    protected abstract List<String> getPossibleChoices();
 }
