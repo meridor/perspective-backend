@@ -2,7 +2,7 @@ package org.meridor.perspective.rest.resources;
 
 import org.junit.Test;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.mock.EntityGenerator;
+import org.meridor.perspective.framework.EntityGenerator;
 
 import javax.ws.rs.core.GenericType;
 import java.util.List;

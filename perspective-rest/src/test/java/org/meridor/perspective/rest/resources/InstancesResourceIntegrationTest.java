@@ -3,7 +3,7 @@ package org.meridor.perspective.rest.resources;
 import org.junit.Test;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.CloudType;
-import org.meridor.perspective.mock.EntityGenerator;
+import org.meridor.perspective.framework.EntityGenerator;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;

@@ -1,4 +1,4 @@
-package org.meridor.perspective.worker.misc;
+package org.meridor.perspective.framework.messaging;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;

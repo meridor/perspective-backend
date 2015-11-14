@@ -35,7 +35,9 @@
         </dependency>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
-            <artifactId>perspective-mock</artifactId>
+            <artifactId>perspective-framework</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         

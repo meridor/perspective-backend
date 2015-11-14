@@ -38,7 +38,6 @@
         <module>perspective-beans</module>
         <module>perspective-openstack</module>
         <module>perspective-framework</module>
-        <module>perspective-mock</module>
         <module>perspective-docker</module>
         <module>perspective-worker</module>
         <module>perspective-storage</module>
@@ -68,11 +67,6 @@
             <dependency>
                 <groupId>org.meridor.perspective</groupId>
                 <artifactId>perspective-worker</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.meridor.perspective</groupId>
-                <artifactId>perspective-mock</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

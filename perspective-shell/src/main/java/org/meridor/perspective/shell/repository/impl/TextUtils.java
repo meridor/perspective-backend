@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import jline.console.ConsoleReader;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.commands.BaseCommands;
 import org.meridor.perspective.shell.misc.TableRenderer;
 import org.meridor.perspective.shell.validator.Setting;
 import org.ocpsoft.prettytime.PrettyTime;
@@ -14,8 +13,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.misc.LoggingUtils.error;
-import static org.meridor.perspective.shell.misc.LoggingUtils.ok;
+import static org.meridor.perspective.shell.misc.LoggingUtils.*;
 
 public final class TextUtils {
 
@@ -31,7 +29,7 @@ public final class TextUtils {
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
     private static final String DASH = "-";
-    public static final Integer DEFAULT_PAGE_SIZE = 20;
+    private static final Integer DEFAULT_PAGE_SIZE = 20;
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
         String ret = template;
@@ -309,9 +307,12 @@ public final class TextUtils {
                 ok("Zero results provided: nothing to show.");
                 return;
             }
-            ConsoleReader consoleReader = new ConsoleReader();
             int currentPage = 1;
             showPage(currentPage, NUM_PAGES, pages); //Always showing first page
+            if (NUM_PAGES == 1) {
+                return; //No need to wait for keys in case of one page
+            }
+            ConsoleReader consoleReader = new ConsoleReader();
             while (currentPage <= NUM_PAGES) {
                 boolean pageNumberChanged = false;
                 String key = String.valueOf((char) consoleReader.readCharacter());
@@ -329,7 +330,7 @@ public final class TextUtils {
                 } else if (isNumericKey(key)) {
                     Integer pageNumber = Integer.valueOf(key);
                     if (pageNumber < 1 || pageNumber > NUM_PAGES) {
-                        BaseCommands.warn(String.format("Wrong page number: %d. Should be one of 1..%d.", pageNumber, NUM_PAGES));
+                        warn(String.format("Wrong page number: %d. Should be one of 1..%d.", pageNumber, NUM_PAGES));
                         continue;
                     } else if (pageNumber != currentPage) {
                         currentPage = pageNumber;
@@ -346,8 +347,10 @@ public final class TextUtils {
     }
 
     private static void showPage(final int pageNumber, final int numPages, List<String> entries) {
-        BaseCommands.ok(String.format("Showing page %d of %d:", pageNumber, numPages));
-        BaseCommands.ok(entries.get(pageNumber - 1));
+        if (numPages > 1) {
+            ok(String.format("Showing page %d of %d:", pageNumber, numPages));
+        }
+        ok(entries.get(pageNumber - 1));
     }
 
     public static Integer getPageSize(SettingsStorage settingsStorage) {

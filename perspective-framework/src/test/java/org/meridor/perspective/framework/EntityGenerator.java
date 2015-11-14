@@ -1,4 +1,4 @@
-package org.meridor.perspective.mock;
+package org.meridor.perspective.framework;
 
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
