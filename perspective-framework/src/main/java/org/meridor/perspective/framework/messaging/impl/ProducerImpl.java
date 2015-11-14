@@ -42,4 +42,7 @@ public class ProducerImpl implements Producer {
         }
     }
 
+    public String getQueueName() {
+        return queueName;
+    }
 }
