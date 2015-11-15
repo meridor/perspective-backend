@@ -12,7 +12,7 @@ public class SupportedNameValidator implements Validator {
     
     @Override
     public boolean validate(Object instance, Annotation annotation, Object value) {
-        return value != null && value.toString().matches(String.format("[%s]+", ALLOWED_SYMBOLS));
+        return value == null || value.toString().matches(String.format("[%s]+", ALLOWED_SYMBOLS));
     }
 
     @Override

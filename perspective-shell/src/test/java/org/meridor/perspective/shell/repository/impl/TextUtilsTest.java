@@ -6,7 +6,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 public class TextUtilsTest {
@@ -31,8 +31,8 @@ public class TextUtilsTest {
     @Test
     public void testContainsPlaceholder(){
         String template = "start-$name-end";
-        assertTrue(containsPlaceholder(template, Placeholder.NAME));
-        assertFalse(containsPlaceholder(template, Placeholder.NUMBER));
+        assertThat(containsPlaceholder(template, Placeholder.NAME), is(true));
+        assertThat(containsPlaceholder(template, Placeholder.NUMBER), is(false));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TextUtilsTest {
     public void testJoinLines(){
         List<String> lines = Arrays.asList("line1", "line2");
         String joinedLines = joinLines(lines);
-        assertNotNull(joinedLines);
+        assertThat(joinedLines, is(notNullValue()));
         List<String> splittedLines = Arrays.asList(joinedLines.split("\\r?\\n"));
         assertThat(splittedLines, hasSize(2));
         assertThat(splittedLines.get(0), equalTo("line1"));
@@ -86,11 +86,11 @@ public class TextUtilsTest {
 
     @Test
     public void testIsRange() {
-        assertFalse(isRange(null));
-        assertFalse(isRange(""));
-        assertTrue(isRange("1"));
-        assertTrue(isRange("1,3- 5, 7 -9"));
-        assertFalse(isRange("#$%#$%#$"));
+        assertThat(isRange(null), is(false));
+        assertThat(isRange(""), is(false));
+        assertThat(isRange("1"), is(true));
+        assertThat(isRange("1,3- 5, 7 -9"), is(true));
+        assertThat(isRange("#$%#$%#$"), is(false));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -116,51 +116,51 @@ public class TextUtilsTest {
 
     @Test
     public void testIsNextElementKey(){
-        assertTrue(isNextElementKey("n"));
-        assertTrue(isNextElementKey(" "));
-        assertTrue(isNextElementKey("\n"));
-        assertFalse(isNextElementKey("y"));
+        assertThat(isNextElementKey("n"), is(true));
+        assertThat(isNextElementKey(" "), is(true));
+        assertThat(isNextElementKey("\n"), is(true));
+        assertThat(isNextElementKey("y"), is(false));
     }
 
     @Test
     public void testIsPrevElementKey(){
-        assertTrue(isPrevElementKey("p"));
-        assertTrue(isPrevElementKey("w"));
-        assertFalse(isPrevElementKey("y"));
+        assertThat(isPrevElementKey("p"), is(true));
+        assertThat(isPrevElementKey("w"), is(true));
+        assertThat(isPrevElementKey("y"), is(false));
     }
 
     @Test
     public void testIsExitKey(){
-        assertTrue(isExitKey("q"));
-        assertFalse(isExitKey("y"));
+        assertThat(isExitKey("q"), is(true));
+        assertThat(isExitKey("y"), is(false));
     }
 
     @Test
     public void testIsYesKey(){
-        assertTrue(isYesKey("y"));
-        assertFalse(isYesKey("n"));
+        assertThat(isYesKey("y"), is(true));
+        assertThat(isYesKey("n"), is(false));
     }
 
     @Test
     public void testIsNoKey(){
-        assertTrue(isNoKey("n"));
-        assertFalse(isNoKey("y"));
+        assertThat(isNoKey("n"), is(true));
+        assertThat(isNoKey("y"), is(false));
     }
 
     @Test
     public void testIsNumericKey(){
-        assertTrue(isNumericKey("1"));
-        assertFalse(isNumericKey("a"));
-        assertFalse(isNumericKey(" "));
+        assertThat(isNumericKey("1"), is(true));
+        assertThat(isNumericKey("a"), is(false));
+        assertThat(isNumericKey(" "), is(false));
     }
 
     @Test
     public void testIsPositiveInt(){
-        assertTrue(isPositiveInt("1"));
-        assertFalse(isPositiveInt("0"));
-        assertFalse(isPositiveInt("-1"));
-        assertFalse(isPositiveInt("a"));
-        assertFalse(isPositiveInt(" "));
+        assertThat(isPositiveInt("1"), is(true));
+        assertThat(isPositiveInt("0"), is(false));
+        assertThat(isPositiveInt("-1"), is(false));
+        assertThat(isPositiveInt("a"), is(false));
+        assertThat(isPositiveInt(" "), is(false));
     }
 
 }

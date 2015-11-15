@@ -75,9 +75,12 @@ public class ObjectValidatorImpl implements ObjectValidator {
             if (filtersAware.hasFilter(field)) {
                 Set<String> filterValues = filtersAware.getFilter(field);
                 if (isSet(f.getType())) {
-                    f.set(object, filterValues);
+                    value = filterValues;
                 } else if (filterValues.size() > 0) {
-                    f.set(object, filterValues.iterator().next());
+                    value = filterValues.iterator().next();
+                }
+                if (value != null) {
+                    f.set(object, value);
                 }
             }
         }

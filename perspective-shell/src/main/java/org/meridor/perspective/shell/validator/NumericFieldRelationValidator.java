@@ -19,8 +19,8 @@ public class NumericFieldRelationValidator implements Validator {
         }
         RelativeToNumericField ann = RelativeToNumericField.class.cast(annotation);
         String fieldName = ann.field();
-        double doubleValue = Double.valueOf(value.toString());
         try {
+            double doubleValue = Double.valueOf(value.toString());
             java.lang.reflect.Field field = instance.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             double fieldValue = Double.valueOf(field.get(instance).toString());

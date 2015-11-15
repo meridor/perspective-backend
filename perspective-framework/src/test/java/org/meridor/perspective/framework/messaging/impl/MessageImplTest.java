@@ -7,14 +7,15 @@ import org.meridor.perspective.framework.messaging.Message;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class MessageImplTest {
     
     @Test
     public void testGetPayloadAs() throws Exception {
         Optional<Number> numberPayload = getMessage().getPayload(Number.class);
-        assertTrue(numberPayload.isPresent());
+        assertThat(numberPayload.isPresent(), is(true));
         assertThat(numberPayload.get(), equalTo(1));
     }
     
@@ -25,7 +26,7 @@ public class MessageImplTest {
     
     @Test
     public void testGetPayloadEmpty() throws Exception {
-        assertFalse(new MessageImpl(CloudType.MOCK, null).getPayload(String.class).isPresent());
+        assertThat(new MessageImpl(CloudType.MOCK, null).getPayload(String.class).isPresent(), is(false));
     }
     
     private static Message getMessage() {
