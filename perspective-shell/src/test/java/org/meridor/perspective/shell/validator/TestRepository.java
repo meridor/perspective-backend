@@ -60,13 +60,13 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
-        return Collections.singletonList(EntityGenerator.getFlavor());
+    public Map<Project, List<Flavor>> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
+        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getFlavor()));
     }
 
     @Override
-    public List<Network> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
-        return Collections.singletonList(EntityGenerator.getNetwork());
+    public Map<Project, List<Network>> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
+        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getNetwork()));
     }
 
     @Override

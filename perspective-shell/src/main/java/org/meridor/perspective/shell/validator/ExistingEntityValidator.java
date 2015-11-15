@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Component
 public class ExistingEntityValidator implements Validator {
@@ -45,11 +46,20 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Flavor> getFlavorsByName(String name) {
-        return projectsRepository.showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name));
+        return projectsRepository
+                .showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name))
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
     
     private Collection<Network> getNetworksByName(String name) {
-        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(name));
+        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(name))
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
     
     private Collection<Image> getImagesByName(String name) {

@@ -8,11 +8,14 @@ import org.meridor.perspective.shell.query.ShowNetworksQuery;
 import org.meridor.perspective.shell.query.ShowProjectsQuery;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ProjectsRepository {
+    
     List<Project> showProjects(ShowProjectsQuery query);
 
-    List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery);
+    Map<Project, List<Flavor>> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery);
 
-    List<Network> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery);
+    Map<Project, List<Network>> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery);
+    
 }

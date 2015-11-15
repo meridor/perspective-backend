@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.humanizedDuration;
@@ -38,9 +39,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        ShowProjectsQuery showProjectsQuery = queryProvider.get(ShowProjectsQuery.class)
-                .withNames(name)
-                .withClouds(cloud);
+        ShowProjectsQuery showProjectsQuery = getShowProjectsQuery(cloud, name);
         validateExecuteShowResult(
                 showProjectsQuery,
                 new String[]{"Name", "Cloud"},
@@ -62,14 +61,17 @@ public class ShowCommands extends BaseCommands {
         ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class).withNames(name);
         validateExecuteShowResult(
                 showFlavorsQuery,
-                new String[]{"Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
+                new String[]{"Name", "Project", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
-                    List<Flavor> flavors = projectsRepository.showFlavors(projectName, cloud, q);
-                    return flavors.stream()
-                            .map(f -> new String[]{
-                                    f.getName(),
-                                    String.valueOf(f.getVcpus()), String.valueOf(f.getRam()),
-                                    String.valueOf(f.getRootDisk()), String.valueOf(f.getEphemeralDisk())
+                    Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(projectName, cloud, q);
+                    return flavorsMap.keySet().stream()
+                            .flatMap(p -> {
+                                List<Flavor> flavors = flavorsMap.get(p);
+                                return flavors.stream().map(f -> new String[]{
+                                        f.getName(), p.getName(),
+                                        String.valueOf(f.getVcpus()), String.valueOf(f.getRam()),
+                                        String.valueOf(f.getRootDisk()), String.valueOf(f.getEphemeralDisk())
+                                });
                             })
                             .collect(Collectors.toList());
                 }
@@ -85,14 +87,17 @@ public class ShowCommands extends BaseCommands {
         ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name);
         validateExecuteShowResult(
                 showNetworksQuery,
-                new String[]{"Name", "Subnets", "State", "Is Shared"},
+                new String[]{"Name", "Project", "Subnets", "State", "Is Shared"},
                 q -> {
-                    List<Network> networks = projectsRepository.showNetworks(projectName, cloud, q);
-                    return networks.stream()
-                            .map(n -> new String[]{
-                                    n.getName(),
-                                    joinLines(new HashSet<>(n.getSubnets())),
-                                    n.getState(), String.valueOf(n.isIsShared())
+                    Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(projectName, cloud, q);
+                    return networksMap.keySet().stream()
+                            .flatMap(p -> {
+                                List<Network> networks = networksMap.get(p);
+                                return networks.stream().map(n -> new String[]{
+                                        n.getName(), p.getName(),
+                                        joinLines(new HashSet<>(n.getSubnets())),
+                                        n.getState(), String.valueOf(n.isIsShared())
+                                });
                             })
                             .collect(Collectors.toList());
                 }
@@ -142,12 +147,12 @@ public class ShowCommands extends BaseCommands {
                 .withCloudNames(cloud);
         validateExecuteShowResult(
                 showImagesQuery,
-                new String[]{"Name", "State", "Last modified"},
+                new String[]{"Name", "Cloud", "State", "Last modified"},
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
                     return images.stream()
                             .map(i -> new String[]{
-                                    i.getName(),
+                                    i.getName(), i.getCloudType().value(),
                                     i.getState().value(),
                                     humanizedDuration(i.getTimestamp())
                             })
@@ -156,4 +161,9 @@ public class ShowCommands extends BaseCommands {
         );
     }
     
+    private ShowProjectsQuery getShowProjectsQuery(String clouds, String projects) {
+        return queryProvider.get(ShowProjectsQuery.class)
+                .withClouds(clouds)
+                .withNames(projects);
+    }
 }

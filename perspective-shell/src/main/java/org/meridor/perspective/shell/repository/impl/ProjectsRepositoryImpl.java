@@ -15,6 +15,8 @@ import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
@@ -34,28 +36,34 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                 .collect(Collectors.toList());
     }
     
-    @Override public List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
+    @Override public Map<Project, List<Flavor>> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
         ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
-                .flatMap(p -> p.getFlavors().stream())
-                .filter(showFlavorsQuery.getPayload())
-                .sorted(
-                        (f1, f2) -> Comparator.<String>naturalOrder().compare(f1.getName(), f2.getName())
-                )
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        p -> p.getFlavors().stream()
+                                .filter(showFlavorsQuery.getPayload())
+                                .sorted(
+                                        (f1, f2) -> Comparator.<String>naturalOrder().compare(f1.getName(), f2.getName())
+                                )
+                                .collect(Collectors.toList())
+                ));
     }
     
-    @Override public List<Network> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
+    @Override public Map<Project, List<Network>> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
         ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
         List<Project> projects = showProjects(showProjectsQuery);
         return projects.stream()
-                .flatMap(p -> p.getNetworks().stream())
-                .filter(showNetworksQuery.getPayload())
-                .sorted(
-                        (n1, n2) -> Comparator.<String>naturalOrder().compare(n1.getName(), n2.getName())
-                )
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        p -> p.getNetworks().stream()
+                        .filter(showNetworksQuery.getPayload())
+                        .sorted(
+                                (n1, n2) -> Comparator.<String>naturalOrder().compare(n1.getName(), n2.getName())
+                        )
+                        .collect(Collectors.toList())
+                ));
     }
 
 }

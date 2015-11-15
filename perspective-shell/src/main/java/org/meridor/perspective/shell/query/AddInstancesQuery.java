@@ -135,24 +135,24 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         instance.setCloudType(project.getCloudType());
         
         if (flavorName != null) {
-            List<Flavor> flavors = projectsRepository.showFlavors(
+            Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(
                     project.getName(),
                     project.getCloudType().name().toLowerCase(),
                     queryProvider.get(ShowFlavorsQuery.class).withNames(flavorName)
             );
-            instance.setFlavor(flavors.get(0));
+            instance.setFlavor(flavorsMap.get(project).get(0));
         }
 
         List<Image> images = imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withNames(imageName));
         instance.setImage(images.get(0));
         
         if (networkName != null) {
-            List<Network> networks = projectsRepository.showNetworks(
+            Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(
                     project.getName(),
                     project.getCloudType().name().toLowerCase(),
                     queryProvider.get(ShowNetworksQuery.class).withNames(networkName)
             );
-            instance.setNetworks(networks);
+            instance.setNetworks(networksMap.get(project));
         }
 
         MetadataMap metadataMap = new MetadataMap();
