@@ -43,11 +43,11 @@ public class ShowCommands extends BaseCommands {
                 .withClouds(cloud);
         validateExecuteShowResult(
                 showProjectsQuery,
-                new String[]{"Id", "Name", "Cloud"},
+                new String[]{"Name", "Cloud"},
                 q -> {
                     List<Project> projects = projectsRepository.showProjects(q);
                     return projects.stream()
-                            .map(p -> new String[]{p.getId(), p.getName(), p.getCloudType().value()})
+                            .map(p -> new String[]{p.getName(), p.getCloudType().value()})
                             .collect(Collectors.toList());
                 }
         );
@@ -62,12 +62,12 @@ public class ShowCommands extends BaseCommands {
         ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class).withNames(name);
         validateExecuteShowResult(
                 showFlavorsQuery,
-                new String[]{"Id", "Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
+                new String[]{"Name", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
                     List<Flavor> flavors = projectsRepository.showFlavors(projectName, cloud, q);
                     return flavors.stream()
                             .map(f -> new String[]{
-                                    f.getId(), f.getName(),
+                                    f.getName(),
                                     String.valueOf(f.getVcpus()), String.valueOf(f.getRam()),
                                     String.valueOf(f.getRootDisk()), String.valueOf(f.getEphemeralDisk())
                             })
@@ -85,12 +85,12 @@ public class ShowCommands extends BaseCommands {
         ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name);
         validateExecuteShowResult(
                 showNetworksQuery,
-                new String[]{"Id", "Name", "Subnets", "State", "Is Shared"},
+                new String[]{"Name", "Subnets", "State", "Is Shared"},
                 q -> {
                     List<Network> networks = projectsRepository.showNetworks(projectName, cloud, q);
                     return networks.stream()
                             .map(n -> new String[]{
-                                    n.getId(), n.getName(),
+                                    n.getName(),
                                     joinLines(new HashSet<>(n.getSubnets())),
                                     n.getState(), String.valueOf(n.isIsShared())
                             })

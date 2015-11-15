@@ -49,7 +49,10 @@ public class SettingsStorage implements FiltersAware, SettingsAware {
     @Override
     public Map<String, String> getFilters() {
         Map<String, String> filters = new HashMap<>();
-        Arrays.stream(Field.values()).forEach(
+        Arrays
+            .stream(Field.values())
+            .sorted((f1, f2) -> Comparator.<String>naturalOrder().compare(f1.name(), f2.name()))
+            .forEach(
                 f -> {
                     if (hasFilter(f)) {
                         String key = f.name().toLowerCase();
@@ -113,7 +116,10 @@ public class SettingsStorage implements FiltersAware, SettingsAware {
     @Override
     public Map<String, String> getSettings() {
         Map<String, String> settings = new HashMap<>();
-        Arrays.stream(Setting.values()).forEach(
+        Arrays
+            .stream(Setting.values())
+            .sorted((s1, s2) -> Comparator.<String>naturalOrder().compare(s1.name(), s2.name()))
+            .forEach(
                 s -> {
                     if (hasSetting(s)) {
                         String key = s.name().toLowerCase();

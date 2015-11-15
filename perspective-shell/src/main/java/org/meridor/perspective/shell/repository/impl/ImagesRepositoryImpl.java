@@ -11,10 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -27,7 +24,10 @@ public class ImagesRepositoryImpl implements ImagesRepository {
     public List<Image> showImages(ShowImagesQuery showImagesQuery) {
         GenericType<ArrayList<Image>> instanceListType = new GenericType<ArrayList<Image>>() {};
         List<Image> images = apiProvider.getImagesApi().getAsXml(instanceListType);
-        return images.stream().filter(showImagesQuery.getPayload()).collect(Collectors.toList());
+        return images.stream()
+                .filter(showImagesQuery.getPayload())
+                .sorted((i1, i2) -> Comparator.<String>naturalOrder().compare(i1.getName(), i2.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override 

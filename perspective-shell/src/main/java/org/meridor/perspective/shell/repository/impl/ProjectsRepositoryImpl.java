@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,12 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     @Override public List<Project> showProjects(ShowProjectsQuery query) {
         GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
         List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
-        return allProjects.stream().filter(query.getPayload()).collect(Collectors.toList());
+        return allProjects.stream()
+                .filter(query.getPayload())
+                .sorted(
+                        (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
+                )
+                .collect(Collectors.toList());
     }
     
     @Override public List<Flavor> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
@@ -34,6 +40,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         return projects.stream()
                 .flatMap(p -> p.getFlavors().stream())
                 .filter(showFlavorsQuery.getPayload())
+                .sorted(
+                        (f1, f2) -> Comparator.<String>naturalOrder().compare(f1.getName(), f2.getName())
+                )
                 .collect(Collectors.toList());
     }
     
@@ -43,6 +52,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         return projects.stream()
                 .flatMap(p -> p.getNetworks().stream())
                 .filter(showNetworksQuery.getPayload())
+                .sorted(
+                        (n1, n2) -> Comparator.<String>naturalOrder().compare(n1.getName(), n2.getName())
+                )
                 .collect(Collectors.toList());
     }
 

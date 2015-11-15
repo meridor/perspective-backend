@@ -11,10 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -26,7 +23,10 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     @Override public List<Instance> showInstances(ShowInstancesQuery showInstancesQuery) {
         GenericType<ArrayList<Instance>> instanceListType = new GenericType<ArrayList<Instance>>() {};
         List<Instance> instances = apiProvider.getInstancesApi().getAsXml(instanceListType);
-        return instances.stream().filter(showInstancesQuery.getPayload()).collect(Collectors.toList());
+        return instances.stream()
+                .filter(showInstancesQuery.getPayload())
+                .sorted((i1, i2) -> Comparator.<String>naturalOrder().compare(i1.getName(), i2.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override public Set<String> addInstances(AddInstancesQuery addInstancesQuery) {

@@ -2,8 +2,8 @@ package org.meridor.perspective.openstack;
 
 import com.google.common.base.Optional;
 import org.jclouds.openstack.neutron.v2.NeutronApi;
-import org.jclouds.openstack.neutron.v2.domain.Network;
 import org.jclouds.openstack.neutron.v2.features.NetworkApi;
+import org.jclouds.openstack.neutron.v2.features.SubnetApi;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.domain.Flavor;
 import org.jclouds.openstack.nova.v2_0.domain.KeyPair;
@@ -23,7 +23,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 
@@ -49,7 +53,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
                     addFlavors(project, flavorApi);
 
                     NetworkApi networkApi = neutronApi.getNetworkApi(region);
-                    addNetworks(project, networkApi);
+                    SubnetApi subnetApi = neutronApi.getSubnetApi(region);
+                    addNetworks(project, networkApi, subnetApi);
 
                     Optional<KeyPairApi> keyPairApi = novaApi.getKeyPairApi(region);
                     if (keyPairApi.isPresent()) {
@@ -115,16 +120,23 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
 
-    private void addNetworks(Project project, NetworkApi networkApi) {
-        for (Network network : networkApi.list().concat()) {
+    private void addNetworks(Project project, NetworkApi networkApi, SubnetApi subnetApi) {
+        for (org.jclouds.openstack.neutron.v2.domain.Network network : networkApi.list().concat()) {
             org.meridor.perspective.beans.Network networkToAdd = new org.meridor.perspective.beans.Network();
             networkToAdd.setId(network.getId());
             networkToAdd.setName(network.getName());
             networkToAdd.setIsShared(network.getShared());
             networkToAdd.setState(network.getStatus().name());
-            for (String subnet : network.getSubnets()) {
-                networkToAdd.getSubnets().add(subnet);
+            List<String> cidrList = new ArrayList<>(); 
+            for (String subnetId : network.getSubnets()) {
+                org.jclouds.openstack.neutron.v2.domain.Subnet subnet = subnetApi.get(subnetId);
+                cidrList.add(subnet.getCidr());
             }
+            networkToAdd.getSubnets().addAll(
+                    cidrList.stream()
+                            .sorted((c1, c2) -> Comparator.<String>naturalOrder().compare(c1, c2))
+                    .collect(Collectors.toList())
+            );
             project.getNetworks().add(networkToAdd);
         }
     }
