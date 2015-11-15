@@ -210,7 +210,8 @@
 
     <xsd:complexType name="project">
         <xsd:all>
-            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="id" type="tns:uuid"/>
+            <xsd:element name="parentId" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="cloudId" type="xsd:string"/>
             <xsd:element name="cloudType" type="config:cloudType"/>

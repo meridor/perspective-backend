@@ -44,7 +44,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 try {
                     ImageApi imageApi = novaApi.getImageApi(region);
                     FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
-                    imagesList.forEach(img -> images.add(createImage(img, cloud, region)));
+                    imagesList.forEach(img -> images.add(createImage(img, cloud)));
                     Integer regionImagesCount = images.size();
                     overallImagesCount += regionImagesCount;
                     LOG.debug("Fetched {} images for cloud = {}, region = {}", regionImagesCount, cloud.getName(), region);
@@ -67,13 +67,14 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return new OperationType[]{LIST_IMAGES};
     }
 
-    private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
+    private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud) {
         Image image = new Image();
         String imageId = idGenerator.getImageId(cloud, openstackImage.getId());
-        String projectId = idGenerator.getProjectId(cloud, region);
+        //We set image.projectId = project.parentId to be able to find images from different regions
+        String parentProjectId = idGenerator.getProjectId(cloud);
         image.setId(imageId);
         image.setRealId(openstackImage.getId());
-        image.setProjectId(projectId);
+        image.setProjectId(parentProjectId);
         image.setName(openstackImage.getName());
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime created = ZonedDateTime.ofInstant(

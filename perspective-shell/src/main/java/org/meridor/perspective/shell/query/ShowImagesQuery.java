@@ -86,7 +86,9 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
         return projectsRepository
                 .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projects))
                 .stream().filter(
-                        p -> p.getId().equals(projectIdFromImage)
+                        p -> 
+                                p.getId().equals(projectIdFromImage) ||
+                                p.getParentId() != null && p.getParentId().equals(projectIdFromImage)
                 ).count() > 0;
     }
 
