@@ -40,6 +40,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "flavor", help = "Instance flavor") String flavor,
             @CliOption(key = "image", help = "Instance image") String image,
             @CliOption(key = "network", help = "Name of the network to use") String network,
+            @CliOption(key = "keypair", help = "Name of the keypair to use") String keypair,
             @CliOption(key = "range", help = "A range of numbers to launch instances with") String range,
             @CliOption(key = "count", help = "How many instances to launch") Integer count,
             @CliOption(key = "options", help = "Various instance options") String options
@@ -51,6 +52,7 @@ public class AddCommands extends BaseCommands {
                     .withFlavor(flavor)
                     .withImage(image)
                     .withNetwork(network)
+                    .withKeypair(keypair)
                     .withOptions(options);
             addInstancesQuery = (count != null) ?
                     addInstancesQuery.withCount(count) :

@@ -41,18 +41,18 @@ public class AddInstancesWizard extends BaseWizard {
         if (getAnswers().containsKey(NetworkStep.class)) {
             commandBuilder.addArgument(NETWORK, getAnswers().get(NetworkStep.class));
         }
+        if (getAnswers().containsKey(KeypairStep.class)) {
+            commandBuilder.addArgument(KEYPAIR, getAnswers().get(KeypairStep.class));
+        }
         if (getAnswers().containsKey(CountStep.class)) {
             commandBuilder.addArgument(COUNT, getAnswers().get(CountStep.class));
         } else if (getAnswers().containsKey(RangeStep.class)) {
             commandBuilder.addArgument(RANGE, getAnswers().get(RangeStep.class));
         }
-        
+
         Map<String, Set<String>> options = new HashMap<>();
         if (getAnswers().containsKey(CommandStep.class)) {
             options.put(COMMAND.toString(), new HashSet<>(Arrays.asList(new String[]{getAnswers().get(CommandStep.class)})));
-        }
-        if (getAnswers().containsKey(KeypairStep.class)) {
-            options.put(KEYPAIR.toString(), new HashSet<>(Arrays.asList(new String[]{getAnswers().get(KeypairStep.class)})));
         }
         if (!options.isEmpty()) {
             commandBuilder.addArgument(OPTIONS, options);

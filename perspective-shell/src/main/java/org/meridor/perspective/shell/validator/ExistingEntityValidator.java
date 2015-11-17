@@ -1,9 +1,6 @@
 package org.meridor.perspective.shell.validator;
 
-import org.meridor.perspective.beans.Flavor;
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
@@ -48,6 +45,15 @@ public class ExistingEntityValidator implements Validator {
         return projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(name));
     }
     
+    private Collection<Keypair> getKeypairsByName(String name) {
+        return projectsRepository
+                .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectName))
+                .stream()
+                .flatMap(p -> p.getKeypairs().stream())
+                .filter(k -> k.getName().equals(name))
+                .collect(Collectors.toList());
+    }
+    
     private Collection<Flavor> getFlavorsByName(String name) {
         return projectsRepository
                 .showFlavors(projectName, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name))
@@ -79,6 +85,7 @@ public class ExistingEntityValidator implements Validator {
             case FLAVOR: return getFlavorsByName(entityId);
             case NETWORK: return getNetworksByName(entityId);
             case IMAGE: return getImagesByName(entityId);
+            case KEYPAIR: return getKeypairsByName(entityId);
         }
         return Collections.emptyList();
     }

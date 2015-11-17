@@ -60,6 +60,7 @@
             <xsd:enumeration value="command"/>
             <xsd:enumeration value="id"/>
             <xsd:enumeration value="instance_id"/>
+            <xsd:enumeration value="keypair"/>
             <xsd:enumeration value="parent"/>
             <xsd:enumeration value="region"/>
             <xsd:enumeration value="operating_system"/>

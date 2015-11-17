@@ -43,6 +43,10 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Filter(NETWORK_NAMES)
     private String network;
     
+    @ExistingEntity(value = KEYPAIR, projectField = "project")
+    @Filter(KEYPAIRS)
+    private String keypair;
+    
     @NumericRange
     private String range;
     
@@ -93,6 +97,11 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         return this;
     }
     
+    public AddInstancesQuery withKeypair(String keypair) {
+        this.keypair = keypair;
+        return this;
+    }
+    
     private String rangeFromCount(Integer count) {
         return String.format("1-%d", count);
     }
@@ -116,15 +125,15 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                             }
                         }) :
                         String.format("%s-%s", name, i);
-                instances.add(createInstance(instanceName, project, flavor, image, network, options));
+                instances.add(createInstance(instanceName, project, flavor, image, network, keypair, options));
             }
         } else {
-            instances.add(createInstance(name, project, flavor, image, network, options));
+            instances.add(createInstance(name, project, flavor, image, network, keypair, options));
         }
         return instances;
     }
     
-    private Instance createInstance(String name, String projectName, String flavorName, String imageName, String networkName, Map<String, Set<String>> options) {
+    private Instance createInstance(String name, String projectName, String flavorName, String imageName, String networkName, String keypairName, Map<String, Set<String>> options) {
         Instance instance = new Instance();
         instance.setName(name);
 
@@ -153,6 +162,12 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                     queryProvider.get(ShowNetworksQuery.class).withNames(networkName)
             );
             instance.setNetworks(networksMap.get(project));
+        }
+        
+        if (keypairName !=  null) {
+            Keypair keypair = new Keypair();
+            keypair.setName(keypairName);
+            instance.setKeypair(keypair);
         }
 
         MetadataMap metadataMap = new MetadataMap();

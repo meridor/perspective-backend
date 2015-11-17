@@ -5,6 +5,7 @@ public enum Entity {
     PROJECT,
     FLAVOR,
     NETWORK,
-    IMAGE
+    IMAGE,
+    KEYPAIR
     
 }
