@@ -35,6 +35,7 @@ public abstract class BaseChoiceStep implements Step {
             return returnValue.get();
         }
         printPossibleChoices(choicesMap);
+        ok("Type the number corresponding to your choice or q to exit:");
         Optional<String> answerCandidate = processAnswer();
         if (!answerCandidate.isPresent()) {
             return false;

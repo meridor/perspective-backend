@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import jline.console.ConsoleReader;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.shell.misc.TableRenderer;
 import org.meridor.perspective.shell.validator.Setting;
 import org.ocpsoft.prettytime.PrettyTime;
@@ -186,19 +187,24 @@ public final class TextUtils {
     }
     
     /**
-     * Returns space separated collection of entries as an array
-     * @param data space separated values
+     * Returns command separated collection of entries as an array
+     * @param data comma separated values
      * @return an set of values or null if null is passed
      */
     public static Set<String> parseEnumeration(String data) {
-        return parseEnumeration(data, SPACE);
+        return parseEnumeration(data, COMMA);
     }
     
     public static Set<String> parseEnumeration(String data, String delimiter) {
         if (data == null) {
             return null;
         }
-        return new HashSet<>(Arrays.asList(data.split(delimiter)));
+        return new HashSet<>(
+                Arrays.asList(data.split(delimiter)).stream()
+                        .filter(el -> !el.isEmpty())
+                        .map(String::trim)
+                .collect(Collectors.toList())
+        );
     }
     
     private static boolean isKeyDelimiter(String token) {
@@ -248,8 +254,26 @@ public final class TextUtils {
                 instance.getName(),
                 (instance.getImage() != null) ? instance.getImage().getName() : DASH,
                 (instance.getFlavor() != null) ? instance.getFlavor().getName() : DASH,
-                (instance.getMetadata() != null) ? instance.getMetadata().toString() : DASH 
+                formatInstanceAdditionalProperties(instance) 
         };
+    }
+    
+    private static String formatInstanceAdditionalProperties(Instance instance) {
+        List<String> additionalProperties = new ArrayList<>();
+        if (instance.getMetadata() != null) {
+            additionalProperties.add(String.format("Metadata: %s", instance.getMetadata().toString()));
+        }
+        if (instance.getNetworks() != null) {
+            additionalProperties.add(String.format("Networks: %s", enumerateValues(
+                    instance.getNetworks().stream()
+                        .map(Network::getName)
+                        .collect(Collectors.toList()))
+            ));
+        }
+        if (instance.getKeypair() != null) {
+            additionalProperties.add(String.format("Keypair: %s", instance.getKeypair().getName()));
+        }
+        return additionalProperties.isEmpty() ? DASH : joinLines(additionalProperties);
     }
     
     public static String[] imageToRow(Image image) {
@@ -290,6 +314,13 @@ public final class TextUtils {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+    
+    public static String quoteIfNeeded(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.contains(SPACE) ? String.format("'%s'", value) : value;
     }
     
     private TextUtils() {

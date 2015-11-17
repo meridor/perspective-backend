@@ -27,7 +27,7 @@ public class DeleteCommands extends BaseCommands {
 
     @CliCommand(value = "delete instances", help = "Completely delete (terminate) instances")
     public void deleteInstances(
-            @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String names,
+            @CliOption(key = "", mandatory = true, help = "Comma separated instances names or patterns to match against instance name") String names,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         ModifyInstancesQuery modifyInstancesQuery = queryProvider.get(ModifyInstancesQuery.class)
@@ -44,7 +44,7 @@ public class DeleteCommands extends BaseCommands {
     
     @CliCommand(value = "delete images", help = "Delete images")
     public void set(
-            @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String patterns,
+            @CliOption(key = "", mandatory = true, help = "Space separated instances names or patterns to match against instance name") String patterns,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         DeleteImagesQuery deleteImagesQuery = queryProvider.get(DeleteImagesQuery.class).withNames(patterns).withClouds(cloud);

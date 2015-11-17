@@ -17,4 +17,6 @@ public @interface ExistingEntity {
     
     int minCount() default 1;
     
+    String projectField() default "";
+    
 }

@@ -6,6 +6,7 @@ public enum CommandArgument {
     INSTANCES,
     IMAGE,
     FLAVOR,
+    KEYPAIR,
     NETWORK,
     RANGE,
     COUNT,

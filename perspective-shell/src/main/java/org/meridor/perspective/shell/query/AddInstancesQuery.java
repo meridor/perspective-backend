@@ -30,16 +30,16 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Filter(PROJECTS)
     private String project;
     
-    @ExistingEntity(FLAVOR)
+    @ExistingEntity(value = FLAVOR, projectField = "project")
     @Filter(FLAVOR_NAMES)
     private String flavor;
     
     @Required
-    @ExistingEntity(IMAGE)
+    @ExistingEntity(value = IMAGE, projectField = "project")
     @Filter(IMAGE_NAMES)
     private String image;
     
-    @ExistingEntity(NETWORK)
+    @ExistingEntity(value = NETWORK, projectField = "project")
     @Filter(NETWORK_NAMES)
     private String network;
     

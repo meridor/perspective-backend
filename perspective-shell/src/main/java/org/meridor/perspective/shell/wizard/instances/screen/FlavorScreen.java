@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.wizard.instances.screen;
 import org.meridor.perspective.shell.wizard.Step;
 import org.meridor.perspective.shell.wizard.WizardScreen;
 import org.meridor.perspective.shell.wizard.instances.step.FlavorStep;
+import org.meridor.perspective.shell.wizard.instances.step.ProjectStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,8 @@ public class FlavorScreen implements WizardScreen {
     
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+        String projectName = previousAnswers.get(ProjectStep.class);
+        flavorStep.setProjectName(projectName);
         return flavorStep;
     }
 

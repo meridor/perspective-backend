@@ -27,6 +27,8 @@ public class ExistingEntityValidator implements Validator {
 
     @Autowired
     private QueryProvider queryProvider;
+    
+    private String projectName;
 
     @Override
     public boolean validate(Object instance, Annotation annotation, Object value) {
@@ -37,6 +39,7 @@ public class ExistingEntityValidator implements Validator {
         String entityId = value.toString();
         int maxCount = ann.maxCount();
         int minCount = ann.minCount();
+        this.projectName = getProjectName(instance, ann.projectField()); 
         Collection<?> entities = getEntitiesList(ann.value(), entityId);
         return entities.size() >= minCount && entities.size() <= maxCount;
     }
@@ -47,7 +50,7 @@ public class ExistingEntityValidator implements Validator {
     
     private Collection<Flavor> getFlavorsByName(String name) {
         return projectsRepository
-                .showFlavors(null, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name))
+                .showFlavors(projectName, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name))
                 .values()
                 .stream()
                 .flatMap(Collection::stream)
@@ -55,7 +58,7 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Network> getNetworksByName(String name) {
-        return projectsRepository.showNetworks(null, null, queryProvider.get(ShowNetworksQuery.class).withNames(name))
+        return projectsRepository.showNetworks(projectName, null, queryProvider.get(ShowNetworksQuery.class).withNames(name))
                 .values()
                 .stream()
                 .flatMap(Collection::stream)
@@ -63,7 +66,11 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Image> getImagesByName(String name) {
-        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withNames(name));
+        return imagesRepository.showImages(
+                queryProvider.get(ShowImagesQuery.class)
+                    .withNames(name)
+                    .withProjectNames(projectName)
+        );
     }
     
     private Collection<?> getEntitiesList(Entity entity, String entityId) {
@@ -74,6 +81,20 @@ public class ExistingEntityValidator implements Validator {
             case IMAGE: return getImagesByName(entityId);
         }
         return Collections.emptyList();
+    }
+    
+    private String getProjectName(Object instance, String projectFieldName) {
+        if (projectFieldName.isEmpty()) {
+            return null;
+        }
+        try {
+            java.lang.reflect.Field projectField = instance.getClass().getDeclaredField(projectFieldName);
+            projectField.setAccessible(true);
+            String projectName = projectField.get(instance).toString();
+            return (projectName == null || projectName.isEmpty()) ? null : projectName;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

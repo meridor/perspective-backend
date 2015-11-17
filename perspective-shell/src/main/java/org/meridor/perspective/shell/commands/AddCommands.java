@@ -39,7 +39,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "project", help = "Name of the project to launch instance in") String project,
             @CliOption(key = "flavor", help = "Instance flavor") String flavor,
             @CliOption(key = "image", help = "Instance image") String image,
-            @CliOption(key = "network", help = "Name of ID of the network to use") String network,
+            @CliOption(key = "network", help = "Name of the network to use") String network,
             @CliOption(key = "range", help = "A range of numbers to launch instances with") String range,
             @CliOption(key = "count", help = "How many instances to launch") Integer count,
             @CliOption(key = "options", help = "Various instance options") String options
@@ -71,7 +71,7 @@ public class AddCommands extends BaseCommands {
     
     @CliCommand(value = "add images", help = "Add one or more images to project")
     public void addImage(
-            @CliOption(key = "instances", help = "Instance IDs, names or patterns to match against instance name or ID") String instanceNames,
+            @CliOption(key = "instances", help = "Comma separeted instance names or patterns to match against instance name") String instanceNames,
             @CliOption(key = "name", help = "Image name") String imageName
     ) {
         //TODO: implement adding image from file

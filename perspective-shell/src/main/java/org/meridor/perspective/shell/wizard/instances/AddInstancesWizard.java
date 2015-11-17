@@ -51,6 +51,9 @@ public class AddInstancesWizard extends BaseWizard {
         if (getAnswers().containsKey(CommandStep.class)) {
             options.put(COMMAND.toString(), new HashSet<>(Arrays.asList(new String[]{getAnswers().get(CommandStep.class)})));
         }
+        if (getAnswers().containsKey(KeypairStep.class)) {
+            options.put(KEYPAIR.toString(), new HashSet<>(Arrays.asList(new String[]{getAnswers().get(KeypairStep.class)})));
+        }
         if (!options.isEmpty()) {
             commandBuilder.addArgument(OPTIONS, options);
         }

@@ -100,7 +100,7 @@ public class TextUtilsTest {
 
     @Test
     public void testParseEnumeration(){
-        String value = "value1 value2";
+        String value = "value1, value2";
         Set<String> enumeration = parseEnumeration(value);
         assertThat(enumeration, hasSize(2));
         assertThat(enumeration, containsInAnyOrder("value1", "value2"));
@@ -108,7 +108,7 @@ public class TextUtilsTest {
     
     @Test
     public void testParseEnumerationCustomDelimiter(){
-        String value = "value1#value2";
+        String value = "value1##value2";
         Set<String> enumeration = parseEnumeration(value, "#");
         assertThat(enumeration, hasSize(2));
         assertThat(enumeration, containsInAnyOrder("value1", "value2"));
@@ -161,6 +161,13 @@ public class TextUtilsTest {
         assertThat(isPositiveInt("-1"), is(false));
         assertThat(isPositiveInt("a"), is(false));
         assertThat(isPositiveInt(" "), is(false));
+    }
+    
+    @Test
+    public void testQuoteIfNeeded() {
+        assertThat(quoteIfNeeded(null), is(nullValue()));
+        assertThat(quoteIfNeeded("word"), equalTo("word"));
+        assertThat(quoteIfNeeded("two words"), equalTo("'two words'"));
     }
 
 }

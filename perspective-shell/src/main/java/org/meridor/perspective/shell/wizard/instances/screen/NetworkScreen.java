@@ -2,7 +2,7 @@ package org.meridor.perspective.shell.wizard.instances.screen;
 
 import org.meridor.perspective.shell.wizard.Step;
 import org.meridor.perspective.shell.wizard.WizardScreen;
-import org.meridor.perspective.shell.wizard.instances.step.FlavorStep;
+import org.meridor.perspective.shell.wizard.instances.step.NetworkStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,14 +13,14 @@ import java.util.Optional;
 public class NetworkScreen implements WizardScreen {
     
     @Autowired
-    private FlavorStep flavorStep;
+    private NetworkStep networkStep;
     
     @Autowired
     private KeypairScreen keypairScreen;
     
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
-        return flavorStep;
+        return networkStep;
     }
 
     @Override
