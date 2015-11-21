@@ -4,11 +4,12 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.ContainerState;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.InstanceState;
-import org.meridor.perspective.beans.MetadataMap;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -35,6 +37,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Autowired
     private DockerApiProvider apiProvider;
+
+    @Autowired
+    private ProjectsAware projects;
+
+    @Autowired
+    private ImagesAware images;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
@@ -67,6 +75,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setId(instanceId);
         instance.setRealId(container.id());
         instance.setName(container.name());
+        instance.setCloudId(cloud.getId());
+        instance.setCloudType(CloudType.DOCKER);
+
+        String projectId = idGenerator.getProjectId(cloud);
+        Optional<Project> projectCandidate = projects.getProject(projectId);
+        if (projectCandidate.isPresent()) {
+            instance.setProjectId(projectId);
+        }
+        
+        String imageId = idGenerator.getImageId(cloud, container.image());
+        Optional<Image> imageCandidate = images.getImage(imageId);
+        if (imageCandidate.isPresent()) {
+            instance.setImage(imageCandidate.get());
+        }
+
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 container.created().toInstant(),
                 ZoneId.systemDefault()
@@ -79,9 +102,13 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
 
+    
+    
     private static InstanceState createState(ContainerState state) {
         if (state.running()) {
             return InstanceState.LAUNCHED;
+        } else if (state.oomKilled() || (state.error() != null && !state.error().isEmpty())) {
+            return InstanceState.ERROR;
         } else if (state.paused()) {
             return InstanceState.PAUSED;
         } else if (state.restarting()) {

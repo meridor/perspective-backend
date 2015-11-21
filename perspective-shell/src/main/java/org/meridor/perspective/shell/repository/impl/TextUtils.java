@@ -338,6 +338,9 @@ public final class TextUtils {
                 ok("Zero results provided: nothing to show.");
                 return;
             }
+            if (NUM_PAGES > 1) {
+                ok("Press Space, Enter or n to show next page, p or w to show previous page, a number key to show specific page and q to type next command.");
+            }
             int currentPage = 1;
             showPage(currentPage, NUM_PAGES, pages); //Always showing first page
             if (NUM_PAGES == 1) {

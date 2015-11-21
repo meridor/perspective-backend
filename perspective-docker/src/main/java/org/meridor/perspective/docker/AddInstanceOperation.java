@@ -41,10 +41,10 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
                     .image(imageId)
                     .build();
             ContainerCreation createdContainer = dockerApi.createContainer(containerConfig, instance.getName());
-            String instanceId = createdContainer.id();
-            instance.setRealId(instanceId);
-            String id = idGenerator.getInstanceId(cloud, instanceId);
-            instance.setId(id);
+            String realId = createdContainer.id();
+            instance.setRealId(realId);
+            String instanceId = idGenerator.getInstanceId(cloud, realId);
+            instance.setId(instanceId);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
         } catch (Exception e) {

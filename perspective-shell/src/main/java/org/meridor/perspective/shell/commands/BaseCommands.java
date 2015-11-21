@@ -67,7 +67,6 @@ public abstract class BaseCommands implements CommandMarker {
                         rows.size(),
                         PAGE_SIZE
                 ));
-                ok("Press Space, Enter or n to show next page, p or w to show previous page, a number key to show specific page and q to type next command.");
                 page(preparePages(tableRenderer, PAGE_SIZE, columns, rows));
             } else {
                 ok(tableRenderer.render(columns, rows));

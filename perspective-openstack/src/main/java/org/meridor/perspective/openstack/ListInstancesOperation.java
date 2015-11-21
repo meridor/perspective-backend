@@ -6,6 +6,7 @@ import org.jclouds.openstack.nova.v2_0.domain.Server;
 import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
@@ -84,19 +85,25 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setRealId(server.getId());
         instance.setName(server.getName());
         instance.setState(stateFromStatus(server.getStatus()));
+        instance.setCloudId(cloud.getId());
+        instance.setCloudType(CloudType.OPENSTACK);
+        
         Keypair keypair = new Keypair();
         keypair.setName(server.getKeyName());
         instance.setKeypair(keypair);
+        
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 server.getCreated().toInstant(),
                 ZoneId.systemDefault()
         );
         instance.setCreated(created);
+        
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(
                 server.getUpdated().toInstant(),
                 ZoneId.systemDefault()
         );
         instance.setTimestamp(timestamp);
+        
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.REGION, region);
         instance.setMetadata(metadata);
