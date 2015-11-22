@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:sql.perspective.meridor.org"
+            targetNamespace="urn:sql.perspective.meridor.org"
+            elementFormDefault="qualified">
+
+    <xsd:complexType name="query">
+        <xsd:all>
+            <xsd:element name="sql" type="xsd:string"/>
+            <xsd:element name="parameters" type="tns:parameters"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="parameter">
+        <xsd:attribute name="index" type="xsd:int"/>
+        <xsd:attribute name="value" type="xsd:string"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="parameters">
+        <xsd:sequence>
+            <xsd:element name="parameters" type="tns:parameter" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+
+</xsd:schema>

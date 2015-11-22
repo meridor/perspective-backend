@@ -43,6 +43,7 @@
         <module>perspective-storage</module>
         <module>perspective-shell</module>
         <module>perspective-java-client</module>
+        <module>perspective-jdbc</module>
     </modules>
 
     <dependencyManagement>
