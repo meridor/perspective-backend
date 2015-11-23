@@ -74,7 +74,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         String instanceId = idGenerator.getInstanceId(cloud, container.id());
         instance.setId(instanceId);
         instance.setRealId(container.id());
-        instance.setName(container.name());
+        String containerName = trimLeadingSlashIfNeeded(container.name());
+        instance.setName(containerName);
         instance.setCloudId(cloud.getId());
         instance.setCloudType(CloudType.DOCKER);
 
@@ -102,7 +103,16 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
 
-    
+    /*
+        Docker inspect returns full container name = hostname/container_name, for localhost = /container_name.
+        So far as we only work with localhost we can safely trim leading slash.
+    */
+    private String trimLeadingSlashIfNeeded(String rawName) {
+        if (rawName != null && rawName.startsWith("/")) {
+            return rawName.substring(1);
+        }
+        return rawName;
+    }
     
     private static InstanceState createState(ContainerState state) {
         if (state.running()) {
