@@ -18,6 +18,6 @@ public interface InstancesAware {
 
     boolean isInstanceDeleted(String instanceId);
 
-    void deleteInstance(Instance instance);
+    void deleteInstance(String instanceId);
 
 }

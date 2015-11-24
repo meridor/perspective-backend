@@ -38,26 +38,12 @@ import static org.meridor.perspective.events.EventFactory.instanceEvent;
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
-        @Transit(from = InstanceQueuedEvent.class, on = InstanceQueuedEvent.class, to = InstanceQueuedEvent.class),
-        @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstanceRebootingEvent.class, on = InstanceRebootingEvent.class, to = InstanceRebootingEvent.class),
-        @Transit(from = InstanceHardRebootingEvent.class, on = InstanceHardRebootingEvent.class, to = InstanceHardRebootingEvent.class),
-        @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
-        @Transit(from = InstanceErrorEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstancePausingEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
-        @Transit(from = InstancePausedEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
-        @Transit(from = InstanceSnapshottingEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
-        @Transit(from = InstanceRebuildingEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
-        @Transit(from = InstanceMigratingEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
-        @Transit(from = InstanceDeletingEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
+        @Transit(from = InstanceDeletingEvent.class, on = InstanceDeletingEvent.class, stop = true),
 
         //Instance launch
         @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
+        @Transit(from = InstanceLaunchingEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class), //e.g. for Docker
         @Transit(from = InstanceLaunchingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceDeletingEvent.class, stop = true),
 
@@ -159,9 +145,14 @@ public class InstanceFSM {
             if (!updatedInstanceCandidate.isPresent()) {
                 throw new InstanceException("Failed to add", instance);
             }
-            Instance updatedImage = updatedInstanceCandidate.get();
-            updatedImage.setState(InstanceState.LAUNCHING);
-            storage.saveInstance(updatedImage);
+            Instance updatedInstance = updatedInstanceCandidate.get();
+            updatedInstance.setState(InstanceState.LAUNCHING);
+            /* 
+                Initially we assign some random UUID to instance while it's being created (just to show that instance was queued).
+                When real ID becomes available we replace initially queued instance by one with correct ID. 
+             */
+            storage.deleteInstance(event.getTemporaryInstanceId());
+            storage.saveInstance(updatedInstance);
         }
     }
 
@@ -336,10 +327,14 @@ public class InstanceFSM {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        if (storage.instanceExists(instance.getId())) {
-            LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
-            if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
-                storage.deleteInstance(instance);
+        if (event.isSync()) {
+            LOG.info("Marking instance {} ({}) as deleting", instance.getName(), instance.getId());
+            instance.setState(InstanceState.DELETING);
+            storage.saveInstance(instance);
+        } else if (storage.instanceExists(instance.getId())) {
+            if (operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
+                LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
+                storage.deleteInstance(instance.getId());
             } else {
                 throw new InstanceException("Failed to delete", instance);
             }

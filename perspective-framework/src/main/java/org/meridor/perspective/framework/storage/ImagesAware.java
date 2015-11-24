@@ -18,6 +18,6 @@ public interface ImagesAware {
 
     boolean isImageDeleted(String imageId);
 
-    void deleteImage(Image image);
+    void deleteImage(String imageId);
 
 }

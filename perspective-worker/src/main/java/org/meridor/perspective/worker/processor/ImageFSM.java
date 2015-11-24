@@ -27,11 +27,7 @@ import static org.meridor.perspective.events.EventFactory.imageEvent;
         @Transit(from = ImageNotAvailableEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
         @Transit(from = ImageNotAvailableEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
         @Transit(from = ImageNotAvailableEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
-        @Transit(from = ImageQueuedEvent.class, on = ImageQueuedEvent.class, to = ImageQueuedEvent.class),
-        @Transit(from = ImageSavingEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
-        @Transit(from = ImageSavedEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
-        @Transit(from = ImageErrorEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
-        @Transit(from = ImageDeletingEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
+        @Transit(from = ImageDeletingEvent.class, on = ImageDeletingEvent.class, stop = true),
 
         //Image save
         @Transit(from = ImageQueuedEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
@@ -87,6 +83,9 @@ public class ImageFSM {
             }
             Image updatedImage = updatedImageCandidate.get();
             updatedImage.setState(ImageState.SAVING);
+            
+            //Swap images with random UUID and real ID
+            storage.deleteImage(event.getTemporaryImageId());
             storage.saveImage(updatedImage);
         }
         
@@ -110,7 +109,7 @@ public class ImageFSM {
         if (storage.imageExists(image.getId())) {
             LOG.info("Deleting image {} ({})", image.getName(), image.getId());
             if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_IMAGE, () -> image)) {
-                storage.deleteImage(image);
+                storage.deleteImage(image.getId());
             } else {
                 throw new ImageException("Failed to delete", image);
             }

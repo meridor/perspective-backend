@@ -81,7 +81,11 @@
 
     <xsd:complexType name="instanceLaunchingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent"/>
+            <xsd:extension base="events:instanceEvent">
+                <xsd:sequence>
+                    <xsd:element name="temporaryInstanceId" type="beans:uuid"/>
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
@@ -210,7 +214,11 @@
 
     <xsd:complexType name="imageSavingEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:imageEvent"/>
+            <xsd:extension base="events:imageEvent">
+                <xsd:sequence>
+                    <xsd:element name="temporaryImageId" type="beans:uuid"/>
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     

@@ -50,8 +50,8 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public void deleteImage(Image image) {
-        imageMap.remove(image.getId());
+    public void deleteImage(String imageId) {
+        imageMap.remove(imageId);
     }
 
     @Override
@@ -80,8 +80,8 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public void deleteInstance(Instance instance) {
-        instanceMap.remove(instance.getId());
+    public void deleteInstance(String instanceId) {
+        instanceMap.remove(instanceId);
     }
 
     @Override

@@ -74,8 +74,10 @@ public class InstancesResource {
     public Response launchInstances(List<Instance> instances) {
         for (final Instance instance : instances) {
             LOG.info("Queuing instance {} for launch", instance);
-            instance.setId(uuid());
+            String temporaryId = uuid();
+            instance.setId(temporaryId);
             instance.setCreated(now());
+            instance.setTimestamp(now());
             instance.setState(InstanceState.QUEUED);
             if (instance.getCloudType() == null) {
                 Optional<Project> projectCandidate = projectsAware.getProject(instance.getProjectId());
@@ -89,6 +91,7 @@ public class InstancesResource {
             }
             instancesAware.saveInstance(instance);
             InstanceLaunchingEvent event = instanceEvent(InstanceLaunchingEvent.class, instance);
+            event.setTemporaryInstanceId(temporaryId);
             producer.produce(message(instance.getCloudType(), event));
         }
         return Response.ok().build();
@@ -124,6 +127,8 @@ public class InstancesResource {
     public Response deleteInstances(List<Instance> instances) {
         for (Instance instance : instances) {
             LOG.debug("Queuing instance {} ({}) for removal", instance.getName(), instance.getId());
+            instance.setState(InstanceState.DELETING);
+            instancesAware.saveInstance(instance);
             InstanceDeletingEvent event = instanceEvent(InstanceDeletingEvent.class, instance);
             producer.produce(message(instance.getCloudType(), event));
         }

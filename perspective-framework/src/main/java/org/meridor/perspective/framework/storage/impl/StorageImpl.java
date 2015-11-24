@@ -82,8 +82,8 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
     //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
     @Override
-    public void deleteInstance(Instance instance) {
-        Instance deletedInstance = getInstancesByIdMap().remove(instance.getId());
+    public void deleteInstance(String instanceId) {
+        Instance deletedInstance = getInstancesByIdMap().remove(instanceId);
         getDeletedInstancesByIdMap().put(deletedInstance.getId(), deletedInstance);
     }
 
@@ -141,8 +141,8 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public void deleteImage(Image image) {
-        Image deletedImage = getImagesByIdMap().remove(image.getId());
+    public void deleteImage(String imageId) {
+        Image deletedImage = getImagesByIdMap().remove(imageId);
         getDeletedImagesByIdMap().put(deletedImage.getId(), deletedImage);
     }
 

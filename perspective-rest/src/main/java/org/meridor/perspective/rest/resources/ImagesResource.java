@@ -67,11 +67,14 @@ public class ImagesResource {
     public Response saveImages(List<Image> images) {
         for (Image image : images) {
             LOG.info("Queuing image {} for saving", image);
-            image.setId(uuid());
+            String temporaryId = uuid();
+            image.setId(temporaryId);
             image.setCreated(now());
+            image.setTimestamp(now());
             image.setState(ImageState.QUEUED);
             imagesAware.saveImage(image);
             ImageSavingEvent event = imageEvent(ImageSavingEvent.class, image);
+            event.setTemporaryImageId(temporaryId);
             producer.produce(message(image.getCloudType(), event));
         }
         return Response.ok().build();
@@ -83,6 +86,8 @@ public class ImagesResource {
     public Response deleteImages(List<Image> images) {
         for (Image image : images) {
             LOG.debug("Queuing image {} ({}) for removal", image.getName(), image.getId());
+            image.setState(ImageState.DELETING);
+            imagesAware.saveImage(image);
             ImageDeletingEvent event = imageEvent(ImageDeletingEvent.class, image);
             producer.produce(message(image.getCloudType(), event));
         }
