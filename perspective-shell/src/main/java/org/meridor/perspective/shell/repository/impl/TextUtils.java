@@ -2,9 +2,6 @@ package org.meridor.perspective.shell.repository.impl;
 
 import com.google.common.collect.Lists;
 import jline.console.ConsoleReader;
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.shell.misc.TableRenderer;
 import org.meridor.perspective.shell.validator.Setting;
 import org.ocpsoft.prettytime.PrettyTime;
@@ -29,7 +26,7 @@ public final class TextUtils {
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
     private static final String QUIT = "q";
-    private static final String DASH = "-";
+    public static final String DASH = "-";
     private static final Integer DEFAULT_PAGE_SIZE = 20;
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
@@ -238,52 +235,7 @@ public final class TextUtils {
     public static boolean isNoKey(String key) {
         return NO.equals(key);
     }
-    
-    public static String[] instanceToRow(Instance instance) {
-        return new String[]{
-                instance.getName(),
-                (instance.getImage() != null) ? instance.getImage().getName() : DASH,
-                (instance.getFlavor() != null) ? instance.getFlavor().getName() : DASH,
-                (instance.getState() != null) ?  instance.getState().value() : DASH,
-                (instance.getTimestamp() != null) ? humanizedDuration(instance.getTimestamp()) : DASH
-        };
-    }
-    
-    public static String[] newInstanceToRow(Instance instance) {
-        return new String[]{
-                instance.getName(),
-                (instance.getImage() != null) ? instance.getImage().getName() : DASH,
-                (instance.getFlavor() != null) ? instance.getFlavor().getName() : DASH,
-                formatInstanceAdditionalProperties(instance) 
-        };
-    }
-    
-    private static String formatInstanceAdditionalProperties(Instance instance) {
-        List<String> additionalProperties = new ArrayList<>();
-        if (instance.getMetadata() != null) {
-            additionalProperties.add(String.format("Metadata: %s", instance.getMetadata().toString()));
-        }
-        if (instance.getNetworks() != null) {
-            additionalProperties.add(String.format("Networks: %s", enumerateValues(
-                    instance.getNetworks().stream()
-                        .map(Network::getName)
-                        .collect(Collectors.toList()))
-            ));
-        }
-        if (instance.getKeypair() != null) {
-            additionalProperties.add(String.format("Keypair: %s", instance.getKeypair().getName()));
-        }
-        return additionalProperties.isEmpty() ? DASH : joinLines(additionalProperties);
-    }
-    
-    public static String[] imageToRow(Image image) {
-        return new String[]{
-                image.getName(),
-                (image.getState() != null) ? image.getState().value() : DASH,
-                (image.getTimestamp() != null) ? humanizedDuration(image.getTimestamp()) : DASH
-        };
-    }
-    
+
     public static boolean isNumericKey(String key) {
         if (key == null) {
             return false;

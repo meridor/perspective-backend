@@ -3,13 +3,10 @@ package org.meridor.perspective.shell.commands;
 import org.meridor.perspective.shell.query.ModifyInstancesQuery;
 import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
 
 @Component
 public class ModifyCommands extends BaseCommands {
@@ -19,6 +16,9 @@ public class ModifyCommands extends BaseCommands {
 
     @Autowired
     private QueryProvider queryProvider;
+    
+    @Autowired
+    private EntityFormatter entityFormatter;
 
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
@@ -34,8 +34,8 @@ public class ModifyCommands extends BaseCommands {
                 instances -> hard ?
                         String.format("Going to hard reboot %d instances.", instances.size()):
                         String.format("Going to reboot %d instances.", instances.size()),
-                instances -> new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
-                instances -> instances.stream().map(TextUtils::instanceToRow).collect(Collectors.toList()),
+                instances -> new String[]{"Name", "Project", "Image", "Flavor", "State", "Last modified"},
+                instances -> entityFormatter.formatInstances(instances, cloud),
                 hard ? instancesRepository::hardRebootInstances : instancesRepository::rebootInstances
         );
     }

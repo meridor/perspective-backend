@@ -5,15 +5,12 @@ import org.meridor.perspective.shell.query.AddInstancesQuery;
 import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.meridor.perspective.shell.wizard.images.AddImagesWizard;
 import org.meridor.perspective.shell.wizard.instances.AddInstancesWizard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
 
 @Component
 public class AddCommands extends BaseCommands {
@@ -32,6 +29,9 @@ public class AddCommands extends BaseCommands {
 
     @Autowired
     private QueryProvider queryProvider;
+    
+    @Autowired
+    private EntityFormatter entityFormatter;
 
     @CliCommand(value = "add instances", help = "Add one or more instances to project")
     public void addInstance(
@@ -61,8 +61,8 @@ public class AddCommands extends BaseCommands {
             validateConfirmExecuteShowStatus(
                     addInstancesQuery,
                     instances -> String.format("Going to add %d instances:", instances.size()),
-                    instances -> new String[]{"Name", "Image", "Flavor", "More"},
-                    instances -> instances.stream().map(TextUtils::newInstanceToRow).collect(Collectors.toList()),
+                    instances -> new String[]{"Name", "Project", "Image", "Flavor", "More"},
+                    instances -> entityFormatter.formatNewInstances(instances),
                     instancesRepository::addInstances
             );
         } else if (addInstancesWizard.runSteps()) {
@@ -82,8 +82,8 @@ public class AddCommands extends BaseCommands {
             validateConfirmExecuteShowStatus(
                     addImagesQuery,
                     images -> String.format("Going to add %d images.", images.size()),
-                    images -> new String[]{"Name", "State", "Last modified"},
-                    images -> images.stream().map(TextUtils::imageToRow).collect(Collectors.toList()),
+                    images -> new String[]{"Name", "Cloud", "State", "Last modified"},
+                    images -> entityFormatter.formatImages(images),
                     imagesRepository::addImages
             );
         } else if (addImagesWizard.runSteps()) {

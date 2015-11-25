@@ -5,7 +5,6 @@ import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
-import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.humanizedDuration;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.joinLines;
 
 @Component
@@ -30,6 +28,9 @@ public class ShowCommands extends BaseCommands {
     
     @Autowired
     private ImagesRepository imagesRepository;
+    
+    @Autowired
+    private EntityFormatter entityFormatter;
     
     @Autowired
     private QueryProvider queryProvider;
@@ -124,13 +125,10 @@ public class ShowCommands extends BaseCommands {
                 .withProjectNames(projects);
         validateExecuteShowResult(
                 showInstancesQuery,
-                new String[]{"Name", "Image", "Flavor", "State", "Last modified"},
+                new String[]{"Name", "Project", "Image", "Flavor", "State", "Last modified"},
                 q -> {
                     List<Instance> instances = instancesRepository.showInstances(q);
-                    return instances.stream()
-                            .map(TextUtils::instanceToRow)
-                            .collect(Collectors.toList());
-
+                    return entityFormatter.formatInstances(instances, cloud);
                 }
         );
     }
@@ -150,13 +148,7 @@ public class ShowCommands extends BaseCommands {
                 new String[]{"Name", "Cloud", "State", "Last modified"},
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
-                    return images.stream()
-                            .map(i -> new String[]{
-                                    i.getName(), i.getCloudType().value(),
-                                    i.getState().value(),
-                                    humanizedDuration(i.getTimestamp())
-                            })
-                            .collect(Collectors.toList());
+                    return entityFormatter.formatImages(images);
                 }
         );
     }
