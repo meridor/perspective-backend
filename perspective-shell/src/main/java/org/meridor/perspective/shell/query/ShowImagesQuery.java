@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -79,17 +80,13 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
                 ( !ids.isPresent() || ids.get().contains(image.getId()) ) &&
                 ( !names.isPresent() || names.get().contains(image.getName()) ) &&
                 ( !clouds.isPresent() || clouds.get().contains(image.getCloudType().value().toLowerCase())) &&
-                ( !projects.isPresent() || projectMatches(projects.get(), image.getProjectId()));
+                ( !projects.isPresent() || projectMatches(projects.get(), image.getProjectIds()));
     }
     
-    private boolean projectMatches(String projects, String projectIdFromImage) {
+    private boolean projectMatches(String projects, List<String> projectIds) {
         return projectsRepository
                 .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projects))
-                .stream().filter(
-                        p -> 
-                                p.getId().equals(projectIdFromImage) ||
-                                p.getParentId() != null && p.getParentId().equals(projectIdFromImage)
-                ).count() > 0;
+                .stream().filter(p -> projectIds.contains(p.getId())).count() > 0;
     }
 
 }

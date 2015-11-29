@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -47,8 +48,13 @@ public class EntityFormatter {
                         .withClouds(cloud)
         ).stream().collect(Collectors.toMap(Project::getId, Function.identity()));
     }
+    
+    private Map<String, Project> getProjects() {
+        return getProjects(null);
+    }
+    
     public List<String[]> formatNewInstances(List<Instance> instances) {
-        Map<String, Project> projectsMap = getProjects(null);
+        Map<String, Project> projectsMap = getProjects();
         return instances.stream()
                 .map(i -> new String[]{
                         i.getName(),
@@ -88,4 +94,19 @@ public class EntityFormatter {
         }).collect(Collectors.toList());
     }
 
+    public List<String[]> formatNewImages(List<Image> images) {
+        Map<String, Project> projectsMap = getProjects();
+        return images.stream().map(i -> {
+            Optional<String> realProjectId = projectsMap.keySet().stream()
+                    .filter(id -> i.getProjectIds().contains(id))
+                    .findFirst();
+            return new String[]{
+                    i.getName(),
+                    //TODO: insert instance name
+                     realProjectId.isPresent() ?
+                            projectsMap.get(realProjectId.get()).getName() : DASH
+            };
+        }).collect(Collectors.toList());
+    }
+    
 }

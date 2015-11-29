@@ -9,6 +9,7 @@ import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,9 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
     
     @Autowired
     private ProjectsAware projectsAware;
+    
+    @Autowired
+    private IdGenerator idGenerator;
 
     @Override
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {
@@ -46,8 +50,10 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
             String flavorId = instance.getFlavor().getId();
             String imageId = instance.getImage().getRealId();
             ServerCreated createdServer = serverApi.create(instanceName, imageId, flavorId, getServerOptions(instance));
-            String instanceId = createdServer.getId();
-            instance.setRealId(instanceId);
+            String realId = createdServer.getId();
+            instance.setRealId(realId);
+            String instanceId = idGenerator.getInstanceId(cloud, realId);
+            instance.setId(instanceId);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
         } catch (IOException e) {

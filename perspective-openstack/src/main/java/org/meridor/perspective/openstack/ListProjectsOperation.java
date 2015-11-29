@@ -86,10 +86,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private Project createProject(Cloud cloud, String region) {
         String projectId = idGenerator.getProjectId(cloud, region);
-        String parentId = idGenerator.getProjectId(cloud);
         Project project = new Project();
         project.setId(projectId);
-        project.setParentId(parentId);
         project.setName(getProjectName(cloud, region));
         project.setTimestamp(ZonedDateTime.now());
 

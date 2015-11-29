@@ -24,7 +24,7 @@ public class ModifyCommands extends BaseCommands {
     public void rebootInstances(
             @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String names,
             @CliOption(key = "cloud", help = "Cloud types") String cloud,
-            @CliOption(key = "hard", help = "Whether to hard reboot instance") boolean hard
+            @CliOption(key = "hard", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Whether to hard reboot instance") boolean hard
     ) {
         ModifyInstancesQuery modifyInstancesQuery = queryProvider.get(ModifyInstancesQuery.class)
                 .withNames(names)

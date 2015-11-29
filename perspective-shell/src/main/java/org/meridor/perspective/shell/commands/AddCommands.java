@@ -73,17 +73,16 @@ public class AddCommands extends BaseCommands {
     
     @CliCommand(value = "add images", help = "Add one or more images to project")
     public void addImage(
-            @CliOption(key = "instances", help = "Comma separeted instance names or patterns to match against instance name") String instanceNames,
+            @CliOption(key = "instances", help = "Comma separated instance names or patterns to match against instance name") String instanceNames,
             @CliOption(key = "name", help = "Image name") String imageName
     ) {
-        //TODO: implement adding image from file
         if (instanceNames != null) {
             AddImagesQuery addImagesQuery = queryProvider.get(AddImagesQuery.class).withInstanceNames(instanceNames).withName(imageName);
             validateConfirmExecuteShowStatus(
                     addImagesQuery,
                     images -> String.format("Going to add %d images.", images.size()),
-                    images -> new String[]{"Name", "Cloud", "State", "Last modified"},
-                    images -> entityFormatter.formatImages(images),
+                    images -> new String[]{"Name", "Project"},
+                    images -> entityFormatter.formatNewImages(images),
                     imagesRepository::addImages
             );
         } else if (addImagesWizard.runSteps()) {

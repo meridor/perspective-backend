@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,7 +66,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         String projectId = idGenerator.getProjectId(cloud);
         image.setId(imageId);
         image.setRealId(dockerImageInfo.id());
-        image.setProjectId(projectId);
+        image.setProjectIds(Collections.singletonList(projectId));
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.AUTHOR, dockerImageInfo.author());
         metadata.put(MetadataKey.ARCHITECTURE, dockerImageInfo.architecture());

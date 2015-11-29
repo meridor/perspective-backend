@@ -44,7 +44,7 @@ public class ImagesRepositoryImpl implements ImagesRepository {
         List<Image> images = deleteImagesQuery.getPayload();
         GenericEntity<List<Image>> data = new GenericEntity<List<Image>>(images) {
         };
-        apiProvider.getInstancesApi().delete().postXmlAs(data, String.class);
+        apiProvider.getImagesApi().delete().postXmlAs(data, String.class);
         return Collections.emptySet();
     }
 

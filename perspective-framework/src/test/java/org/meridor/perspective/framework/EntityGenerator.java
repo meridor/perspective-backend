@@ -3,6 +3,8 @@ package org.meridor.perspective.framework;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 
+import java.util.Collections;
+
 import static org.meridor.perspective.events.EventFactory.now;
 
 public class EntityGenerator {
@@ -45,7 +47,7 @@ public class EntityGenerator {
         Image image = new Image();
         image.setId("test-image");
         image.setRealId("test-image");
-        image.setProjectId(getProject().getId());
+        image.setProjectIds(Collections.singletonList(getProject().getId()));
         image.setName("test-image");
         image.setState(ImageState.SAVED);
         image.setCreated(now().minusDays(2));

@@ -6,13 +6,13 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
@@ -24,7 +24,10 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     
     @Autowired
     private OpenstackApiProvider apiProvider;
-    
+
+    @Autowired
+    private IdGenerator idGenerator;
+
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
@@ -32,11 +35,13 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
             String region = image.getMetadata().get(MetadataKey.REGION);
             ServerApi serverApi = novaApi.getServerApi(region);
             String instanceId = image.getMetadata().get(MetadataKey.INSTANCE_ID);
-            String imageId = serverApi.createImageFromServer(image.getName(), instanceId);
-            image.setRealId(imageId);
+            String realId = serverApi.createImageFromServer(image.getName(), instanceId);
+            image.setRealId(realId);
+            String imageId = idGenerator.getImageId(cloud, realId);
+            image.setId(imageId);
             LOG.debug("Added image {} ({})", image.getName(), image.getId());
             return image;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to add image " + image.getName(), e);
             return null;
         }

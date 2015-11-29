@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoField.*;
@@ -69,10 +66,14 @@ public class AddImagesQuery implements Query<List<Image>> {
         image.setName(finalImageName);
         image.setCloudId(instance.getCloudId());
         image.setCloudType(instance.getCloudType());
-        image.setProjectId(instance.getProjectId());
+        List<String> projectIds = Collections.singletonList(instance.getProjectId());
+        image.setProjectIds(projectIds);
         image.setCloudId(instance.getCloudId());
         image.setCloudType(instance.getCloudType());
         MetadataMap metadataMap = new MetadataMap();
+        if (instance.getMetadata() != null && instance.getMetadata().containsKey(MetadataKey.REGION)) {
+            metadataMap.put(MetadataKey.REGION, instance.getMetadata().get(MetadataKey.REGION));
+        }
         metadataMap.put(MetadataKey.INSTANCE_ID, instance.getRealId());
         image.setMetadata(metadataMap);
         return image;

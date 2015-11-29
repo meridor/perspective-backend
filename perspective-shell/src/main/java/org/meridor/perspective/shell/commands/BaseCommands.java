@@ -95,6 +95,10 @@ public abstract class BaseCommands implements CommandMarker {
             String confirmationMessage = confirmationMessageProvider.apply(payload);
             String[] columns = confirmationColumnsProvider.apply(payload);
             List<String[]> rows = confirmationRowsProvider.apply(payload);
+            if (rows.size() == 0) {
+                error("Nothing selected for this operation. Exiting.");
+                return;
+            }
             ok(confirmationMessage);
             tableOrNothing(columns, rows);
             if (confirmOperation()) {

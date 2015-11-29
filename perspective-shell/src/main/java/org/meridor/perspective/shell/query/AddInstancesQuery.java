@@ -179,6 +179,11 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                     metadataMap.put(metadataKey, metadataValue);
                 }
         );
+        
+        if (project.getMetadata() != null && project.getMetadata().containsKey(MetadataKey.REGION)) {
+            metadataMap.put(MetadataKey.REGION, project.getMetadata().get(MetadataKey.REGION));
+        }
+        
         instance.setMetadata(metadataMap);
 
         return instance;
