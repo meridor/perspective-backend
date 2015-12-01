@@ -7,7 +7,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Worker {
 
-    private static Logger LOG = LoggerFactory.getLogger(Worker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     public static void main(String[] args) {
         LOG.info("Starting worker process");
