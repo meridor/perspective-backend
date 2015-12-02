@@ -40,6 +40,7 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
     @Filter(CLOUDS)
     private Set<String> clouds;
 
+    @Filter(PROJECTS)
     private String projects;
 
     @Autowired
