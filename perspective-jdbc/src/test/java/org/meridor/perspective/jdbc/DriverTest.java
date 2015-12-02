@@ -1,6 +1,7 @@
 package org.meridor.perspective.jdbc;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.meridor.perspective.config.CloudType;
 
@@ -19,6 +20,7 @@ public class DriverTest {
     }
     
     @Test
+    @Ignore("not implemented yet")
     public void testEndToEndPreparedStatement() throws SQLException {
         try (
                 Connection connection = DriverManager.getConnection(CONNECTION_URL);
