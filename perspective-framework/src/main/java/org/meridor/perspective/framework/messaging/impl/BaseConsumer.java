@@ -27,6 +27,12 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
 
     @Value("${perspective.messaging.parallel.consumers}")
     private int parallelConsumers;
+    
+    @Value("${perspective.messaging.polling.delay:1000}")
+    private int pollingDelay;
+    
+    @Value("${perspective.messaging.tolerable.queue.size:1000}")
+    private int tolerableQueueSize;
 
     @Autowired
     private Storage storage;
@@ -50,9 +56,13 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
                     }
                     String storageKey = getStorageKey();
                     BlockingQueue<Object> queue = storage.getQueue(storageKey);
-                    Object item = queue.poll(1000, TimeUnit.MILLISECONDS);
+                    int queueSize = queue.size();
+                    Object item = queue.poll(pollingDelay, TimeUnit.MILLISECONDS);
                     if (item != null) {
                         if (item instanceof Message) {
+                            if (queueSize > tolerableQueueSize) {
+                                LOG.warn("Messages queue size = {} exceeds tolerable size = {}. This can be a signal to increase total number of workers.", queueSize, tolerableQueueSize);
+                            }
                             Message message = (Message) item;
                             LOG.trace("Consumed message {}", message.getId());
                             dispatcher.dispatch(message);
