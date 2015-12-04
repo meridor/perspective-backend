@@ -1,5 +1,6 @@
 package org.meridor.perspective.jdbc;
 
+import org.meridor.perspective.jdbc.impl.DataRow;
 import org.meridor.perspective.jdbc.impl.ResultSetMetadataImpl;
 
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.*;
 public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     
     private final Map<String, Integer> columnIndexByLabel;
-    private final List<Map<Integer, Object>> dataByColumnIndex;
+    private final List<DataRow> dataByColumnIndex;
     private final Statement statement;
     
     private boolean isClosed = false;
@@ -26,13 +27,13 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
         return new PerspectiveResultSet();
     }
 
-    public PerspectiveResultSet(Statement statement, Map<String, Integer> columnIndexByLabel, List<Map<Integer, Object>> dataByColumnIndex) {
+    public PerspectiveResultSet(Statement statement, Map<String, Integer> columnIndexByLabel, List<DataRow> dataByColumnIndex) {
         this.statement = statement;
         this.columnIndexByLabel = columnIndexByLabel;
         this.dataByColumnIndex = dataByColumnIndex;
     }
 
-    public List<Map<Integer, Object>> getData() {
+    public List<DataRow> getData() {
         return dataByColumnIndex;
     }
     
@@ -268,14 +269,14 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
         return getRowColumn(columnIndex);
     }
     
-    private Map<Integer, Object> getCurrentRow() throws SQLException {
+    private DataRow getCurrentRow() throws SQLException {
         assertNotClosed();
         assertOnRow();
         return dataByColumnIndex.get(position);
     }
     
     private Object getRowColumn(int columnIndex) throws SQLException {
-        Map<Integer, Object> row = getCurrentRow();
+        DataRow row = getCurrentRow();
         if (!row.containsKey(columnIndex)) {
             throw new SQLException(String.format("Specified column %d does not exist", columnIndex));
         }
@@ -283,7 +284,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     }
     
     private void updateRowColumn(int columnIndex, Object value) throws SQLException {
-        Map<Integer, Object> row = getCurrentRow();
+        DataRow row = getCurrentRow();
         if (!row.containsKey(columnIndex)) {
             throw new SQLException(String.format("Specified column %d does not exist", columnIndex));
         }

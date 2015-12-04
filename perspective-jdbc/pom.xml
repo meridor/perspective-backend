@@ -11,6 +11,9 @@
 
     <artifactId>perspective-jdbc</artifactId>
     
+    <name>Perspective JDBC Driver</name>
+    <description>JDBC driver for Perspective API to use it as regular database</description>
+    
     <dependencies>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
