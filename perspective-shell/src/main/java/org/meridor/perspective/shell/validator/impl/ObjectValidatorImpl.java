@@ -31,58 +31,66 @@ public class ObjectValidatorImpl implements ObjectValidator {
     @Override
     public Set<String> validate(Object object) {
         Set<String> errors = new HashSet<>();
-        getValidators().forEach(v -> Arrays.stream(object.getClass().getDeclaredFields())
-                .filter(f -> f.isAnnotationPresent(v.getAnnotationClass()))
+
+        Arrays.stream(object.getClass().getDeclaredFields())
                 .forEach(f -> {
-                    Set<String> fieldErrors = validateField(v, object, f);
-                    errors.addAll(fieldErrors);
-                }));
+                        f.setAccessible(true);
+                        Object value = getValueFromFieldOrFilters(object, f, errors);
+                        getValidators().stream()
+                            .filter(v -> f.isAnnotationPresent(v.getAnnotationClass()))
+                            .forEach(v -> {
+                                Set<String> fieldErrors = validateField(v, object, value, f);
+                                errors.addAll(fieldErrors);
+                            });
+                    }
+                );
+        
         return errors;
     }
     
-    private Set<String> validateField(Validator v, Object object, java.lang.reflect.Field f) {
+    private Set<String> validateField(Validator v, Object object, Object value, java.lang.reflect.Field f) {
         Set<String> errors = new HashSet<>();
         String filterName = f.getName();
         Annotation annotation = f.getAnnotation(v.getAnnotationClass());
-        try {
-            Object value = getValue(object, f);
-            if (value != null && isSet(value.getClass())) {
-                Set<?> set = Set.class.cast(value);
-                set.stream().forEach(val -> {
-                    if (!v.validate(object, annotation, val)) {
-                        errors.add(v.getMessage(annotation, filterName, value));
-                    }
-                });
-            } else {
-                if (!v.validate(object, annotation, value)) {
+        if (value != null && isSet(value.getClass())) {
+            Set<?> set = Set.class.cast(value);
+            set.stream().forEach(val -> {
+                if (!v.validate(object, annotation, val)) {
                     errors.add(v.getMessage(annotation, filterName, value));
+                }
+            });
+        } else {
+            if (!v.validate(object, annotation, value)) {
+                errors.add(v.getMessage(annotation, filterName, value));
+            }
+        }
+        return errors;
+    }
+    
+    private Object getValueFromFieldOrFilters(Object object, java.lang.reflect.Field f, Set<String> errors) {
+        Object value = null;
+        try {
+            value = f.get(object);
+            if (value == null && f.isAnnotationPresent(Filter.class)) {
+                Field field = f.getAnnotation(Filter.class).value();
+                if (filtersAware.hasFilter(field)) {
+                    Set<String> filterValues = filtersAware.getFilter(field);
+                    if (isSet(f.getType())) {
+                        value = filterValues;
+                    } else if (filterValues.size() > 0) {
+                        value = filterValues.iterator().next();
+                    }
+                    if (value != null) {
+                        f.set(object, value);
+                    }
                 }
             }
         } catch (IllegalAccessException e) {
             errors.add(String.format(
                     "Failed to read field \"%s\" value",
-                    filterName
+                    f.getName()
             ));
-        }
-        return errors;
-    }
-    
-    private Object getValue(Object object, java.lang.reflect.Field f) throws IllegalAccessException {
-        f.setAccessible(true);
-        Object value = f.get(object);
-        if (value == null && f.isAnnotationPresent(Filter.class)) {
-            Field field = f.getAnnotation(Filter.class).value();
-            if (filtersAware.hasFilter(field)) {
-                Set<String> filterValues = filtersAware.getFilter(field);
-                if (isSet(f.getType())) {
-                    value = filterValues;
-                } else if (filterValues.size() > 0) {
-                    value = filterValues.iterator().next();
-                }
-                if (value != null) {
-                    f.set(object, value);
-                }
-            }
+
         }
         return value;
     }

@@ -16,8 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -45,6 +44,16 @@ public class ObjectValidatorImplTest {
         ObjectToValidateWithFilter validObjectWithFilter = new ObjectToValidateWithFilter();
         assertThat(objectValidator.validate(validObjectWithFilter), is(empty()));
     }
+    
+    @Test
+    public void testFilterButNoValidator() throws Exception {
+        ObjectWithFilterOnly validObjectWithFilterOnly = new ObjectWithFilterOnly();
+        java.lang.reflect.Field fieldWithFilter = validObjectWithFilterOnly.getClass()
+                .getDeclaredField("fieldWithFilter");
+        fieldWithFilter.setAccessible(true);
+        assertThat(objectValidator.validate(validObjectWithFilterOnly), is(empty()));
+        assertThat(fieldWithFilter.get(validObjectWithFilterOnly), notNullValue());
+    }
 
     @Test
     public void testObjectWithSetField() throws Exception {
@@ -67,7 +76,14 @@ public class ObjectValidatorImplTest {
         
         @Required
         @Filter(Field.INSTANCE_NAMES)
-        private String requiredField;
+        private String requiredField; //Injected from TestRepository class
+        
+    }
+    
+    private static class ObjectWithFilterOnly {
+        
+        @Filter(Field.INSTANCE_NAMES)
+        private String fieldWithFilter; //No validation annotation here but value should be assigned
         
     }
     
