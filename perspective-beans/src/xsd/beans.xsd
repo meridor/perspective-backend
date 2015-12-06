@@ -258,7 +258,8 @@
     <xsd:simpleType name="destinationName">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="undefined"/>
-            <xsd:enumeration value="tasks"/>
+            <xsd:enumeration value="read_tasks"/>
+            <xsd:enumeration value="write_tasks"/>
         </xsd:restriction>
     </xsd:simpleType>
 

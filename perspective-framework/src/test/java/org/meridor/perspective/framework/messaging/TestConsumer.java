@@ -12,5 +12,9 @@ public class TestConsumer extends BaseConsumer {
     protected String getStorageKey() {
         return STORAGE_KEY;
     }
-    
+
+    @Override
+    protected int getParallelConsumers() {
+        return 5;
+    }
 }

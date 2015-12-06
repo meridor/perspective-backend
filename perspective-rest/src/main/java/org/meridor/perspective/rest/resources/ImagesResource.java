@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.meridor.perspective.beans.DestinationName.TASKS;
+import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 import static org.meridor.perspective.events.EventFactory.*;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 import static org.meridor.perspective.rest.resources.ResponseUtils.clientError;
@@ -36,7 +36,7 @@ public class ImagesResource {
     @Autowired
     private ImagesAware imagesAware;
 
-    @Destination(TASKS)
+    @Destination(WRITE_TASKS)
     private Producer producer;
 
     @GET

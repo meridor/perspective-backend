@@ -23,7 +23,6 @@
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
         <property name="properties">
             <props>
-                <prop key="perspective.messaging.parallel.consumers">5</prop>
                 <prop key="perspective.messaging.shutdown.timeout">1000</prop>
             </props>
         </property>

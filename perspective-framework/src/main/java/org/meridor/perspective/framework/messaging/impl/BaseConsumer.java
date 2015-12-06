@@ -25,9 +25,6 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     @Value("${perspective.messaging.shutdown.timeout}")
     private int shutdownTimeout;
 
-    @Value("${perspective.messaging.parallel.consumers}")
-    private int parallelConsumers;
-    
     @Value("${perspective.messaging.polling.delay:1000}")
     private int pollingDelay;
     
@@ -45,33 +42,35 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     private volatile boolean canExecute = true;
 
     protected abstract String getStorageKey();
+    
+    protected abstract int getParallelConsumers();
 
     private Runnable getRunnable() {
         return () -> {
             while (canExecute) {
+                String storageKey = getStorageKey();
                 try {
                     if (!storage.isAvailable()) {
-                        LOG.debug("Stopping consumer thread {} as storage is not available", Thread.currentThread());
+                        LOG.debug("Stopping consuming from queue = {} as storage is not available", storageKey);
                         return;
                     }
-                    String storageKey = getStorageKey();
                     BlockingQueue<Object> queue = storage.getQueue(storageKey);
                     int queueSize = queue.size();
                     Object item = queue.poll(pollingDelay, TimeUnit.MILLISECONDS);
                     if (item != null) {
                         if (item instanceof Message) {
                             if (queueSize > tolerableQueueSize) {
-                                LOG.warn("Messages queue size = {} exceeds tolerable size = {}. This can be a signal to increase total number of workers.", queueSize, tolerableQueueSize);
+                                LOG.warn("Messages queue {} size = {} exceeds tolerable size = {}. This can be a signal to increase total number of workers.", storageKey, queueSize, tolerableQueueSize);
                             }
                             Message message = (Message) item;
-                            LOG.trace("Consumed message {}", message.getId());
+                            LOG.trace("Consumed message = {} from queue = {}", message.getId(), storageKey);
                             dispatcher.dispatch(message);
                         } else {
                             LOG.warn("Skipping {} as it is not a message", item);
                         }
                     }
                 } catch (Exception e) {
-                    LOG.error("Failed to consume message from queue", e);
+                    LOG.error(String.format("Failed to consume message from queue %s", storageKey), e);
                 }
             }
         };
@@ -81,7 +80,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     public void destroy() throws InterruptedException {
         canExecute = false;
         if (executorService != null) {
-            LOG.debug("Shutting down consuming threads");
+            LOG.debug("Shutting down consuming from queue {}", getStorageKey());
             executorService.shutdown();
             executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
         }
@@ -89,7 +88,8 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        LOG.debug("Will use {} consuming threads", parallelConsumers);
+        final int parallelConsumers = getParallelConsumers();
+        LOG.debug("Will use {} parallel consumers for queue {}", parallelConsumers, getStorageKey());
         executorService = Executors.newFixedThreadPool(parallelConsumers);
         for (int threadNumber = 0; threadNumber <= parallelConsumers - 1; threadNumber++) {
             Runnable runnable = getRunnable();

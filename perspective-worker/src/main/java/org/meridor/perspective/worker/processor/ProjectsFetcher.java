@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
-import static org.meridor.perspective.beans.DestinationName.TASKS;
+import static org.meridor.perspective.beans.DestinationName.READ_TASKS;
 import static org.meridor.perspective.events.EventFactory.projectEvent;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
@@ -29,7 +29,7 @@ public class ProjectsFetcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsFetcher.class);
 
-    @Destination(TASKS)
+    @Destination(READ_TASKS)
     private Producer producer;
 
     @Autowired

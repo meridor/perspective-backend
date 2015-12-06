@@ -16,7 +16,7 @@ public class ProduceBeanPostProcessorTest {
     
     private Producer simpleProducer;
     
-    @Destination(DestinationName.TASKS)
+    @Destination(DestinationName.READ_TASKS)
     private Producer producerWithDestination;
     
     @Test
@@ -26,7 +26,7 @@ public class ProduceBeanPostProcessorTest {
     
     @Test
     public void testProducerWithDestination() {
-        doTest(producerWithDestination, DestinationName.TASKS.value());
+        doTest(producerWithDestination, DestinationName.READ_TASKS.value());
     }
     
     private void doTest(Producer producerField, String correctQueueName) {
