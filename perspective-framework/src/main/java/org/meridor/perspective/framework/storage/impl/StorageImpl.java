@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+import java.util.function.Supplier;
 
 import static org.meridor.perspective.framework.storage.impl.StorageKey.*;
 
@@ -50,6 +52,28 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public Lock getLock(String name) {
         return hazelcastInstance.getLock(name);
+    }
+
+    @Override
+    public <T> T executeSynchronized(String lockName, long timeout, Supplier<T> action) {
+        LOG.trace("Trying to obtain lock {}", lockName);
+        Lock lock = getLock(lockName);
+        try {
+            if (lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+                try {
+                    return action.get();
+                } finally {
+                    LOG.trace("Releasing the lock {}", lockName);
+                    lock.unlock();
+                }
+            } else {
+                LOG.trace("Failed to obtain lock {}. Will do nothing.", lockName);
+                return null;
+            }
+        } catch (InterruptedException e) {
+            LOG.trace("Lock {} thread interrupted", lock);
+            return null;
+        }
     }
 
     private <T> IMap<String, T> getMap(String name) {

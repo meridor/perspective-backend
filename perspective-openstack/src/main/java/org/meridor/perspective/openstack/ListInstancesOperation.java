@@ -32,7 +32,7 @@ import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
 @Component
 public class ListInstancesOperation implements SupplyingOperation<Set<Instance>> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
 
     @Autowired
     private OpenstackApiProvider apiProvider;

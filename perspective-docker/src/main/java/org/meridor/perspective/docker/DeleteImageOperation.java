@@ -17,7 +17,7 @@ import static org.meridor.perspective.config.OperationType.DELETE_IMAGE;
 @Component
 public class DeleteImageOperation implements ConsumingOperation<Image> {
 
-    private static Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
 
     @Autowired
     private DockerApiProvider apiProvider;

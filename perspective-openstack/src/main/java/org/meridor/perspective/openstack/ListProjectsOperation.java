@@ -34,7 +34,7 @@ import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Autowired
     private OpenstackApiProvider apiProvider;

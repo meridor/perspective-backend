@@ -28,7 +28,7 @@ import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
 @Component
 public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
     private IdGenerator idGenerator;

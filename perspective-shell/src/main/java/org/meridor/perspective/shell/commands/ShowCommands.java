@@ -145,7 +145,7 @@ public class ShowCommands extends BaseCommands {
                 .withCloudNames(cloud);
         validateExecuteShowResult(
                 showImagesQuery,
-                new String[]{"Name", "Cloud", "State", "Last modified"},
+                new String[]{"Name", "Projects", "State", "Last modified"},
                 q -> {
                     List<Image> images = imagesRepository.showImages(q);
                     return entityFormatter.formatImages(images);

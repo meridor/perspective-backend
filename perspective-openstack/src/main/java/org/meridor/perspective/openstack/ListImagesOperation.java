@@ -10,6 +10,7 @@ import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.Storage;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
 @Component
 public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
-    private static Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
     @Autowired
     private IdGenerator idGenerator;
@@ -38,6 +39,9 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     
     @Autowired
     private ImagesAware imagesAware;
+    
+    @Autowired
+    private Storage storage;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
@@ -74,13 +78,15 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private Image createOrModifyImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
         String imageId = idGenerator.getImageId(cloud, openstackImage.getId());
         String projectId = idGenerator.getProjectId(cloud, region);
-        Optional<Image> imageCandidate = imagesAware.getImage(imageId);
-        if (!imageCandidate.isPresent()) {
-            Image image = createImage(openstackImage, imageId, projectId);
-            return updateImages(image, openstackImage, region, projectId);
-        } else {
-            return updateImages(imageCandidate.get(), openstackImage, region, projectId);
-        }
+        return storage.executeSynchronized(imageId, Storage.DEFAULT_LOCK_WAIT_TIMEOUT, () -> {
+            Optional<Image> imageCandidate = imagesAware.getImage(imageId);
+            if (!imageCandidate.isPresent()) {
+                Image image = createImage(openstackImage, imageId, projectId);
+                return updateImage(image, openstackImage, region, projectId);
+            } else {
+                return updateImage(imageCandidate.get(), openstackImage, region, projectId);
+            }
+        });
     }
     
     private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String imageId, String projectId) {
@@ -92,7 +98,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return image;
     } 
     
-    private Image updateImages(Image image, org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String region, String projectId) {
+    private Image updateImage(Image image, org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String region, String projectId) {
         HashSet<String> projectIds = new HashSet<>(image.getProjectIds());
         projectIds.add(projectId);
         image.setProjectIds(new ArrayList<>(projectIds));

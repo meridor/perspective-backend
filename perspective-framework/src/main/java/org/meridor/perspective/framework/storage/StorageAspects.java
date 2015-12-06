@@ -14,8 +14,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 @Component
 @Aspect
@@ -46,20 +44,15 @@ public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
             lockName = joinPoint.getSignature().getDeclaringType().getCanonicalName();
         }
         long timeout = annotation.timeout();
-
-        LOG.trace("Trying to obtain lock {}", lockName);
-        Lock lock = storage.getLock(lockName);
-        if (lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+        
+        return storage.executeSynchronized(lockName, timeout, () -> {
             try {
                 return joinPoint.proceed();
-            } finally {
-                LOG.trace("Releasing the lock {}", lockName);
-                lock.unlock();
+            } catch (Throwable throwable) {
+                LOG.error(String.format("Exception in locked method = %s", method.getName()), throwable);
+                return null;
             }
-        } else {
-            LOG.trace("Failed to obtain lock {}. Will do nothing.", lockName);
-            return null;
-        }
+        });
     }
 
     @Override

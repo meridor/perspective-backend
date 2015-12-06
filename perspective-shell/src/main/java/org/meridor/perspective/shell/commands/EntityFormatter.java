@@ -86,9 +86,15 @@ public class EntityFormatter {
 
 
     public List<String[]> formatImages(List<Image> images) {
+        Map<String, Project> projectsMap = getProjects();
+        
         return images.stream().map(i -> new String[]{
                 i.getName(),
-                i.getCloudType().value(),
+                enumerateValues(
+                        i.getProjectIds().stream()
+                                .map(id -> projectsMap.get(id).getName())
+                                .collect(Collectors.toList())
+                ),
                 (i.getState() != null) ? i.getState().value() : DASH,
                 (i.getTimestamp() != null) ? humanizedDuration(i.getTimestamp()) : DASH
         }).collect(Collectors.toList());

@@ -12,8 +12,10 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 @Component
 public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, Storage {
@@ -113,5 +115,23 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     public Lock getLock(String name) {
         return locks.computeIfAbsent(name, s -> new ReentrantLock());
+    }
+
+    @Override
+    public <T> T executeSynchronized(String lockName, long timeout, Supplier<T> action) {
+        Lock lock = getLock(lockName);
+        try {
+            if (lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+                try {
+                    return action.get();
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                return null;
+            }
+        } catch (InterruptedException e) {
+            return null;
+        }
     }
 }
