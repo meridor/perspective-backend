@@ -44,6 +44,7 @@
         <module>perspective-shell</module>
         <module>perspective-java-client</module>
         <module>perspective-jdbc</module>
+        <module>perspective-sql</module>
     </modules>
 
     <dependencyManagement>
