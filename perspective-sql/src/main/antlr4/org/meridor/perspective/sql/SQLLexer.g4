@@ -1,383 +1,315 @@
 
 lexer grammar SQLLexer;
-@ header { 
- }
 
-SELECT
-   : 'select'
+// Basic types
+NEWLINE
+   : '\r'? '\n' -> skip
    ;
 
-
-FROM
-   : 'from'
+WS
+   : ( ' ' | '\t' | '\n' | '\r' )+ -> skip
+   ;
+   
+ID
+   : ( 'a' .. 'z' | 'A' .. 'Z' | '_' )+
    ;
 
-
-WHERE
-   : 'where'
+INT
+   : '0' .. '9'+
    ;
 
-
-AND
-   : 'and' | '&&'
+STRING
+   : '\'' ( ~'\'' )* '\''
    ;
-
-
-OR
-   : 'or' | '||'
-   ;
-
-
-XOR
-   : 'xor'
-   ;
-
-
-IS
-   : 'is'
-   ;
-
 
 NULL
    : 'null'
    ;
 
+TRUE
+   : 'true'
+   ;
+
+FALSE
+   : 'false'
+   ;
+   
+// Query keywords
+SELECT
+   : 'select'
+   ;
+
+FROM
+   : 'from'
+   ;
+   
+AS
+   : 'as'
+   ;
+
+WHERE
+   : 'where'
+   ;
+   
+SHOW
+   : 'show'
+   ;
+   
+SHOW_TABLES
+   : SHOW 'tables'
+   ;
+
+// Boolean operators
+AND
+   : 'and' | '&&'
+   ;
+
+OR
+   : 'or' | '||'
+   ;
+
+XOR
+   : 'xor'
+   ;
+
+IS
+   : 'is'
+   ;
 
 LIKE
    : 'like'
    ;
 
-
 IN
    : 'in'
    ;
-
 
 EXISTS
    : 'exists'
    ;
 
-
+BETWEEN
+   : 'between'
+   ;
+   
 ALL
    : 'all'
    ;
-
 
 ANY
    : 'any'
    ;
 
-
-TRUE
-   : 'true'
+NOT
+   : 'not'
    ;
-
-
-FALSE
-   : 'false'
-   ;
-
-
-DIVIDE
-   : 'div' | '/'
-   ;
-
-
-MOD
-   : 'mod' | '%'
-   ;
-
-
-BETWEEN
-   : 'between'
-   ;
-
-
-REGEXP
-   : 'regexp'
-   ;
-
-
-PLUS
-   : '+'
-   ;
-
-
-MINUS
-   : '-'
-   ;
-
-
-NEGATION
-   : '~'
-   ;
-
-
-VERTBAR
-   : '|'
-   ;
-
-
-BITAND
-   : '&'
-   ;
-
-
-POWER_OP
-   : '^'
-   ;
-
-
-BINARY
-   : 'binary'
-   ;
-
-
-SHIFT_LEFT
-   : '<<'
-   ;
-
-
-SHIFT_RIGHT
-   : '>>'
-   ;
-
-
-ESCAPE
-   : 'escape'
-   ;
-
-
-ASTERISK
-   : '*'
-   ;
-
-
-RPAREN
-   : ')'
-   ;
-
-
-LPAREN
-   : '('
-   ;
-
-
-RBRACK
-   : ']'
-   ;
-
-
-LBRACK
-   : '['
-   ;
-
-
-COLON
-   : ':'
-   ;
-
-
-ALL_FIELDS
-   : '.*'
-   ;
-
-
+   
+// Relational operators
 EQ
    : '='
    ;
 
-
-LTH
+LT
    : '<'
    ;
 
-
-GTH
+GT
    : '>'
    ;
-
 
 NOT_EQ
    : '!='
    ;
 
 
-NOT
-   : 'not'
-   ;
-
-
-LET
+LTE
    : '<='
    ;
 
-
-GET
+GTE
    : '>='
    ;
 
-
-SEMI
-   : ';'
+// Arithmetic operators
+DIVIDE
+   : 'div' | '/'
    ;
 
+MOD
+   : 'mod' | '%'
+   ;
+
+PLUS
+   : '+'
+   ;
+
+MINUS
+   : '-'
+   ;
+
+POWER_OP
+   : '^'
+   ;
+   
+// String operations
+REGEXP
+   : 'regexp'
+   ;
+
+// Bitwise operations
+NEGATION
+   : '~'
+   ;
+
+VERTBAR
+   : '|'
+   ;
+
+BITAND
+   : '&'
+   ;
+
+SHIFT_LEFT
+   : '<<'
+   ;
+
+SHIFT_RIGHT
+   : '>>'
+   ;
+
+// Misc keywords
+BINARY
+   : 'binary'
+   ;
+
+ESCAPE
+   : 'escape'
+   ;
+
+ASTERISK
+   : '*'
+   ;
+
+ALL_FIELDS
+   : '.*'
+   ;
+   
+USE
+  : 'use'
+  ;
+
+IGNORE
+  : 'ignore'
+  ;
+
+//Punctuation marks
+RPAREN
+   : ')'
+   ;
+
+LPAREN
+   : '('
+   ;
+
+RBRACK
+   : ']'
+   ;
+
+LBRACK
+   : '['
+   ;
+
+COLON
+   : ':'
+   ;
+
+SEMICOLON
+   : ';'
+   ;
 
 COMMA
    : ','
    ;
 
-
 DOT
    : '.'
    ;
 
-
-COLLATE
-   : 'collate'
-   ;
-
-
+// Join keywords
 INNER
    : 'inner'
    ;
-
 
 OUTER
    : 'outer'
    ;
 
-
 JOIN
    : 'join'
    ;
-
 
 CROSS
    : 'cross'
    ;
 
-
 USING
    : 'using'
    ;
 
-
-INDEX
-   : 'index'
-   ;
-
-
-KEY
-   : 'key'
-   ;
-
-
+// Or
 ORDER
    : 'order'
    ;
-
+   
+ASC
+   : 'asc'
+   ;
+   
+DESC
+   : 'desc'
+   ;
 
 GROUP
    : 'group'
    ;
 
-
+HAVING
+   : 'having'
+   ;
+   
+LIMIT
+   : 'limit'
+   ;
+   
+OFFSET
+   : 'offset'
+   ;
+   
 BY
    : 'by'
    ;
-
-
-FOR
-   : 'for'
-   ;
-
-
-USE
-   : 'use'
-   ;
-
-
-IGNORE
-   : 'ignore'
-   ;
-
-
-PARTITION
-   : 'partition'
-   ;
-
 
 STRAIGHT_JOIN
    : 'straight_join'
    ;
 
-
 NATURAL
    : 'natural'
    ;
-
 
 LEFT
    : 'left'
    ;
 
-
 RIGHT
    : 'right'
    ;
-
-
-OJ
-   : 'oj'
-   ;
-
 
 ON
    : 'on'
    ;
 
-
-ID
-   : ( 'a' .. 'z' | 'A' .. 'Z' | '_' )+
-   ;
-
-
-INT
-   : '0' .. '9'+
-   ;
-
-
-NEWLINE
-   : '\r'? '\n' -> skip
-   ;
-
-
-WS
-   : ( ' ' | '\t' | '\n' | '\r' )+ -> skip
-   ;
-
-
-USER_VAR
-   : '@' ( USER_VAR_SUBFIX1 | USER_VAR_SUBFIX2 | USER_VAR_SUBFIX3 | USER_VAR_SUBFIX4 )
-   ;
-
-
-fragment USER_VAR_SUBFIX1
-   : ( '`' ( ~ '`' )+ '`' )
-   ;
-
-
-fragment USER_VAR_SUBFIX2
-   : ( '\'' ( ~ '\'' )+ '\'' )
-   ;
-
-
-fragment USER_VAR_SUBFIX3
-   : ( '\"' ( ~ '\"' )+ '\"' )
-   ;
-
-
-fragment USER_VAR_SUBFIX4
-   : ( 'A' .. 'Z' | 'a' .. 'z' | '_' | '$' | '0' .. '9' | DOT )+
+// Built-in functions
+COUNT
+   : 'count'
    ;

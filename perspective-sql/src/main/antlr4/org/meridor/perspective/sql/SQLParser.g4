@@ -4,83 +4,123 @@ parser grammar SQLParser;
 options
    { tokenVocab = SQLLexer; }
 
-stat
-   : select_clause+
+queries
+   : query+
    ;
 
-schema_name
+query
+   : select_query
+   | show_tables_query
+   ;
+
+//Entities
+project_name
    : ID
    ;
-
-select_clause
-   : SELECT column_list_clause ( FROM table_references )? ( where_clause )?
-   ;
-
+   
 table_name
    : ID
    ;
-
-table_alias
+   
+alias
    : ID
    ;
-
+   
 column_name
-   : ( ( schema_name DOT )? ID DOT )? ID ( column_name_alias )? | ( table_alias DOT )? ID | USER_VAR ( column_name_alias )?
+   : ( project_name DOT )? ID | ( alias DOT )? ID
+   ;
+   
+   
+// Select query
+select_query
+   : select_clause ( from_clause )? ( where_clause )? ( group_clause )? ( having_clause )? ( order_clause )? ( limit_clause )? ( SEMICOLON )?
    ;
 
-column_name_alias
-   : ID
+subquery
+   : LPAREN select_query RPAREN
    ;
-
-index_name
-   : ID
-   ;
-
-column_list
-   : LPAREN column_name ( COMMA column_name )* RPAREN
-   ;
-
-column_list_clause
-   : column_name ( COMMA column_name )*
+   
+select_clause
+   : SELECT select_expression
    ;
 
 from_clause
-   : FROM table_name ( COMMA table_name )*
-   ;
-
-select_key
-   : SELECT
+   : FROM table_references
    ;
 
 where_clause
-   : WHERE expression
+   : WHERE boolean_expression
+   ;
+   
+having_clause
+   : HAVING boolean_expression
    ;
 
-expression
-   : simple_expression ( expr_op simple_expression )*
+group_clause
+   : GROUP BY group_by_expression
+   ;
+
+order_clause
+   : ORDER BY columns_list
+   ;
+
+offset : INT;
+
+row_count: INT;
+
+limit_clause
+   : LIMIT ( ( offset COMMA )? row_count | row_count OFFSET offset )
+   ;
+
+alias_clause
+   : ( AS )? alias
+   ;
+
+aliased_element
+   : element ( alias_clause )?
+   ;
+   
+select_expression
+   : aliased_element ( COMMA aliased_element )*
+   ;
+   
+group_by_element
+   : column_name | function_call
+   ;
+   
+group_by_expression
+   : group_by_element ( COMMA group_by_element )*
+   ;
+   
+columns_list
+   : column_name ( COMMA column_name )*
+   ;
+
+boolean_expression
+   : simple_boolean_expression ( boolean_operation simple_boolean_expression )*
+   ;
+
+function_name
+   : COUNT
+   ;
+
+function_args
+   : element ( COMMA element )*
+   ;
+   
+function_call
+   : function_name LPAREN function_args RPAREN
    ;
 
 element
-   : USER_VAR | ID | ( '|' ID '|' ) | INT | column_name
+   : STRING | INT | column_name | function_call | subquery
    ;
 
-right_element
-   : element
+relational_operation
+   : EQ | LT | GT | NOT_EQ | LTE | GTE
    ;
 
-left_element
-   : element
-   ;
-
-target_element
-   : element
-   ;
-
-relational_op
-   : EQ | LTH | GTH | NOT_EQ | LET | GET
-   ;
-
-expr_op
+boolean_operation
    : AND | XOR | OR | NOT
    ;
 
@@ -92,8 +132,10 @@ is_or_is_not
    : IS | IS NOT
    ;
 
-simple_expression
-   : left_element relational_op right_element | target_element between_op left_element AND right_element | target_element is_or_is_not NULL
+simple_boolean_expression
+   : element relational_operation element 
+   | element between_op element AND element 
+   | element is_or_is_not NULL
    ;
 
 table_references
@@ -109,7 +151,7 @@ table_factor1
    ;
 
 table_factor2
-   : table_factor3 ( STRAIGHT_JOIN table_atom ( ON expression )? )?
+   : table_factor3 ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? )?
    ;
 
 table_factor3
@@ -121,49 +163,19 @@ table_factor4
    ;
 
 table_atom
-   : ( table_name ( partition_clause )? ( table_alias )? ( index_hint_list )? ) | ( subquery subquery_alias ) | ( LPAREN table_references RPAREN ) | ( OJ table_reference LEFT OUTER JOIN table_reference ON expression )
+   : ( table_name ( alias_clause )? ) | ( subquery alias_clause ) | ( LPAREN table_references RPAREN )
    ;
 
 join_clause
-   : ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? ) | ( STRAIGHT_JOIN table_atom ( ON expression )? ) | ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_factor4 join_condition ) | ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom )
+   : ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? ) | ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? ) | ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_factor4 join_condition ) | ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom )
    ;
 
 join_condition
-   : ( ON expression ( expr_op expression )* ) | ( USING column_list )
+   : ( ON boolean_expression ( boolean_operation boolean_expression )* ) | ( USING LPAREN columns_list RPAREN )
    ;
 
-index_hint_list
-   : index_hint ( COMMA index_hint )*
-   ;
 
-index_options
-   : ( INDEX | KEY ) ( FOR ( ( JOIN ) | ( ORDER BY ) | ( GROUP BY ) ) )?
-   ;
-
-index_hint
-   : USE index_options LPAREN ( index_list )? RPAREN | IGNORE index_options LPAREN index_list RPAREN
-   ;
-
-index_list
-   : index_name ( COMMA index_name )*
-   ;
-
-partition_clause
-   : PARTITION LPAREN partition_names RPAREN
-   ;
-
-partition_names
-   : partition_name ( COMMA partition_name )*
-   ;
-
-partition_name
-   : ID
-   ;
-
-subquery_alias
-   : ID
-   ;
-
-subquery
-   : LPAREN select_clause RPAREN
+// Show tables query
+show_tables_query
+   : SHOW_TABLES
    ;
