@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.query;
 
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.shell.validator.annotation.Filter;
+import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
-import static org.meridor.perspective.shell.validator.Field.NETWORK_NAMES;
+import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
@@ -19,10 +20,35 @@ public class ShowNetworksQuery implements Query<Predicate<Network>> {
     
     @Filter(NETWORK_NAMES)
     private Set<String> names;
-    
+
+    @SupportedCloud
+    @Filter(CLOUDS)
+    private String clouds;
+
+    @Filter(PROJECTS)
+    private String projects;
+
     public ShowNetworksQuery withNames(String name) {
         this.names = parseEnumeration(name);
         return this;
+    }
+
+    public ShowNetworksQuery withProjects(String projects) {
+        this.projects = projects;
+        return this;
+    }
+
+    public ShowNetworksQuery withClouds(String clouds) {
+        this.clouds = clouds;
+        return this;
+    }
+
+    public String getClouds() {
+        return clouds;
+    }
+
+    public String getProjects() {
+        return projects;
     }
 
     @Override

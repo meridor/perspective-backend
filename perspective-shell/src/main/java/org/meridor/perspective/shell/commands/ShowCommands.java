@@ -59,12 +59,15 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class).withNames(name);
+        ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class)
+                .withNames(name)
+                .withProjects(projectName)
+                .withClouds(cloud);
         validateExecuteShowResult(
                 showFlavorsQuery,
                 new String[]{"Name", "Project", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
-                    Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(projectName, cloud, q);
+                    Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(q);
                     return flavorsMap.keySet().stream()
                             .flatMap(p -> {
                                 List<Flavor> flavors = flavorsMap.get(p);
@@ -85,12 +88,14 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name);
+        ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name)
+                .withProjects(projectName)
+                .withClouds(cloud);
         validateExecuteShowResult(
                 showNetworksQuery,
                 new String[]{"Name", "Project", "Subnets", "State", "Is Shared"},
                 q -> {
-                    Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(projectName, cloud, q);
+                    Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(q);
                     return networksMap.keySet().stream()
                             .flatMap(p -> {
                                 List<Network> networks = networksMap.get(p);

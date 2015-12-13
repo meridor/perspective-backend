@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.repository.impl;
 import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.query.ShowFlavorsQuery;
 import org.meridor.perspective.shell.query.ShowNetworksQuery;
 import org.meridor.perspective.shell.query.ShowProjectsQuery;
@@ -25,7 +26,11 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     @Autowired
     private ApiProvider apiProvider;
     
-    @Override public List<Project> showProjects(ShowProjectsQuery query) {
+    @Autowired
+    private QueryProvider queryProvider;
+    
+    @Override 
+    public List<Project> showProjects(ShowProjectsQuery query) {
         GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
         List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
         return allProjects.stream()
@@ -36,9 +41,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                 .collect(Collectors.toList());
     }
     
-    @Override public Map<Project, List<Flavor>> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
-        List<Project> projects = showProjects(showProjectsQuery);
+    @Override 
+    public Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
+        List<Project> projects = showAllProjects(showFlavorsQuery.getProjects(), showFlavorsQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
@@ -51,9 +56,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                 ));
     }
     
-    @Override public Map<Project, List<Network>> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery) {
-        ShowProjectsQuery showProjectsQuery = new ShowProjectsQuery().withNames(projectNames).withClouds(clouds);
-        List<Project> projects = showProjects(showProjectsQuery);
+    @Override 
+    public Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery) {
+        List<Project> projects = showAllProjects(showNetworksQuery.getProjects(), showNetworksQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
@@ -65,5 +70,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                         .collect(Collectors.toList())
                 ));
     }
-
+    
+    private List<Project> showAllProjects(String projectNames, String clouds) {
+        return showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectNames).withClouds(clouds));
+    }
+    
 }

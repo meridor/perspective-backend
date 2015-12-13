@@ -56,7 +56,10 @@ public class ExistingEntityValidator implements Validator {
     
     private Collection<Flavor> getFlavorsByName(String name) {
         return projectsRepository
-                .showFlavors(projectName, null, queryProvider.get(ShowFlavorsQuery.class).withNames(name))
+                .showFlavors(
+                        queryProvider.get(ShowFlavorsQuery.class)
+                        .withNames(name)
+                        .withProjects(projectName))
                 .values()
                 .stream()
                 .flatMap(Collection::stream)
@@ -64,7 +67,11 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<Network> getNetworksByName(String name) {
-        return projectsRepository.showNetworks(projectName, null, queryProvider.get(ShowNetworksQuery.class).withNames(name))
+        return projectsRepository.showNetworks(
+                queryProvider.get(ShowNetworksQuery.class)
+                        .withNames(name)
+                        .withProjects(projectName)
+        )
                 .values()
                 .stream()
                 .flatMap(Collection::stream)

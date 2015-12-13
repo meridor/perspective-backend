@@ -14,8 +14,8 @@ public interface ProjectsRepository {
     
     List<Project> showProjects(ShowProjectsQuery query);
 
-    Map<Project, List<Flavor>> showFlavors(String projectNames, String clouds, ShowFlavorsQuery showFlavorsQuery);
+    Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery);
 
-    Map<Project, List<Network>> showNetworks(String projectNames, String clouds, ShowNetworksQuery showNetworksQuery);
+    Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery);
     
 }

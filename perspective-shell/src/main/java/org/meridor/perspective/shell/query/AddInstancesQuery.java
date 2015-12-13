@@ -145,9 +145,10 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         
         if (flavorName != null) {
             Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(
-                    project.getName(),
-                    project.getCloudType().name().toLowerCase(),
-                    queryProvider.get(ShowFlavorsQuery.class).withNames(flavorName)
+                    queryProvider.get(ShowFlavorsQuery.class)
+                        .withNames(flavorName)
+                        .withProjects(project.getName())
+                        .withClouds(project.getCloudType().name().toLowerCase())
             );
             instance.setFlavor(flavorsMap.get(project).get(0));
         }
@@ -157,9 +158,10 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         
         if (networkName != null) {
             Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(
-                    project.getName(),
-                    project.getCloudType().name().toLowerCase(),
-                    queryProvider.get(ShowNetworksQuery.class).withNames(networkName)
+                    queryProvider.get(ShowNetworksQuery.class)
+                        .withNames(networkName)
+                        .withProjects(project.getName())
+                        .withClouds(project.getCloudType().name().toLowerCase())
             );
             instance.setNetworks(networksMap.get(project));
         }
