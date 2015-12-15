@@ -34,17 +34,17 @@
     </properties>
 
     <modules>
-        <module>perspective-rest</module>
         <module>perspective-beans</module>
-        <module>perspective-openstack</module>
         <module>perspective-framework</module>
-        <module>perspective-docker</module>
-        <module>perspective-worker</module>
-        <module>perspective-storage</module>
-        <module>perspective-shell</module>
-        <module>perspective-java-client</module>
         <module>perspective-jdbc</module>
         <module>perspective-sql</module>
+        <module>perspective-storage</module>
+        <module>perspective-rest</module>
+        <module>perspective-java-client</module>
+        <module>perspective-worker</module>
+        <module>perspective-openstack</module>
+        <module>perspective-docker</module>
+        <module>perspective-shell</module>
     </modules>
 
     <dependencyManagement>

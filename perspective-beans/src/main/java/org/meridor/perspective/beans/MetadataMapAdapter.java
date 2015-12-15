@@ -3,7 +3,8 @@ package org.meridor.perspective.beans;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.Map;
 
-public class MapAdapter extends XmlAdapter<Metadata, MetadataMap> {
+public class MetadataMapAdapter extends XmlAdapter<Metadata, MetadataMap> {
+    
     @Override
     public MetadataMap unmarshal(Metadata metadata) {
         MetadataMap map = new MetadataMap();

@@ -13,6 +13,7 @@
 
     <xsd:complexType name="parameter">
         <xsd:attribute name="index" type="xsd:int"/>
+        <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="value" type="xsd:string"/>
     </xsd:complexType>
     
@@ -22,5 +23,58 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:simpleType name="queryType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="unknown"/>
+            <xsd:enumeration value="read"/>
+            <xsd:enumeration value="write"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="queryStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="success"/>
+            <xsd:enumeration value="syntax_error"/>
+            <xsd:enumeration value="missing_parameters"/>
+            <xsd:enumeration value="evaluation_error"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="queryResult">
+        <xsd:all>
+            <xsd:element name="type" type="tns:queryType"/>
+            <xsd:element name="status" type="tns:queryStatus"/>
+            <xsd:element name="count" type="xsd:int" default="0"/>
+            <xsd:element name="data" type="tns:data"/>
+            <xsd:element name="message" type="xsd:string"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="data">
+        <xsd:sequence>
+            <xsd:element name="data" type="tns:dataRow" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="dataRow">
+        <xsd:sequence>
+            <xsd:element name="entry" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="key" type="xsd:string"/>
+                        <xsd:element name="value" type="xsd:anyType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="executionResult">
+        <xsd:all>
+            <xsd:element name="count" type="xsd:int" default="0"/>
+            <xsd:element name="data" type="tns:data"/>
+        </xsd:all>
+    </xsd:complexType>
 
 </xsd:schema>
