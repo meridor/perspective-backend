@@ -9,6 +9,8 @@ import org.meridor.perspective.shell.query.ShowNetworksQuery;
 import org.meridor.perspective.shell.query.ShowProjectsQuery;
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.repository.SettingsAware;
+import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,16 +31,29 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     @Autowired
     private QueryProvider queryProvider;
     
+    @Autowired
+    private SettingsAware settingsAware;
+    
+    private final List<Project> projectsCache = new ArrayList<>();
+    
     @Override 
     public List<Project> showProjects(ShowProjectsQuery query) {
-        GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
-        List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
-        return allProjects.stream()
-                .filter(query.getPayload())
-                .sorted(
-                        (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
-                )
-                .collect(Collectors.toList());
+        if (projectsCache.isEmpty() || isProjectsCacheDisabled()) {
+            GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
+            List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
+            List<Project> projects = allProjects.stream()
+                    .filter(query.getPayload())
+                    .sorted(
+                            (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
+                    )
+                    .collect(Collectors.toList());
+            projectsCache.addAll(projects);
+        }
+        return projectsCache;
+    }
+    
+    private boolean isProjectsCacheDisabled() {
+        return settingsAware.hasSetting(Setting.DISABLE_PROJECTS_CACHE);
     }
     
     @Override 
