@@ -50,6 +50,17 @@
                     max-size-policy="USED_HEAP_SIZE"
                     eviction-percentage="70"
                     eviction-policy="LRU"/>
+            
+            <hz:map name="deleted-images"
+                    max-size="70"
+                    max-size-policy="USED_HEAP_SIZE"
+                    eviction-percentage="70"
+                    eviction-policy="LRU"/>
+            
+            <hz:map name="projects_by_id" time-to-live-seconds="${perspective.storage.ttl.projects}"/>
+            <hz:map name="instances_by_id" time-to-live-seconds="${perspective.storage.ttl.instances}"/>
+            <hz:map name="images_by_id" time-to-live-seconds="${perspective.storage.ttl.images}"/>
+            
         </hz:config>
     </hz:hazelcast>
 
