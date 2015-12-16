@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -57,7 +58,7 @@ public class ShowFlavorsQuery implements Query<Predicate<Flavor>> {
     }
 
     private Predicate<Flavor> getFlavorPredicate(Optional<Set<String>> names) {
-        return flavor -> (!names.isPresent() || names.get().contains(flavor.getName()));
+        return flavor -> (!names.isPresent() || oneOfMatches(flavor.getName(), names.get()));
     }
 
 }

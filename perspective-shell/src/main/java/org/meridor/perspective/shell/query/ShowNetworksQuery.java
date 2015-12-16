@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -57,7 +58,7 @@ public class ShowNetworksQuery implements Query<Predicate<Network>> {
     }
 
     private Predicate<Network> getNetworkPredicate(Optional<Set<String>> name) {
-        return network -> (!name.isPresent() || name.get().contains(network.getName()));
+        return network -> (!name.isPresent() || oneOfMatches(network.getName(), name.get()) );
     }
 
 }

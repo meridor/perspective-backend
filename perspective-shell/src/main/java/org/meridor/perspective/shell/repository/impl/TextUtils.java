@@ -275,6 +275,10 @@ public final class TextUtils {
         return value.contains(SPACE) ? String.format("'%s'", value) : value;
     }
     
+    public static boolean oneOfMatches(String value, Collection<String> candidates) {
+        return value != null && candidates.stream().anyMatch(value::contains);
+    } 
+    
     private TextUtils() {
         
     }

@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.CLOUDS;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -41,8 +42,8 @@ public class ShowProjectsQuery implements Query<Predicate<Project>> {
 
     private Predicate<Project> getProjectPredicate(Optional<Set<String>> projectNames, Optional<Set<String>> clouds) {
         return project ->
-                ( !projectNames.isPresent() || projectNames.get().contains(project.getName()) ) &&
-                        ( !clouds.isPresent() || clouds.get().contains(project.getCloudType().value().toLowerCase()));
+                ( !projectNames.isPresent() || oneOfMatches(project.getName(), projectNames.get()) ) &&
+                ( !clouds.isPresent() || oneOfMatches(project.getCloudType().value().toLowerCase(), clouds.get()) );
     }
 
 }

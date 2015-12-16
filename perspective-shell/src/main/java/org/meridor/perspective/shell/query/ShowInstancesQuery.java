@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -107,12 +108,12 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
             Optional<String> projects
     ) {
         return instance ->
-                ( !ids.isPresent() || ids.get().contains(instance.getId()) ) &&
-                ( !names.isPresent() || names.get().contains(instance.getName()) ) &&
-                ( !flavors.isPresent() || flavors.get().contains(instance.getFlavor().getName()) ) &&
-                ( !images.isPresent() || images.get().contains(instance.getImage().getName()) ) &&
-                ( !states.isPresent() || states.get().contains(instance.getState().value().toLowerCase()) ) &&
-                ( !clouds.isPresent() || clouds.get().contains(instance.getCloudType().value().toLowerCase())) &&
+                ( !ids.isPresent() || oneOfMatches(instance.getId(), ids.get()) ) &&
+                ( !names.isPresent() || oneOfMatches(instance.getName(), names.get()) ) &&
+                ( !flavors.isPresent() || oneOfMatches(instance.getFlavor().getName(), flavors.get()) ) &&
+                ( !images.isPresent() || oneOfMatches(instance.getImage().getName(), images.get()) ) &&
+                ( !states.isPresent() || oneOfMatches(instance.getState().value().toLowerCase(), states.get()) ) &&
+                ( !clouds.isPresent() || oneOfMatches(instance.getCloudType().value().toLowerCase(), clouds.get()) ) &&
                 ( !projects.isPresent() || projectMatches(projects.get(), instance.getProjectId()));
     }
 

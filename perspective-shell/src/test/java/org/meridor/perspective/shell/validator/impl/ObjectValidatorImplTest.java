@@ -48,17 +48,24 @@ public class ObjectValidatorImplTest {
     @Test
     public void testFilterButNoValidator() throws Exception {
         ObjectWithFilterOnly validObjectWithFilterOnly = new ObjectWithFilterOnly();
-        java.lang.reflect.Field fieldWithFilter = validObjectWithFilterOnly.getClass()
-                .getDeclaredField("fieldWithFilter");
-        fieldWithFilter.setAccessible(true);
         assertThat(objectValidator.validate(validObjectWithFilterOnly), is(empty()));
-        assertThat(fieldWithFilter.get(validObjectWithFilterOnly), notNullValue());
+        Object fieldValue = getFieldValue(validObjectWithFilterOnly, "fieldWithFilter");
+        assertThat(fieldValue, notNullValue());
+        assertThat(fieldValue, is(instanceOf(String.class)));
+        assertThat(String.valueOf(fieldValue), equalTo("one, two"));
     }
 
     @Test
     public void testObjectWithSetField() throws Exception {
         ObjectToValidateWithSet invalidObject = new ObjectToValidateWithSet();
         assertThat(objectValidator.validate(invalidObject), hasSize(1));
+    }
+    
+    private Object getFieldValue(Object instance, String fieldName) throws Exception {
+        java.lang.reflect.Field field = instance.getClass()
+                .getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(instance);
     }
     
     private static class ObjectToValidate {
@@ -76,7 +83,7 @@ public class ObjectValidatorImplTest {
         
         @Required
         @Filter(Field.INSTANCE_NAMES)
-        private String requiredField; //Injected from TestRepository class
+        private Set<String> requiredField; //Injected from TestRepository class
         
     }
     

@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.enumerateValues;
+
 @Component
 public class ObjectValidatorImpl implements ObjectValidator {
 
@@ -78,7 +80,7 @@ public class ObjectValidatorImpl implements ObjectValidator {
                     if (isSet(f.getType())) {
                         value = filterValues;
                     } else if (filterValues.size() > 0) {
-                        value = filterValues.iterator().next();
+                        value = enumerateValues(filterValues);
                     }
                     if (value != null) {
                         f.set(object, value);

@@ -170,4 +170,12 @@ public class TextUtilsTest {
         assertThat(quoteIfNeeded("two words"), equalTo("'two words'"));
     }
 
+    @Test
+    public void testOneOfMatches() throws Exception {
+        final String TEXT = "test-string";
+        assertThat(oneOfMatches(null, Collections.emptySet()), is(false));
+        assertThat(oneOfMatches(TEXT, Collections.singletonList("test-string")), is(true));
+        assertThat(oneOfMatches(TEXT, Arrays.asList("missing", "test")), is(true));
+        assertThat(oneOfMatches(TEXT, Collections.singletonList("missing")), is(false));
+    }
 }

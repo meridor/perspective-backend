@@ -1,6 +1,5 @@
 package org.meridor.perspective.sql.impl;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.meridor.perspective.sql.Parameter;
 
@@ -14,7 +13,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-@Ignore
 public class PlaceholderConfigurerTest {
 
     @Test

@@ -12,6 +12,8 @@ import java.util.*;
 public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware {
     
     public static final String TEST = "test";
+    public static final String ONE = "one";
+    public static final String TWO = "two";
     
     @Override
     public List<Image> showImages(ShowImagesQuery showImagesQuery) {
@@ -106,12 +108,12 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public Set<String> getSetting(Setting setting) {
-        return Collections.singleton(TEST);
+        return new HashSet<>(Arrays.asList(ONE, TWO));
     }
 
     @Override
     public <T> T getSettingAs(Setting setting, Class<T> cls) {
-        return cls.cast(TEST);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -122,7 +124,8 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     private static Map<String, String> getSettingsMap() {
         return new HashMap<String, String>(){
             {
-                put(TEST, TEST);
+                put(ONE, ONE);
+                put(TWO, TWO);
             }
         };
     }
@@ -144,12 +147,12 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public Set<String> getFilter(Field field) {
-        return Collections.singleton(TEST);
+        return new HashSet<>(Arrays.asList(ONE, TWO));
     }
 
     @Override
     public <T> T getFilterAs(Field field, Class<T> cls) {
-        return cls.cast(TEST);
+        throw new UnsupportedOperationException();
     }
 
     @Override

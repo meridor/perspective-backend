@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -77,9 +78,9 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
             
     ) {
         return image -> 
-                ( !ids.isPresent() || ids.get().contains(image.getId()) ) &&
-                ( !names.isPresent() || names.get().contains(image.getName()) ) &&
-                ( !clouds.isPresent() || clouds.get().contains(image.getCloudType().value().toLowerCase())) &&
+                ( !ids.isPresent() || oneOfMatches(image.getId(), ids.get()) ) &&
+                ( !names.isPresent() || oneOfMatches(image.getName(), names.get()) ) &&
+                ( !clouds.isPresent() || oneOfMatches(image.getCloudType().value().toLowerCase(), clouds.get()) ) &&
                 ( !projects.isPresent() || projectMatches(projects.get(), image.getProjectIds()));
     }
     
