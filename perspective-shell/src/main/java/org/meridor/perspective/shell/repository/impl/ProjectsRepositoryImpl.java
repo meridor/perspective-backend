@@ -41,15 +41,14 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         if (projectsCache.isEmpty() || isProjectsCacheDisabled()) {
             GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
             List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
-            List<Project> projects = allProjects.stream()
-                    .filter(query.getPayload())
-                    .sorted(
-                            (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
-                    )
-                    .collect(Collectors.toList());
-            projectsCache.addAll(projects);
+            projectsCache.addAll(allProjects);
         }
-        return projectsCache;
+        return projectsCache.stream()
+                .filter(query.getPayload())
+                .sorted(
+                        (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
+                )
+                .collect(Collectors.toList());
     }
     
     private boolean isProjectsCacheDisabled() {
