@@ -33,7 +33,7 @@
                 <!--<hz:property name="hazelcast.max.no.heartbeat.seconds">${hazelcast.max.no.heartbeat.seconds}</hz:property>-->
                 <!--<hz:property name="hazelcast.prefer.ipv4.stack">${hazelcast.prefer.ipv4.stack}</hz:property>-->
             </hz:properties>
-            <hz:network port="${perspective.storage.port:5701}">
+            <hz:network port="${perspective.storage.port:5801}" port-auto-increment="false">
                 <hz:join>
                     <hz:multicast enabled="false"/>
                     <hz:tcp-ip enabled="true">
