@@ -41,7 +41,7 @@
                     </hz:tcp-ip>
                 </hz:join>
                 <hz:interfaces>
-                    <hz:interface>${perspective.storage.members:127.0.0.1}</hz:interface>
+                    <hz:interface>${perspective.storage.interface:127.0.0.1}</hz:interface>
                 </hz:interfaces>
             </hz:network>
 
