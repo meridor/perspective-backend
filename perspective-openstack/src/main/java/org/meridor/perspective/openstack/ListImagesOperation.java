@@ -10,7 +10,6 @@ import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.Storage;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -39,9 +38,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     
     @Autowired
     private ImagesAware imagesAware;
-    
-    @Autowired
-    private Storage storage;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
@@ -78,15 +74,13 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private Image createOrModifyImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
         String imageId = idGenerator.getImageId(cloud, openstackImage.getId());
         String projectId = idGenerator.getProjectId(cloud, region);
-        return storage.executeSynchronized(imageId, Storage.DEFAULT_LOCK_WAIT_TIMEOUT, () -> {
-            Optional<Image> imageCandidate = imagesAware.getImage(imageId);
-            if (!imageCandidate.isPresent()) {
-                Image image = createImage(openstackImage, imageId, projectId);
-                return updateImage(image, openstackImage, region, projectId);
-            } else {
-                return updateImage(imageCandidate.get(), openstackImage, region, projectId);
-            }
-        });
+        Optional<Image> imageCandidate = imagesAware.getImage(imageId);
+        if (!imageCandidate.isPresent()) {
+            Image image = createImage(openstackImage, imageId, projectId);
+            return updateImage(image, openstackImage, region, projectId);
+        } else {
+            return updateImage(imageCandidate.get(), openstackImage, region, projectId);
+        }
     }
     
     private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String imageId, String projectId) {
