@@ -91,7 +91,7 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-test-classes</phase>
+                        <phase>compile</phase>
                     </execution>
                 </executions>
                 <configuration>
