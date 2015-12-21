@@ -22,6 +22,8 @@ public final class TextUtils {
     private static final String ENTER = "\n";
     public static final String YES = "y";
     public static final String NO = "n";
+    private static final String FIRST = "g";
+    private static final String LAST = "G";
     private static final String NEXT = "n";
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
@@ -216,6 +218,14 @@ public final class TextUtils {
         return DASH.equals(key);
     }
 
+    public static boolean isFirstElementKey(String key) {
+        return FIRST.equals(key);
+    }
+
+    public static boolean isLastElementKey(String key) {
+        return LAST.equals(key);
+    }
+
     public static boolean isNextElementKey(String key) {
         return ENTER.equals(key) || SPACE.equals(key) || NEXT.equals(key);
     }
@@ -223,7 +233,7 @@ public final class TextUtils {
     public static boolean isPrevElementKey(String key) {
         return PREVIOUS.equals(key) || LESS_PREVIOUS.equals(key);
     }
-
+    
     public static boolean isExitKey(String key) {
         return QUIT.equals(key);
     }
@@ -295,7 +305,7 @@ public final class TextUtils {
                 return;
             }
             if (NUM_PAGES > 1) {
-                ok("Press Space, Enter or n to show next page, p or w to show previous page, a number key to show specific page and q to type next command.");
+                ok("Press Space, Enter or n to show next page, p or w to show previous page, g to show first page, G to show last page, a number key to show specific page and q to type next command.");
             }
             int currentPage = 1;
             showPage(currentPage, NUM_PAGES, pages); //Always showing first page
@@ -316,6 +326,12 @@ public final class TextUtils {
                     pageNumberChanged = true;
                 } else if (isPrevElementKey(key) && currentPage > 1) {
                     currentPage--;
+                    pageNumberChanged = true;
+                } else if (isFirstElementKey(key) && currentPage != 1) {
+                    currentPage = 1;
+                    pageNumberChanged = true;
+                } else if (isLastElementKey(key) && currentPage != NUM_PAGES) {
+                    currentPage = NUM_PAGES;
                     pageNumberChanged = true;
                 } else if (isNumericKey(key)) {
                     Integer pageNumber = Integer.valueOf(key);

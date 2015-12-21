@@ -115,6 +115,18 @@ public class TextUtilsTest {
     }
 
     @Test
+    public void testIsFirstElementKey(){
+        assertThat(isFirstElementKey("g"), is(true));
+        assertThat(isFirstElementKey("y"), is(false));
+    }
+    
+    @Test
+    public void testIsLastElementKey(){
+        assertThat(isLastElementKey("G"), is(true));
+        assertThat(isLastElementKey("y"), is(false));
+    }
+    
+    @Test
     public void testIsNextElementKey(){
         assertThat(isNextElementKey("n"), is(true));
         assertThat(isNextElementKey(" "), is(true));
