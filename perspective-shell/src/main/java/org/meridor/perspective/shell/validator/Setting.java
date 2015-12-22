@@ -7,7 +7,8 @@ public enum Setting {
     API_URL,
     DISABLE_PROJECTS_CACHE,
     LOG_LEVEL,
-    PAGE_SIZE;
+    PAGE_SIZE,
+    TABLE_WIDTH;
 
     public static boolean contains(String name) {
         for (Setting c : values()) {
