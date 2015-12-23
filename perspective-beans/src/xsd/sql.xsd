@@ -42,7 +42,6 @@
 
     <xsd:complexType name="queryResult">
         <xsd:all>
-            <xsd:element name="type" type="tns:queryType"/>
             <xsd:element name="status" type="tns:queryStatus"/>
             <xsd:element name="count" type="xsd:int" default="0"/>
             <xsd:element name="data" type="tns:data"/>
@@ -56,19 +55,7 @@
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:complexType name="dataRow">
-        <xsd:sequence>
-            <xsd:element name="entry" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="key" type="xsd:string"/>
-                        <xsd:element name="value" type="xsd:anyType"/>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="type" type="xsd:string"/>
-    </xsd:complexType>
+    <xsd:complexType name="dataRow"/>
 
     <xsd:complexType name="executionResult">
         <xsd:all>

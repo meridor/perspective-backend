@@ -1,29 +1,36 @@
 package org.meridor.perspective.sql.impl;
 
 import org.meridor.perspective.sql.*;
+import org.meridor.perspective.sql.impl.task.Task;
 
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
-import java.util.List;
+import java.util.*;
 
 public class QueryProcessorImpl implements QueryProcessor {
     
     @Override
-    public QueryResult process(Query query) {
-        QueryType queryType = QueryType.UNKNOWN;
+    public List<QueryResult> process(Query query) {
         try {
-            List<String> queries = prepareSQL(query);
-            ExecutionStrategy executionStrategy = parseSQL(queries);
-            queryType = executionStrategy.getQueryType();
-            ExecutionResult executionResult = executionStrategy.execute();
-            return getQueryResult(queryType, QueryStatus.SUCCESS, executionResult.getCount(), executionResult.getData(), "");
+            List<String> sqlQueries = prepareSQL(query);
+            List<QueryResult> queryResults = new ArrayList<>();
+            for (String sqlQuery : sqlQueries) {
+                try {
+                    Queue<Task> tasks = parseSQL(sqlQuery);
+                    try {
+                        ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
+                        queryResults.add(getQueryResult(QueryStatus.SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
+                    } catch (SQLException e) {
+                        queryResults.add(getQueryResult(QueryStatus.EVALUATION_ERROR, 0, Collections.emptyList(), e.getMessage()));
+                    }
+                } catch (SQLSyntaxErrorException e) {
+                    queryResults.add(getQueryResult(QueryStatus.SYNTAX_ERROR, 0, Collections.emptyList(), e.getMessage()));
+                }
+            }
+            return queryResults;
         } catch (SQLDataException e) {
-            return getQueryResult(queryType, QueryStatus.MISSING_PARAMETERS, 0, new DataRowMap(), e.getMessage());
-        } catch (SQLSyntaxErrorException e) {
-            return getQueryResult(queryType, QueryStatus.SYNTAX_ERROR, 0, new DataRowMap(), e.getMessage());
-        } catch (SQLException e) {
-            return getQueryResult(queryType, QueryStatus.SYNTAX_ERROR, 0, new DataRowMap(), e.getMessage());
+            return Collections.singletonList(getQueryResult(QueryStatus.MISSING_PARAMETERS, 0, Collections.emptyList(), e.getMessage()));
         }
     }
     
@@ -35,13 +42,20 @@ public class QueryProcessorImpl implements QueryProcessor {
         return placeholderConfigurer.getQueries();
     }
     
-    private ExecutionStrategy parseSQL(List<String> queries) throws SQLSyntaxErrorException {
-        throw new UnsupportedOperationException();
+    private Queue<Task> parseSQL(String sqlQuery) throws SQLSyntaxErrorException {
+        QueryScheduler queryScheduler = new QuerySchedulerImpl(sqlQuery);
+        return queryScheduler.schedule();
     }
     
-    private static QueryResult getQueryResult(QueryType queryType, QueryStatus queryStatus, int count, DataRowMap data, String message) {
+    private ExecutionResult executeTasks(Iterator<Task> tasks, ExecutionResult previousTaskResult) throws SQLException {
+        if (!tasks.hasNext()) {
+            return previousTaskResult;
+        }
+        return executeTasks(tasks, tasks.next().execute(previousTaskResult));
+    }
+    
+    private static QueryResult getQueryResult(QueryStatus queryStatus, int count, List<DataRow> data, String message) {
         QueryResult queryResult = new QueryResult();
-        queryResult.setType(queryType);
         queryResult.setStatus(queryStatus);
         queryResult.setCount(count);
         queryResult.setData(data);

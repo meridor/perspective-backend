@@ -4,10 +4,6 @@ parser grammar SQLParser;
 options
    { tokenVocab = SQLLexer; }
 
-queries
-   : query+
-   ;
-
 query
    : select_query
    | show_tables_query
@@ -27,7 +23,8 @@ alias
    ;
    
 column_name
-   : ( project_name DOT )? ID | ( alias DOT )? ID
+   : ( project_name DOT )? ID 
+   | ( alias DOT )? ID
    ;
    
    
@@ -85,7 +82,8 @@ select_expression
    ;
    
 group_by_element
-   : column_name | function_call
+   : column_name 
+   | function_call
    ;
    
 group_by_expression
@@ -113,15 +111,27 @@ function_call
    ;
 
 element
-   : STRING | INT | column_name | function_call | subquery
+   : STRING 
+   | INT 
+   | column_name 
+   | function_call 
+   | subquery
    ;
 
 relational_operation
-   : EQ | LT | GT | NOT_EQ | LTE | GTE
+   : EQ 
+   | LT 
+   | GT 
+   | NOT_EQ 
+   | LTE 
+   | GTE
    ;
 
 boolean_operation
-   : AND | XOR | OR | NOT
+   : AND 
+   | XOR 
+   | OR 
+   | NOT
    ;
 
 between_op
@@ -143,35 +153,42 @@ table_references
    ;
 
 table_reference
-   : table_factor1 | table_atom
+   : general_join 
+   | table_atom
    ;
 
-table_factor1
-   : table_factor2 ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
+general_join
+   : complex_join ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
    ;
 
-table_factor2
-   : table_factor3 ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? )?
+complex_join
+   : medium_join ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? )?
    ;
 
-table_factor3
-   : table_factor4 ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_factor4 join_condition )?
+medium_join
+   : simple_join ( ( LEFT | RIGHT ) ( OUTER )? JOIN simple_join join_condition )?
    ;
 
-table_factor4
+simple_join
    : table_atom ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom )?
    ;
 
 table_atom
-   : ( table_name ( alias_clause )? ) | ( subquery alias_clause ) | ( LPAREN table_references RPAREN )
+   : table_name ( alias_clause )? 
+   | subquery alias_clause 
+   | LPAREN table_references RPAREN
    ;
 
 join_clause
-   : ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? ) | ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? ) | ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_factor4 join_condition ) | ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom )
+   : ( INNER | CROSS )? JOIN table_atom ( join_condition )? 
+   | STRAIGHT_JOIN table_atom ( ON boolean_expression )?
+   | ( LEFT | RIGHT ) ( OUTER )? JOIN simple_join join_condition 
+   | NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom
    ;
 
 join_condition
-   : ( ON boolean_expression ( boolean_operation boolean_expression )* ) | ( USING LPAREN columns_list RPAREN )
+   : ON boolean_expression ( boolean_operation boolean_expression )* 
+   | USING LPAREN columns_list RPAREN
    ;
 
 

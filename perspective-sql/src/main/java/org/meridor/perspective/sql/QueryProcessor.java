@@ -1,7 +1,9 @@
 package org.meridor.perspective.sql;
 
+import java.util.List;
+
 public interface QueryProcessor {
     
-    QueryResult process(Query query);
+    List<QueryResult> process(Query query);
     
 }

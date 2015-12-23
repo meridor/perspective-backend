@@ -134,19 +134,8 @@
 
     <jaxb:bindings schemaLocation="sql.xsd">
         <jaxb:bindings node="/xsd:schema">
-            <jaxb:bindings node="./xsd:complexType[@name='queryResult']/xsd:all">
-                <jaxb:bindings node="./xsd:element[@name='data']">
-                    <jaxb:property>
-                        <jaxb:baseType name="org.meridor.perspective.sql.DataRowMap" />
-                    </jaxb:property>
-                </jaxb:bindings>
-            </jaxb:bindings>
-            <jaxb:bindings node="./xsd:complexType[@name='executionResult']/xsd:all">
-                <jaxb:bindings node="./xsd:element[@name='data']">
-                    <jaxb:property>
-                        <jaxb:baseType name="org.meridor.perspective.sql.DataRowMap" />
-                    </jaxb:property>
-                </jaxb:bindings>
+            <jaxb:bindings node="./xsd:complexType[@name='dataRow']">
+                <jaxb:class ref="org.meridor.perspective.sql.DataRow"/>
             </jaxb:bindings>
         </jaxb:bindings>
     </jaxb:bindings>
