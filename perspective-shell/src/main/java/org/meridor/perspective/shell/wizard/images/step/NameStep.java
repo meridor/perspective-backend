@@ -2,7 +2,7 @@ package org.meridor.perspective.shell.wizard.images.step;
 
 import org.meridor.perspective.shell.repository.impl.Placeholder;
 import org.meridor.perspective.shell.validator.annotation.Required;
-import org.meridor.perspective.shell.validator.annotation.SupportedName;
+import org.meridor.perspective.shell.validator.annotation.SupportedSymbols;
 import org.meridor.perspective.shell.wizard.FreeInputStep;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import static org.meridor.perspective.shell.repository.impl.TextUtils.getPlaceho
 public class NameStep extends FreeInputStep {
     
     @Required
-    @SupportedName
+    @SupportedSymbols
     private String name;
     
     @Override

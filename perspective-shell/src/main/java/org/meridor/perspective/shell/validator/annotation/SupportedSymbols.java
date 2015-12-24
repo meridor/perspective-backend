@@ -7,5 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SupportedName {
+public @interface SupportedSymbols {
+    
+    String value() default "a-zA-Z0-9-_$.";
+    
 }
