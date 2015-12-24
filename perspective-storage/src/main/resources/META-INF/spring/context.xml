@@ -30,8 +30,8 @@
                 <hz:property name="hazelcast.merge.first.run.delay.seconds">5</hz:property>
                 <hz:property name="hazelcast.merge.next.run.delay.seconds">5</hz:property>
                 <hz:property name="hazelcast.logging.type">slf4j</hz:property>
-                <!--<hz:property name="hazelcast.max.no.heartbeat.seconds">${hazelcast.max.no.heartbeat.seconds}</hz:property>-->
-                <!--<hz:property name="hazelcast.prefer.ipv4.stack">${hazelcast.prefer.ipv4.stack}</hz:property>-->
+                <hz:property name="hazelcast.backpressure.enabled">true</hz:property>
+                <hz:property name="hazelcast.prefer.ipv4.stack">${perspective.storage.ipv4only:true}</hz:property>
             </hz:properties>
             <hz:network port="${perspective.storage.port:5801}" port-auto-increment="false">
                 <hz:join>
@@ -44,23 +44,35 @@
                     <hz:interface>${perspective.storage.interface:127.0.0.1}</hz:interface>
                 </hz:interfaces>
             </hz:network>
-
+            
             <hz:map name="deleted-instances"
+                    async-backup-count="${perspective.storage.backup.count}"
+                    read-backup-data="true"
                     max-size="70"
                     max-size-policy="USED_HEAP_SIZE"
                     eviction-percentage="70"
                     eviction-policy="LRU"/>
             
             <hz:map name="deleted-images"
+                    async-backup-count="${perspective.storage.backup.count}"
+                    read-backup-data="true"
                     max-size="70"
                     max-size-policy="USED_HEAP_SIZE"
                     eviction-percentage="70"
                     eviction-policy="LRU"/>
             
-            <hz:map name="projects_by_id" time-to-live-seconds="${perspective.storage.ttl.projects}"/>
-            <hz:map name="instances_by_id" time-to-live-seconds="${perspective.storage.ttl.instances}"/>
-            <hz:map name="images_by_id" time-to-live-seconds="${perspective.storage.ttl.images}"/>
-            
+            <hz:map name="projects_by_id"
+                    async-backup-count="${perspective.storage.backup.count}"
+                    read-backup-data="true"
+                    time-to-live-seconds="${perspective.storage.ttl.projects}"/>
+            <hz:map name="instances_by_id"
+                    async-backup-count="${perspective.storage.backup.count}"
+                    read-backup-data="true"
+                    time-to-live-seconds="${perspective.storage.ttl.instances}"/>
+            <hz:map name="images_by_id"
+                    async-backup-count="${perspective.storage.backup.count}"
+                    read-backup-data="true"
+                    time-to-live-seconds="${perspective.storage.ttl.images}"/>
         </hz:config>
     </hz:hazelcast>
 
