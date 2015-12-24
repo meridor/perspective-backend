@@ -23,7 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
-public class ProjectsRepositoryImpl implements ProjectsRepository {
+public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRepository {
     
     @Autowired
     private ApiProvider apiProvider;
@@ -37,14 +37,15 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     private final List<Project> projectsCache = new ArrayList<>();
     
     @Override 
-    public List<Project> showProjects(ShowProjectsQuery query) {
+    public List<Project> showProjects(ShowProjectsQuery showProjectsQuery) {
+        validateQuery(showProjectsQuery);
         if (projectsCache.isEmpty() || isProjectsCacheDisabled()) {
             GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
             List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
             projectsCache.addAll(allProjects);
         }
         return projectsCache.stream()
-                .filter(query.getPayload())
+                .filter(showProjectsQuery.getPayload())
                 .sorted(
                         (p1, p2) -> Comparator.<String>naturalOrder().compare(p1.getName(), p2.getName())
                 )
@@ -57,6 +58,7 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     
     @Override 
     public Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
+        validateQuery(showFlavorsQuery);
         List<Project> projects = showAllProjects(showFlavorsQuery.getProjects(), showFlavorsQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(
@@ -72,6 +74,7 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
     
     @Override 
     public Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery) {
+        validateQuery(showNetworksQuery);
         List<Project> projects = showAllProjects(showNetworksQuery.getProjects(), showNetworksQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(

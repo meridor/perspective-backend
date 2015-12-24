@@ -3,9 +3,9 @@ package org.meridor.perspective.shell.commands;
 import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.misc.LoggingUtils;
 import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.query.InvalidQueryException;
 import org.meridor.perspective.shell.query.Query;
 import org.meridor.perspective.shell.repository.impl.SettingsStorage;
-import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
@@ -23,9 +23,6 @@ public abstract class BaseCommands implements CommandMarker {
 
     @Autowired
     private TableRenderer tableRenderer;
-    
-    @Autowired
-    private ObjectValidator objectValidator;
 
     @Autowired
     private SettingsStorage settingsStorage;
@@ -87,10 +84,7 @@ public abstract class BaseCommands implements CommandMarker {
             Function<T, List<String[]>> confirmationRowsProvider,
             Function<Q, Set<String>> task
     ) {
-        Set<String> validationErrors = objectValidator.validate(query);
-        if (!validationErrors.isEmpty()) {
-            error(joinLines(validationErrors));
-        } else {
+        try {
             T payload = query.getPayload();
             String confirmationMessage = confirmationMessageProvider.apply(payload);
             String[] columns = confirmationColumnsProvider.apply(payload);
@@ -107,6 +101,8 @@ public abstract class BaseCommands implements CommandMarker {
             } else {
                 warn("Aborted.");
             }
+        } catch (InvalidQueryException e) {
+            error(joinLines(e.getErrors()));
         }
     }
 
@@ -139,12 +135,11 @@ public abstract class BaseCommands implements CommandMarker {
             String[] columns,
             Function<T, List<String[]>> task
     ) {
-        Set<String> validationErrors = objectValidator.validate(query);
-        if (!validationErrors.isEmpty()) {
-            error(joinLines(validationErrors));
-        } else {
+        try {
             List<String[]> data = task.apply(query);
             tableOrNothing(columns, data);
+        } catch (InvalidQueryException e) {
+            error(joinLines(e.getErrors()));
         }
     }
     

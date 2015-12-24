@@ -15,12 +15,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-public class InstancesRepositoryImpl implements InstancesRepository {
+public class InstancesRepositoryImpl extends BaseRepository implements InstancesRepository {
 
     @Autowired
     private ApiProvider apiProvider;
 
     @Override public List<Instance> showInstances(ShowInstancesQuery showInstancesQuery) {
+        validateQuery(showInstancesQuery);
         GenericType<ArrayList<Instance>> instanceListType = new GenericType<ArrayList<Instance>>() {};
         List<Instance> instances = apiProvider.getInstancesApi().getAsXml(instanceListType);
         return instances.stream()
@@ -30,6 +31,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
 
     @Override public Set<String> addInstances(AddInstancesQuery addInstancesQuery) {
+        validateQuery(addInstancesQuery);
         List<Instance> instances = addInstancesQuery.getPayload();
         GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(instances) {
         };
@@ -38,6 +40,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
     
     @Override public Set<String> deleteInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        validateQuery(modifyInstancesQuery);
         GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
         };
         apiProvider.getInstancesApi().delete().postXmlAs(data, String.class);
@@ -45,6 +48,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
     
     @Override public Set<String> rebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        validateQuery(modifyInstancesQuery);
         GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
         };
         apiProvider.getInstancesApi().reboot().putXmlAs(data, String.class);
@@ -52,6 +56,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
     
     @Override public Set<String> hardRebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+        validateQuery(modifyInstancesQuery);
         GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(modifyInstancesQuery.getPayload()) {
         };
         apiProvider.getInstancesApi().hardReboot().putXmlAs(data, String.class);
