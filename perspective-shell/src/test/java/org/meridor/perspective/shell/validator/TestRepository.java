@@ -82,12 +82,12 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public Map<String, String> showSettings() {
+    public Map<String, String> showSettings(boolean all) {
         return getSettingsMap();
     }
 
     @Override
-    public Map<String, String> showFilters() {
+    public Map<String, String> showFilters(boolean all) {
         return getSettingsMap();
     }
 
@@ -117,7 +117,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public Map<String, String> getSettings() {
+    public Map<String, String> getSettings(boolean all) {
         return getSettingsMap();
     }
 
@@ -156,7 +156,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public Map<String, String> getFilters() {
+    public Map<String, String> getFilters(boolean all) {
         return getSettingsMap();
     }
 }

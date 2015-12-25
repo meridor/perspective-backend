@@ -17,6 +17,6 @@ public interface SettingsAware {
     
     <T> T getSettingAs(Setting setting, Class<T> cls);
     
-    Map<String, String> getSettings();
+    Map<String, String> getSettings(boolean all);
 
 }

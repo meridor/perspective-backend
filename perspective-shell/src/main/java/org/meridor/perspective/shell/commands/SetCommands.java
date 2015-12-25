@@ -32,10 +32,11 @@ public class SetCommands extends BaseCommands {
         okOrShowErrors(errors);
     }
 
-    //TODO: add --all flag to show all possible filters and settings (not only explicitly set)
     @CliCommand(value = "show filters", help = "Show enabled filters")
-    public void showFilters() {
-        List<String[]> rows = settingsRepository.showFilters()
+    public void showFilters(
+            @CliOption(key = "all", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Show all available settings") boolean all
+    ) {
+        List<String[]> rows = settingsRepository.showFilters(all)
                 .entrySet().stream()
                 .map(e -> new String[]{e.getKey(), e.getValue()})
                 .collect(Collectors.toList());
@@ -43,8 +44,10 @@ public class SetCommands extends BaseCommands {
     }
     
     @CliCommand(value = "show settings", help = "Show enabled settings")
-    public void showSettings() {
-        List<String[]> rows = settingsRepository.showSettings()
+    public void showSettings(
+            @CliOption(key = "all", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Show all available settings") boolean all
+    ) {
+        List<String[]> rows = settingsRepository.showSettings(all)
                 .entrySet().stream()
                 .map(e -> new String[]{e.getKey(), e.getValue()})
                 .collect(Collectors.toList());

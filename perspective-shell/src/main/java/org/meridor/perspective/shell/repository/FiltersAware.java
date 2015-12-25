@@ -17,6 +17,6 @@ public interface FiltersAware {
 
     <T> T getFilterAs(Field field, Class<T> cls);
     
-    Map<String, String> getFilters();
+    Map<String, String> getFilters(boolean all);
     
 }

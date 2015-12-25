@@ -47,17 +47,20 @@ public class SettingsStorage implements FiltersAware, SettingsAware {
     }
 
     @Override
-    public Map<String, String> getFilters() {
-        Map<String, String> filters = new HashMap<>();
+    public Map<String, String> getFilters(boolean all) {
+        Map<String, String> filters = new TreeMap<>(
+                (f1, f2) -> Comparator.<String>naturalOrder().compare(f1, f2)
+        );
         Arrays
             .stream(Field.values())
-            .sorted((f1, f2) -> Comparator.<String>naturalOrder().compare(f1.name(), f2.name()))
             .forEach(
                 f -> {
+                    String key = f.name().toLowerCase();
                     if (hasFilter(f)) {
-                        String key = f.name().toLowerCase();
                         String value = TextUtils.enumerateValues(getFilter(f));
                         filters.put(key, value);
+                    } else if (all) {
+                        filters.put(key, TextUtils.DASH);
                     }
                 }
         );
@@ -114,17 +117,21 @@ public class SettingsStorage implements FiltersAware, SettingsAware {
     }
     
     @Override
-    public Map<String, String> getSettings() {
-        Map<String, String> settings = new HashMap<>();
+    public Map<String, String> getSettings(boolean all) {
+        Map<String, String> settings = new TreeMap<>(
+                (s1, s2) -> Comparator.<String>naturalOrder().compare(s1, s2)
+        );
         Arrays
             .stream(Setting.values())
             .sorted((s1, s2) -> Comparator.<String>naturalOrder().compare(s1.name(), s2.name()))
             .forEach(
                 s -> {
+                    String key = s.name().toLowerCase();
                     if (hasSetting(s)) {
-                        String key = s.name().toLowerCase();
                         String value = TextUtils.enumerateValues(getSetting(s));
                         settings.put(key, value);
+                    } else if (all) {
+                        settings.put(key, TextUtils.DASH);
                     }
                 }
         );

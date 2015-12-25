@@ -65,13 +65,13 @@ public class SettingsRepositoryImpl implements SettingsRepository {
         return errors;
     }
     
-    @Override public Map<String, String> showSettings() {
-        return settingsAware.getSettings();
+    @Override public Map<String, String> showSettings(boolean all) {
+        return settingsAware.getSettings(all);
     }
 
 
-    @Override public Map<String, String> showFilters() {
-        return filtersAware.getFilters();
+    @Override public Map<String, String> showFilters(boolean all) {
+        return filtersAware.getFilters(all);
     }
 
 }

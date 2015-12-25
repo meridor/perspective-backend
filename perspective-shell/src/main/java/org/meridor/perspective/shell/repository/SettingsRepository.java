@@ -8,7 +8,7 @@ public interface SettingsRepository {
 
     Set<String> unset(String data);
 
-    Map<String, String> showSettings();
+    Map<String, String> showSettings(boolean all);
 
-    Map<String, String> showFilters();
+    Map<String, String> showFilters(boolean all);
 }
