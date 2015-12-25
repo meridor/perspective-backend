@@ -19,6 +19,10 @@ public interface Step {
     
     String getMessage();
     
+    default boolean answerRequired() {
+        return true;
+    }
+    
     default Optional<String> getDefaultAnswer() {
         return Optional.empty();
     }

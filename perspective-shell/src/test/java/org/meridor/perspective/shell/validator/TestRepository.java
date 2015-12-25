@@ -72,6 +72,11 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
+    public Map<Project, List<Keypair>> showKeypairs(ShowKeypairsQuery showKeypairsQuery) {
+        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getKeypair()));
+    }
+
+    @Override
     public Set<String> set(String data) {
         return Collections.emptySet();
     }

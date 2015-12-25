@@ -27,6 +27,7 @@ public final class TextUtils {
     private static final String NEXT = "n";
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
+    private static final String SKIP = "s";
     private static final String QUIT = "q";
     public static final String DASH = "-";
     private static final Integer DEFAULT_PAGE_SIZE = 20;
@@ -236,6 +237,10 @@ public final class TextUtils {
     
     public static boolean isExitKey(String key) {
         return QUIT.equals(key);
+    }
+    
+    public static boolean isSkipKey(String key) {
+        return SKIP.equals(key);
     }
 
     public static boolean isYesKey(String key) {

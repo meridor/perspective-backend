@@ -16,6 +16,7 @@ public class EntityGenerator {
         project.setCloudType(CloudType.MOCK);
         project.getFlavors().add(getFlavor());
         project.getNetworks().add(getNetwork());
+        project.getKeypairs().add(getKeypair());
         project.getAvailabilityZones().add(getAvailabilityZone());
         return project;
     }
@@ -41,6 +42,14 @@ public class EntityGenerator {
         network.setName("test-network");
         network.getSubnets().add("5.255.210.0/24");
         return network;
+    }
+    
+    public static Keypair getKeypair() {
+        Keypair keypair = new Keypair();
+        keypair.setName("test-keypair");
+        keypair.setFingerprint("key-fingerprint");
+        keypair.setPublicKey("test-public-key");
+        return keypair;
     }
 
     public static Image getImage() {

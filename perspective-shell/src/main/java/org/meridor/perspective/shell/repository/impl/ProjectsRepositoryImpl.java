@@ -1,12 +1,10 @@
 package org.meridor.perspective.shell.repository.impl;
 
 import org.meridor.perspective.beans.Flavor;
+import org.meridor.perspective.beans.Keypair;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowFlavorsQuery;
-import org.meridor.perspective.shell.query.ShowNetworksQuery;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.repository.SettingsAware;
@@ -87,7 +85,24 @@ public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRe
                         .collect(Collectors.toList())
                 ));
     }
-    
+
+    @Override
+    public Map<Project, List<Keypair>> showKeypairs(ShowKeypairsQuery showKeypairsQuery) {
+        validateQuery(showKeypairsQuery);
+        List<Project> projects = showAllProjects(showKeypairsQuery.getProjects(), showKeypairsQuery.getClouds());
+        return projects.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        p -> p.getKeypairs().stream()
+                                .filter(showKeypairsQuery.getPayload())
+                                .sorted(
+                                        (k1, k2) -> Comparator.<String>naturalOrder().compare(k1.getName(), k2.getName())
+                                )
+                                .collect(Collectors.toList())
+                ));
+
+    }
+
     private List<Project> showAllProjects(String projectNames, String clouds) {
         return showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectNames).withClouds(clouds));
     }

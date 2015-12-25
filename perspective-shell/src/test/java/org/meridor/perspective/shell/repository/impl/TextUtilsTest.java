@@ -146,6 +146,12 @@ public class TextUtilsTest {
         assertThat(isExitKey("q"), is(true));
         assertThat(isExitKey("y"), is(false));
     }
+    
+    @Test
+    public void testIsSkipKey(){
+        assertThat(isSkipKey("s"), is(true));
+        assertThat(isSkipKey("y"), is(false));
+    }
 
     @Test
     public void testIsYesKey(){

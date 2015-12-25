@@ -4,7 +4,7 @@ public enum Field {
 
     PROJECTS,
     CLOUDS,
-    KEYPAIRS,
+    KEYPAIR_NAMES,
     NETWORK_NAMES,
     FLAVOR_NAMES,
     INSTANCE_STATES,

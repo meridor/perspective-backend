@@ -22,7 +22,7 @@ public class ModifyCommands extends BaseCommands {
 
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
-            @CliOption(key = "", mandatory = true, help = "Space separated instances names, ID or patterns to match against instance name") String names,
+            @CliOption(key = "", mandatory = true, help = "Comma separated instances names, ID or patterns to match against instance name") String names,
             @CliOption(key = "cloud", help = "Cloud types") String cloud,
             @CliOption(key = "hard", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Whether to hard reboot instance") boolean hard
     ) {

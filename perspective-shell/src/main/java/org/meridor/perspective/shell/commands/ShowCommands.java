@@ -110,6 +110,32 @@ public class ShowCommands extends BaseCommands {
         );
     }
     
+    @CliCommand(value = "show keypairs", help = "Show available keypairs")
+    public void showKeypairs(
+            @CliOption(key = "name", help = "Keypair name") String name,
+            @CliOption(key = "projectName", help = "Project name") String projectName,
+            @CliOption(key = "cloud", help = "Cloud type") String cloud
+    ) {
+        ShowKeypairsQuery showKeypairsQuery = queryProvider.get(ShowKeypairsQuery.class).withNames(name)
+                .withProjects(projectName)
+                .withClouds(cloud);
+        validateExecuteShowResult(
+                showKeypairsQuery,
+                new String[]{"Name", "Fingerprint", "Project"},
+                q -> {
+                    Map<Project, List<Keypair>> keypairsMap = projectsRepository.showKeypairs(q);
+                    return keypairsMap.keySet().stream()
+                            .flatMap(p -> {
+                                List<Keypair> keypairs = keypairsMap.get(p);
+                                return keypairs.stream().map(k -> new String[]{
+                                        k.getName(), k.getFingerprint(), p.getName()
+                                });
+                            })
+                            .collect(Collectors.toList());
+                }
+        );
+    }
+    
     @CliCommand(value = "show instances", help = "Show instances")
     public void showInstances(
             @CliOption(key = "id", help = "Instance id") String id,

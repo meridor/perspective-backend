@@ -1,13 +1,15 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
 import org.meridor.perspective.beans.Flavor;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.query.QueryProvider;
+import org.meridor.perspective.shell.query.ShowFlavorsQuery;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.validator.annotation.Required;
 import org.meridor.perspective.shell.wizard.SingleChoiceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,9 @@ public class FlavorStep extends SingleChoiceStep {
     
     @Autowired
     private ProjectsRepository projectsRepository;
+    
+    @Autowired
+    private QueryProvider queryProvider;
 
     @Required
     private String projectName;
@@ -26,8 +31,8 @@ public class FlavorStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return projectsRepository.showProjects(new ShowProjectsQuery().withNames(projectName)).stream()
-                .flatMap(p -> p.getFlavors().stream())
+        return projectsRepository.showFlavors(queryProvider.get(ShowFlavorsQuery.class).withProjects(projectName)).values().stream()
+                .flatMap(Collection::stream)
                 .map(Flavor::getName)
                 .collect(Collectors.toList());
     }

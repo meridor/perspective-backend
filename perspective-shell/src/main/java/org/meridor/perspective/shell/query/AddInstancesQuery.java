@@ -44,7 +44,7 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     private String network;
     
     @ExistingEntity(value = KEYPAIR, projectField = "project")
-    @Filter(KEYPAIRS)
+    @Filter(KEYPAIR_NAMES)
     private String keypair;
     
     @NumericRange

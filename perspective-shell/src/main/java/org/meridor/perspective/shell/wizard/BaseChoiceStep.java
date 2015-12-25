@@ -35,10 +35,20 @@ public abstract class BaseChoiceStep implements Step {
             return returnValue.get();
         }
         printPossibleChoices(choicesMap);
-        ok("Type the number corresponding to your choice or q to exit:");
+        ok(answerRequired() ?
+                "Type the number corresponding to your choice or q to exit:" :
+                "Type the number corresponding to your choice, s to skip or q to exit:"
+        );
         Optional<String> answerCandidate = processAnswer();
         if (!answerCandidate.isPresent()) {
             return false;
+        }
+        if (isSkipKey(answerCandidate.get())) {
+            if (answerRequired()) {
+                warn("You can not skip this step.");
+            } else {
+                return true;
+            }
         }
         while (!validateAnswer(choicesMap, answerCandidate.get())) {
             warn(getIncorrectChoiceMessage(choicesMap));
@@ -86,8 +96,13 @@ public abstract class BaseChoiceStep implements Step {
     
     protected Optional<Boolean> processZeroOrOneChoice(Map<Integer, String> choicesMap) {
         if (choicesMap.size() == 0) {
-            error("We're sorry but no possible answers exist. Exiting.");
-            return Optional.of(false);
+            if (answerRequired()) {
+                error("We're sorry but no possible answers exist. Exiting.");
+                return Optional.of(false);
+            } else {
+                warn("Skipping this step because no possible answers exist.");
+                return Optional.of(true);
+            }
         }
         if (choicesMap.size() == 1) {
             Integer singleKey = choicesMap.keySet().toArray(new Integer[choicesMap.keySet().size()])[0];

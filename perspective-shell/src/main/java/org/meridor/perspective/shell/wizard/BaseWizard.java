@@ -27,9 +27,11 @@ public abstract class BaseWizard implements Wizard {
             if (!currentStep.run()) {
                 return false;
             }
-            String answer = currentStep.getAnswer();
-            Class<? extends Step> stepClass = currentStep.getClass();
-            answers.put(stepClass, answer);
+            Optional<String> answer = Optional.ofNullable(currentStep.getAnswer());
+            if (answer.isPresent()) {
+                Class<? extends Step> stepClass = currentStep.getClass();
+                answers.put(stepClass, answer.get());
+            }
         }
         return true;
     }
