@@ -35,6 +35,9 @@ public class AddImagesQuery implements Query<List<Image>> {
     @Autowired
     private InstancesRepository instancesRepository;
     
+    @Autowired
+    private QueryProvider queryProvider;
+    
     public AddImagesQuery withInstanceNames(String instanceNames) {
         this.instanceNames = parseEnumeration(instanceNames);
         return this;
@@ -48,7 +51,9 @@ public class AddImagesQuery implements Query<List<Image>> {
     @Override
     public List<Image> getPayload() {
         List<Image> images = new ArrayList<>();
-        List<Instance> matchingInstances = instanceNames.stream().flatMap(n -> instancesRepository.showInstances(new ShowInstancesQuery().withNames(n)).stream()).collect(Collectors.toList());
+        List<Instance> matchingInstances = instanceNames.stream()
+                .flatMap(n -> instancesRepository.showInstances(queryProvider.get(ShowInstancesQuery.class).withNames(n)).stream())
+                .collect(Collectors.toList());
         matchingInstances.forEach(i -> images.add(createImage(imageName, i)));
         return images;
     }

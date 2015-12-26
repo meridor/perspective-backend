@@ -5,6 +5,7 @@ import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
@@ -13,7 +14,12 @@ public abstract class MultipleChoicesStep extends BaseChoiceStep {
     
     @Override
     protected String getValueToSave(Map<Integer, String> choicesMap, String answer) {
-        return null;
+        Set<Integer> range = parseRange(answer);
+        return enumerateValues(
+                range.stream()
+                .map(i -> getAsExactMatch(choicesMap.get(i)))
+                .collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -33,11 +39,17 @@ public abstract class MultipleChoicesStep extends BaseChoiceStep {
         }
         Set<Integer> range = parseRange(answer);
         for (Integer key : range) {
-            if (choicesMap.containsKey(key)) {
+            if (!choicesMap.containsKey(key)) {
                 return false;
             }
         }
         return true;
     }
-    
+
+    @Override
+    protected String getPrompt() {
+        return answerRequired() ?
+                "Type one or more numbers corresponding to your choice or q to exit:" :
+                "Type one or more numbers corresponding to your choice, s to skip or q to exit:";
+    }
 }

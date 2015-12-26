@@ -4,15 +4,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.isExitKey;
-import static org.meridor.perspective.shell.repository.impl.TextUtils.isPositiveInt;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 @Component
 public abstract class SingleChoiceStep extends BaseChoiceStep {
     
     @Override
     protected String getValueToSave(Map<Integer, String> choicesMap, String answer) {
-        return choicesMap.get(Integer.parseUnsignedInt(answer));
+        return getAsExactMatch(choicesMap.get(Integer.parseUnsignedInt(answer)));
     }
 
     @Override
@@ -24,5 +23,11 @@ public abstract class SingleChoiceStep extends BaseChoiceStep {
     protected boolean validateAnswer(Map<Integer, String> choicesMap, String answer) {
         return isExitKey(answer) || isPositiveInt(answer) && choicesMap.containsKey(Integer.parseUnsignedInt(answer));
     }
-    
+
+    @Override
+    protected String getPrompt() {
+        return answerRequired() ?
+                "Type the number corresponding to your choice or q to exit:" :
+                "Type the number corresponding to your choice, s to skip or q to exit:";
+    }
 }

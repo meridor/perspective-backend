@@ -9,6 +9,7 @@ import org.ocpsoft.prettytime.PrettyTime;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.misc.LoggingUtils.*;
@@ -291,8 +292,44 @@ public final class TextUtils {
     }
     
     public static boolean oneOfMatches(String value, Collection<String> candidates) {
-        return value != null && candidates.stream().anyMatch(value::contains);
-    } 
+        return value != null && candidates.stream().anyMatch(c -> matches(value, c));
+    }
+    
+    public static boolean matches(String candidate, String expression) {
+        if (candidate == null || expression == null) {
+            return false;
+        }
+        if (isRegex(expression)) {
+            return Pattern.matches(removeFirstAndLastChars(expression), candidate);
+        }
+        if (isExactMatch(expression)) {
+            return candidate.equals(removeFirstAndLastChars(expression));
+        }
+        return candidate.contains(expression);
+    }
+    
+    private static boolean isExactMatch(String expression) {
+        return expression != null && expression.startsWith("^") && expression.endsWith("$");
+    }
+    
+    private static boolean isRegex(String expression) {
+        return expression != null && expression.startsWith("/") && expression.endsWith("/");
+    }
+    
+    private static String removeFirstAndLastChars(String expression) {
+        if (expression.length() < 2) {
+            return expression;
+        }
+        return expression.substring(1, expression.length() - 1);
+    }
+    
+    public static String getAsExactMatch(String value) {
+        return String.format("^%s$", value);
+    }
+    
+    public static String getAsRegex(String value) {
+        return String.format("/%s/", value);
+    }
     
     private TextUtils() {
         

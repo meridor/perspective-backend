@@ -35,10 +35,7 @@ public abstract class BaseChoiceStep implements Step {
             return returnValue.get();
         }
         printPossibleChoices(choicesMap);
-        ok(answerRequired() ?
-                "Type the number corresponding to your choice or q to exit:" :
-                "Type the number corresponding to your choice, s to skip or q to exit:"
-        );
+        ok(getPrompt());
         Optional<String> answerCandidate = processAnswer();
         if (!answerCandidate.isPresent()) {
             return false;
@@ -70,6 +67,8 @@ public abstract class BaseChoiceStep implements Step {
     }
 
     protected abstract List<String> getPossibleChoices();
+    
+    protected abstract String getPrompt();
     
     protected abstract String getValueToSave(Map<Integer, String> choicesMap, String answer);
     

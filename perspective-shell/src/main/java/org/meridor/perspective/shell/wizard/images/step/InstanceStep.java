@@ -4,7 +4,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.query.QueryProvider;
 import org.meridor.perspective.shell.query.ShowInstancesQuery;
 import org.meridor.perspective.shell.repository.InstancesRepository;
-import org.meridor.perspective.shell.wizard.SingleChoiceStep;
+import org.meridor.perspective.shell.wizard.MultipleChoicesStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class InstanceStep extends SingleChoiceStep {
+public class InstanceStep extends MultipleChoicesStep {
     
     @Autowired
     private InstancesRepository instancesRepository;

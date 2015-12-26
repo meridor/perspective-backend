@@ -23,6 +23,9 @@ public class ModifyInstancesQuery implements Query<List<Instance>> {
 
     @Autowired
     private InstancesRepository instancesRepository;
+    
+    @Autowired
+    private QueryProvider queryProvider;
 
     @Filter(Field.INSTANCE_NAMES)
     @Required
@@ -45,7 +48,7 @@ public class ModifyInstancesQuery implements Query<List<Instance>> {
     @Override
     public List<Instance> getPayload() {
         return names.stream().flatMap(n -> instancesRepository.showInstances(
-                new ShowInstancesQuery().withNames(n).withClouds(clouds)
+                queryProvider.get(ShowInstancesQuery.class).withNames(n).withClouds(clouds)
         ).stream()).collect(Collectors.toList());
     }
 }

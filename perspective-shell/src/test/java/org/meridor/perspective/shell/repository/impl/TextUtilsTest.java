@@ -196,4 +196,38 @@ public class TextUtilsTest {
         assertThat(oneOfMatches(TEXT, Arrays.asList("missing", "test")), is(true));
         assertThat(oneOfMatches(TEXT, Collections.singletonList("missing")), is(false));
     }
+    
+    @Test
+    public void testMatches() throws Exception {
+        final String CANDIDATE = "candidate";
+        
+        assertThat(matches(null, "something"), is(false));
+        assertThat(matches(CANDIDATE, null), is(false));
+        assertThat(matches(CANDIDATE, "missing"), is(false));
+        
+        //Contains match
+        assertThat(matches(CANDIDATE, "cand"), is(true));
+        assertThat(matches(CANDIDATE, "date"), is(true));
+        
+        //Exact match
+        assertThat(matches(CANDIDATE, "^candidate$"), is(true));
+        assertThat(matches(CANDIDATE, "^cand$"), is(false));
+        
+        //Regex match
+        assertThat(matches(CANDIDATE, "/^candidate$/"), is(true));
+        assertThat(matches(CANDIDATE, "/candidate/"), is(true));
+        assertThat(matches(CANDIDATE, "/cand.*/"), is(true));
+        assertThat(matches(CANDIDATE, "/.*did.*/"), is(true));
+        assertThat(matches(CANDIDATE, "/ded/"), is(false));
+    }
+    
+    @Test
+    public void testGetAsExactMatch() {
+        assertThat(getAsExactMatch("text"), equalTo("^text$"));
+    }
+    
+    @Test
+    public void testGetAsRegex() {
+        assertThat(getAsRegex("text"), equalTo("/text/"));
+    }
 }
