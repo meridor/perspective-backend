@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
@@ -138,6 +139,17 @@ public abstract class BaseCommands implements CommandMarker {
         try {
             List<String[]> data = task.apply(query);
             tableOrNothing(columns, data);
+        } catch (InvalidQueryException e) {
+            error(joinLines(e.getErrors()));
+        }
+    }
+    
+    protected <T extends Query<?>> void validateExecuteShowResult(
+            T query,
+            Consumer<T> task
+    ) {
+        try {
+            task.accept(query);
         } catch (InvalidQueryException e) {
             error(joinLines(e.getErrors()));
         }

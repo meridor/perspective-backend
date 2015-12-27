@@ -1,6 +1,7 @@
 package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
@@ -10,6 +11,9 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +188,42 @@ public class ShowCommands extends BaseCommands {
         );
     }
     
+    @CliCommand(value = "show console", help = "Show console for instances")
+    public void showConsole(
+            @CliOption(key = "", mandatory = true, help = "Comma separated instances names or patterns to match against instance name") String names
+    ) {
+        if (!Desktop.isDesktopSupported()) {
+            warn("This operation is not supported on your platform.");
+        }
+        ShowInstancesQuery showInstancesQuery = queryProvider.get(ShowInstancesQuery.class)
+                .withNames(names);
+        validateExecuteShowResult(
+                showInstancesQuery,
+                q -> {
+                    List<Instance> instances = instancesRepository.showInstances(q);
+                    if (instances.isEmpty()) {
+                        error(String.format("Instances not found: %s", names));
+                    }
+                    instances.forEach(i -> {
+                        if (!i.getMetadata().containsKey(MetadataKey.CONSOLE_URL)) {
+                            warn(String.format("Matched instance \"%s\" but it didn't contain console information.", i.getName()));
+                            return;
+                        }
+                        String consoleUriString = i.getMetadata().get(MetadataKey.CONSOLE_URL);
+                        try {
+                            URI consoleUri = new URI(consoleUriString);
+                            ok(String.format("Opening console for instance \"%s\"...", i.getName()));
+                            Desktop.getDesktop().browse(consoleUri);
+                        } catch (URISyntaxException e) {
+                            warn(String.format("Instance \"%s\" contains wrong console URL: %s.", i.getName(), consoleUriString));
+                        } catch (Exception e) {
+                            error(String.format("Failed to open console for instance \"%s\". Either default browser is not set or it failed to open console at: %s", i.getName(), consoleUriString));
+                        }
+                    });
+                }
+        );
+    }
+
     private ShowProjectsQuery getShowProjectsQuery(String clouds, String projects) {
         return queryProvider.get(ShowProjectsQuery.class)
                 .withClouds(clouds)

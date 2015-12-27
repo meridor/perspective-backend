@@ -58,6 +58,7 @@
             <xsd:enumeration value="architecture"/>
             <xsd:enumeration value="author"/>
             <xsd:enumeration value="command"/>
+            <xsd:enumeration value="console_url"/>
             <xsd:enumeration value="id"/>
             <xsd:enumeration value="instance_id"/>
             <xsd:enumeration value="keypair"/>

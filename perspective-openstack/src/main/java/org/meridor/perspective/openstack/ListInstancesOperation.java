@@ -2,7 +2,9 @@ package org.meridor.perspective.openstack;
 
 import com.google.common.collect.FluentIterable;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
+import org.jclouds.openstack.nova.v2_0.domain.Console;
 import org.jclouds.openstack.nova.v2_0.domain.Server;
+import org.jclouds.openstack.nova.v2_0.extensions.ConsolesApi;
 import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
@@ -15,9 +17,11 @@ import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -33,6 +37,8 @@ import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
 public class ListInstancesOperation implements SupplyingOperation<Set<Instance>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
+    
+    private static final String OFF = "off"; 
 
     @Autowired
     private OpenstackApiProvider apiProvider;
@@ -46,6 +52,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     @Autowired
     private ImagesAware images;
     
+    @Value("${perspective.openstack.console.type:off}")
+    private String consoleType;
+    
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
@@ -54,14 +63,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 Set<Instance> instances = new HashSet<>();
                 try {
                     ServerApi serverApi = novaApi.getServerApi(region);
+                    com.google.common.base.Optional<ConsolesApi> consolesApiCandidate = novaApi.getConsolesApi(region);
                     FluentIterable<Server> servers = serverApi.listInDetail().concat();
-                    servers.forEach(s -> instances.add(createInstance(cloud, region, s)));
+                    servers.forEach(s -> {
+                        Instance instance = createInstance(cloud, region, s);
+                        if (!consoleType.equals(OFF) && consolesApiCandidate.isPresent()) {
+                            addConsoleUrl(instance, consolesApiCandidate.get());
+                        }
+                        instances.add(instance);
+                    });
                     Integer regionInstancesCount = instances.size();
                     overallInstancesCount += regionInstancesCount;
                     LOG.debug("Fetched {} instances for cloud = {}, region = {}", regionInstancesCount, cloud.getName(), region);
                     consumer.accept(instances);
                 } catch (Exception e) {
-                    LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
+                    LOG.error("Failed to fetch instances for cloud = {}, region = {}", cloud.getName(), region);
                 }
             }
 
@@ -131,6 +147,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         }
         
         return instance;
+    }
+    
+    private void addConsoleUrl(Instance instance, ConsolesApi consolesApi) {
+        Console console = consolesApi.getConsole(instance.getRealId(), Console.Type.fromValue(consoleType));
+        URI url = console.getUrl();
+        instance.getMetadata().put(MetadataKey.CONSOLE_URL, url.toString());
     }
     
     private Optional<Project> getProject(String projectId) {
