@@ -7,7 +7,12 @@ import org.springframework.shell.plugin.HistoryFileNameProvider;
 import org.springframework.shell.plugin.PromptProvider;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
+
+import static org.meridor.perspective.shell.misc.PathUtils.getConfigurationDirectoryPath;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -40,7 +45,19 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
 
     @Override
     public String getHistoryFileName() {
-        return "perspective-history.log";
+        final String LOG_FILE_NAME = "perspective-history.log";
+        Path configurationDirectoryPath = getConfigurationDirectoryPath();
+        if (!Files.exists(configurationDirectoryPath)) {
+            try {
+                Files.createDirectory(configurationDirectoryPath);
+            } catch (IOException e) {
+                return LOG_FILE_NAME;
+            }
+        }
+        if (!Files.isDirectory(configurationDirectoryPath)) {
+            return LOG_FILE_NAME;
+        }
+        return configurationDirectoryPath.resolve(LOG_FILE_NAME).toString();
     }
 
     @Override

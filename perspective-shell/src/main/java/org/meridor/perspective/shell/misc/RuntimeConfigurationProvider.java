@@ -13,9 +13,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.meridor.perspective.shell.misc.PathUtils.getConfigurationFilePath;
 
 @Component
 public class RuntimeConfigurationProvider implements ShellStatusListener {
@@ -27,15 +28,11 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
     @Autowired
     private AbstractShell shell;
     
-    private Path getRCFilePath() {
-        return Paths.get(System.getProperty("user.home")).resolve(".perspective").resolve("rc");
-    }
-    
     @PostConstruct
     public void init() {
         shell.addShellStatusListener(this);
     }
-    
+
     @Override
     public void onShellStatusChange(ShellStatus oldStatus, ShellStatus newStatus) {
         if (newStatus.getStatus().equals(ShellStatus.Status.STARTED)) {
@@ -71,5 +68,9 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
                 LOG.fine(String.format("Shell configuration file [%s] does not exist", rcFilePath.toAbsolutePath()));
             }
         }
+    }
+
+    private Path getRCFilePath() {
+        return getConfigurationFilePath("rc");
     }
 }
