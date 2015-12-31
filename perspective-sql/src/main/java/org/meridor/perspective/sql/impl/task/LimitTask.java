@@ -2,11 +2,18 @@ package org.meridor.perspective.sql.impl.task;
 
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
+@Lazy
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class LimitTask implements Task {
     
     private final int offset;

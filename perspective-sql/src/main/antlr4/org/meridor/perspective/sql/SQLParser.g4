@@ -54,11 +54,11 @@ having_clause
    ;
 
 group_clause
-   : GROUP BY group_by_expression
+   : GROUP BY column_or_function_expression
    ;
 
 order_clause
-   : ORDER BY columns_list
+   : ORDER BY column_or_function_expression
    ;
 
 offset : INT;
@@ -81,13 +81,13 @@ select_expression
    : aliased_element ( COMMA aliased_element )*
    ;
    
-group_by_element
+column_or_function
    : column_name 
    | function_call
    ;
    
-group_by_expression
-   : group_by_element ( COMMA group_by_element )*
+column_or_function_expression
+   : column_or_function ( COMMA column_or_function )*
    ;
    
 columns_list
@@ -100,6 +100,7 @@ boolean_expression
 
 function_name
    : COUNT
+   | ABS
    ;
 
 function_args
@@ -112,7 +113,8 @@ function_call
 
 element
    : STRING 
-   | INT 
+   | INT
+   | FLOAT
    | column_name 
    | function_call 
    | subquery

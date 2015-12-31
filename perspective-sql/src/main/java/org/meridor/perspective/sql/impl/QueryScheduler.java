@@ -7,6 +7,6 @@ import java.util.Queue;
 
 public interface QueryScheduler {
     
-    Queue<Task> schedule() throws SQLSyntaxErrorException;
+    Queue<Task> schedule(String sql) throws SQLSyntaxErrorException;
     
 }

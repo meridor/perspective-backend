@@ -17,6 +17,10 @@ ID
 INT
    : '0' .. '9'+
    ;
+   
+FLOAT
+   : ('0' .. '9')+.('0' .. '9')+
+   ;
 
 STRING
    : '\'' ( ~'\'' )* '\''
@@ -312,4 +316,8 @@ ON
 // Built-in functions
 COUNT
    : 'count'
+   ;
+   
+ABS
+   : 'abs'
    ;

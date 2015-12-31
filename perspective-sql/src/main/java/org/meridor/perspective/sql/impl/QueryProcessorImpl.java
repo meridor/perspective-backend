@@ -2,13 +2,20 @@ package org.meridor.perspective.sql.impl;
 
 import org.meridor.perspective.sql.*;
 import org.meridor.perspective.sql.impl.task.Task;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 
+@Component
 public class QueryProcessorImpl implements QueryProcessor {
+    
+    @Autowired
+    private ApplicationContext applicationContext;
     
     @Override
     public List<QueryResult> process(Query query) {
@@ -43,8 +50,8 @@ public class QueryProcessorImpl implements QueryProcessor {
     }
     
     private Queue<Task> parseSQL(String sqlQuery) throws SQLSyntaxErrorException {
-        QueryScheduler queryScheduler = new QuerySchedulerImpl(sqlQuery);
-        return queryScheduler.schedule();
+        QueryScheduler queryScheduler = applicationContext.getBean(QueryScheduler.class);
+        return queryScheduler.schedule(sqlQuery);
     }
     
     private ExecutionResult executeTasks(Iterator<Task> tasks, ExecutionResult previousTaskResult) throws SQLException {

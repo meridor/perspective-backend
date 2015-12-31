@@ -7,12 +7,17 @@ import org.meridor.perspective.sql.SQLLexer;
 import org.meridor.perspective.sql.SQLParser;
 import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.task.Task;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLSyntaxErrorException;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class QuerySchedulerImpl extends SQLParserBaseListener implements QueryScheduler {
 
     private class InternalErrorListener extends BaseErrorListener {
@@ -24,18 +29,12 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
         }
     }
 
-    private final String sql;
-
     private Optional<SQLSyntaxErrorException> exception = Optional.empty();
     
     private final Queue<Task> tasksQueue = new LinkedList<>(); 
 
-    public QuerySchedulerImpl(String sql) {
-        this.sql = sql;
-    }
-
     @Override
-    public Queue<Task> schedule() throws SQLSyntaxErrorException {
+    public Queue<Task> schedule(String sql) throws SQLSyntaxErrorException {
         CharStream input = new ANTLRInputStream(sql);
         ANTLRErrorListener errorListener = new InternalErrorListener();
         SQLLexer sqlLexer = new SQLLexer(input);
