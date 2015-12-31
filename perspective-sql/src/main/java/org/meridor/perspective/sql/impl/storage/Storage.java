@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface Storage {
     
-    List<DataRow> fetch(TableName tableName, Object...expressions);
+    List<DataRow> fetch(TableName tableName, List<String> columnNames);
     
 }

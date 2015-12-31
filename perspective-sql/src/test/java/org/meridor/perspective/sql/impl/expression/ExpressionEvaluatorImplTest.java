@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -96,5 +96,18 @@ public class ExpressionEvaluatorImplTest {
         assertThat(expressionEvaluator.evaluate(VALUE, EMPTY_ROW), equalTo(VALUE));
     }
     
+    @Test
+    public void testGetColumnNames() {
+        FunctionExpression functionExpression = new FunctionExpression("abs", new ArrayList<Object>() {
+            {
+                add(new ColumnExpression("id", "mock"));
+            }
+        });
+        Map<String, List<String>> columns = expressionEvaluator.getColumnNames(functionExpression);
+        assertThat(columns.keySet(), hasSize(1));
+        assertThat(columns.keySet(), contains("mock"));
+        assertThat(columns.get("mock"), hasSize(1));
+        assertThat(columns.get("mock").get(0), equalTo("id"));
+    }
 
 }

@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,7 +21,31 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     
     @Autowired
     private FunctionsAware functionsAware;
-    
+
+    @Override
+    public Map<String, List<String>> getColumnNames(Object expression) {
+        if (expression instanceof ColumnExpression) {
+            ColumnExpression columnExpression = (ColumnExpression) expression;
+            String tableName = columnExpression.getTableName();
+            String columnName = columnExpression.getColumnName();
+            return Collections.singletonMap(tableName, Collections.singletonList(columnName));
+        } else if (expression instanceof FunctionExpression) {
+            final Map<String, List<String>> ret = new HashMap<>();
+            FunctionExpression functionExpression = (FunctionExpression) expression;
+            functionExpression.getArgs().stream()
+            .map(this::getColumnNames)
+            .forEach(m -> m.keySet().forEach(k -> {
+                if (ret.containsKey(k)) {
+                    ret.get(k).addAll(m.get(k));
+                } else {
+                    ret.put(k, m.get(k));
+                }
+            }));
+            return ret;
+        }
+        return Collections.emptyMap();
+    }
+
     @Override
     public <T extends Comparable<? super T>> T evaluate(Object expression, DataRow dataRow) {
         Assert.notNull(expression, "Expression can't be null");
