@@ -115,6 +115,7 @@ element
    : STRING 
    | INT
    | FLOAT
+   | ASTERISK
    | column_name 
    | function_call 
    | subquery

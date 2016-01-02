@@ -3,7 +3,9 @@ package org.meridor.perspective.sql.impl.task;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.storage.Storage;
+import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TableName;
+import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Lazy;
@@ -25,6 +27,9 @@ public class SelectTask implements Task {
     @Autowired
     private Storage storage;
     
+    @Autowired
+    private TablesAware tablesAware;
+    
     private final String tableName;
     
     private final List<String> columnNames = new ArrayList<>();
@@ -39,12 +44,18 @@ public class SelectTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        Optional<TableName> tableName = TableName.fromString(this.tableName);
-        return (tableName.isPresent()) ?
+        Optional<TableName> tableNameCandidate = TableName.fromString(this.tableName);
+        return (tableNameCandidate.isPresent()) ?
                 new ExecutionResult(){
                     {
+                        TableName tableName = tableNameCandidate.get();
+                        List<String> columnsToSelect = columnNames.isEmpty() ?
+                                tablesAware.getColumns(tableName).stream()
+                                        .map(Column::getName)
+                                        .collect(Collectors.toList()) : 
+                                columnNames;
                         List<DataRow> data = storage
-                                .fetch(tableName.get(), columnNames).stream()
+                                .fetch(tableName, columnsToSelect).stream()
                                 .filter(condition)
                                 .collect(Collectors.toList());
                         setCount(data.size());

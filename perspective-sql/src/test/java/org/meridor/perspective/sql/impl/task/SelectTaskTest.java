@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SelectTaskTest {
 
-    private static final String TABLE_NAME = "instances";
+    private static final String TABLE_NAME = "mock";
     private static final String FIRST_COLUMN = "id";
     private static final String SECOND_COLUMN = "name";
     
@@ -46,6 +46,19 @@ public class SelectTaskTest {
         assertThat(data.get(1).keySet(), hasSize(2));
         assertThat(data.get(1).get(FIRST_COLUMN), equalTo(2));
         assertThat(data.get(1).get(SECOND_COLUMN), equalTo(2));
+    }
+    
+    @Test
+    public void testSelectAll() throws Exception {
+        SelectTask selectTask = applicationContext.getBean(
+                SelectTask.class,
+                TABLE_NAME,
+                Collections.emptyList()
+        );
+        ExecutionResult executionResult = selectTask.execute(new ExecutionResult());
+        assertThat(executionResult.getCount(), equalTo(2));
+        List<DataRow> data = executionResult.getData();
+        assertThat(data.get(0).keySet(), hasSize(4)); //All columns were selected
     }
     
     @Test
