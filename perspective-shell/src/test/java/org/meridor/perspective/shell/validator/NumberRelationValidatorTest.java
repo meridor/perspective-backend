@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.validator;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.shell.validator.annotation.RelativeToNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,8 +26,8 @@ public class NumberRelationValidatorTest {
         RelativeToNumber annotation = new RelativeToNumber() {
 
             @Override
-            public NumberRelation relation() {
-                return NumberRelation.GREATER_THAN;
+            public BooleanRelation relation() {
+                return BooleanRelation.GREATER_THAN;
             }
 
             @Override

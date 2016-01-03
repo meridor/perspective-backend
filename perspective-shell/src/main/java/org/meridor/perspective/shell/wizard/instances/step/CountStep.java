@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.shell.validator.NumberRelation;
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.shell.validator.annotation.RelativeToNumber;
 import org.meridor.perspective.shell.wizard.FreeInputStep;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import static org.meridor.perspective.shell.repository.impl.TextUtils.isPositive
 @Component
 public class CountStep extends FreeInputStep {
     
-    @RelativeToNumber(relation = NumberRelation.GREATER_THAN, number = 0)
+    @RelativeToNumber(relation = BooleanRelation.GREATER_THAN, number = 0)
     private Integer count = 0;
     
     @Override

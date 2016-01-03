@@ -116,6 +116,7 @@ element
    | INT
    | FLOAT
    | ASTERISK
+   | NULL
    | column_name 
    | function_call 
    | subquery

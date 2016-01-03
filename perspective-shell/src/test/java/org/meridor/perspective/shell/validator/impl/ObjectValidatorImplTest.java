@@ -3,7 +3,7 @@ package org.meridor.perspective.shell.validator.impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.shell.validator.Field;
-import org.meridor.perspective.shell.validator.NumberRelation;
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.RelativeToNumber;
@@ -96,7 +96,7 @@ public class ObjectValidatorImplTest {
     
     private static class ObjectToValidateWithSet {
         
-        @RelativeToNumber(number = 0, relation = NumberRelation.GREATER_THAN_EQUAL)
+        @RelativeToNumber(number = 0, relation = BooleanRelation.GREATER_THAN_EQUAL)
         private Set<Integer> fieldContainingSet = Stream.of(1, 0, -1).collect(Collectors.toSet());
         
     }

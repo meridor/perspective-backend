@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.expression;
 
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.function.Function;
 import org.meridor.perspective.sql.impl.function.FunctionsAware;
@@ -49,18 +50,54 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     @Override
     public <T extends Comparable<? super T>> T evaluate(Object expression, DataRow dataRow) {
         Assert.notNull(expression, "Expression can't be null");
-        if (expression instanceof ColumnExpression) {
+        if (expression instanceof Null) {
+            return null;
+        } else if (expression instanceof ColumnExpression) {
             return evaluateColumnExpression((ColumnExpression) expression, dataRow);
         } else if (expression instanceof FunctionExpression) {
             return evaluateFunctionExpression((FunctionExpression) expression, dataRow);
+        } else if (expression instanceof SimpleBooleanExpression) {
+            return cast(evaluateSimpleBooleanExpression((SimpleBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
+        } else if (expression instanceof ComplexBooleanExpression) {
+            return cast(evaluateComplexBooleanExpression((ComplexBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
         }
         return evaluateConstant(expression);
     }
 
-    private <T extends Comparable<? super T>> T evaluateConstant(Object constant) {
-        return cast(constant, constant.getClass());
+    @Override
+    public <T extends Comparable<? super T>> T evaluateAs(Object expression, DataRow dataRow, Class<T> cls) {
+        Object result = evaluate(expression, dataRow);
+        return cast(result, result.getClass(), cls);
     }
 
+    private <T extends Comparable<? super T>> T evaluateConstant(Object expression) {
+        Class<?> expressionClass = expression.getClass();
+        if (isConstant(expressionClass)) {
+            return cast(expression, expressionClass, Comparable.class);
+        }
+        throw new IllegalArgumentException(String.format("Constant should be a string or a number but %s was given", expressionClass.getCanonicalName()));
+    }
+
+    private boolean isConstant(Class<?> expressionClass) {
+        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass);
+    }
+    
+    private boolean isString(Class<?> expressionClass) {
+        return String.class.isAssignableFrom(expressionClass);
+    }
+    
+    private boolean isInteger(Class<?> expressionClass) {
+        return Integer.class.isAssignableFrom(expressionClass) || Long.class.isAssignableFrom(expressionClass);
+    }
+    
+    private boolean isDouble(Class<?> expressionClass) {
+        return Float.class.isAssignableFrom(expressionClass) || Double.class.isAssignableFrom(expressionClass);
+    }
+    
+    private boolean isNumber(Class<?> expressionClass) {
+        return isInteger(expressionClass) || isDouble(expressionClass);
+    }
+    
     private <T extends Comparable<? super T>> T evaluateColumnExpression(ColumnExpression columnExpression, DataRow dataRow) {
         String tableName = columnExpression.getTableName();
         Optional<TableName> tableNameCandidate = TableName.fromString(tableName);
@@ -81,7 +118,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         if (value == null) {
             throw new IllegalArgumentException(String.format("Data row does not contain column \"%s\" and no default value is defined", columnName));
         }
-        return cast(value, columnType);
+        return cast(value, columnType, Comparable.class);
     }
     
     private <T extends Comparable<? super T>> T evaluateFunctionExpression(FunctionExpression functionExpression, DataRow dataRow) {
@@ -100,12 +137,65 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             throw new IllegalArgumentException(errors.stream().collect(Collectors.joining("; ")));
         }
         Object result = function.apply(realArgs);
-        return cast(result, function.getReturnType());
+        return cast(result, function.getReturnType(), Comparable.class);
     }
     
-    private <T extends Comparable<? super T>> T cast(Object value, Class<?> columnType) {
-        if (!Comparable.class.isAssignableFrom(columnType)) {
-            throw new IllegalArgumentException(String.format("Column type \"%s\" should implement java.lang.Comparable", columnType.getCanonicalName()));
+    private boolean evaluateSimpleBooleanExpression(SimpleBooleanExpression simpleBooleanExpression, DataRow dataRow) {
+        if (simpleBooleanExpression == null) {
+            return false;
+        }
+        Object left = simpleBooleanExpression.getLeft();
+        Object right = simpleBooleanExpression.getRight();
+        BooleanRelation booleanRelation = simpleBooleanExpression.getBooleanRelation();
+        if (left == null || right == null) {
+            return false;
+        }
+        if (!isConstant(left.getClass())) {
+            return evaluateSimpleBooleanExpression(new SimpleBooleanExpression(evaluate(left, dataRow), booleanRelation, right), dataRow);
+        }
+        if (!isConstant(right.getClass())) {
+            return evaluateSimpleBooleanExpression(new SimpleBooleanExpression(left, booleanRelation, evaluate(right, dataRow)), dataRow);
+        }
+        Class<?> leftClass = left.getClass();
+        Class<?> rightClass = right.getClass();
+        if (isString(leftClass) && isString(rightClass)) {
+            String leftAsString = String.valueOf(left);
+            String rightAsString = String.valueOf(right);
+            switch (booleanRelation) {
+                case EQUAL: return leftAsString.equals(rightAsString);
+                case NOT_EQUAL: return !leftAsString.equals(rightAsString);
+                default: throw new IllegalArgumentException("This operation is not applicable to strings");
+            }
+        } else if (isNumber(leftClass) && isNumber(rightClass)) {
+            double leftAsDouble = Double.valueOf(left.toString());
+            double rightAsDouble = Double.valueOf(right.toString());
+            switch (booleanRelation) {
+                case EQUAL: return leftAsDouble == rightAsDouble; //This one can probably cause rounding problems when comparing integers
+                case GREATER_THAN: return leftAsDouble > rightAsDouble;
+                case LESS_THAN: return leftAsDouble < rightAsDouble;
+                case GREATER_THAN_EQUAL: return leftAsDouble >= rightAsDouble;
+                case LESS_THAN_EQUAL: return leftAsDouble <= rightAsDouble;
+                case NOT_EQUAL: return leftAsDouble != rightAsDouble;
+            }
+        }
+        throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
+    }
+    
+    private boolean evaluateComplexBooleanExpression(ComplexBooleanExpression complexBooleanExpression, DataRow dataRow) {
+        boolean left = evaluateSimpleBooleanExpression(complexBooleanExpression.getLeft(), dataRow);
+        boolean right = evaluateSimpleBooleanExpression(complexBooleanExpression.getRight(), dataRow);
+        switch (complexBooleanExpression.getBooleanOperation()) {
+            case NOT: return !left;
+            default:
+            case AND: return left && right;
+            case OR: return left || right;
+            case XOR: return left ^ right;
+        }
+    }
+    
+    private <T extends Comparable<? super T>> T cast(Object value, Class<?> columnType, Class<?> requiredSuperclass) {
+        if (!requiredSuperclass.isAssignableFrom(columnType)) {
+            throw new IllegalArgumentException(String.format("Column type \"%s\" should subclass %s", columnType.getCanonicalName(), requiredSuperclass.getCanonicalName()));
         }
         @SuppressWarnings("unchecked")
         Class<T> typedColumnType = (Class<T>) columnType;

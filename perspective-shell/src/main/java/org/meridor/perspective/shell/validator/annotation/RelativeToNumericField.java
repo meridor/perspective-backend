@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.validator.annotation;
 
-import org.meridor.perspective.shell.validator.NumberRelation;
+import org.meridor.perspective.beans.BooleanRelation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface RelativeToNumericField {
     
-    NumberRelation relation() default NumberRelation.EQUAL;
+    BooleanRelation relation() default BooleanRelation.EQUAL;
     
     String field();
     

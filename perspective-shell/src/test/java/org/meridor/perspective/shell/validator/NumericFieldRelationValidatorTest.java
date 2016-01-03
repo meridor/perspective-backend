@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.validator;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.shell.validator.annotation.RelativeToNumericField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,8 +26,8 @@ public class NumericFieldRelationValidatorTest {
         RelativeToNumericField doubleFieldAnnotation = new RelativeToNumericField() {
 
             @Override
-            public NumberRelation relation() {
-                return NumberRelation.GREATER_THAN;
+            public BooleanRelation relation() {
+                return BooleanRelation.GREATER_THAN;
             }
 
             @Override
@@ -52,8 +53,8 @@ public class NumericFieldRelationValidatorTest {
         RelativeToNumericField stringFieldAnnotation = new RelativeToNumericField() {
 
             @Override
-            public NumberRelation relation() {
-                return NumberRelation.GREATER_THAN;
+            public BooleanRelation relation() {
+                return BooleanRelation.GREATER_THAN;
             }
 
             @Override
@@ -76,8 +77,8 @@ public class NumericFieldRelationValidatorTest {
         RelativeToNumericField missingFieldAnnotation = new RelativeToNumericField() {
 
             @Override
-            public NumberRelation relation() {
-                return NumberRelation.GREATER_THAN;
+            public BooleanRelation relation() {
+                return BooleanRelation.GREATER_THAN;
             }
 
             @Override
