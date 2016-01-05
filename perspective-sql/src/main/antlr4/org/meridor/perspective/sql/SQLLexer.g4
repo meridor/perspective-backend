@@ -1,43 +1,6 @@
 
 lexer grammar SQLLexer;
 
-// Basic types
-NEWLINE
-   : '\r'? '\n' -> skip
-   ;
-
-WS
-   : ( ' ' | '\t' | '\n' | '\r' )+ -> skip
-   ;
-   
-ID
-   : ( 'a' .. 'z' | 'A' .. 'Z' | '_' )+
-   ;
-
-INT
-   : '0' .. '9'+
-   ;
-   
-FLOAT
-   : ('0' .. '9')+.('0' .. '9')+
-   ;
-
-STRING
-   : '\'' ( ~'\'' )* '\''
-   ;
-
-NULL
-   : 'null'
-   ;
-
-TRUE
-   : 'true'
-   ;
-
-FALSE
-   : 'false'
-   ;
-   
 // Query keywords
 SELECT
    : 'select'
@@ -59,8 +22,8 @@ SHOW
    : 'show'
    ;
    
-SHOW_TABLES
-   : SHOW 'tables'
+TABLES
+   : 'tables'
    ;
 
 // Boolean operators
@@ -320,4 +283,41 @@ COUNT
    
 ABS
    : 'abs'
+   ;
+   
+// Basic types
+NULL
+   : 'null'
+   ;
+
+TRUE
+   : 'true'
+   ;
+
+FALSE
+   : 'false'
+   ;
+   
+INT
+   : '0' .. '9'+
+   ;
+   
+FLOAT
+   : ('0' .. '9')+.('0' .. '9')+
+   ;
+
+STRING
+   : '\'' ( ~'\'' )* '\''
+   ;
+   
+ID
+   : ( '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '_' )+
+   ;
+   
+NEWLINE
+   : '\r'? '\n' -> skip
+   ;
+   
+WS
+   : ( ' ' | '\t' | '\n' | '\r' )+ -> skip
    ;

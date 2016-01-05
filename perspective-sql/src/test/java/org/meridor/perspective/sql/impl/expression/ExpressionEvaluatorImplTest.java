@@ -100,6 +100,10 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool(1L, NOT_EQUAL, 2), is(true));
         assertThat(bool("123", EQUAL, "123"), is(true));
         assertThat(bool("123", NOT_EQUAL, "456"), is(true));
+        assertThat(bool("123", LIKE, "1_3"), is(true));
+        assertThat(bool("123", LIKE, "1\\_3"), is(false));
+        assertThat(bool("123", LIKE, "%3%"), is(true));
+        assertThat(bool("123", LIKE, "\\%3"), is(false));
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -111,7 +115,7 @@ public class ExpressionEvaluatorImplTest {
     public void testEvaluateComplexBooleanExpression() {
         final SimpleBooleanExpression TRUTHY = new SimpleBooleanExpression(1, EQUAL, 1);
         final SimpleBooleanExpression FALSY = new SimpleBooleanExpression(1, NOT_EQUAL, 1);
-        assertThat(bool(TRUTHY, NOT, null), is(false));
+        assertThat(bool(TRUTHY, NOT, new Null()), is(false));
         assertThat(bool(FALSY, NOT, null), is(true));
         assertThat(bool(TRUTHY, AND, TRUTHY), is(true));
         assertThat(bool(TRUTHY, AND, FALSY), is(false));
@@ -135,11 +139,11 @@ public class ExpressionEvaluatorImplTest {
         return bool(left, booleanRelation, right, EMPTY_ROW);
     }
     
-    private boolean bool(SimpleBooleanExpression left, BooleanOperation booleanOperation, SimpleBooleanExpression right, DataRow dataRow) {
+    private boolean bool(Object left, BooleanOperation booleanOperation, Object right, DataRow dataRow) {
         return expressionEvaluator.evaluateAs(new ComplexBooleanExpression(left, booleanOperation, right), dataRow, Boolean.class);
     }
     
-    private boolean bool(SimpleBooleanExpression left, BooleanOperation booleanOperation, SimpleBooleanExpression right) {
+    private boolean bool(Object left, BooleanOperation booleanOperation, Object right) {
         return bool(left, booleanOperation, right, EMPTY_ROW);
     }
     

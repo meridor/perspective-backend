@@ -2,17 +2,17 @@ package org.meridor.perspective.sql.impl.expression;
 
 public class ComplexBooleanExpression {
     
-    private final SimpleBooleanExpression left;
+    private final Object left;
     private final BooleanOperation booleanOperation;
-    private final SimpleBooleanExpression right;
+    private final Object right;
 
-    public ComplexBooleanExpression(SimpleBooleanExpression left, BooleanOperation booleanOperation, SimpleBooleanExpression right) {
+    public ComplexBooleanExpression(Object left, BooleanOperation booleanOperation, Object right) {
         this.left = left;
         this.booleanOperation = booleanOperation;
         this.right = right;
     }
 
-    public SimpleBooleanExpression getLeft() {
+    public Object getLeft() {
         return left;
     }
 
@@ -20,7 +20,7 @@ public class ComplexBooleanExpression {
         return booleanOperation;
     }
 
-    public SimpleBooleanExpression getRight() {
+    public Object getRight() {
         return right;
     }
 }

@@ -7,7 +7,8 @@ public enum BooleanRelation {
     LESS_THAN("<"),
     GREATER_THAN_EQUAL(">="),
     LESS_THAN_EQUAL("<="),
-    NOT_EQUAL("!=");
+    NOT_EQUAL("!="),
+    LIKE("LIKE");
     
     private final String sign;
 

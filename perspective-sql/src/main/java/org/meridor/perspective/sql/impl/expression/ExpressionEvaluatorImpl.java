@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -67,7 +68,15 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     @Override
     public <T extends Comparable<? super T>> T evaluateAs(Object expression, DataRow dataRow, Class<T> cls) {
         Object result = evaluate(expression, dataRow);
-        return cast(result, result.getClass(), cls);
+        return result != null ? cast(result, result.getClass(), cls): null;
+    }
+    
+    private <T extends Comparable<? super T>> T  evaluateAsOrDefault(Object expression, DataRow dataRow, Class<T> cls, T defaultValue) {
+        if (expression == null) {
+            return defaultValue;
+        }
+        T result = evaluateAs(expression, dataRow, cls);
+        return (result != null) ? result : defaultValue; 
     }
 
     private <T extends Comparable<? super T>> T evaluateConstant(Object expression) {
@@ -164,6 +173,14 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             switch (booleanRelation) {
                 case EQUAL: return leftAsString.equals(rightAsString);
                 case NOT_EQUAL: return !leftAsString.equals(rightAsString);
+                case LIKE: {
+                    String rightAsRegex = rightAsString
+                            .replace("%", ".*")
+                            .replace("\\%", "%")
+                            .replace("_", ".")
+                            .replace("\\_", "_");
+                    return Pattern.matches(rightAsRegex, leftAsString);
+                }
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
             }
         } else if (isNumber(leftClass) && isNumber(rightClass)) {
@@ -180,10 +197,10 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
         throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
     }
-    
+
     private boolean evaluateComplexBooleanExpression(ComplexBooleanExpression complexBooleanExpression, DataRow dataRow) {
-        boolean left = evaluateSimpleBooleanExpression(complexBooleanExpression.getLeft(), dataRow);
-        boolean right = evaluateSimpleBooleanExpression(complexBooleanExpression.getRight(), dataRow);
+        boolean left = evaluateAsOrDefault(complexBooleanExpression.getLeft(), dataRow, Boolean.class, false);
+        boolean right = evaluateAsOrDefault(complexBooleanExpression.getRight(), dataRow, Boolean.class, false);
         switch (complexBooleanExpression.getBooleanOperation()) {
             case NOT: return !left;
             default:
@@ -195,7 +212,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     
     private <T extends Comparable<? super T>> T cast(Object value, Class<?> columnType, Class<?> requiredSuperclass) {
         if (!requiredSuperclass.isAssignableFrom(columnType)) {
-            throw new IllegalArgumentException(String.format("Column type \"%s\" should subclass %s", columnType.getCanonicalName(), requiredSuperclass.getCanonicalName()));
+            throw new IllegalArgumentException(String.format("Column type \"%s\" should subclass \"%s\"", columnType.getCanonicalName(), requiredSuperclass.getCanonicalName()));
         }
         @SuppressWarnings("unchecked")
         Class<T> typedColumnType = (Class<T>) columnType;

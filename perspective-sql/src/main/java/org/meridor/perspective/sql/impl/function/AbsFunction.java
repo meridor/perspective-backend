@@ -2,6 +2,7 @@ package org.meridor.perspective.sql.impl.function;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,9 +12,8 @@ public class AbsFunction implements Function<Double> {
     
     @Override
     public Set<String> validateInput(List<Object> args) {
-        Set<String> errors = new HashSet<>();
         if (args.size() != 1) {
-            errors.add("Function accepts one argument only");
+            return Collections.singleton("Function accepts one argument only");
         }
         Object firstArg = args.get(0);
         if (!(
@@ -22,9 +22,9 @@ public class AbsFunction implements Function<Double> {
                 firstArg instanceof Integer ||
                 firstArg instanceof Long 
         )){
-            errors.add(String.format("Function argument should be a number but a %s is given", firstArg.getClass().getCanonicalName()));
+            return Collections.singleton(String.format("Function argument should be a number but a %s is given", firstArg.getClass().getCanonicalName()));
         }
-        return errors;
+        return Collections.emptySet();
     }
 
     @Override

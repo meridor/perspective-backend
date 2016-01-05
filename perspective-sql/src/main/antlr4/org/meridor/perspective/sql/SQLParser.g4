@@ -10,10 +10,6 @@ query
    ;
 
 //Entities
-project_name
-   : ID
-   ;
-   
 table_name
    : ID
    ;
@@ -23,7 +19,7 @@ alias
    ;
    
 column_name
-   : ( project_name DOT )? ID 
+   : ( table_name DOT )? ID 
    | ( alias DOT )? ID
    ;
    
@@ -142,14 +138,11 @@ between_op
    : BETWEEN
    ;
 
-is_or_is_not
-   : IS | IS NOT
-   ;
-
 simple_boolean_expression
    : element relational_operation element 
    | element between_op element AND element 
-   | element is_or_is_not NULL
+   | element IS (NOT)? NULL
+   | element (NOT)? LIKE element
    ;
 
 table_references
@@ -198,5 +191,5 @@ join_condition
 
 // Show tables query
 show_tables_query
-   : SHOW_TABLES
+   : SHOW TABLES
    ;
