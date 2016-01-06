@@ -59,8 +59,14 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             return evaluateFunctionExpression((FunctionExpression) expression, dataRow);
         } else if (expression instanceof SimpleBooleanExpression) {
             return cast(evaluateSimpleBooleanExpression((SimpleBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
-        } else if (expression instanceof ComplexBooleanExpression) {
-            return cast(evaluateComplexBooleanExpression((ComplexBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
+        } else if (expression instanceof BinaryBooleanExpression) {
+            return cast(evaluateBinaryBooleanExpression((BinaryBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
+        } else if (expression instanceof UnaryBooleanExpression) {
+            return cast(evaluateUnaryBooleanExpression((UnaryBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
+        } else if (expression instanceof BinaryArithmeticExpression) {
+            return evaluateBinaryArithmeticExpression((BinaryArithmeticExpression) expression, dataRow);
+        } else if (expression instanceof UnaryArithmeticExpression) {
+            return evaluateUnaryArithmeticExpression((UnaryArithmeticExpression) expression, dataRow);
         }
         return evaluateConstant(expression);
     }
@@ -70,7 +76,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         Object result = evaluate(expression, dataRow);
         return result != null ? cast(result, result.getClass(), cls): null;
     }
-    
+
     private <T extends Comparable<? super T>> T  evaluateAsOrDefault(Object expression, DataRow dataRow, Class<T> cls, T defaultValue) {
         if (expression == null) {
             return defaultValue;
@@ -88,23 +94,51 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     }
 
     private boolean isConstant(Class<?> expressionClass) {
-        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass);
+        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass) || Boolean.class.isAssignableFrom(expressionClass);
     }
-    
+
     private boolean isString(Class<?> expressionClass) {
         return String.class.isAssignableFrom(expressionClass);
     }
-    
+
     private boolean isInteger(Class<?> expressionClass) {
         return Integer.class.isAssignableFrom(expressionClass) || Long.class.isAssignableFrom(expressionClass);
     }
-    
+
     private boolean isDouble(Class<?> expressionClass) {
         return Float.class.isAssignableFrom(expressionClass) || Double.class.isAssignableFrom(expressionClass);
     }
-    
+
     private boolean isNumber(Class<?> expressionClass) {
         return isInteger(expressionClass) || isDouble(expressionClass);
+    }
+    
+    private boolean oneOfIsNull(Object left, Object right) {
+        return left == null || right == null;
+    }
+    
+    private boolean bothAreNumbers(Class<?> leftClass, Class<?> rightClass) {
+        return isNumber(leftClass) && isNumber(rightClass);
+    }
+    
+    private boolean bothAreIntegers(Class<?> leftClass, Class<?> rightClass) {
+        return isInteger(leftClass) && isInteger(rightClass);
+    }
+    
+    private boolean bothAreStrings(Class<?> leftClass, Class<?> rightClass) {
+        return isString(leftClass) && isString(rightClass);
+    }
+
+    private int asInt(Object value) {
+        return Integer.valueOf(value.toString());
+    }
+    
+    private double asDouble(Object value) {
+        return Double.valueOf(value.toString());
+    }
+    
+    private String asString(Object value) {
+        return String.valueOf(value);
     }
     
     private <T extends Comparable<? super T>> T evaluateColumnExpression(ColumnExpression columnExpression, DataRow dataRow) {
@@ -129,7 +163,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
         return cast(value, columnType, Comparable.class);
     }
-    
+
     private <T extends Comparable<? super T>> T evaluateFunctionExpression(FunctionExpression functionExpression, DataRow dataRow) {
         String functionName = functionExpression.getFunctionName();
         Optional<Function<?>> functionCandidate = functionsAware.getFunction(functionName);
@@ -148,7 +182,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         Object result = function.apply(realArgs);
         return cast(result, function.getReturnType(), Comparable.class);
     }
-    
+
     private boolean evaluateSimpleBooleanExpression(SimpleBooleanExpression simpleBooleanExpression, DataRow dataRow) {
         if (simpleBooleanExpression == null) {
             return false;
@@ -156,7 +190,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         Object left = simpleBooleanExpression.getLeft();
         Object right = simpleBooleanExpression.getRight();
         BooleanRelation booleanRelation = simpleBooleanExpression.getBooleanRelation();
-        if (left == null || right == null) {
+        if (oneOfIsNull(left, right)) {
             return false;
         }
         if (!isConstant(left.getClass())) {
@@ -167,9 +201,9 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
         Class<?> leftClass = left.getClass();
         Class<?> rightClass = right.getClass();
-        if (isString(leftClass) && isString(rightClass)) {
-            String leftAsString = String.valueOf(left);
-            String rightAsString = String.valueOf(right);
+        if (bothAreStrings(leftClass, rightClass)) {
+            String leftAsString = asString(left);
+            String rightAsString = asString(right);
             switch (booleanRelation) {
                 case EQUAL: return leftAsString.equals(rightAsString);
                 case NOT_EQUAL: return !leftAsString.equals(rightAsString);
@@ -183,9 +217,9 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 }
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
             }
-        } else if (isNumber(leftClass) && isNumber(rightClass)) {
-            double leftAsDouble = Double.valueOf(left.toString());
-            double rightAsDouble = Double.valueOf(right.toString());
+        } else if (bothAreNumbers(leftClass, rightClass)) {
+            double leftAsDouble = asDouble(left.toString());
+            double rightAsDouble = asDouble(right.toString());
             switch (booleanRelation) {
                 case EQUAL: return leftAsDouble == rightAsDouble; //This one can probably cause rounding problems when comparing integers
                 case GREATER_THAN: return leftAsDouble > rightAsDouble;
@@ -198,18 +232,123 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
     }
 
-    private boolean evaluateComplexBooleanExpression(ComplexBooleanExpression complexBooleanExpression, DataRow dataRow) {
-        boolean left = evaluateAsOrDefault(complexBooleanExpression.getLeft(), dataRow, Boolean.class, false);
-        boolean right = evaluateAsOrDefault(complexBooleanExpression.getRight(), dataRow, Boolean.class, false);
-        switch (complexBooleanExpression.getBooleanOperation()) {
-            case NOT: return !left;
+    private boolean evaluateBinaryBooleanExpression(BinaryBooleanExpression binaryBooleanExpression, DataRow dataRow) {
+        boolean left = evaluateAsOrDefault(binaryBooleanExpression.getLeft(), dataRow, Boolean.class, false);
+        boolean right = evaluateAsOrDefault(binaryBooleanExpression.getRight(), dataRow, Boolean.class, false);
+        switch (binaryBooleanExpression.getBinaryBooleanOperator()) {
             default:
             case AND: return left && right;
             case OR: return left || right;
             case XOR: return left ^ right;
         }
     }
+
+    private boolean evaluateUnaryBooleanExpression(UnaryBooleanExpression unaryBooleanExpression, DataRow dataRow) {
+        boolean value = evaluateAsOrDefault(unaryBooleanExpression.getValue(), dataRow, Boolean.class, false);
+        switch (unaryBooleanExpression.getUnaryBooleanOperator()) {
+            default:
+            case NOT: return !value;
+        }
+    }
+
+    private <T extends Comparable<? super T>> T evaluateBinaryArithmeticExpression(BinaryArithmeticExpression binaryArithmeticExpression, DataRow dataRow) {
+        Object left = binaryArithmeticExpression.getLeft();
+        Object right = binaryArithmeticExpression.getRight();
+        BinaryArithmeticOperator binaryArithmeticOperator = binaryArithmeticExpression.getBinaryArithmeticOperator();
+        if (oneOfIsNull(left, right)) {
+            throw new IllegalArgumentException("Nulls are not allowed in arithmetic expressions");
+        }
+        if (!isConstant(left.getClass())) {
+            return evaluateBinaryArithmeticExpression(new BinaryArithmeticExpression(evaluate(left, dataRow), binaryArithmeticOperator, right), dataRow);
+        }
+        if (!isConstant(right.getClass())) {
+            return evaluateBinaryArithmeticExpression(new BinaryArithmeticExpression(left, binaryArithmeticOperator, evaluate(right, dataRow)), dataRow);
+        }
+        Class<?> leftClass = left.getClass();
+        Class<?> rightClass = right.getClass();
+        if (!bothAreNumbers(leftClass, rightClass)) {
+            throw new IllegalArgumentException("Arithmetic expression can contain only numbers");
+        }
+        switch (binaryArithmeticOperator) {
+            default:
+            case PLUS: return bothAreIntegers(leftClass, rightClass) ?
+                    cast(asInt(left) + asInt(right), Integer.class, Comparable.class) :
+                    cast(asDouble(left) + asDouble(right), Double.class, Comparable.class);
+            case MINUS: return bothAreIntegers(leftClass, rightClass) ?
+                    cast(asInt(left) - asInt(right), Integer.class, Comparable.class) :
+                    cast(asDouble(left) - asDouble(right), Double.class, Comparable.class);
+            case MULTIPLY: return bothAreIntegers(leftClass, rightClass) ?
+                    cast(asInt(left) * asInt(right), Integer.class, Comparable.class) :
+                    cast(asDouble(left) * asDouble(right), Double.class, Comparable.class);
+            case DIVIDE: return bothAreIntegers(leftClass, rightClass) ?
+                    cast(asInt(left) / asInt(right), Integer.class, Comparable.class) :
+                    cast(asDouble(left) / asDouble(right), Double.class, Comparable.class);
+            case MOD: return bothAreIntegers(leftClass, rightClass) ?
+                    cast(asInt(left) % asInt(right), Integer.class, Comparable.class) :
+                    cast(asDouble(left) % asDouble(right), Double.class, Comparable.class);
+            case BIT_AND: {
+                if (!bothAreIntegers(leftClass, rightClass)) {
+                    throw new IllegalArgumentException("Bitwise AND operation is only applicable to integers");
+                }
+                return cast(asInt(left) & asInt(right), Integer.class, Comparable.class);
+            }
+            case BIT_OR: {
+                if (!bothAreIntegers(leftClass, rightClass)) {
+                    throw new IllegalArgumentException("Bitwise OR operation is only applicable to integers");
+                }
+                return cast(asInt(left) | asInt(right), Integer.class, Comparable.class);
+            }
+            case BIT_XOR: {
+                if (!bothAreIntegers(leftClass, rightClass)) {
+                    throw new IllegalArgumentException("Bitwise XOR operation is only applicable to integers");
+                }
+                return cast(asInt(left) ^ asInt(right), Integer.class, Comparable.class);
+            }
+            case SHIFT_LEFT: {
+                if (!bothAreIntegers(leftClass, rightClass)) {
+                    throw new IllegalArgumentException("Bitwise SHIFT LEFT operation is only applicable to integers");
+                }
+                return cast(asInt(left) << asInt(right), Integer.class, Comparable.class);
+            }
+            case SHIFT_RIGHT: {
+                if (!bothAreIntegers(leftClass, rightClass)) {
+                    throw new IllegalArgumentException("Bitwise SHIFT RIGHT operation is only applicable to integers");
+                }
+                return cast(asInt(left) >> asInt(right), Integer.class, Comparable.class);
+            }
+        }
+    }
     
+    private <T extends Comparable<? super T>> T evaluateUnaryArithmeticExpression(UnaryArithmeticExpression unaryArithmeticExpression, DataRow dataRow) {
+        Object value = unaryArithmeticExpression.getValue();
+        if (value == null) {
+            throw new IllegalArgumentException("Nulls are not allowed in arithmetic expressions");
+        }
+        Class<?> valueClass = value.getClass();
+        UnaryArithmeticOperator unaryArithmeticOperator = unaryArithmeticExpression.getUnaryArithmeticOperator();
+        if (!isConstant(valueClass)) {
+            return evaluateUnaryArithmeticExpression(new UnaryArithmeticExpression(evaluate(value, dataRow), unaryArithmeticOperator), dataRow);
+        }
+        if (!isNumber(valueClass)) {
+            throw new IllegalArgumentException("Arithmetic expression can contain only numbers");
+        }
+        switch (unaryArithmeticOperator) {
+            default:
+            case PLUS: return isInteger(valueClass) ? 
+                    cast(+asInt(value), Integer.class, Comparable.class) :
+                    cast(+asDouble(value), Double.class, Comparable.class) ;
+            case MINUS: return isInteger(valueClass) ?
+                    cast(-asInt(value), Integer.class, Comparable.class) :
+                    cast(-asDouble(value), Double.class, Comparable.class) ;
+            case BIT_NOT: {
+                if (!isInteger(valueClass)) {
+                    throw new IllegalArgumentException("Bitwise NOT operation is only applicable to integers");
+                }
+                return cast(~asInt(value), Integer.class, Comparable.class);
+            }
+        }
+    }
+
     private <T extends Comparable<? super T>> T cast(Object value, Class<?> columnType, Class<?> requiredSuperclass) {
         if (!requiredSuperclass.isAssignableFrom(columnType)) {
             throw new IllegalArgumentException(String.format("Column type \"%s\" should subclass \"%s\"", columnType.getCanonicalName(), requiredSuperclass.getCanonicalName()));

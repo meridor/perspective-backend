@@ -68,7 +68,7 @@ ANY
    ;
 
 NOT
-   : 'not'
+   : 'not' | '!'
    ;
    
 // Relational operators
@@ -98,6 +98,10 @@ GTE
    ;
 
 // Arithmetic operators
+MULTIPLY
+   : '*'
+   ;
+   
 DIVIDE
    : 'div' | '/'
    ;
@@ -113,10 +117,6 @@ PLUS
 MINUS
    : '-'
    ;
-
-POWER_OP
-   : '^'
-   ;
    
 // String operations
 REGEXP
@@ -124,16 +124,20 @@ REGEXP
    ;
 
 // Bitwise operations
-NEGATION
+BIT_NOT
    : '~'
    ;
 
-VERTBAR
+BIT_OR
    : '|'
    ;
 
-BITAND
+BIT_AND
    : '&'
+   ;
+
+BIT_XOR
+   : '^'
    ;
 
 SHIFT_LEFT
@@ -157,10 +161,6 @@ ASTERISK
    : '*'
    ;
 
-ALL_FIELDS
-   : '.*'
-   ;
-   
 USE
   : 'use'
   ;
@@ -178,17 +178,17 @@ LPAREN
    : '('
    ;
 
-RBRACK
-   : ']'
-   ;
-
-LBRACK
-   : '['
-   ;
-
-COLON
-   : ':'
-   ;
+//RBRACK
+//   : ']'
+//   ;
+//
+//LBRACK
+//   : '['
+//   ;
+//
+//COLON
+//   : ':'
+//   ;
 
 SEMICOLON
    : ';'
@@ -283,6 +283,10 @@ COUNT
    
 ABS
    : 'abs'
+   ;
+   
+TYPEOF
+   : 'typeof'
    ;
    
 // Basic types

@@ -1,8 +1,7 @@
 package org.meridor.perspective.sql.impl.expression;
 
-public enum BooleanOperation {
+public enum BinaryBooleanOperator {
     
-    NOT,
     AND,
     OR,
     XOR

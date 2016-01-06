@@ -16,7 +16,10 @@ import java.util.Map;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.beans.BooleanRelation.*;
-import static org.meridor.perspective.sql.impl.expression.BooleanOperation.*;
+import static org.meridor.perspective.sql.impl.expression.BinaryArithmeticOperator.*;
+import static org.meridor.perspective.sql.impl.expression.UnaryArithmeticOperator.*;
+import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.*;
+import static org.meridor.perspective.sql.impl.expression.UnaryBooleanOperator.*;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,6 +44,11 @@ public class ExpressionEvaluatorImplTest {
             put(NUMERIC_COLUMN_NAME, NUMERIC_COLUMN_VALUE);
         }
     };
+    
+    @Test
+    public void testEvaluateNull() {
+        assertThat(expressionEvaluator.evaluateAs(new Null(), EMPTY_ROW, Integer.class), is(nullValue()));
+    }
     
     @Test
     public void testEvaluateColumnExpression() {
@@ -112,11 +120,9 @@ public class ExpressionEvaluatorImplTest {
     }
     
     @Test
-    public void testEvaluateComplexBooleanExpression() {
+    public void testEvaluateBinaryBooleanExpression() {
         final SimpleBooleanExpression TRUTHY = new SimpleBooleanExpression(1, EQUAL, 1);
         final SimpleBooleanExpression FALSY = new SimpleBooleanExpression(1, NOT_EQUAL, 1);
-        assertThat(bool(TRUTHY, NOT, new Null()), is(false));
-        assertThat(bool(FALSY, NOT, null), is(true));
         assertThat(bool(TRUTHY, AND, TRUTHY), is(true));
         assertThat(bool(TRUTHY, AND, FALSY), is(false));
         assertThat(bool(FALSY, AND, TRUTHY), is(false));
@@ -131,6 +137,42 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool(FALSY, XOR, FALSY), is(false));
     }
     
+    @Test
+    public void testEvaluateUnaryBooleanExpression() {
+        final SimpleBooleanExpression TRUTHY = new SimpleBooleanExpression(1, EQUAL, 1);
+        final SimpleBooleanExpression FALSY = new SimpleBooleanExpression(1, NOT_EQUAL, 1);
+        assertThat(bool(TRUTHY, NOT), is(false));
+        assertThat(bool(FALSY, NOT), is(true));
+    }
+
+    @Test
+    public void testEvaluateBinaryArithmeticExpression() {
+        assertThat(arithmetic(2, BinaryArithmeticOperator.PLUS, 1, Integer.class), equalTo(3));
+        assertThat(arithmetic(3d, BinaryArithmeticOperator.PLUS, absFunction(), ROW_WITH_VALUES, Double.class), equalTo(6d));
+        assertThat(arithmetic(2, BinaryArithmeticOperator.MINUS, 1, Integer.class), equalTo(1));
+        assertThat(arithmetic(3d, BinaryArithmeticOperator.MINUS, 1.5d, Double.class), equalTo(1.5));
+        assertThat(arithmetic(2, MULTIPLY, 1, Integer.class), equalTo(2));
+        assertThat(arithmetic(2d, MULTIPLY, 1.5d, Double.class), equalTo(3d));
+        assertThat(arithmetic(2, DIVIDE, 1, Integer.class), equalTo(2));
+        assertThat(arithmetic(3d, DIVIDE, 1.5d, Double.class), equalTo(2d));
+        assertThat(arithmetic(4, MOD, 3, Integer.class), equalTo(1));
+        assertThat(arithmetic(5d, MOD, 3d, Double.class), equalTo(2d));
+        assertThat(arithmetic(0b101, BIT_AND, 0b100, Integer.class), equalTo(0b100));
+        assertThat(arithmetic(0b101, BIT_OR, 0b100, Integer.class), equalTo(0b101));
+        assertThat(arithmetic(0b101, BIT_XOR, 0b100, Integer.class), equalTo(0b001));
+        assertThat(arithmetic(0b001, SHIFT_LEFT, 2, Integer.class), equalTo(0b100));
+        assertThat(arithmetic(0b100, SHIFT_RIGHT, 2, Integer.class), equalTo(0b001));
+    }
+
+    @Test
+    public void testEvaluateUnaryArithmeticExpression() {
+        assertThat(arithmetic(1, UnaryArithmeticOperator.PLUS, Integer.class), equalTo(1));
+        assertThat(arithmetic(2d, UnaryArithmeticOperator.PLUS, Double.class), equalTo(2d));
+        assertThat(arithmetic(1, UnaryArithmeticOperator.MINUS, Integer.class), equalTo(-1));
+        assertThat(arithmetic(2d, UnaryArithmeticOperator.MINUS, Double.class), equalTo(-2d));
+        assertThat(arithmetic(1, BIT_NOT, Integer.class), equalTo(-2)); //See http://stackoverflow.com/questions/2513525/bitwise-not-operator
+    }
+    
     private boolean bool(Object left, BooleanRelation booleanRelation, Object right, DataRow dataRow) {
         return expressionEvaluator.evaluateAs(new SimpleBooleanExpression(left, booleanRelation, right), dataRow, Boolean.class);
     }
@@ -139,14 +181,31 @@ public class ExpressionEvaluatorImplTest {
         return bool(left, booleanRelation, right, EMPTY_ROW);
     }
     
-    private boolean bool(Object left, BooleanOperation booleanOperation, Object right, DataRow dataRow) {
-        return expressionEvaluator.evaluateAs(new ComplexBooleanExpression(left, booleanOperation, right), dataRow, Boolean.class);
+    private boolean bool(Object left, BinaryBooleanOperator binaryBooleanOperator, Object right, DataRow dataRow) {
+        return expressionEvaluator.evaluateAs(new BinaryBooleanExpression(left, binaryBooleanOperator, right), dataRow, Boolean.class);
     }
     
-    private boolean bool(Object left, BooleanOperation booleanOperation, Object right) {
-        return bool(left, booleanOperation, right, EMPTY_ROW);
+    private boolean bool(Object left, BinaryBooleanOperator binaryBooleanOperator, Object right) {
+        return bool(left, binaryBooleanOperator, right, EMPTY_ROW);
     }
     
+    private boolean bool(Object value, UnaryBooleanOperator unaryBooleanOperator) {
+        return expressionEvaluator.evaluateAs(new UnaryBooleanExpression(value, unaryBooleanOperator), EMPTY_ROW, Boolean.class);
+    }
+    
+    private <T extends Comparable<? super T>> T arithmetic(Object left, BinaryArithmeticOperator binaryArithmeticOperator, Object right, DataRow dataRow, Class<T> cls) {
+        return expressionEvaluator.evaluateAs(new BinaryArithmeticExpression(left, binaryArithmeticOperator, right), dataRow, cls);
+    }
+    
+    private <T extends Comparable<? super T>> T arithmetic(Object left, BinaryArithmeticOperator binaryArithmeticOperator, Object right, Class<T> cls) {
+        return arithmetic(left, binaryArithmeticOperator, right, EMPTY_ROW, cls);
+    }
+
+    private <T extends Comparable<? super T>> T arithmetic(Object value, UnaryArithmeticOperator unaryArithmeticOperator, Class<T> cls) {
+        return expressionEvaluator.evaluateAs(new UnaryArithmeticExpression(value, unaryArithmeticOperator), EMPTY_ROW, cls);
+    }
+
+
     @Test
     public void testEvaluateInteger() {
         final int VALUE = 1;

@@ -19,8 +19,8 @@ alias
    ;
    
 column_name
-   : ( table_name DOT )? ID 
-   | ( alias DOT )? ID
+   : ( table_name DOT )? ( ID | ASTERISK ) 
+   | ( alias DOT )? ( ID | ASTERISK )
    ;
    
    
@@ -29,9 +29,9 @@ select_query
    : select_clause ( from_clause )? ( where_clause )? ( group_clause )? ( having_clause )? ( order_clause )? ( limit_clause )? ( SEMICOLON )?
    ;
 
-subquery
-   : LPAREN select_query RPAREN
-   ;
+//subquery
+//   : LPAREN select_query RPAREN
+//   ;
    
 select_clause
    : SELECT select_expression
@@ -42,11 +42,11 @@ from_clause
    ;
 
 where_clause
-   : WHERE boolean_expression
+   : WHERE complex_boolean_expression
    ;
    
 having_clause
-   : HAVING boolean_expression
+   : HAVING complex_boolean_expression
    ;
 
 group_clause
@@ -69,12 +69,12 @@ alias_clause
    : ( AS )? alias
    ;
 
-aliased_element
-   : element ( alias_clause )?
+aliased_expression
+   : expression ( alias_clause )?
    ;
    
 select_expression
-   : aliased_element ( COMMA aliased_element )*
+   : aliased_expression ( COMMA aliased_expression )*
    ;
    
 column_or_function
@@ -90,35 +90,46 @@ columns_list
    : column_name ( COMMA column_name )*
    ;
 
-boolean_expression
-   : simple_boolean_expression ( boolean_operation simple_boolean_expression )*
+complex_boolean_expression
+   : simple_boolean_expression
+   | simple_boolean_expression binary_boolean_operator simple_boolean_expression
+   | unary_boolean_operator complex_boolean_expression
+   | complex_boolean_expression (binary_boolean_operator complex_boolean_expression)+
    ;
 
 function_name
    : COUNT
    | ABS
+   | TYPEOF
    ;
 
 function_args
-   : element ( COMMA element )*
+   : expression ( COMMA expression )*
    ;
    
 function_call
    : function_name LPAREN function_args RPAREN
    ;
 
-element
+literal
    : STRING 
    | INT
    | FLOAT
-   | ASTERISK
+   | TRUE
+   | FALSE
    | NULL
-   | column_name 
-   | function_call 
-   | subquery
    ;
 
-relational_operation
+expression
+   : literal
+   | column_name 
+   | function_call
+   | expression binary_arithmetic_operator expression
+   | unary_arithmetic_operator expression
+//   | subquery
+   ;
+
+relational_operator
    : EQ 
    | LT 
    | GT 
@@ -127,22 +138,42 @@ relational_operation
    | GTE
    ;
 
-boolean_operation
+binary_arithmetic_operator
+   : PLUS
+   | MINUS
+   | MULTIPLY
+   | DIVIDE
+   | MOD
+   | BIT_AND
+   | BIT_OR
+   | BIT_XOR
+   | SHIFT_LEFT
+   | SHIFT_RIGHT
+   ; 
+
+unary_arithmetic_operator
+   : PLUS
+   | MINUS
+   | BIT_NOT
+   ;
+
+binary_boolean_operator
    : AND 
    | XOR 
    | OR 
-   | NOT
    ;
 
-between_op
-   : BETWEEN
+unary_boolean_operator
+   : NOT
    ;
 
 simple_boolean_expression
-   : element relational_operation element 
-   | element between_op element AND element 
-   | element IS (NOT)? NULL
-   | element (NOT)? LIKE element
+   : expression relational_operator expression 
+   | expression (NOT)? BETWEEN expression AND expression 
+   | expression IS (NOT)? NULL
+   | expression (NOT)? LIKE expression
+   | expression (NOT)? REGEXP expression //TODO: implement it!
+   | expression (NOT)? IN LPAREN expression (COMMA expression)* RPAREN //TODO: implement it!
    ;
 
 table_references
@@ -150,16 +181,16 @@ table_references
    ;
 
 table_reference
-   : general_join 
+   : generic_join 
    | table_atom
    ;
 
-general_join
+generic_join
    : complex_join ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
    ;
 
 complex_join
-   : medium_join ( STRAIGHT_JOIN table_atom ( ON boolean_expression )? )?
+   : medium_join ( STRAIGHT_JOIN table_atom ( ON complex_boolean_expression )? )?
    ;
 
 medium_join
@@ -172,19 +203,19 @@ simple_join
 
 table_atom
    : table_name ( alias_clause )? 
-   | subquery alias_clause 
+//   | subquery alias_clause 
    | LPAREN table_references RPAREN
    ;
 
 join_clause
    : ( INNER | CROSS )? JOIN table_atom ( join_condition )? 
-   | STRAIGHT_JOIN table_atom ( ON boolean_expression )?
+   | STRAIGHT_JOIN table_atom ( ON complex_boolean_expression )?
    | ( LEFT | RIGHT ) ( OUTER )? JOIN simple_join join_condition 
    | NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom
    ;
 
 join_condition
-   : ON boolean_expression ( boolean_operation boolean_expression )* 
+   : ON complex_boolean_expression 
    | USING LPAREN columns_list RPAREN
    ;
 
