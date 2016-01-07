@@ -45,16 +45,16 @@ where_clause
    : WHERE complex_boolean_expression
    ;
    
+group_clause
+   : GROUP BY expressions
+   ;
+   
 having_clause
    : HAVING complex_boolean_expression
    ;
 
-group_clause
-   : GROUP BY column_or_function_expression
-   ;
-
 order_clause
-   : ORDER BY column_or_function_expression
+   : ORDER BY order_expressions
    ;
 
 offset : INT;
@@ -77,15 +77,6 @@ select_expression
    : aliased_expression ( COMMA aliased_expression )*
    ;
    
-column_or_function
-   : column_name 
-   | function_call
-   ;
-   
-column_or_function_expression
-   : column_or_function ( COMMA column_or_function )*
-   ;
-   
 columns_list
    : column_name ( COMMA column_name )*
    ;
@@ -103,12 +94,20 @@ function_name
    | TYPEOF
    ;
 
-function_args
+expressions
    : expression ( COMMA expression )*
    ;
    
+order_expressions
+   : order_expression ( COMMA order_expression )*
+   ;
+
+order_expression
+   : expression ( ASC | DESC )?
+   ;
+   
 function_call
-   : function_name LPAREN function_args RPAREN
+   : function_name LPAREN expressions RPAREN
    ;
 
 literal

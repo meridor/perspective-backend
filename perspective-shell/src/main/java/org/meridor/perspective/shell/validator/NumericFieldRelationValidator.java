@@ -39,7 +39,7 @@ public class NumericFieldRelationValidator implements Validator {
     public String getMessage(Annotation annotation, String fieldName, Object value) {
         RelativeToNumericField ann = RelativeToNumericField.class.cast(annotation);
         String numericFieldName = ann.field();
-        String relationSign = ann.relation().getSign();
+        String relationSign = ann.relation().getText();
         return String.format("%s should be %s %s value: %s given", fieldName, relationSign, numericFieldName, value.toString());
     }
 }

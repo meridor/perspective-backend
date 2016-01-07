@@ -11,13 +11,13 @@ public enum BooleanRelation {
     LIKE("LIKE"),
     REGEXP("REGEXP");
     
-    private final String sign;
+    private final String text;
 
-    BooleanRelation(String sign) {
-        this.sign = sign;
+    BooleanRelation(String text) {
+        this.text = text;
     }
 
-    public String getSign() {
-        return sign;
+    public String getText() {
+        return text;
     }
 }
