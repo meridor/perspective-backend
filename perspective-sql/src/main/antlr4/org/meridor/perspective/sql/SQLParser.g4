@@ -172,8 +172,8 @@ simple_boolean_expression
    | expression (NOT)? BETWEEN expression AND expression 
    | expression IS (NOT)? NULL
    | expression (NOT)? LIKE expression
-   | expression (NOT)? REGEXP expression //TODO: implement it!
-   | expression (NOT)? IN LPAREN expression (COMMA expression)* RPAREN //TODO: implement it!
+   | expression (NOT)? REGEXP expression
+   | expression (NOT)? IN LPAREN expression (COMMA expression)* RPAREN
    ;
 
 table_references

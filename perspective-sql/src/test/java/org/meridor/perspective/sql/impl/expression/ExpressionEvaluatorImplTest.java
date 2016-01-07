@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -112,11 +109,21 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool("123", LIKE, "1\\_3"), is(false));
         assertThat(bool("123", LIKE, "%3%"), is(true));
         assertThat(bool("123", LIKE, "\\%3"), is(false));
+        assertThat(bool("123", REGEXP, "..3"), is(true));
+        assertThat(bool("123", REGEXP, ".\\.3"), is(false));
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void testEvaluateIncorrectSimpleBooleanExpression() {
         bool(1, EQUAL, "123");
+    }
+    
+    @Test
+    public void testEvaluateInExpression() {
+        assertThat(bool(2, Arrays.asList("1", "2", "3"), EMPTY_ROW), is(true));
+        assertThat(bool(STRING_COLUMN_VALUE, Arrays.asList("stuff", column(STRING_COLUMN_NAME, TABLE_NAME)), ROW_WITH_VALUES), is(true));
+        assertThat(bool("3", Collections.emptyList(), EMPTY_ROW), is(false));
+        assertThat(bool(null, Collections.emptyList(), EMPTY_ROW), is(false));
     }
     
     @Test
@@ -169,7 +176,7 @@ public class ExpressionEvaluatorImplTest {
         assertThat(arithmetic(1, UnaryArithmeticOperator.PLUS, Integer.class), equalTo(1));
         assertThat(arithmetic(2d, UnaryArithmeticOperator.PLUS, Double.class), equalTo(2d));
         assertThat(arithmetic(1, UnaryArithmeticOperator.MINUS, Integer.class), equalTo(-1));
-        assertThat(arithmetic(2d, UnaryArithmeticOperator.MINUS, Double.class), equalTo(-2d));
+        assertThat(arithmetic(column(NUMERIC_COLUMN_NAME, TABLE_NAME), UnaryArithmeticOperator.MINUS, ROW_WITH_VALUES, Double.class), equalTo(3d));
         assertThat(arithmetic(1, BIT_NOT, Integer.class), equalTo(-2)); //See http://stackoverflow.com/questions/2513525/bitwise-not-operator
     }
     
@@ -184,27 +191,34 @@ public class ExpressionEvaluatorImplTest {
     private boolean bool(Object left, BinaryBooleanOperator binaryBooleanOperator, Object right, DataRow dataRow) {
         return expressionEvaluator.evaluateAs(new BinaryBooleanExpression(left, binaryBooleanOperator, right), dataRow, Boolean.class);
     }
-    
+
     private boolean bool(Object left, BinaryBooleanOperator binaryBooleanOperator, Object right) {
         return bool(left, binaryBooleanOperator, right, EMPTY_ROW);
     }
-    
+
     private boolean bool(Object value, UnaryBooleanOperator unaryBooleanOperator) {
         return expressionEvaluator.evaluateAs(new UnaryBooleanExpression(value, unaryBooleanOperator), EMPTY_ROW, Boolean.class);
     }
-    
+
+    private boolean bool(Object value, List<Object> candidates, DataRow dataRow) {
+        return expressionEvaluator.evaluateAs(new InExpression(value, candidates), dataRow, Boolean.class);
+    }
+
     private <T extends Comparable<? super T>> T arithmetic(Object left, BinaryArithmeticOperator binaryArithmeticOperator, Object right, DataRow dataRow, Class<T> cls) {
         return expressionEvaluator.evaluateAs(new BinaryArithmeticExpression(left, binaryArithmeticOperator, right), dataRow, cls);
     }
-    
+
     private <T extends Comparable<? super T>> T arithmetic(Object left, BinaryArithmeticOperator binaryArithmeticOperator, Object right, Class<T> cls) {
         return arithmetic(left, binaryArithmeticOperator, right, EMPTY_ROW, cls);
     }
 
     private <T extends Comparable<? super T>> T arithmetic(Object value, UnaryArithmeticOperator unaryArithmeticOperator, Class<T> cls) {
-        return expressionEvaluator.evaluateAs(new UnaryArithmeticExpression(value, unaryArithmeticOperator), EMPTY_ROW, cls);
+        return arithmetic(value, unaryArithmeticOperator, EMPTY_ROW, cls);
     }
-
+    
+    private <T extends Comparable<? super T>> T arithmetic(Object value, UnaryArithmeticOperator unaryArithmeticOperator, DataRow dataRow, Class<T> cls) {
+        return expressionEvaluator.evaluateAs(new UnaryArithmeticExpression(value, unaryArithmeticOperator), dataRow, cls);
+    }
 
     @Test
     public void testEvaluateInteger() {

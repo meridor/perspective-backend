@@ -57,6 +57,8 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             return evaluateColumnExpression((ColumnExpression) expression, dataRow);
         } else if (expression instanceof FunctionExpression) {
             return evaluateFunctionExpression((FunctionExpression) expression, dataRow);
+        } else if (expression instanceof InExpression) {
+            return cast(evaluateInExpression((InExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof SimpleBooleanExpression) {
             return cast(evaluateSimpleBooleanExpression((SimpleBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof BinaryBooleanExpression) {
@@ -183,6 +185,30 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         return cast(result, function.getReturnType(), Comparable.class);
     }
 
+    private boolean evaluateInExpression(InExpression inExpression, DataRow dataRow) {
+        if (inExpression == null) {
+            return false;
+        }
+        List<Object> candidates = inExpression.getCandidates();
+        List<String> candidatesAsConstants = candidates.stream()
+                .filter(c -> c != null)
+                .map(c -> (isConstant(c.getClass())) ? c : evaluate(c, dataRow))
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+        if (candidates.isEmpty()) {
+            return false;
+        }
+        Object value = inExpression.getValue();
+        if (value == null) {
+            return false;
+        }
+        Class<?> valueClass = value.getClass();
+        if (!isConstant(valueClass)) {
+            return evaluateInExpression(new InExpression(evaluate(value, dataRow), candidates), dataRow);
+        }
+        return candidatesAsConstants.contains(String.valueOf(value));
+    }
+    
     private boolean evaluateSimpleBooleanExpression(SimpleBooleanExpression simpleBooleanExpression, DataRow dataRow) {
         if (simpleBooleanExpression == null) {
             return false;
@@ -215,6 +241,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                             .replace("\\_", "_");
                     return Pattern.matches(rightAsRegex, leftAsString);
                 }
+                case REGEXP: return Pattern.matches(rightAsString, leftAsString);
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
             }
         } else if (bothAreNumbers(leftClass, rightClass)) {
@@ -227,6 +254,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 case GREATER_THAN_EQUAL: return leftAsDouble >= rightAsDouble;
                 case LESS_THAN_EQUAL: return leftAsDouble <= rightAsDouble;
                 case NOT_EQUAL: return leftAsDouble != rightAsDouble;
+                default: throw new IllegalArgumentException("This operation is not applicable to numbers");
             }
         }
         throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
