@@ -1,11 +1,13 @@
 package org.meridor.perspective.sql.impl;
 
 import org.meridor.perspective.sql.SQLParserBaseListener;
+import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
 import org.meridor.perspective.sql.impl.parser.QueryParser;
 import org.meridor.perspective.sql.impl.parser.SelectQueryAware;
 import org.meridor.perspective.sql.impl.task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -19,7 +21,13 @@ import java.util.Queue;
 @Lazy
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class QuerySchedulerImpl extends SQLParserBaseListener implements QueryScheduler {
-
+    
+    @Autowired
+    private ApplicationContext applicationContext;
+    
+    @Autowired
+    private ExpressionEvaluator expressionEvaluator;
+    
     @Autowired
     private QueryParser queryParser;
     
@@ -35,15 +43,18 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
             case SELECT: {
                 //TODO: add tasks for select, from and where
                 if (!selectQueryAware.getGroupByExpressions().isEmpty()) {
-                    GroupTask groupTask = new GroupTask();
+                    GroupTask groupTask = applicationContext.getBean(GroupTask.class);
                     selectQueryAware.getGroupByExpressions().forEach(groupTask::addExpression);
                     tasksQueue.add(groupTask);
                 }
                 if (selectQueryAware.getHavingExpression().isPresent()) {
-                    //TODO: add having task
+                    FilterTask filterTask = applicationContext.getBean(FilterTask.class);
+                    Object havingExpression = selectQueryAware.getHavingExpression().get();
+                    filterTask.setCondition(dr -> expressionEvaluator.evaluateAs(havingExpression, dr, Boolean.class));
+                    tasksQueue.add(filterTask);
                 }
                 if (!selectQueryAware.getOrderByExpressions().isEmpty()) {
-                    OrderTask orderTask = new OrderTask();
+                    OrderTask orderTask = applicationContext.getBean(OrderTask.class);
                     selectQueryAware.getOrderByExpressions().forEach(orderTask::addExpression);
                 }
                 if (selectQueryAware.getLimitCount().isPresent()) {

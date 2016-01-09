@@ -62,23 +62,6 @@ public class SelectTaskTest {
     }
     
     @Test
-    public void testExecuteWithPredicate() throws Exception {
-        SelectTask selectTask = applicationContext.getBean(
-                SelectTask.class,
-                TABLE_NAME,
-                Arrays.asList(FIRST_COLUMN, SECOND_COLUMN)
-        );
-        selectTask.setCondition(r -> new Integer(2).equals(r.get(FIRST_COLUMN)));
-        ExecutionResult executionResult = selectTask.execute(new ExecutionResult());
-        assertThat(executionResult.getCount(), equalTo(1));
-        List<DataRow> data = executionResult.getData();
-        assertThat(data.size(), equalTo(1));
-        assertThat(data.get(0).keySet(), hasSize(2));
-        assertThat(data.get(0).get(FIRST_COLUMN), equalTo(2));
-        assertThat(data.get(0).get(SECOND_COLUMN), equalTo(2));
-    }
-    
-    @Test
     public void testMissingTable() throws Exception {
         SelectTask selectTask = applicationContext.getBean(SelectTask.class, "missing", Collections.emptyList());
         ExecutionResult executionResult = selectTask.execute(new ExecutionResult());

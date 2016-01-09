@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,8 +33,6 @@ public class SelectTask implements Task {
     
     private final List<String> columnNames = new ArrayList<>();
     
-    private Predicate<DataRow> condition = r -> true;
-
     @Autowired
     public SelectTask(String tableName, List<String> columnNames) {
         this.tableName = tableName;
@@ -54,10 +51,7 @@ public class SelectTask implements Task {
                                         .map(Column::getName)
                                         .collect(Collectors.toList()) : 
                                 columnNames;
-                        List<DataRow> data = storage
-                                .fetch(tableName, columnsToSelect).stream()
-                                .filter(condition)
-                                .collect(Collectors.toList());
+                        List<DataRow> data = storage.fetch(tableName, columnsToSelect);
                         setCount(data.size());
                         setData(data);
                     }
@@ -65,7 +59,4 @@ public class SelectTask implements Task {
                 new ExecutionResult();
     }
 
-    public void setCondition(Predicate<DataRow> condition) {
-        this.condition = condition;
-    }
 }
