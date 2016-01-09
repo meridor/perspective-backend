@@ -13,6 +13,10 @@ class AliasExpressionPair {
     public static AliasExpressionPair pair(String str, Object o) {
         return new AliasExpressionPair(str, o);
     }
+    
+    public static AliasExpressionPair emptyPair() {
+        return new AliasExpressionPair("", new Object());
+    }
 
     public String getAlias() {
         return alias;

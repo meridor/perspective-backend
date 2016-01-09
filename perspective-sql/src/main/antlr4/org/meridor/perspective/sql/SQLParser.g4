@@ -176,41 +176,30 @@ simple_boolean_expression
    ;
 
 table_references
-   : table_reference ( ( COMMA table_reference ) | join_clause )*
+   : table_reference ( COMMA table_reference )*
    ;
 
 table_reference
-   : generic_join 
-   | table_atom
+   : table_atom
+   | table_join 
    ;
 
-generic_join
-   : complex_join ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
+table_join
+   : table_atom_or_natural_or_outer_join ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
    ;
 
-complex_join
-   : medium_join ( STRAIGHT_JOIN table_atom ( ON complex_boolean_expression )? )?
+table_atom_or_natural_or_outer_join
+   : table_atom_or_natural_join ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_reference join_condition )?
    ;
 
-medium_join
-   : simple_join ( ( LEFT | RIGHT ) ( OUTER )? JOIN simple_join join_condition )?
-   ;
-
-simple_join
-   : table_atom ( NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom )?
+table_atom_or_natural_join
+   : table_atom (NATURAL ( ( LEFT | RIGHT ) OUTER )? JOIN table_atom)?
    ;
 
 table_atom
    : table_name ( alias_clause )? 
 //   | subquery alias_clause 
    | LPAREN table_references RPAREN
-   ;
-
-join_clause
-   : ( INNER | CROSS )? JOIN table_atom ( join_condition )? 
-   | STRAIGHT_JOIN table_atom ( ON complex_boolean_expression )?
-   | ( LEFT | RIGHT ) ( OUTER )? JOIN simple_join join_condition 
-   | NATURAL ( ( LEFT | RIGHT ) ( OUTER )? )? JOIN table_atom
    ;
 
 join_condition

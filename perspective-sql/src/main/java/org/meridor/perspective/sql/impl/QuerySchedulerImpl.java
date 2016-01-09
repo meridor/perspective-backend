@@ -28,19 +28,15 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
     @Autowired
     private ExpressionEvaluator expressionEvaluator;
     
-    @Autowired
-    private QueryParser queryParser;
-    
-    @Autowired
-    private SelectQueryAware selectQueryAware;
-
     private final Queue<Task> tasksQueue = new LinkedList<>();
 
     @Override
     public Queue<Task> schedule(String sql) throws SQLSyntaxErrorException {
+        QueryParser queryParser = applicationContext.getBean(QueryParser.class);
         queryParser.parse(sql);
         switch (queryParser.getQueryType()) {
             case SELECT: {
+                SelectQueryAware selectQueryAware = queryParser.getSelectQueryAware();
                 //TODO: add tasks for select, from and where
                 if (!selectQueryAware.getGroupByExpressions().isEmpty()) {
                     GroupTask groupTask = applicationContext.getBean(GroupTask.class);

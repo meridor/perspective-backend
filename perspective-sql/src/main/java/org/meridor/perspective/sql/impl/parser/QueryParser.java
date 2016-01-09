@@ -8,4 +8,6 @@ public interface QueryParser {
     
     QueryType getQueryType();
     
+    SelectQueryAware getSelectQueryAware();
+    
 }

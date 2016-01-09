@@ -11,6 +11,11 @@ import org.meridor.perspective.sql.impl.CaseInsensitiveInputStream;
 import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.function.FunctionName;
 import org.meridor.perspective.sql.impl.table.DataType;
+import org.meridor.perspective.sql.impl.table.TablesAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLSyntaxErrorException;
@@ -19,9 +24,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.*;
+import static org.meridor.perspective.sql.impl.expression.ColumnExpression.ANY;
+import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.emptyPair;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.pair;
 
 @Component
+@Lazy
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class QueryParserImpl extends SQLParserBaseListener implements QueryParser, SelectQueryAware {
 
     private class InternalErrorListener extends BaseErrorListener {
@@ -30,6 +39,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             errors.add(String.format("Parse error: \"%s\" near \"%s\" at %d:%d", msg, String.valueOf(offendingSymbol), line, charPositionInLine));
         }
     }
+    
+    @Autowired
+    private TablesAware tablesAware;
     
     private SQLParser.Select_clauseContext selectClauseContext;
     private Optional<SQLParser.From_clauseContext> fromClauseContext;
@@ -41,7 +53,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private QueryType queryType = QueryType.UNKNOWN;
     private Set<String> errors = new HashSet<>();
     private Map<String, Object> selectionMap = new HashMap<>();
-    private Map<String, String> tableAliasesMap = new HashMap<>();
+    private Map<String, String> tableAliases = new HashMap<>();
+    //Column name -> aliases map of columns available after all joins
+    private Map<String, List<String>> availableColumns = new HashMap<>();
     private Optional<Object> whereExpression = Optional.empty();
     private final List<Object> groupByExpressions = new ArrayList<>();
     private final List<OrderExpression> orderByExpressions = new ArrayList<>();
@@ -70,6 +84,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     @Override
+    public SelectQueryAware getSelectQueryAware() {
+        return this;
+    }
+
+    @Override
     public QueryType getQueryType() {
         return queryType;
     }
@@ -81,15 +100,6 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     //Select query
-    @Override
-    public void exitAliased_expression(SQLParser.Aliased_expressionContext ctx) {
-        processAliasedExpression(ctx);
-    }
-
-    private String getAliasOr(Optional<SQLParser.Alias_clauseContext> ctxCandidate, String value) {
-        return ctxCandidate.isPresent() ? ctxCandidate.get().alias().getText() : value;
-    }
-
     @Override
     public void exitSelect_clause(SQLParser.Select_clauseContext ctx) {
         this.queryType = QueryType.SELECT;
@@ -305,20 +315,87 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     private void processFromClause() {
         if (fromClauseContext.isPresent()) {
-            SQLParser.Table_referencesContext tableReferences = fromClauseContext.get().table_references();
-            tableReferences.table_reference().forEach(tr -> {
-                if (tr.table_atom() != null) {
-                    processTableAtom(tr.table_atom());
-                }
-            });
-            tableReferences.join_clause().forEach(jc -> {
-                //TODO: to be implemented!
-            });
+            SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
+            processTableReferences(tableReferencesContext);
         }
     }
 
+    private void processTableReferences(SQLParser.Table_referencesContext tableReferencesContext) {
+        tableReferencesContext.table_reference().forEach(this::processTableReference);
+    }
+
+    private void processTableReference(SQLParser.Table_referenceContext tableReferenceContext) {
+        if (tableReferenceContext.table_atom() != null) {
+            processTableAtom(tableReferenceContext.table_atom());
+        } else if (tableReferenceContext.table_join() != null) {
+            processTableJoin(tableReferenceContext.table_join());
+        }
+        throw new UnsupportedOperationException("Unsupported table reference type");
+    }
+
+    private void processTableJoin(SQLParser.Table_joinContext tableJoincontext) {
+        if (tableJoincontext.JOIN() != null) {
+            processInnerJoin(
+                    tableJoincontext.table_atom_or_natural_or_outer_join(),
+                    tableJoincontext.table_atom(),
+                    Optional.ofNullable(tableJoincontext.join_condition())
+            );
+        } else {
+            processTableAtomOrNaturalOrOuterJoin(tableJoincontext.table_atom_or_natural_or_outer_join());
+        }
+    }
+
+    private void processInnerJoin(
+            SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext,
+            SQLParser.Table_atomContext tableAtomContext,
+            Optional<SQLParser.Join_conditionContext> joinConditionContextCandidate
+    ) {
+        //TODO: implement it!
+    }
+
+    private void processTableAtomOrNaturalOrOuterJoin(SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext) {
+        if (tableAtomOrNaturalOrOuterJoinContext.LEFT() != null || tableAtomOrNaturalOrOuterJoinContext.RIGHT() != null) {
+            processOuterJoin(
+                    tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join(),
+                    tableAtomOrNaturalOrOuterJoinContext.table_reference(),
+                    tableAtomOrNaturalOrOuterJoinContext.join_condition()
+            );
+        } else {
+            processTableAtomOrNaturalJoin(tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join());
+        }
+    }
+
+    private void processOuterJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext, SQLParser.Table_referenceContext tableReferenceContext, SQLParser.Join_conditionContext joinConditionContext) {
+        //TODO: implement it!
+    }
+
+    private void processTableAtomOrNaturalJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext) {
+        if (tableAtomOrNaturalJoinContext.NATURAL() != null) {
+            processNaturalJoin(tableAtomOrNaturalJoinContext.table_atom(0), tableAtomOrNaturalJoinContext.table_atom(1));
+        } else {
+            processTableAtom(tableAtomOrNaturalJoinContext.table_atom(0));
+        }
+    }
+
+    private void processNaturalJoin(SQLParser.Table_atomContext firstTableAtomContext, SQLParser.Table_atomContext secondTableAtomContext) {
+        //TODO: implement it!
+    }
+
     private void processTableAtom(SQLParser.Table_atomContext tableAtom) {
-//        tableAtom.
+        if (tableAtom.table_name() != null) {
+            processTable(tableAtom.table_name(), Optional.ofNullable(tableAtom.alias_clause()));
+        } else if (tableAtom.LPAREN() != null) {
+            processTableReferences(tableAtom.table_references());
+        }
+        throw new UnsupportedOperationException("Unsupported table atom type");
+    }
+
+    private void processTable(SQLParser.Table_nameContext tableNameContext, Optional<SQLParser.Alias_clauseContext> aliasClauseContextCandidate) {
+        String tableName = tableNameContext.ID().getText();
+        String alias = aliasClauseContextCandidate.isPresent() ?
+                aliasClauseContextCandidate.get().alias().ID().getText() :
+                tableName;
+        tableAliases.put(alias, tableName);
     }
 
     private void processSelectClause() {
@@ -331,16 +408,24 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private AliasExpressionPair processAliasedExpression(SQLParser.Aliased_expressionContext ctx) {
         Optional<SQLParser.Alias_clauseContext> aliasCtxCandidate = Optional.ofNullable(ctx.alias_clause());
         SQLParser.ExpressionContext expressionCtx = ctx.expression();
-        AliasExpressionPair defaultAliasExpressionPair = processExpression(expressionCtx);
+        AliasExpressionPair defaultAliasExpressionPair = processExpression(expressionCtx, true);
         String alias = getAliasOr(aliasCtxCandidate, defaultAliasExpressionPair.getAlias());
         return pair(alias, defaultAliasExpressionPair.getAlias());
     }
 
+    private String getAliasOr(Optional<SQLParser.Alias_clauseContext> ctxCandidate, String value) {
+        return ctxCandidate.isPresent() ? ctxCandidate.get().alias().getText() : value;
+    }
+
     private AliasExpressionPair processExpression(SQLParser.ExpressionContext expression) {
+        return processExpression(expression, false);
+    }
+    
+    private AliasExpressionPair processExpression(SQLParser.ExpressionContext expression, boolean allowMultipleColumns) {
         if (expression.literal() != null) {
             return processLiteral(expression.literal());
         } else if (expression.column_name() != null) {
-            return processColumnName(expression.column_name());
+            return processColumnName(expression.column_name(), allowMultipleColumns);
         } else if (expression.function_call() != null) {
             return processFunctionCall(expression.function_call());
         } else if (expression.unary_arithmetic_operator() != null) {
@@ -371,9 +456,65 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         throw new IllegalArgumentException("Unsupported literal type");
     }
 
-    private AliasExpressionPair processColumnName(SQLParser.Column_nameContext columnName) {
-        //TODO: implement it. Can be alias.* for concrete table or just * for all tables.
-        throw new UnsupportedOperationException("Not implemented!");
+    private AliasExpressionPair processColumnName(SQLParser.Column_nameContext columnNameContext, boolean allowMultipleColumns) {
+        //Column name can be alias.* for concrete table or just * for all tables
+        Optional<String> tableAliasCandidate = getTableAlias(columnNameContext);
+        boolean selectAllColumns = columnNameContext.ASTERISK() != null;
+        String columnName = (columnNameContext.ID() != null) ? columnNameContext.ID().getText() : null;
+        if (tableAliasCandidate.isPresent()) {
+            String tableAlias = tableAliasCandidate.get();
+            return processAliasedColumnName(tableAliasCandidate.get(), columnName, selectAllColumns, allowMultipleColumns);
+        } else {
+            return processStandaloneColumnName(columnName, selectAllColumns, allowMultipleColumns);
+        }
+    }
+    
+    private AliasExpressionPair processAliasedColumnName(String tableAlias, String columnName, boolean selectAllColumns, boolean allowMultipleColumns) {
+        if (!tableAliases.containsKey(tableAlias)) {
+            errors.add(String.format("Table or alias \"%s\" does not exist", tableAlias));
+            return emptyPair();
+        }
+        if (selectAllColumns) {
+            if (!allowMultipleColumns) {
+                errors.add(String.format("Selecting %s.* is not allowed in this context", tableAlias));
+                return emptyPair();
+            }
+            return new AliasExpressionPair(String.format("%s.*", tableAlias), new ColumnExpression(ANY, tableAlias));
+        }
+        if (!availableColumns.containsKey(columnName) ||  !availableColumns.get(columnName).contains(tableAlias)) {
+            errors.add(String.format("Column \"%s.%s\" is not available for selection", tableAlias, columnName));
+            return emptyPair();
+        }
+        return new AliasExpressionPair(String.format("%s.%s", tableAlias, columnName), new ColumnExpression(columnName, tableAlias));
+    }
+    
+    private AliasExpressionPair processStandaloneColumnName(String columnName, boolean selectAllColumns, boolean allowMultipleColumns) {
+        if (selectAllColumns) {
+            if (!allowMultipleColumns) {
+                errors.add("Selecting * is not allowed in this context");
+                return emptyPair();
+            }
+            return new AliasExpressionPair("*", new ColumnExpression(ANY, ANY));
+        }
+        if (!availableColumns.containsKey(columnName)) {
+            errors.add(String.format("Column \"%s\" is not available for selection", columnName));
+            return emptyPair();
+        }
+        if (availableColumns.get(columnName).size() > 1) {
+            errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
+            return emptyPair();
+        }
+        String tableAlias = availableColumns.get(columnName).get(0);
+        return new AliasExpressionPair(columnName, tableAlias);
+    }
+    
+    private Optional<String> getTableAlias(SQLParser.Column_nameContext columnName) {
+        if (columnName.alias() != null) {
+            return Optional.of(columnName.alias().ID().getText());
+        } else if (columnName.table_name() != null) {
+            return Optional.of(columnName.table_name().ID().getText());
+        }
+        return Optional.empty();
     }
 
     private void foreachExpression(List<SQLParser.ExpressionContext> expressions, Consumer<AliasExpressionPair> action) {

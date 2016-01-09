@@ -6,6 +6,8 @@ public class ColumnExpression {
 
     private final String tableName;
 
+    public static final String ANY = "*";
+    
     public ColumnExpression(String columnName, String tableName) {
         this.columnName = columnName;
         this.tableName = tableName;
