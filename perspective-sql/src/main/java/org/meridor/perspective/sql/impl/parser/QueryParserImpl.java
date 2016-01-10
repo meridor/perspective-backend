@@ -10,7 +10,9 @@ import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.CaseInsensitiveInputStream;
 import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.function.FunctionName;
+import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.DataType;
+import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.*;
@@ -54,6 +57,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private Set<String> errors = new HashSet<>();
     private Map<String, Object> selectionMap = new HashMap<>();
     private Map<String, String> tableAliases = new HashMap<>();
+    private Optional<DataSource> dataSource = Optional.empty();
     //Column name -> aliases map of columns available after all joins
     private Map<String, List<String>> availableColumns = new HashMap<>();
     private Optional<Object> whereExpression = Optional.empty();
@@ -316,86 +320,215 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private void processFromClause() {
         if (fromClauseContext.isPresent()) {
             SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
-            processTableReferences(tableReferencesContext);
+            Optional<DataSource> dataSourceCandidate = processTableReferences(tableReferencesContext);
+            this.availableColumns.putAll(getAvailableColumns(dataSourceCandidate, Collections.emptyMap()));
+            this.dataSource = dataSourceCandidate;
         }
     }
 
-    private void processTableReferences(SQLParser.Table_referencesContext tableReferencesContext) {
-        tableReferencesContext.table_reference().forEach(this::processTableReference);
+    private Optional<DataSource> processTableReferences(SQLParser.Table_referencesContext tableReferencesContext) {
+        List<DataSource> dataSources = tableReferencesContext.table_reference().stream()
+                .map(this::processTableReference)
+                .collect(Collectors.toList());
+        return chainDataSources(Optional.empty(), dataSources);
+    }
+    
+    private Optional<DataSource> chainDataSources(Optional<DataSource> previousDataSourceCandidate, List<DataSource> remainingDataSources) {
+        if (remainingDataSources.isEmpty()) {
+            return previousDataSourceCandidate;
+        }
+        DataSource currentDataSource = remainingDataSources.remove(remainingDataSources.size() - 1); //Removing from the tail
+        if (previousDataSourceCandidate.isPresent()) {
+            DataSource previousDataSource = previousDataSourceCandidate.get();
+            previousDataSource.setJoinType(JoinType.INNER);
+            currentDataSource.setNextDatasource(previousDataSource);
+        }
+        return chainDataSources(Optional.of(currentDataSource), remainingDataSources);
+    }
+    
+    private Map<String, List<String>> getAvailableColumns(Optional<DataSource> currentDataSourceCandidate, Map<String, List<String>> availableColumns) {
+        if (!currentDataSourceCandidate.isPresent()) {
+            return availableColumns;
+        }
+        DataSource currentDataSource = currentDataSourceCandidate.get();
+        String tableAlias = currentDataSource.getTableAlias();
+        String tableName = tableAliases.get(tableAlias);
+        List<String> columnNames = tablesAware
+                .getColumns(TableName.valueOf(tableName)).stream()
+                .map(Column::getName)
+                .collect(Collectors.toList());
+        if (currentDataSource.getJoinType().isPresent()) {
+            Map<String, List<String>> previouslyAvailableColumns = new HashMap<>(availableColumns);
+            if (currentDataSource.isNaturalJoin()) {
+                //Natural joins erase column aliases
+                List<String> distinctColumnNames = new ArrayList<>(new HashSet<String>(){
+                    {
+                        addAll(columnNames);
+                        addAll(previouslyAvailableColumns.keySet());
+                    }
+                });
+                return getAvailableColumns(
+                        currentDataSource.getNextDataSource(),
+                        createAvailableColumns(tableName, distinctColumnNames)
+                );
+            } else {
+                return getAvailableColumns(
+                        currentDataSource.getNextDataSource(),
+                        mergeAvailableColumns(
+                                previouslyAvailableColumns,
+                                createAvailableColumns(tableAlias, columnNames)
+                        )
+                );
+            }
+        } else {
+            return getAvailableColumns(currentDataSource.getNextDataSource(), createAvailableColumns(tableAlias, columnNames));
+        }
+    }
+    
+    private Map<String, List<String>> createAvailableColumns(String tableAlias, List<String> columnNames) {
+        return columnNames.stream().collect(Collectors.toMap(
+                Function.identity(),
+                cn -> new ArrayList<String>(){
+                    {
+                        add(tableAlias);
+                    }
+                }
+        ));
     }
 
-    private void processTableReference(SQLParser.Table_referenceContext tableReferenceContext) {
+    private Map<String, List<String>> mergeAvailableColumns(Map<String, List<String>> first, Map<String, List<String>> second) {
+        Map<String, List<String>> mergedMaps = first.keySet().stream().collect(Collectors.toMap(
+                Function.identity(),
+                k -> first.merge(k, first.get(k), (f, s) -> new ArrayList<>(new HashSet<String>() {
+                    {
+                        addAll(f);
+                        addAll(s);
+
+                    }
+                }))
+        ));
+        second.keySet().stream()
+                .filter(k -> !first.containsKey(k))
+                .forEach(k -> mergedMaps.put(k, second.get(k)));
+        return mergedMaps;
+    }
+    
+    private DataSource processTableReference(SQLParser.Table_referenceContext tableReferenceContext) {
         if (tableReferenceContext.table_atom() != null) {
-            processTableAtom(tableReferenceContext.table_atom());
+            return processTableAtom(tableReferenceContext.table_atom());
         } else if (tableReferenceContext.table_join() != null) {
             processTableJoin(tableReferenceContext.table_join());
         }
         throw new UnsupportedOperationException("Unsupported table reference type");
     }
 
-    private void processTableJoin(SQLParser.Table_joinContext tableJoincontext) {
+    private DataSource processTableJoin(SQLParser.Table_joinContext tableJoincontext) {
         if (tableJoincontext.JOIN() != null) {
-            processInnerJoin(
+            return processInnerJoin(
                     tableJoincontext.table_atom_or_natural_or_outer_join(),
                     tableJoincontext.table_atom(),
                     Optional.ofNullable(tableJoincontext.join_condition())
             );
         } else {
-            processTableAtomOrNaturalOrOuterJoin(tableJoincontext.table_atom_or_natural_or_outer_join());
+            return processTableAtomOrNaturalOrOuterJoin(tableJoincontext.table_atom_or_natural_or_outer_join());
         }
     }
 
-    private void processInnerJoin(
+    private DataSource processInnerJoin(
             SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext,
             SQLParser.Table_atomContext tableAtomContext,
             Optional<SQLParser.Join_conditionContext> joinConditionContextCandidate
     ) {
-        //TODO: implement it!
+        DataSource first = processTableAtomOrNaturalOrOuterJoin(tableAtomOrNaturalOrOuterJoinContext);
+        DataSource second = processTableAtom(tableAtomContext);
+        second.setJoinType(JoinType.INNER);
+        if (joinConditionContextCandidate.isPresent()) {
+            processJoinCondition(second, joinConditionContextCandidate.get());
+        }
+        first.setNextDatasource(second);
+        return first;
     }
 
-    private void processTableAtomOrNaturalOrOuterJoin(SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext) {
+    private DataSource processTableAtomOrNaturalOrOuterJoin(SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext) {
         if (tableAtomOrNaturalOrOuterJoinContext.LEFT() != null || tableAtomOrNaturalOrOuterJoinContext.RIGHT() != null) {
-            processOuterJoin(
+            JoinType joinType = tableAtomOrNaturalOrOuterJoinContext.LEFT() != null ? 
+                    JoinType.LEFT :
+                    JoinType.RIGHT;
+            return processOuterJoin(
                     tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join(),
+                    joinType,
                     tableAtomOrNaturalOrOuterJoinContext.table_reference(),
                     tableAtomOrNaturalOrOuterJoinContext.join_condition()
             );
         } else {
-            processTableAtomOrNaturalJoin(tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join());
+            return processTableAtomOrNaturalJoin(tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join());
         }
     }
 
-    private void processOuterJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext, SQLParser.Table_referenceContext tableReferenceContext, SQLParser.Join_conditionContext joinConditionContext) {
-        //TODO: implement it!
+    private DataSource processOuterJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext, JoinType joinType, SQLParser.Table_referenceContext tableReferenceContext, SQLParser.Join_conditionContext joinConditionContext) {
+        DataSource first = processTableAtomOrNaturalJoin(tableAtomOrNaturalJoinContext);
+        DataSource second = processTableReference(tableReferenceContext);
+        second.setJoinType(joinType);
+        processJoinCondition(second, joinConditionContext);
+        first.setNextDatasource(second);
+        return first;
+    }
+    
+    private void processJoinCondition(DataSource dataSource, SQLParser.Join_conditionContext joinConditionContext) {
+        if (joinConditionContext.ON() != null) {
+            Object joinCondition = processComplexBooleanExpression(joinConditionContext.complex_boolean_expression());
+            dataSource.setJoinCondition(joinCondition);
+        } else if (joinConditionContext.USING() != null) {
+            List<String> joinColumns = joinConditionContext.columns_list().column_name().stream()
+                    .map(cn -> processColumnName(cn, false).getExpression())
+                    .filter(e -> e instanceof ColumnExpression)
+                    .map(e -> ((ColumnExpression) e).getColumnName())
+                    .collect(Collectors.toList());
+            dataSource.getJoinColumns().addAll(joinColumns);
+        }
+        throw new UnsupportedOperationException("Unsupported join condition type");
     }
 
-    private void processTableAtomOrNaturalJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext) {
+    private DataSource processTableAtomOrNaturalJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext) {
         if (tableAtomOrNaturalJoinContext.NATURAL() != null) {
-            processNaturalJoin(tableAtomOrNaturalJoinContext.table_atom(0), tableAtomOrNaturalJoinContext.table_atom(1));
+            JoinType joinType = (tableAtomOrNaturalJoinContext.OUTER() != null) ?
+                    ((tableAtomOrNaturalJoinContext.LEFT() != null) ? JoinType.LEFT : JoinType.RIGHT) :
+                    JoinType.INNER;
+            return processNaturalJoin(tableAtomOrNaturalJoinContext.table_atom(0), joinType, tableAtomOrNaturalJoinContext.table_atom(1));
         } else {
-            processTableAtom(tableAtomOrNaturalJoinContext.table_atom(0));
+            return processTableAtom(tableAtomOrNaturalJoinContext.table_atom(0));
         }
     }
 
-    private void processNaturalJoin(SQLParser.Table_atomContext firstTableAtomContext, SQLParser.Table_atomContext secondTableAtomContext) {
-        //TODO: implement it!
+    private DataSource processNaturalJoin(SQLParser.Table_atomContext firstTableAtomContext, JoinType joinType, SQLParser.Table_atomContext secondTableAtomContext) {
+        DataSource first = processTableAtom(firstTableAtomContext);
+        DataSource second = processTableAtom(secondTableAtomContext);
+        second.setJoinType(joinType);
+        second.setNaturalJoin(true);
+        first.setNextDatasource(second);
+        return first;
     }
 
-    private void processTableAtom(SQLParser.Table_atomContext tableAtom) {
+    private DataSource processTableAtom(SQLParser.Table_atomContext tableAtom) {
         if (tableAtom.table_name() != null) {
-            processTable(tableAtom.table_name(), Optional.ofNullable(tableAtom.alias_clause()));
+            return processTable(tableAtom.table_name(), Optional.ofNullable(tableAtom.alias_clause()));
         } else if (tableAtom.LPAREN() != null) {
-            processTableReferences(tableAtom.table_references());
+            return processTableReferences(tableAtom.table_references()).get();
         }
         throw new UnsupportedOperationException("Unsupported table atom type");
     }
 
-    private void processTable(SQLParser.Table_nameContext tableNameContext, Optional<SQLParser.Alias_clauseContext> aliasClauseContextCandidate) {
+    private DataSource processTable(SQLParser.Table_nameContext tableNameContext, Optional<SQLParser.Alias_clauseContext> aliasClauseContextCandidate) {
         String tableName = tableNameContext.ID().getText();
         String alias = aliasClauseContextCandidate.isPresent() ?
                 aliasClauseContextCandidate.get().alias().ID().getText() :
                 tableName;
-        tableAliases.put(alias, tableName);
+        if (!tableAliases.containsKey(alias)) {
+            tableAliases.put(alias, tableName);
+        } else {
+            errors.add(String.format("Duplicate alias \"%s\"", alias));
+        }
+        return new DataSource(alias);
     }
 
     private void processSelectClause() {
@@ -463,7 +596,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         String columnName = (columnNameContext.ID() != null) ? columnNameContext.ID().getText() : null;
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
-            return processAliasedColumnName(tableAliasCandidate.get(), columnName, selectAllColumns, allowMultipleColumns);
+            return processAliasedColumnName(tableAlias, columnName, selectAllColumns, allowMultipleColumns);
         } else {
             return processStandaloneColumnName(columnName, selectAllColumns, allowMultipleColumns);
         }
@@ -632,6 +765,16 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     @Override
     public Map<String, Object> getSelectionMap() {
         return selectionMap;
+    }
+
+    @Override
+    public Optional<DataSource> getDataSource() {
+        return dataSource;
+    }
+
+    @Override
+    public Map<String, List<String>> getAvailableColumns() {
+        return availableColumns;
     }
 
     @Override
