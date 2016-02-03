@@ -13,12 +13,14 @@ import java.util.function.Predicate;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.oneOfMatches;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.CLOUDS;
+import static org.meridor.perspective.shell.validator.Field.PROJECTS;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
 public class ShowProjectsQuery implements Query<Predicate<Project>> {
     
+    @Filter(PROJECTS)
     private Set<String> names;
     
     @SupportedCloud
