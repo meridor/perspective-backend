@@ -47,10 +47,14 @@ public class ExistingEntityValidator implements Validator {
     
     private Collection<Keypair> getKeypairsByName(String name) {
         return projectsRepository
-                .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectName))
+                .showKeypairs(
+                        queryProvider.get(ShowKeypairsQuery.class)
+                                .withNames(name)
+                                .withProjects(projectName)
+                )
+                .values()
                 .stream()
-                .flatMap(p -> p.getKeypairs().stream())
-                .filter(k -> k.getName().equals(name))
+                .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
     
