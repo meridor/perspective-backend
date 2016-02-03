@@ -206,19 +206,19 @@ public class TextUtilsTest {
         assertThat(matches(CANDIDATE, "missing"), is(false));
         
         //Contains match
-        assertThat(matches(CANDIDATE, "cand"), is(true));
-        assertThat(matches(CANDIDATE, "date"), is(true));
+        assertThat(matches(CANDIDATE, "%cand%"), is(true));
+        assertThat(matches(CANDIDATE, "%date%"), is(true));
         
         //Exact match
         assertThat(matches(CANDIDATE, "^candidate$"), is(true));
         assertThat(matches(CANDIDATE, "^cand$"), is(false));
         
         //Regex match
-        assertThat(matches(CANDIDATE, "/^candidate$/"), is(true));
-        assertThat(matches(CANDIDATE, "/candidate/"), is(true));
-        assertThat(matches(CANDIDATE, "/cand.*/"), is(true));
-        assertThat(matches(CANDIDATE, "/.*did.*/"), is(true));
-        assertThat(matches(CANDIDATE, "/ded/"), is(false));
+        assertThat(matches(CANDIDATE, "^candidate$"), is(true));
+        assertThat(matches(CANDIDATE, "candidate"), is(true));
+        assertThat(matches(CANDIDATE, "cand.*"), is(true));
+        assertThat(matches(CANDIDATE, ".*did.*"), is(true));
+        assertThat(matches(CANDIDATE, "ded"), is(false));
     }
     
     @Test
@@ -226,8 +226,4 @@ public class TextUtilsTest {
         assertThat(getAsExactMatch("text"), equalTo("^text$"));
     }
     
-    @Test
-    public void testGetAsRegex() {
-        assertThat(getAsRegex("text"), equalTo("/text/"));
-    }
 }

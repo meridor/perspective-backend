@@ -299,23 +299,23 @@ public final class TextUtils {
         if (candidate == null || expression == null) {
             return false;
         }
-        if (isRegex(expression)) {
-            return Pattern.matches(removeFirstAndLastChars(expression), candidate);
-        }
         if (isExactMatch(expression)) {
             return candidate.equals(removeFirstAndLastChars(expression));
         }
-        return candidate.contains(expression);
+        if (isContainsMatch(expression)) {
+            return candidate.contains(removeFirstAndLastChars(expression));
+        }
+        return Pattern.compile(expression).matcher(candidate).find();
     }
     
     private static boolean isExactMatch(String expression) {
         return expression != null && expression.startsWith("^") && expression.endsWith("$");
     }
     
-    private static boolean isRegex(String expression) {
-        return expression != null && expression.startsWith("/") && expression.endsWith("/");
+    private static boolean isContainsMatch(String expression) {
+        return expression != null && expression.startsWith("%") && expression.endsWith("%");
     }
-    
+
     private static String removeFirstAndLastChars(String expression) {
         if (expression.length() < 2) {
             return expression;
@@ -326,11 +326,7 @@ public final class TextUtils {
     public static String getAsExactMatch(String value) {
         return String.format("^%s$", value);
     }
-    
-    public static String getAsRegex(String value) {
-        return String.format("/%s/", value);
-    }
-    
+
     private TextUtils() {
         
     }
