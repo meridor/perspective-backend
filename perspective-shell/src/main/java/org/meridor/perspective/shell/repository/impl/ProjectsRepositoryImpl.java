@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
-public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRepository {
+public class ProjectsRepositoryImpl implements ProjectsRepository {
     
     @Autowired
     private ApiProvider apiProvider;
@@ -36,7 +36,6 @@ public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRe
     
     @Override 
     public List<Project> showProjects(ShowProjectsQuery showProjectsQuery) {
-        validateQuery(showProjectsQuery);
         if (projectsCache.isEmpty() || isProjectsCacheDisabled()) {
             GenericType<ArrayList<Project>> projectListType = new GenericType<ArrayList<Project>>() {};
             List<Project> allProjects = apiProvider.getProjectsApi().getAsXml(projectListType);
@@ -56,7 +55,6 @@ public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRe
     
     @Override 
     public Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
-        validateQuery(showFlavorsQuery);
         List<Project> projects = showAllProjects(showFlavorsQuery.getProjects(), showFlavorsQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(
@@ -72,7 +70,6 @@ public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRe
     
     @Override 
     public Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery) {
-        validateQuery(showNetworksQuery);
         List<Project> projects = showAllProjects(showNetworksQuery.getProjects(), showNetworksQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(
@@ -88,7 +85,6 @@ public class ProjectsRepositoryImpl extends BaseRepository implements ProjectsRe
 
     @Override
     public Map<Project, List<Keypair>> showKeypairs(ShowKeypairsQuery showKeypairsQuery) {
-        validateQuery(showKeypairsQuery);
         List<Project> projects = showAllProjects(showKeypairsQuery.getProjects(), showKeypairsQuery.getClouds());
         return projects.stream()
                 .collect(Collectors.toMap(

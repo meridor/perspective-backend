@@ -115,20 +115,16 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     public List<Instance> getPayload() {
         List<Instance> instances = new ArrayList<>();
         Set<Integer> numbers = parseRange(range);
-        if (numbers.size() > 1) {
-            for (Integer i : numbers) {
-                final String number = String.valueOf(i);
-                String instanceName = (containsPlaceholder(name, Placeholder.NUMBER)) ?
-                        replacePlaceholders(name, new HashMap<Placeholder, String>(){
-                            {
-                                put(Placeholder.NUMBER, number);
-                            }
-                        }) :
-                        String.format("%s-%s", name, i);
-                instances.add(createInstance(instanceName, project, flavor, image, network, keypair, options));
-            }
-        } else {
-            instances.add(createInstance(name, project, flavor, image, network, keypair, options));
+        for (Integer i : numbers) {
+            final String number = String.valueOf(i);
+            String instanceName = (containsPlaceholder(name, Placeholder.NUMBER)) ?
+                    replacePlaceholders(name, new HashMap<Placeholder, String>(){
+                        {
+                            put(Placeholder.NUMBER, number);
+                        }
+                    }) :
+                    String.format("%s-%s", name, i);
+            instances.add(createInstance(instanceName, project, flavor, image, network, keypair, options));
         }
         return instances;
     }

@@ -15,14 +15,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-public class ImagesRepositoryImpl extends BaseRepository implements ImagesRepository {
+public class ImagesRepositoryImpl implements ImagesRepository {
 
     @Autowired
     private ApiProvider apiProvider;
     
     @Override 
     public List<Image> showImages(ShowImagesQuery showImagesQuery) {
-        validateQuery(showImagesQuery);
         GenericType<ArrayList<Image>> instanceListType = new GenericType<ArrayList<Image>>() {};
         List<Image> images = apiProvider.getImagesApi().getAsXml(instanceListType);
         return images.stream()
@@ -33,7 +32,6 @@ public class ImagesRepositoryImpl extends BaseRepository implements ImagesReposi
 
     @Override 
     public Set<String> addImages(AddImagesQuery addImagesQuery) {
-        validateQuery(addImagesQuery);
         List<Image> images = addImagesQuery.getPayload();
         GenericEntity<List<Image>> data = new GenericEntity<List<Image>>(images) {
         };
@@ -43,7 +41,6 @@ public class ImagesRepositoryImpl extends BaseRepository implements ImagesReposi
     
     @Override 
     public Set<String> deleteImages(DeleteImagesQuery deleteImagesQuery) {
-        validateQuery(deleteImagesQuery);
         List<Image> images = deleteImagesQuery.getPayload();
         GenericEntity<List<Image>> data = new GenericEntity<List<Image>>(images) {
         };
