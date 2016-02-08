@@ -150,9 +150,13 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
     
     private void addConsoleUrl(Instance instance, ConsolesApi consolesApi) {
-        Console console = consolesApi.getConsole(instance.getRealId(), Console.Type.fromValue(consoleType));
-        URI url = console.getUrl();
-        instance.getMetadata().put(MetadataKey.CONSOLE_URL, url.toString());
+        try {
+            Console console = consolesApi.getConsole(instance.getRealId(), Console.Type.fromValue(consoleType));
+            URI url = console.getUrl();
+            instance.getMetadata().put(MetadataKey.CONSOLE_URL, url.toString());
+        } catch (Exception e) {
+            LOG.trace("Failed to fetch console information for instance {} ({})", instance.getName(), instance.getId());
+        }
     }
     
     private Optional<Project> getProject(String projectId) {
