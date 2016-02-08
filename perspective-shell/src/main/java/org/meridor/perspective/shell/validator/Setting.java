@@ -5,6 +5,7 @@ public enum Setting {
     //Contains all supported shell settings
     ALWAYS_SAY_YES,
     API_URL,
+    DATE_FORMAT,
     DISABLE_PROJECTS_CACHE,
     LOG_LEVEL,
     PAGE_SIZE,
