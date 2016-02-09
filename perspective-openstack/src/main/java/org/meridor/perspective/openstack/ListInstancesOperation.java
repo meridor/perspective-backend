@@ -167,7 +167,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         switch (status) {
             case PASSWORD:
             case BUILD:
-                return InstanceState.QUEUED;
+                return InstanceState.LAUNCHING;
             case REBUILD:
                 return InstanceState.REBUILDING;
             case SUSPENDED:
