@@ -108,15 +108,39 @@ public class ShowInstancesQuery implements Query<Predicate<Instance>> {
             Optional<String> projects
     ) {
         return instance ->
-                ( !ids.isPresent() || oneOfMatches(instance.getId(), ids.get()) ) &&
-                ( !names.isPresent() || oneOfMatches(instance.getName(), names.get()) ) &&
-                ( !flavors.isPresent() || oneOfMatches(instance.getFlavor().getName(), flavors.get()) ) &&
-                ( !images.isPresent() || oneOfMatches(instance.getImage().getName(), images.get()) ) &&
-                ( !states.isPresent() || oneOfMatches(instance.getState().value().toLowerCase(), states.get()) ) &&
-                ( !clouds.isPresent() || oneOfMatches(instance.getCloudType().value().toLowerCase(), clouds.get()) ) &&
+                ( !ids.isPresent() || idMatches(instance, ids.get()) ) &&
+                ( !names.isPresent() || nameMatches(instance, names.get()) ) &&
+                ( !flavors.isPresent() || flavorMatches(instance, flavors.get()) ) &&
+                ( !images.isPresent() || imageMatches(instance, images.get()) ) &&
+                ( !states.isPresent() || stateMatches(instance, states.get()) ) &&
+                ( !clouds.isPresent() || cloudMatches(instance, clouds.get()) ) &&
                 ( !projects.isPresent() || projectMatches(projects.get(), instance.getProjectId()));
     }
 
+    private static boolean idMatches(Instance instance, Set<String> ids) {
+        return oneOfMatches(instance.getId(), ids);
+    }
+    
+    private static boolean nameMatches(Instance instance, Set<String> names) {
+        return oneOfMatches(instance.getName(), names);
+    }
+    
+    private static boolean flavorMatches(Instance instance, Set<String> flavors) {
+        return instance.getFlavor() != null && oneOfMatches(instance.getFlavor().getName(), flavors);
+    }
+    
+    private static boolean imageMatches(Instance instance, Set<String> images) {
+        return instance.getImage() != null && oneOfMatches(instance.getImage().getName(), images);
+    }
+    
+    private static boolean stateMatches(Instance instance, Set<String> states) {
+        return oneOfMatches(instance.getState().value().toLowerCase(), states);
+    }
+    
+    private static boolean cloudMatches(Instance instance, Set<String> clouds) {
+        return oneOfMatches(instance.getCloudType().value().toLowerCase(), clouds);
+    }
+    
     private boolean projectMatches(String projects, String projectIdFromInstance) {
         return projectsRepository
                 .showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projects))
