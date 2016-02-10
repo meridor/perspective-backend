@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.task;
 
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -8,7 +9,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -21,12 +21,13 @@ public class FilterTask implements Task {
     
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        List<DataRow> newData = previousTaskResult.getData().stream()
-                .filter(condition)
-                .collect(Collectors.toList());
+        DataContainer newData = new DataContainer(
+                previousTaskResult.getData(),
+                rows -> rows.stream().filter(condition).collect(Collectors.toList())
+        );
         return new ExecutionResult(){
             {
-                setCount(newData.size());
+                setCount(newData.getRows().size());
                 setData(newData);
             }
         };

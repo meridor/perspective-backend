@@ -1,10 +1,12 @@
 package org.meridor.perspective.sql.impl.task;
 
 import org.junit.Test;
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -20,16 +22,16 @@ public class LimitTaskTest {
     private ExecutionResult getInput() {
         ExecutionResult input = new ExecutionResult();
         input.setCount(INITIAL_SIZE);
-        List<DataRow> initialData = new ArrayList<>();
+        DataContainer dataContainer = new DataContainer(Collections.singletonList(KEY));
         for (int n = 1; n <= INITIAL_SIZE; n++) {
             final int value = n;
-            initialData.add(new DataRow(){
+            dataContainer.addRow(new ArrayList<Object>(){
                 {
-                    put(KEY, value);
+                    add(value);
                 }
             });
         }
-        input.setData(initialData);
+        input.setData(dataContainer);
         return input;
     }
     
@@ -51,7 +53,7 @@ public class LimitTaskTest {
     
     private void doChecks(ExecutionResult output, int firstValue, int secondValue) {
         assertThat(output.getCount(), equalTo(COUNT));
-        List<DataRow> data = output.getData();
+        List<DataRow> data = output.getData().getRows();
         assertThat(data.size(), equalTo(COUNT));
         assertThat(data.get(0).get(KEY), equalTo(firstValue));
         assertThat(data.get(1).get(KEY), equalTo(secondValue));

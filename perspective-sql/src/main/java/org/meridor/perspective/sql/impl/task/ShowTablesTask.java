@@ -1,6 +1,6 @@
 package org.meridor.perspective.sql.impl.task;
 
-import org.meridor.perspective.sql.DataRow;
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Component
 @Lazy
@@ -22,17 +21,15 @@ public class ShowTablesTask implements Task {
     
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        List<DataRow> data = Arrays.stream(TableName.values())
-                .map(tn -> new DataRow(){
-                    {
-                        put(TABLE_NAME, tn.getTableName());
-                    }
-                })
-                .collect(Collectors.toList());
-        ExecutionResult executionResult = new ExecutionResult();
-        executionResult.setCount(data.size());
-        executionResult.setData(data);
-        return executionResult;
+        DataContainer newData = new DataContainer(Collections.singletonList(TABLE_NAME));
+        Arrays.stream(TableName.values())
+                .forEach(tn -> newData.addRow(Collections.singletonList(tn.getTableName())));
+        return new ExecutionResult(){
+            {
+                setData(newData);
+                setCount(data.getRows().size());
+            }
+        };
     }
     
 }

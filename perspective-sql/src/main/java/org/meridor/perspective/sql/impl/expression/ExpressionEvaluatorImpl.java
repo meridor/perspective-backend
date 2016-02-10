@@ -4,9 +4,6 @@ import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.function.Function;
 import org.meridor.perspective.sql.impl.function.FunctionsAware;
-import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.TableName;
-import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -19,16 +16,13 @@ import java.util.stream.Collectors;
 public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     
     @Autowired
-    private TablesAware tablesAware;
-    
-    @Autowired
     private FunctionsAware functionsAware;
 
     @Override
     public Map<String, List<String>> getColumnNames(Object expression) {
         if (expression instanceof ColumnExpression) {
             ColumnExpression columnExpression = (ColumnExpression) expression;
-            String tableName = columnExpression.getTableName();
+            String tableName = columnExpression.getTableAlias();
             String columnName = columnExpression.getColumnName();
             return Collections.singletonMap(tableName, Collections.singletonList(columnName));
         } else if (expression instanceof FunctionExpression) {
@@ -144,26 +138,11 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     }
     
     private <T extends Comparable<? super T>> T evaluateColumnExpression(ColumnExpression columnExpression, DataRow dataRow) {
-        String tableName = columnExpression.getTableName();
-        Optional<TableName> tableNameCandidate = TableName.fromString(tableName);
-        if (!tableNameCandidate.isPresent()) {
-            throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", tableName));
-        }
         String columnName = columnExpression.getColumnName();
-        Optional<Column> columnCandidate = tablesAware.getColumn(tableNameCandidate.get(), columnName);
-        if (!columnCandidate.isPresent()) {
-            throw new IllegalArgumentException(String.format("Table \"%s\" column \"%s\" does not exist", tableName, columnName));
-        }
-        Column column = columnCandidate.get();
-        Class<?> columnType = column.getType();
-        Object value = dataRow.get(columnName);
-        if (value == null && column.getDefaultValue() != null) {
-            value = column.getDefaultValue();
-        }
-        if (value == null) {
-            throw new IllegalArgumentException(String.format("Data row does not contain column \"%s\" and no default value is defined", columnName));
-        }
-        return cast(value, columnType, Comparable.class);
+        Object value = columnExpression.useAnyTable() ?
+                dataRow.get(columnName) :
+                dataRow.get(columnName, columnExpression.getTableAlias());
+        return cast(value, Comparable.class);
     }
 
     private <T extends Comparable<? super T>> T evaluateFunctionExpression(FunctionExpression functionExpression, DataRow dataRow) {
@@ -377,6 +356,10 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
     }
 
+    private <T extends Comparable<? super T>> T cast(Object value, Class<?> requiredSuperclass) {
+        return cast(value, requiredSuperclass, requiredSuperclass);
+    }
+    
     private <T extends Comparable<? super T>> T cast(Object value, Class<?> columnType, Class<?> requiredSuperclass) {
         if (!requiredSuperclass.isAssignableFrom(columnType)) {
             throw new IllegalArgumentException(String.format("Column type \"%s\" should subclass \"%s\"", columnType.getCanonicalName(), requiredSuperclass.getCanonicalName()));

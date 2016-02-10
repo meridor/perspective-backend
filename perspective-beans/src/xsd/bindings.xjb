@@ -134,8 +134,8 @@
 
     <jaxb:bindings schemaLocation="sql.xsd">
         <jaxb:bindings node="/xsd:schema">
-            <jaxb:bindings node="./xsd:complexType[@name='dataRow']">
-                <jaxb:class ref="org.meridor.perspective.sql.DataRow"/>
+            <jaxb:bindings node="./xsd:complexType[@name='data']">
+                <jaxb:class ref="org.meridor.perspective.sql.DataContainer"/>
             </jaxb:bindings>
         </jaxb:bindings>
     </jaxb:bindings>

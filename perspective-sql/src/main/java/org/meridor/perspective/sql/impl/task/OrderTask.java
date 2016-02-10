@@ -1,11 +1,11 @@
 package org.meridor.perspective.sql.impl.task;
 
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
 import org.meridor.perspective.sql.impl.expression.OrderDirection;
 import org.meridor.perspective.sql.impl.expression.OrderExpression;
-import org.meridor.perspective.sql.impl.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Lazy;
@@ -13,7 +13,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,13 +37,18 @@ public class OrderTask implements Task {
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
         Optional<Comparator<DataRow>> comparatorCandidate = createComparator(Optional.empty(), expressions);
         if (comparatorCandidate.isPresent()) {
-            ExecutionResult executionResult = new ExecutionResult();
-            executionResult.setCount(previousTaskResult.getCount());
-            List<DataRow> sortedList = previousTaskResult.getData().stream()
-                    .sorted(comparatorCandidate.get())
-                    .collect(Collectors.toList());
-            executionResult.setData(sortedList);
-            return executionResult;
+            return new ExecutionResult(){
+                {
+                    setCount(previousTaskResult.getCount());
+                    DataContainer newData = new DataContainer(
+                            previousTaskResult.getData(),
+                            rows -> rows.stream()
+                                    .sorted(comparatorCandidate.get())
+                                    .collect(Collectors.toList()) 
+                    );
+                    setData(newData);
+                }
+            };
         }
         return previousTaskResult;
     }

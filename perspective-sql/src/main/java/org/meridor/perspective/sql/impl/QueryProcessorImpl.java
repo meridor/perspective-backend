@@ -29,15 +29,15 @@ public class QueryProcessorImpl implements QueryProcessor {
                         ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
                         queryResults.add(getQueryResult(QueryStatus.SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
                     } catch (SQLException e) {
-                        queryResults.add(getQueryResult(QueryStatus.EVALUATION_ERROR, 0, Collections.emptyList(), e.getMessage()));
+                        queryResults.add(getQueryResult(QueryStatus.EVALUATION_ERROR, 0, DataContainer.empty(), e.getMessage()));
                     }
                 } catch (SQLSyntaxErrorException e) {
-                    queryResults.add(getQueryResult(QueryStatus.SYNTAX_ERROR, 0, Collections.emptyList(), e.getMessage()));
+                    queryResults.add(getQueryResult(QueryStatus.SYNTAX_ERROR, 0, DataContainer.empty(), e.getMessage()));
                 }
             }
             return queryResults;
         } catch (SQLDataException e) {
-            return Collections.singletonList(getQueryResult(QueryStatus.MISSING_PARAMETERS, 0, Collections.emptyList(), e.getMessage()));
+            return Collections.singletonList(getQueryResult(QueryStatus.MISSING_PARAMETERS, 0, DataContainer.empty(), e.getMessage()));
         }
     }
     
@@ -61,7 +61,7 @@ public class QueryProcessorImpl implements QueryProcessor {
         return executeTasks(tasks, tasks.next().execute(previousTaskResult));
     }
     
-    private static QueryResult getQueryResult(QueryStatus queryStatus, int count, List<DataRow> data, String message) {
+    private static QueryResult getQueryResult(QueryStatus queryStatus, int count, DataContainer data, String message) {
         QueryResult queryResult = new QueryResult();
         queryResult.setStatus(queryStatus);
         queryResult.setCount(count);

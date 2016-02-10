@@ -1,7 +1,8 @@
 package org.meridor.perspective.sql.impl.table;
 
 public class Column {
-    
+
+    public static final String ANY = "*";
     private final String name;
     private final Class<?> type;
     private final Object defaultValue;

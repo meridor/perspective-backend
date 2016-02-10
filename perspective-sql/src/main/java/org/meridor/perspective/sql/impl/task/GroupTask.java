@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.task;
 
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
@@ -32,19 +33,23 @@ public class GroupTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        List<DataRow> data = previousTaskResult.getData();
-        Map<List<Object>, List<DataRow>> initialMap = new HashMap<List<Object>, List<DataRow>>(){
+        DataContainer dataContainer = new DataContainer(previousTaskResult.getData(), rows -> {
+            List<DataRow> data = previousTaskResult.getData().getRows();
+            Map<List<Object>, List<DataRow>> initialMap = new HashMap<List<Object>, List<DataRow>>(){
+                {
+                    put(new ArrayList<>(), data);
+                }
+            };
+            return groupData(initialMap, expressions)
+                    .values().stream().map(v -> v.get(0)) //We take only first item
+                    .collect(Collectors.toList());
+        });
+        return new ExecutionResult(){
             {
-                put(new ArrayList<>(), data);
+                setCount(dataContainer.getRows().size());
+                setData(dataContainer);
             }
         };
-        List<DataRow> groupedData = groupData(initialMap, expressions)
-                .values().stream().map(v -> v.get(0))
-                .collect(Collectors.toList());
-        ExecutionResult executionResult = new ExecutionResult();
-        executionResult.setCount(groupedData.size());
-        executionResult.setData(groupedData);
-        return executionResult;
     }
     
     private Map<List<Object>, List<DataRow>> groupData(Map<List<Object>, List<DataRow>> previousData, List<Object> remainingExpressions) {

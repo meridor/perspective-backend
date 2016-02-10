@@ -17,7 +17,7 @@ public class ShowTablesTaskTest {
         final int TABLES_COUNT = TableName.values().length;
         ExecutionResult executionResult = showTablesTask.execute(new ExecutionResult());
         assertThat(executionResult.getCount(), equalTo(TABLES_COUNT));
-        assertThat(executionResult.getData(), hasSize(TABLES_COUNT));
-        assertThat(executionResult.getData().get(0).keySet(), contains("table_name"));
+        assertThat(executionResult.getData().getRows(), hasSize(TABLES_COUNT));
+        assertThat(executionResult.getData().getColumnNames(), contains("table_name"));
     }
 }

@@ -3,6 +3,7 @@ package org.meridor.perspective.sql.impl.expression;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.BooleanRelation;
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,13 +35,22 @@ public class ExpressionEvaluatorImplTest {
     private static final String TABLE_NAME = "mock";
     private static final String FUNCTION_NAME = "abs";
     
-    private static final DataRow EMPTY_ROW = new DataRow();
-    private static final DataRow ROW_WITH_VALUES = new DataRow(){
+    private static final Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
         {
-            put(STRING_COLUMN_NAME, STRING_COLUMN_VALUE);
-            put(NUMERIC_COLUMN_NAME, NUMERIC_COLUMN_VALUE);
+            put(
+                    TABLE_NAME,
+                    Arrays.asList(
+                            STRING_COLUMN_NAME,
+                            NUMERIC_COLUMN_NAME,
+                            NUMERIC_COLUMN_NAME_WITH_DEFAULT_VALUE,
+                            COLUMN_WITH_MISSING_DEFAULT_VALUE
+                    )
+            );
         }
     };
+    private static final DataContainer DATA_CONTAINER = new DataContainer(columnsMap);
+    private static final DataRow EMPTY_ROW = new DataRow(DATA_CONTAINER, Collections.emptyList());
+    private static final DataRow ROW_WITH_VALUES = new DataRow(DATA_CONTAINER, Arrays.asList(STRING_COLUMN_VALUE, NUMERIC_COLUMN_VALUE));
     
     @Test
     public void testEvaluateNull() {
@@ -52,18 +62,6 @@ public class ExpressionEvaluatorImplTest {
         Object value = expressionEvaluator.evaluate(column(STRING_COLUMN_NAME, TABLE_NAME), ROW_WITH_VALUES);
         assertThat(value, is(instanceOf(String.class)));
         assertThat(value, equalTo(STRING_COLUMN_VALUE));
-    }
-    
-    @Test
-    public void testEvaluateColumnExpressionWithDefaultValue() {
-        Object value = expressionEvaluator.evaluate(column(NUMERIC_COLUMN_NAME_WITH_DEFAULT_VALUE, TABLE_NAME), ROW_WITH_VALUES);
-        assertThat(value,is(instanceOf(Integer.class)));
-        assertThat(value, equalTo(42));
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testEvaluateColumnExpressionWithMissingValue() {
-        expressionEvaluator.evaluate(column(COLUMN_WITH_MISSING_DEFAULT_VALUE, TABLE_NAME), ROW_WITH_VALUES);
     }
     
     @Test

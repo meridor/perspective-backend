@@ -49,13 +49,7 @@
         </xsd:all>
     </xsd:complexType>
 
-    <xsd:complexType name="data">
-        <xsd:sequence>
-            <xsd:element name="data" type="tns:dataRow" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-
-    <xsd:complexType name="dataRow"/>
+    <xsd:complexType name="data"/>
 
     <xsd:complexType name="executionResult">
         <xsd:all>

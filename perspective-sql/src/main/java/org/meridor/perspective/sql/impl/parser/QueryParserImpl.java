@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.*;
-import static org.meridor.perspective.sql.impl.expression.ColumnExpression.ANY;
+import static org.meridor.perspective.sql.impl.table.Column.ANY;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.emptyPair;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.pair;
 
@@ -338,12 +338,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return previousDataSourceCandidate;
         }
         DataSource currentDataSource = remainingDataSources.remove(remainingDataSources.size() - 1); //Removing from the tail
+        DataSource currentCompoundDataSource = new DataSource(currentDataSource);
         if (previousDataSourceCandidate.isPresent()) {
             DataSource previousDataSource = previousDataSourceCandidate.get();
-            previousDataSource.setJoinType(JoinType.INNER);
-            currentDataSource.setNextDatasource(previousDataSource);
+            DataSource previousCompoundDataSource = new DataSource(previousDataSource);
+            previousCompoundDataSource.setJoinType(JoinType.INNER);
+            currentCompoundDataSource.setNextDatasource(previousDataSource);
         }
-        return chainDataSources(Optional.of(currentDataSource), remainingDataSources);
+        return chainDataSources(Optional.of(currentCompoundDataSource), remainingDataSources);
     }
     
     private Map<String, List<String>> getAvailableColumns(Optional<DataSource> currentDataSourceCandidate, Map<String, List<String>> availableColumns) {
@@ -351,37 +353,45 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return availableColumns;
         }
         DataSource currentDataSource = currentDataSourceCandidate.get();
-        String tableAlias = currentDataSource.getTableAlias();
-        String tableName = tableAliases.get(tableAlias);
-        List<String> columnNames = tablesAware
-                .getColumns(TableName.valueOf(tableName)).stream()
-                .map(Column::getName)
-                .collect(Collectors.toList());
+        Optional<String> tableAliasCandidate = currentDataSource.getTableAlias();
+        Optional<DataSource> dataSourceCandidate = currentDataSource.getDataSource();
+        final Map<String, List<String>> currentlyAvailableColumns = new HashMap<>();
+        if (tableAliasCandidate.isPresent()) {
+            String tableAlias = tableAliasCandidate.get();
+            String tableName = getTableAliases().get(tableAlias);
+            List<String> columnNames = tablesAware
+                    .getColumns(TableName.valueOf(tableName)).stream()
+                    .map(Column::getName)
+                    .collect(Collectors.toList());
+            currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));
+        } else if (dataSourceCandidate.isPresent()) {
+            currentlyAvailableColumns.putAll(getAvailableColumns(dataSourceCandidate, Collections.emptyMap()));
+        }
         if (currentDataSource.getJoinType().isPresent()) {
             Map<String, List<String>> previouslyAvailableColumns = new HashMap<>(availableColumns);
             if (currentDataSource.isNaturalJoin()) {
                 //Natural joins erase column aliases
                 List<String> distinctColumnNames = new ArrayList<>(new HashSet<String>(){
                     {
-                        addAll(columnNames);
+                        addAll(currentlyAvailableColumns.keySet());
                         addAll(previouslyAvailableColumns.keySet());
                     }
                 });
                 return getAvailableColumns(
                         currentDataSource.getNextDataSource(),
-                        createAvailableColumns(tableName, distinctColumnNames)
+                        createAvailableColumns("", distinctColumnNames)
                 );
             } else {
                 return getAvailableColumns(
                         currentDataSource.getNextDataSource(),
                         mergeAvailableColumns(
                                 previouslyAvailableColumns,
-                                createAvailableColumns(tableAlias, columnNames)
+                                currentlyAvailableColumns
                         )
                 );
             }
         } else {
-            return getAvailableColumns(currentDataSource.getNextDataSource(), createAvailableColumns(tableAlias, columnNames));
+            return getAvailableColumns(currentDataSource.getNextDataSource(), currentlyAvailableColumns);
         }
     }
     
@@ -523,8 +533,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         String alias = aliasClauseContextCandidate.isPresent() ?
                 aliasClauseContextCandidate.get().alias().ID().getText() :
                 tableName;
-        if (!tableAliases.containsKey(alias)) {
-            tableAliases.put(alias, tableName);
+        if (!getTableAliases().containsKey(alias)) {
+            getTableAliases().put(alias, tableName);
         } else {
             errors.add(String.format("Duplicate alias \"%s\"", alias));
         }
@@ -603,7 +613,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private AliasExpressionPair processAliasedColumnName(String tableAlias, String columnName, boolean selectAllColumns, boolean allowMultipleColumns) {
-        if (!tableAliases.containsKey(tableAlias)) {
+        if (!getTableAliases().containsKey(tableAlias)) {
             errors.add(String.format("Table or alias \"%s\" does not exist", tableAlias));
             return emptyPair();
         }
@@ -614,7 +624,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             }
             return new AliasExpressionPair(String.format("%s.*", tableAlias), new ColumnExpression(ANY, tableAlias));
         }
-        if (!availableColumns.containsKey(columnName) ||  !availableColumns.get(columnName).contains(tableAlias)) {
+        if (!getAvailableColumns().containsKey(columnName) ||  !getAvailableColumns().get(columnName).contains(tableAlias)) {
             errors.add(String.format("Column \"%s.%s\" is not available for selection", tableAlias, columnName));
             return emptyPair();
         }
@@ -627,17 +637,17 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 errors.add("Selecting * is not allowed in this context");
                 return emptyPair();
             }
-            return new AliasExpressionPair("*", new ColumnExpression(ANY, ANY));
+            return new AliasExpressionPair("*", new ColumnExpression());
         }
-        if (!availableColumns.containsKey(columnName)) {
+        if (!getAvailableColumns().containsKey(columnName)) {
             errors.add(String.format("Column \"%s\" is not available for selection", columnName));
             return emptyPair();
         }
-        if (availableColumns.get(columnName).size() > 1) {
+        if (getAvailableColumns().get(columnName).size() > 1) {
             errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
             return emptyPair();
         }
-        String tableAlias = availableColumns.get(columnName).get(0);
+        String tableAlias = getAvailableColumns().get(columnName).get(0);
         return new AliasExpressionPair(columnName, tableAlias);
     }
     
@@ -770,6 +780,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     @Override
     public Optional<DataSource> getDataSource() {
         return dataSource;
+    }
+
+    @Override
+    public Map<String, String> getTableAliases() {
+        return tableAliases;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.meridor.perspective.sql.impl.task;
 
-import org.meridor.perspective.sql.DataRow;
+import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Lazy;
@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,14 +30,19 @@ public class LimitTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        ExecutionResult executionResult = new ExecutionResult();
-        List<DataRow> newData = previousTaskResult.getData().stream()
-                .skip(offset)
-                .limit(count)
-                .collect(Collectors.toList());
-        executionResult.setData(newData);
-        executionResult.setCount(newData.size());
-        return executionResult;
+        DataContainer newData = new DataContainer(
+                previousTaskResult.getData(),
+                rows -> rows.stream()
+                        .skip(offset)
+                        .limit(count)
+                        .collect(Collectors.toList()) 
+        );
+        return new ExecutionResult(){
+            {
+                setData(newData);
+                setCount(newData.getRows().size());
+            }
+        };
     }
     
 }

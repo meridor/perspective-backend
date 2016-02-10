@@ -21,6 +21,12 @@ public interface SelectQueryAware {
     Optional<DataSource> getDataSource();
 
     /**
+     * Returns how aliases are mapped to real table names
+     * @return a map of alias to table name
+     */
+    Map<String, String> getTableAliases();
+    
+    /**
      * Which columns are available for selection after all joins
      * @return a map of column name to aliases
      */
