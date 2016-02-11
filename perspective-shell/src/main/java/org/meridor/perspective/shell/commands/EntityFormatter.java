@@ -92,6 +92,7 @@ public class EntityFormatter {
                 i.getName(),
                 enumerateValues(
                         i.getProjectIds().stream()
+                                .filter(projectsMap::containsKey)
                                 .map(id -> projectsMap.get(id).getName())
                                 .collect(Collectors.toList())
                 ),
