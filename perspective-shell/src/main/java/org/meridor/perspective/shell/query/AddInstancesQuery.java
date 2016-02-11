@@ -115,6 +115,7 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     public List<Instance> getPayload() {
         List<Instance> instances = new ArrayList<>();
         Set<Integer> numbers = parseRange(range);
+        final int instancesCount = numbers.size();
         for (Integer i : numbers) {
             final String number = String.valueOf(i);
             String instanceName = (containsPlaceholder(name, Placeholder.NUMBER)) ?
@@ -123,7 +124,8 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                             put(Placeholder.NUMBER, number);
                         }
                     }) :
-                    String.format("%s-%s", name, i);
+                    (instancesCount > 1) ?
+                            String.format("%s-%s", name, i) : name;
             instances.add(createInstance(instanceName, project, flavor, image, network, keypair, options));
         }
         return instances;
