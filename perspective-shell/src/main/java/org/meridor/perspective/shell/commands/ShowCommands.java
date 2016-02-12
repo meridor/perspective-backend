@@ -172,11 +172,13 @@ public class ShowCommands extends BaseCommands {
     public void showImages(
             @CliOption(key = "id", help = "Image id") String id,
             @CliOption(key = "name", help = "Image name") String name,
+            @CliOption(key = "state", help = "Image state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         ShowImagesQuery showImagesQuery = queryProvider.get(ShowImagesQuery.class)
                 .withIds(id)
                 .withNames(name)
+                .withStates(state)
                 .withCloudNames(cloud);
         validateExecuteShowResult(
                 showImagesQuery,

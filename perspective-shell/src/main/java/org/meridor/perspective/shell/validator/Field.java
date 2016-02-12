@@ -9,7 +9,8 @@ public enum Field {
     FLAVOR_NAMES,
     INSTANCE_STATES,
     INSTANCE_NAMES,
-    IMAGE_NAMES;
+    IMAGE_NAMES,
+    IMAGE_STATES;
 
     public static boolean contains(String name) {
         for (Field c : values()) {

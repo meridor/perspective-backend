@@ -4,6 +4,7 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
+import org.meridor.perspective.shell.validator.annotation.SupportedImageState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,11 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
     
     @Filter(IMAGE_NAMES)
     private Set<String> names;
-    
+
+    @SupportedImageState
+    @Filter(IMAGE_STATES)
+    private Set<String> states;
+
     @SupportedCloud
     @Filter(CLOUDS)
     private Set<String> clouds;
@@ -50,11 +55,16 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
         return this;
     }
 
+    public ShowImagesQuery withStates(String states) {
+        this.states = parseEnumeration(states);
+        return this;
+    }
+
     public ShowImagesQuery withCloudNames(String cloudNames) {
         this.clouds = parseEnumeration(cloudNames);
         return this;
     }
-    
+
     public ShowImagesQuery withProjectNames(String projectNames) {
         this.projects = projectNames;
         return this;
@@ -65,6 +75,7 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
         return getImagePredicate(
                 Optional.ofNullable(ids),
                 Optional.ofNullable(names),
+                Optional.ofNullable(states),
                 Optional.ofNullable(clouds),
                 Optional.ofNullable(projects)
         );
@@ -73,6 +84,7 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
     private Predicate<Image> getImagePredicate(
             Optional<Set<String>> ids,
             Optional<Set<String>> names,
+            Optional<Set<String>> states,
             Optional<Set<String>> clouds,
             Optional<String> projects
             
@@ -80,6 +92,7 @@ public class ShowImagesQuery implements Query<Predicate<Image>> {
         return image -> 
                 ( !ids.isPresent() || oneOfMatches(image.getId(), ids.get()) ) &&
                 ( !names.isPresent() || oneOfMatches(image.getName(), names.get()) ) &&
+                ( !states.isPresent() || oneOfMatches(image.getState().value().toLowerCase(), states.get()) ) &&
                 ( !clouds.isPresent() || oneOfMatches(image.getCloudType().value().toLowerCase(), clouds.get()) ) &&
                 ( !projects.isPresent() || projectMatches(projects.get(), image.getProjectIds()));
     }
