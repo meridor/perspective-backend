@@ -15,17 +15,6 @@
         </xsd:restriction>
     </xsd:simpleType>
 
-    <xsd:simpleType name="uuidOrInteger">
-        <xsd:union>
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:integer"/>
-            </xsd:simpleType>
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:unsignedInt"/>
-            </xsd:simpleType>
-        </xsd:union>
-    </xsd:simpleType>
-
     <xsd:simpleType name="checksum">
         <xsd:restriction base="xsd:string">
             <xsd:length value="32" fixed="true"/>
@@ -50,7 +39,7 @@
 
     <xsd:complexType name="cidr">
         <xsd:attribute name="address" type="tns:ipAddress"/>
-        <xsd:attribute name="prefixSize" type="xsd:unsignedInt"/>
+        <xsd:attribute name="prefixSize" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:simpleType name="metadataKey">
@@ -95,12 +84,12 @@
 
     <xsd:complexType name="flavor">
         <xsd:all>
-            <xsd:element name="id" type="tns:uuidOrInteger"/>
+            <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="ram" type="xsd:unsignedInt"/>
-            <xsd:element name="vcpus" type="xsd:unsignedInt"/>
-            <xsd:element name="rootDisk" type="xsd:unsignedInt"/>
-            <xsd:element name="ephemeralDisk" type="xsd:unsignedInt"/>
+            <xsd:element name="ram" type="xsd:int"/>
+            <xsd:element name="vcpus" type="xsd:int"/>
+            <xsd:element name="rootDisk" type="xsd:int"/>
+            <xsd:element name="ephemeralDisk" type="xsd:int"/>
             <xsd:element name="hasSwap" type="xsd:boolean"/>
             <xsd:element name="isPublic" type="xsd:boolean"/>
         </xsd:all>
@@ -148,8 +137,8 @@
     <xsd:element name="image" type="tns:image"/>
 
     <xsd:complexType name="quota">
-        <xsd:attribute name="maxInstances" type="xsd:unsignedInt"/>
-        <xsd:attribute name="maxVCPUs" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxInstances" type="xsd:int"/>
+        <xsd:attribute name="maxVCPUs" type="xsd:int"/>
         <xsd:attribute name="maxRAM" type="xsd:double"/>
         <xsd:attribute name="maxFloatingIPs" type="xsd:double"/>
         <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
@@ -157,12 +146,12 @@
 
     <xsd:complexType name="subnets">
         <xsd:sequence>
-            <xsd:element name="subnets" type="tns:ipAddress" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="subnets" type="tns:subnet" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
     <xsd:simpleType name="protocolVersion">
-        <xsd:restriction base="xsd:integer">
+        <xsd:restriction base="xsd:int">
             <xsd:enumeration value="4"/>
             <xsd:enumeration value="6"/>
         </xsd:restriction>
@@ -277,6 +266,13 @@
             <xsd:element name="flavor" type="tns:flavor"/>
             <xsd:element name="image" type="tns:image"/>
             <xsd:element name="keypair" type="tns:keypair"/>
+            <xsd:element name="addresses">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="address" type="tns:ipAddress" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="state" type="tns:instanceState" minOccurs="1"/>
             <xsd:element name="errorReason" type="xsd:string"/>

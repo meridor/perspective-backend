@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,16 @@ public class ShowCommands extends BaseCommands {
                                 List<Network> networks = networksMap.get(p);
                                 return networks.stream().map(n -> new String[]{
                                         n.getName(), p.getName(),
-                                        joinLines(new HashSet<>(n.getSubnets())),
+                                        joinLines(
+                                                n.getSubnets().stream()
+                                                .map(s -> String.format(
+                                                        "%s/%s",
+                                                        s.getCidr().getAddress(),
+                                                        String.valueOf(s.getCidr().getPrefixSize()))
+                                                )
+                                                .sorted((c1, c2) -> Comparator.<String>naturalOrder().compare(c1, c2))
+                                                .collect(Collectors.toSet())
+                                        ),
                                         n.getState(), String.valueOf(n.isIsShared())
                                 });
                             })
@@ -160,7 +170,7 @@ public class ShowCommands extends BaseCommands {
                 .withProjectNames(projects);
         validateExecuteShowResult(
                 showInstancesQuery,
-                new String[]{"Name", "Project", "Image", "Flavor", "State", "Last modified"},
+                new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 q -> {
                     List<Instance> instances = instancesRepository.showInstances(q);
                     return entityFormatter.formatInstances(instances, cloud);

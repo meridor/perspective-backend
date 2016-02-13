@@ -1,7 +1,9 @@
 package org.meridor.perspective.openstack;
 
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Multimap;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
+import org.jclouds.openstack.nova.v2_0.domain.Address;
 import org.jclouds.openstack.nova.v2_0.domain.Console;
 import org.jclouds.openstack.nova.v2_0.domain.Server;
 import org.jclouds.openstack.nova.v2_0.extensions.ConsolesApi;
@@ -24,10 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -136,8 +135,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             if (!matchingFlavors.isEmpty()) {
                 instance.setFlavor(matchingFlavors.get(0));
             }
-            
-            //TODO: add information about network
+
+            Multimap<String, Address> networkAddressMap = server.getAddresses();
+            List<Network> networks = new ArrayList<>();
+            networkAddressMap.keySet().stream().forEach(networkName -> {
+                List<String> ipAddresses = networkAddressMap.get(networkName).stream()
+                        .map(Address::getAddr).collect(Collectors.toList());
+                instance.setAddresses(ipAddresses);
+                Optional<Network> networkCandidate = project.getNetworks().stream()
+                        .filter(n -> n.getName().equals(networkName))
+                        .findFirst();
+                if (networkCandidate.isPresent()) {
+                    networks.add(networkCandidate.get());
+                }
+            });
+            instance.setNetworks(networks);
         }
         
         String imageId = idGenerator.getImageId(cloud, server.getImage().getId());

@@ -1,17 +1,19 @@
 package org.meridor.perspective.openstack;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import org.jclouds.openstack.neutron.v2.NeutronApi;
 import org.jclouds.openstack.neutron.v2.features.NetworkApi;
 import org.jclouds.openstack.neutron.v2.features.SubnetApi;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.domain.Flavor;
 import org.jclouds.openstack.nova.v2_0.domain.KeyPair;
-import org.jclouds.openstack.nova.v2_0.domain.regionscoped.AvailabilityZoneDetails;
+import org.jclouds.openstack.nova.v2_0.domain.regionscoped.*;
 import org.jclouds.openstack.nova.v2_0.extensions.AvailabilityZoneApi;
 import org.jclouds.openstack.nova.v2_0.extensions.KeyPairApi;
 import org.jclouds.openstack.nova.v2_0.features.FlavorApi;
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.AvailabilityZone;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
@@ -23,11 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 
@@ -61,10 +59,10 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
                         addKeyPairs(keyPairApi.get(), project);
                     }
 
-//                Optional<AvailabilityZoneApi> availabilityZoneApi = novaApi.getAvailabilityZoneApi(region);
-//                if (availabilityZoneApi.isPresent()) {
-//                    addAvailabilityZones(availabilityZoneApi.get(), project);
-//                }
+                    Optional<AvailabilityZoneApi> availabilityZoneApi = novaApi.getAvailabilityZoneApi(region);
+                    if (availabilityZoneApi.isPresent()) {
+                        addAvailabilityZones(availabilityZoneApi.get(), project, cloud, region);
+                    }
 
                     LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName(), region);
                     consumer.accept(project);
@@ -125,25 +123,51 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             networkToAdd.setName(network.getName());
             networkToAdd.setIsShared(network.getShared());
             networkToAdd.setState(network.getStatus().name());
-            List<String> cidrList = new ArrayList<>(); 
             for (String subnetId : network.getSubnets()) {
                 org.jclouds.openstack.neutron.v2.domain.Subnet subnet = subnetApi.get(subnetId);
-                cidrList.add(subnet.getCidr());
+                networkToAdd.getSubnets().add(processSubnet(subnet));
             }
-            networkToAdd.getSubnets().addAll(
-                    cidrList.stream()
-                            .sorted((c1, c2) -> Comparator.<String>naturalOrder().compare(c1, c2))
-                    .collect(Collectors.toList())
-            );
             project.getNetworks().add(networkToAdd);
         }
     }
 
-    private void addAvailabilityZones(AvailabilityZoneApi availabilityZoneApi, Project project) {
-        for (AvailabilityZoneDetails az : availabilityZoneApi.listInDetail()) {
-            AvailabilityZone availabilityZone = new AvailabilityZone();
-            availabilityZone.setName(az.getName());
-            project.getAvailabilityZones().add(availabilityZone);
+    private Subnet processSubnet(org.jclouds.openstack.neutron.v2.domain.Subnet subnet) {
+        Subnet ret = new Subnet();
+        ret.setId(subnet.getId());
+        Cidr cidr = parseCidr(subnet.getCidr());
+        ret.setCidr(cidr);
+        ret.setGateway(subnet.getGatewayIp());
+        ret.setIsDHCPEnabled(subnet.getEnableDhcp());
+        ret.setName(subnet.getName());
+        int ipVersion = subnet.getIpVersion() != null ? subnet.getIpVersion() : 4;
+        ret.setProtocolVersion(ipVersion);
+        return ret;
+    }
+    
+    private static Cidr parseCidr(String cidrString) {
+        //TODO: replace this with https://github.com/abedra/orchard/pull/7 when it gets merged
+        final String CIDR_DELIMITER = "/";
+        String[] pieces = cidrString.split(CIDR_DELIMITER);
+        Cidr cidr = new Cidr();
+        if (pieces.length == 2) {
+            cidr.setAddress(pieces[0]);
+            cidr.setPrefixSize(Integer.valueOf(pieces[1]));
+        } else {
+            cidr.setAddress("255.255.255.255");
+            cidr.setPrefixSize(32);
+        }
+        return cidr;
+    }
+    
+    private void addAvailabilityZones(AvailabilityZoneApi availabilityZoneApi, Project project, Cloud cloud, String region) {
+        try {
+            for (org.jclouds.openstack.nova.v2_0.domain.regionscoped.AvailabilityZone az : availabilityZoneApi.listAvailabilityZones()) {
+                AvailabilityZone availabilityZone = new AvailabilityZone();
+                availabilityZone.setName(az.getName());
+                project.getAvailabilityZones().add(availabilityZone);
+            }
+        } catch (Exception e) {
+            LOG.debug("Failed to fetch availability zone information for cloud = {}, region = {}", cloud.getName(), region);
         }
     }
     

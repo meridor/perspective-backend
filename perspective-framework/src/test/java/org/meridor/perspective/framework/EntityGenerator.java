@@ -40,7 +40,16 @@ public class EntityGenerator {
         Network network = new Network();
         network.setId("test-network");
         network.setName("test-network");
-        network.getSubnets().add("5.255.210.0/24");
+        network.getSubnets().add(new Subnet(){
+            {
+                setCidr(new Cidr() {
+                    {
+                        setAddress("5.255.210.0");
+                        setPrefixSize(24);
+                    }
+                });
+            }
+        });
         return network;
     }
     

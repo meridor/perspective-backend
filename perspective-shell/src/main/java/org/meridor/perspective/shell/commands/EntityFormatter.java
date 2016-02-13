@@ -10,10 +10,7 @@ import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,6 +34,7 @@ public class EntityFormatter {
                         projectsMap.get(i.getProjectId()).getName() : DASH,
                 (i.getImage() != null) ? i.getImage().getName() : DASH,
                 (i.getFlavor() != null) ? i.getFlavor().getName() : DASH,
+                (i.getAddresses() != null) ? getAddresses(i) : DASH, //TODO: this one can also contain Docker ports information
                 (i.getState() != null) ?  i.getState().value() : DASH,
                 (i.getTimestamp() != null) ? humanizedDuration(i.getTimestamp()) : DASH
         }).collect(Collectors.toList());
@@ -51,6 +49,13 @@ public class EntityFormatter {
     
     private Map<String, Project> getProjects() {
         return getProjects(null);
+    }
+    
+    private static String getAddresses(Instance instance) {
+        return joinLines(instance.getAddresses().stream()
+                .sorted((a1, a2) -> Comparator.<String>naturalOrder().compare(a1, a2))
+                .collect(Collectors.toList())
+        );
     }
     
     public List<String[]> formatNewInstances(List<Instance> instances) {
