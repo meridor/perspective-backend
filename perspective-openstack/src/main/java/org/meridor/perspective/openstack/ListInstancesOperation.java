@@ -76,7 +76,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                     LOG.debug("Fetched {} instances for cloud = {}, region = {}", regionInstancesCount, cloud.getName(), region);
                     consumer.accept(instances);
                 } catch (Exception e) {
-                    LOG.error("Failed to fetch instances for cloud = {}, region = {}", cloud.getName(), region);
+                    LOG.error(String.format("Failed to fetch instances for cloud = %s, region = %s", cloud.getName(), region), e);
                 }
             }
 

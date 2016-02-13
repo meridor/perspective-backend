@@ -54,7 +54,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                     LOG.debug("Fetched {} images for cloud = {}, region = {}", regionImagesCount, cloud.getName(), region);
                     consumer.accept(images);
                 } catch (Exception e) {
-                    LOG.error("Failed to fetch images for cloud = {}, region = {}", cloud.getName(), region);
+                    LOG.error(String.format("Failed to fetch images for cloud = %s, region = %s", cloud.getName(), region), e);
                 }
             }
 

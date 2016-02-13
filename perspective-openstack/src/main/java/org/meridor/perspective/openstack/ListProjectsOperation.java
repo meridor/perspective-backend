@@ -67,7 +67,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
                     LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName(), region);
                     consumer.accept(project);
                 } catch (Exception e) {
-                    LOG.error("Failed to fetch project for cloud = {}, region = {}", cloud.getName(), region);
+                    LOG.error(String.format("Failed to fetch project for cloud = %s, region = %s", cloud.getName(), region), e);
                 }
             }
             return true;
