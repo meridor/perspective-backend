@@ -11,8 +11,12 @@ public enum TableName {
         return name().toLowerCase();
     }
     
-    public static Optional<TableName> fromString(String name) {
-        return Arrays.asList(TableName.values()).stream()
+    public static TableName fromString(String name) {
+        Optional<TableName> tableNameCandidate = Arrays.asList(TableName.values()).stream()
                 .filter(v -> v.name().equalsIgnoreCase(name)).findFirst();
+        if (!tableNameCandidate.isPresent()) {
+            throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", name));
+        }
+        return tableNameCandidate.get();
     }
 }

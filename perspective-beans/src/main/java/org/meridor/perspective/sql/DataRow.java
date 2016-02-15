@@ -1,6 +1,7 @@
 package org.meridor.perspective.sql;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class DataRow {
@@ -81,9 +82,20 @@ public class DataRow {
         return columnExists ? Optional.of(firstColumnIndex) : Optional.empty();
     }
     
-    private Optional<Integer> getColumnIndex(String columnName, String tableName) {
-        if (dataContainer.getColumnsMap().containsKey(tableName)) {
-            return getColumnIndex(columnName, dataContainer.getColumnsMap().get(tableName));
+    private Optional<Integer> getColumnIndex(String columnName, String tableAlias) {
+        Map<String, List<String>> columnsMap = dataContainer.getColumnsMap();
+        if (columnsMap.containsKey(tableAlias)) {
+            Optional<Integer> columnIndex = getColumnIndex(columnName, dataContainer.getColumnsMap().get(tableAlias));
+            if (columnIndex.isPresent()) {
+                int initialOffset = 0;
+                for (String currentTableAlias : columnsMap.keySet()) {
+                    if (currentTableAlias.equals(tableAlias)) {
+                        break;
+                    }
+                    initialOffset += columnsMap.get(currentTableAlias).size();
+                }
+                return Optional.of(initialOffset + columnIndex.get());
+            }
         }
         return Optional.empty();
     }

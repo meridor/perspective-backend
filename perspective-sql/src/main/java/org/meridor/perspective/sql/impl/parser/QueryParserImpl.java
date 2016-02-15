@@ -27,9 +27,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.*;
-import static org.meridor.perspective.sql.impl.table.Column.ANY;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.emptyPair;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.pair;
+import static org.meridor.perspective.sql.impl.table.Column.ANY;
 
 @Component
 @Lazy
@@ -360,7 +360,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             String tableAlias = tableAliasCandidate.get();
             String tableName = getTableAliases().get(tableAlias);
             List<String> columnNames = tablesAware
-                    .getColumns(TableName.valueOf(tableName)).stream()
+                    .getColumns(TableName.fromString(tableName)).stream()
                     .map(Column::getName)
                     .collect(Collectors.toList());
             currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));

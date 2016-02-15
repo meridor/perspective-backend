@@ -2,15 +2,12 @@ package org.meridor.perspective.sql.impl.function;
 
 import org.junit.Test;
 import org.meridor.perspective.sql.impl.expression.Null;
-import org.meridor.perspective.sql.impl.table.DataType;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.sql.impl.table.DataType.*;
 
 public class TypeOfFunctionTest {

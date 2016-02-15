@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
+import org.meridor.perspective.sql.impl.table.DataType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -15,9 +16,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.beans.BooleanRelation.*;
 import static org.meridor.perspective.sql.impl.expression.BinaryArithmeticOperator.*;
-import static org.meridor.perspective.sql.impl.expression.UnaryArithmeticOperator.*;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.*;
-import static org.meridor.perspective.sql.impl.expression.UnaryBooleanOperator.*;
+import static org.meridor.perspective.sql.impl.expression.UnaryArithmeticOperator.BIT_NOT;
+import static org.meridor.perspective.sql.impl.expression.UnaryBooleanOperator.NOT;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,10 +59,43 @@ public class ExpressionEvaluatorImplTest {
     }
     
     @Test
+    public void testEvaluateConstant() {
+        assertThat(expressionEvaluator.evaluate(1, EMPTY_ROW), equalTo(1));
+        assertThat(expressionEvaluator.evaluate("string", EMPTY_ROW), equalTo("string"));
+        assertThat(expressionEvaluator.evaluate(true, EMPTY_ROW), equalTo(true));
+        assertThat(expressionEvaluator.evaluate(false, EMPTY_ROW), equalTo(false));
+        assertThat(expressionEvaluator.evaluate(DataType.NULL, EMPTY_ROW), equalTo(DataType.NULL));
+    }
+    
+    @Test
     public void testEvaluateColumnExpression() {
         Object value = expressionEvaluator.evaluate(column(STRING_COLUMN_NAME, TABLE_NAME), ROW_WITH_VALUES);
         assertThat(value, is(instanceOf(String.class)));
         assertThat(value, equalTo(STRING_COLUMN_VALUE));
+    }
+    
+    @Test
+    public void testEvaluateMultipleAliasesExpression() {
+        final String FIRST_ALIAS = "first";
+        final String SECOND_ALIAS = "second";
+        Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
+            {
+                put(
+                        FIRST_ALIAS,
+                        Collections.singletonList(NUMERIC_COLUMN_NAME)
+                );
+                put(
+                        SECOND_ALIAS,
+                        Collections.singletonList(NUMERIC_COLUMN_NAME)
+                );
+            }
+        };
+        final DataContainer DATA_CONTAINER = new DataContainer(columnsMap);
+        final DataRow DATA_ROW = new DataRow(DATA_CONTAINER, Arrays.asList(1, 2));
+        Object firstValue = expressionEvaluator.evaluate(column(NUMERIC_COLUMN_NAME, FIRST_ALIAS), DATA_ROW);
+        assertThat(firstValue, equalTo(1));
+        Object secondValue = expressionEvaluator.evaluate(column(NUMERIC_COLUMN_NAME, SECOND_ALIAS), DATA_ROW);
+        assertThat(secondValue, equalTo(2));
     }
     
     @Test

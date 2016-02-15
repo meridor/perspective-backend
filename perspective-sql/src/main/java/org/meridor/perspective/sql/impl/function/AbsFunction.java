@@ -3,7 +3,6 @@ package org.meridor.perspective.sql.impl.function;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

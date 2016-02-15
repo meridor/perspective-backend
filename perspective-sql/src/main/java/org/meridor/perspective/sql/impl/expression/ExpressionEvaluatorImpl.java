@@ -90,7 +90,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     }
 
     private boolean isConstant(Class<?> expressionClass) {
-        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass) || Boolean.class.isAssignableFrom(expressionClass);
+        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass) || Boolean.class.isAssignableFrom(expressionClass) || expressionClass.isEnum();
     }
 
     private boolean isString(Class<?> expressionClass) {

@@ -4,9 +4,7 @@ import org.junit.Test;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.table.TableName;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class ShowTablesTaskTest {

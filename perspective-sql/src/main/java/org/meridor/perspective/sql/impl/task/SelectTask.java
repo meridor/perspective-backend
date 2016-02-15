@@ -1,7 +1,6 @@
 package org.meridor.perspective.sql.impl.task;
 
 import org.meridor.perspective.sql.DataContainer;
-import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 

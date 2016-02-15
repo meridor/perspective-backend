@@ -1,7 +1,6 @@
 package org.meridor.perspective.sql.impl;
 
 import org.meridor.perspective.sql.DataContainer;
-import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
