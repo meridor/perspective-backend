@@ -13,11 +13,15 @@ public class EntityGenerator {
         Project project = new Project();
         project.setName("test-project - test-region");
         project.setId("test-project");
+        project.setCloudId(CloudType.MOCK.value());
         project.setCloudType(CloudType.MOCK);
         project.getFlavors().add(getFlavor());
         project.getNetworks().add(getNetwork());
         project.getKeypairs().add(getKeypair());
         project.getAvailabilityZones().add(getAvailabilityZone());
+        MetadataMap metadataMap = new MetadataMap();
+        metadataMap.put(MetadataKey.REGION, "test-region");
+        project.setMetadata(metadataMap);
         return project;
     }
 
@@ -42,6 +46,8 @@ public class EntityGenerator {
         network.setName("test-network");
         network.getSubnets().add(new Subnet(){
             {
+                setId("test-subnet");
+                setName("test-subnet");
                 setCidr(new Cidr() {
                     {
                         setAddress("5.255.210.0");
@@ -71,6 +77,7 @@ public class EntityGenerator {
         image.setCreated(now().minusDays(2));
         image.setTimestamp(now().minusHours(4));
         MetadataMap metadata = new MetadataMap();
+        metadata.put(MetadataKey.INSTANCE_ID, "test-instance");
         image.setMetadata(metadata);
         return image;
     }
@@ -88,6 +95,9 @@ public class EntityGenerator {
         instance.setImage(getImage());
         instance.setState(InstanceState.LAUNCHED);
         instance.setAvailabilityZone(getAvailabilityZone());
+        MetadataMap metadataMap = new MetadataMap();
+        metadataMap.put(MetadataKey.REGION, "test-region");
+        instance.setMetadata(metadataMap);
         return instance;
     }
 

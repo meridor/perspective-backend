@@ -12,7 +12,7 @@ public class ShowTablesTaskTest {
     @Test
     public void testExecute() throws Exception {
         ShowTablesTask showTablesTask = new ShowTablesTask();
-        final int TABLES_COUNT = TableName.values().length;
+        final int TABLES_COUNT = TableName.values().length - 1; //We don't show MOCK table
         ExecutionResult executionResult = showTablesTask.execute(new ExecutionResult());
         assertThat(executionResult.getCount(), equalTo(TABLES_COUNT));
         assertThat(executionResult.getData().getRows(), hasSize(TABLES_COUNT));

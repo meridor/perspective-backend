@@ -76,6 +76,11 @@
                 <artifactId>perspective-java-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.meridor.perspective</groupId>
+                <artifactId>perspective-sql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Hazelcast -->
             <dependency>

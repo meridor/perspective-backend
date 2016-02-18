@@ -33,7 +33,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public Collection<Image> getImages(Optional<String> query) throws IllegalQueryException {
-        throw new UnsupportedOperationException();
+        return imageMap.values();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public Collection<Instance> getInstances(Optional<String> query) throws IllegalQueryException {
-        throw new UnsupportedOperationException();
+        return instanceMap.values();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public Collection<Project> getProjects(Optional<String> query) throws IllegalQueryException {
-        throw new UnsupportedOperationException();
+        return projectMap.values();
     }
 
     @Override

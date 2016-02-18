@@ -23,6 +23,7 @@ public class ShowTablesTask implements Task {
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
         DataContainer newData = new DataContainer(Collections.singletonList(TABLE_NAME));
         Arrays.stream(TableName.values())
+                .filter(TableName::isVisible)
                 .forEach(tn -> newData.addRow(Collections.singletonList(tn.getTableName())));
         return new ExecutionResult(){
             {

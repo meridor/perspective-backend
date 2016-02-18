@@ -4,8 +4,35 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum TableName {
-    MOCK,
-    INSTANCES;
+    AVAILABILITY_ZONES,
+    CLOUDS,
+    FLAVORS,
+    IMAGES,
+    IMAGE_METADATA,
+    INSTANCES,
+    INSTANCE_NETWORKS,
+    INSTANCE_METADATA,
+    KEYPAIRS,
+    MOCK(false),
+    NETWORKS,
+    NETWORK_SUBNETS,
+    PROJECTS,
+    PROJECT_IMAGES,
+    PROJECT_METADATA;
+
+    private final boolean visible;
+
+    TableName(boolean visible) {
+        this.visible = visible;
+    }
+
+    TableName() {
+        this(true);
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
 
     public String getTableName() {
         return name().toLowerCase();

@@ -9,7 +9,7 @@ import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.function.FunctionName;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.JoinType;
-import org.meridor.perspective.sql.impl.storage.Storage;
+import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.DataType;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
@@ -33,7 +33,7 @@ public class DataSourceTask implements Task {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private Storage storage;
+    private DataFetcher dataFetcher;
 
     @Autowired
     private TablesAware tablesAware;
@@ -86,7 +86,7 @@ public class DataSourceTask implements Task {
         } else if (dataSource.getTableAlias().isPresent()) {
             String tableAlias = dataSource.getTableAlias().get();
             TableName tableName = TableName.fromString(tableAliases.get(tableAlias));
-            return storage.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
+            return dataFetcher.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
         }
         throw new IllegalArgumentException("Datasource should either contain table name or another datasource");
     }

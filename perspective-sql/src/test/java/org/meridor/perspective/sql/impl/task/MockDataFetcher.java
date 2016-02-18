@@ -1,7 +1,7 @@
 package org.meridor.perspective.sql.impl.task;
 
 import org.meridor.perspective.sql.DataContainer;
-import org.meridor.perspective.sql.impl.storage.Storage;
+import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
@@ -13,13 +13,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class MockStorage implements Storage {
+public class MockDataFetcher implements DataFetcher {
 
     @Override
     public DataContainer fetch(TableName tableName, String tableAlias, List<Column> columns) {
-        List<String> columnNames = columns.stream()
-                .map(Column::getName)
-                .collect(Collectors.toList());
+        List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>(){
             {
                 put(tableAlias, columnNames);

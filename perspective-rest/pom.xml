@@ -171,6 +171,10 @@
         </dependency>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-sql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-framework</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
