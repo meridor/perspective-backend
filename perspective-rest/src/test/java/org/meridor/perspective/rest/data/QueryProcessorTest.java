@@ -133,22 +133,28 @@ public class QueryProcessorTest {
     
     @Test
     public void testInnerJoinWithUsingClause() {
-        Query query = new Query(){
-            {
-                setSql("select f.name as flavor_name, i.name as instance_name " +
-                        "from instances as i inner join flavors as f " +
-                        "using (project_id)");
-            }
-        };
+        testInnerJoinWithUsingClause("select n.name, i.instance_id as id " +
+                "from instance_networks as i inner join network_subnets as n " +
+                "using (network_id)");
+    }
+    
+    @Test
+    public void testNaturalInnerJoin() {
+        testInnerJoinWithUsingClause("select n.name, i.instance_id as id " +
+                "from instance_networks as i natural join network_subnets as n");
+    }
+    
+    private void testInnerJoinWithUsingClause(String sql) {
+        Query query = new Query();
+        query.setSql(sql);
         List<QueryResult> queryResults = queryProcessor.process(query);
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
-        assertThat(queryResult.getData().getColumnNames(), contains("flavor_name", "instance_name"));
+        assertThat(queryResult.getData().getColumnNames(), contains("n.name", "id"));
         List<DataRow> rows = queryResult.getData().getRows();
         assertThat(rows, hasSize(1));
-        assertThat(rows.get(0).get("flavor_name"), equalTo("test-flavor"));
-        assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
+        assertThat(rows.get(0).get("n.name"), equalTo("test-subnet"));
+        assertThat(rows.get(0).get("id"), equalTo("test-instance"));
     }
-    
 }

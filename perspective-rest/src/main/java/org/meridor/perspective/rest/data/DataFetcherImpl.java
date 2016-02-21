@@ -222,6 +222,7 @@ public class DataFetcherImpl implements DataFetcher {
             {
                 put("id", ExtendedNetworkSubnet::getId);
                 put("project_id", ExtendedNetworkSubnet::getProjectId);
+                put("network_id", ExtendedNetworkSubnet::getNetworkId);
                 put("name", ExtendedNetworkSubnet::getName);
                 put("cidr", s -> String.format("%s/%d", s.getCidr().getAddress(), s.getCidr().getPrefixSize()));
                 put("protocol_version", ExtendedNetworkSubnet::getProtocolVersion);

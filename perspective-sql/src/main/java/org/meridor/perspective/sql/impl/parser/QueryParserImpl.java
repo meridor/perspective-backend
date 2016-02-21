@@ -375,27 +375,13 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         }
         if (currentDataSource.getJoinType().isPresent()) {
             Map<String, List<String>> previouslyAvailableColumns = new HashMap<>(availableColumns);
-            if (currentDataSource.isNaturalJoin()) {
-                //Natural joins erase column aliases
-                List<String> distinctColumnNames = new ArrayList<>(new HashSet<String>(){
-                    {
-                        addAll(currentlyAvailableColumns.keySet());
-                        addAll(previouslyAvailableColumns.keySet());
-                    }
-                });
-                return getAvailableColumns(
-                        currentDataSource.getNextDataSource(),
-                        createAvailableColumns("", distinctColumnNames)
-                );
-            } else {
-                return getAvailableColumns(
-                        currentDataSource.getNextDataSource(),
-                        mergeAvailableColumns(
-                                previouslyAvailableColumns,
-                                currentlyAvailableColumns
-                        )
-                );
-            }
+            return getAvailableColumns(
+                    currentDataSource.getNextDataSource(),
+                    mergeAvailableColumns(
+                            previouslyAvailableColumns,
+                            currentlyAvailableColumns
+                    )
+            );
         } else {
             return getAvailableColumns(currentDataSource.getNextDataSource(), currentlyAvailableColumns);
         }
@@ -654,7 +640,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             }
             return new AliasExpressionPair(String.format("%s.*", tableAlias), new ColumnExpression(ANY, tableAlias));
         }
-        if (!getAvailableColumns().containsKey(columnName) ||  !getAvailableColumns().get(columnName).contains(tableAlias)) {
+        if (!getAvailableColumns().containsKey(columnName) || !getAvailableColumns().get(columnName).contains(tableAlias)) {
             errors.add(String.format("Column \"%s.%s\" is not available for selection", tableAlias, columnName));
             return emptyPair();
         }
