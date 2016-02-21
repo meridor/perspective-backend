@@ -219,7 +219,7 @@ public class DataSourceTask implements Task {
     }
     
     private DataContainer mergeContainerColumns(DataContainer left, DataContainer right) {
-        return new DataContainer(new HashMap<String, List<String>>(){
+        return new DataContainer(new LinkedHashMap<String, List<String>>(){
             {
                 putAll(left.getColumnsMap());
                 putAll(right.getColumnsMap());

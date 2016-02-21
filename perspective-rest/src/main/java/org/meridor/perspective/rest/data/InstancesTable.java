@@ -4,6 +4,8 @@ import org.meridor.perspective.sql.impl.table.Table;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
+
 import static org.meridor.perspective.sql.impl.table.TableName.INSTANCES;
 
 @Component
@@ -17,6 +19,8 @@ public class InstancesTable implements Table {
     public String flavor_id;
     public String image_id;
     public String state;
+    public ZonedDateTime last_updated;
+    public ZonedDateTime created;
     public String availability_zone;
     public String addresses; //Networks are provided via instance_networks table
     

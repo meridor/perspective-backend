@@ -297,6 +297,8 @@ public class DataFetcherImpl implements DataFetcher {
                 put("flavor_id", i -> i.getFlavor().getId());
                 put("image_id", i -> i.getImage().getId());
                 put("state", i -> i.getState().value());
+                put("last_updated", Instance::getTimestamp);
+                put("created", Instance::getCreated);
                 put("availability_zone", i -> i.getAvailabilityZone().getName());
                 put("addresses", i -> i.getAddresses().stream().collect(Collectors.joining("\n")));
             }

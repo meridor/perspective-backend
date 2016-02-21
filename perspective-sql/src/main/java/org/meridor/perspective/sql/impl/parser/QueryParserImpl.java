@@ -55,7 +55,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     
     private QueryType queryType = QueryType.UNKNOWN;
     private Set<String> errors = new HashSet<>();
-    private Map<String, Object> selectionMap = new HashMap<>();
+    private Map<String, Object> selectionMap = new LinkedHashMap<>();
     private Map<String, String> tableAliases = new HashMap<>();
     private Optional<DataSource> dataSource = Optional.empty();
     //Column name -> aliases map of columns available after all joins
@@ -321,7 +321,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (fromClauseContext.isPresent()) {
             SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
             Optional<DataSource> dataSourceCandidate = processTableReferences(tableReferencesContext);
-            this.availableColumns.putAll(getAvailableColumns(dataSourceCandidate, Collections.emptyMap()));
+            //Clearing initially available columns used in from clause checks 
+            // and preparing more precise avilable columns map
+            getAvailableColumns().clear();
+            Map<String, List<String>> availableColumns = getAvailableColumns(dataSourceCandidate, Collections.emptyMap());
+            getAvailableColumns().putAll(availableColumns);
             this.dataSource = dataSourceCandidate;
         }
     }
@@ -411,7 +415,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private Map<String, List<String>> mergeAvailableColumns(Map<String, List<String>> first, Map<String, List<String>> second) {
         Map<String, List<String>> mergedMaps = first.keySet().stream().collect(Collectors.toMap(
                 Function.identity(),
-                k -> first.merge(k, first.get(k), (f, s) -> new ArrayList<>(new HashSet<String>() {
+                k -> second.merge(k, first.get(k), (f, s) -> new ArrayList<>(new HashSet<String>() {
                     {
                         addAll(f);
                         addAll(s);
@@ -429,7 +433,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (tableReferenceContext.table_atom() != null) {
             return processTableAtom(tableReferenceContext.table_atom());
         } else if (tableReferenceContext.table_join() != null) {
-            processTableJoin(tableReferenceContext.table_join());
+            return processTableJoin(tableReferenceContext.table_join());
         }
         throw new UnsupportedOperationException("Unsupported table reference type");
     }
@@ -492,13 +496,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             dataSource.setJoinCondition(joinCondition);
         } else if (joinConditionContext.USING() != null) {
             List<String> joinColumns = joinConditionContext.columns_list().column_name().stream()
-                    .map(cn -> processColumnName(cn, false).getExpression())
+                    .map(cn -> processColumnName(cn, false, true).getExpression())
                     .filter(e -> e instanceof ColumnExpression)
                     .map(e -> ((ColumnExpression) e).getColumnName())
                     .collect(Collectors.toList());
             dataSource.getJoinColumns().addAll(joinColumns);
+        } else {
+            throw new UnsupportedOperationException("Unsupported join condition type");
         }
-        throw new UnsupportedOperationException("Unsupported join condition type");
     }
 
     private DataSource processTableAtomOrNaturalJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext) {
@@ -540,6 +545,12 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else {
             errors.add(String.format("Duplicate alias \"%s\"", alias));
         }
+        
+        //Preparing available columns for the first time
+        DataSource dataSource = new DataSource(alias);
+        Map<String, List<String>> availableColumns = mergeAvailableColumns(getAvailableColumns(), getAvailableColumns(Optional.of(dataSource), Collections.emptyMap()));
+        getAvailableColumns().clear();
+        getAvailableColumns().putAll(availableColumns);
         return new DataSource(alias);
     }
 
@@ -572,7 +583,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (expression.literal() != null) {
             return processLiteral(expression.literal());
         } else if (expression.column_name() != null) {
-            return processColumnName(expression.column_name(), allowMultipleColumns);
+            return processColumnName(expression.column_name(), allowMultipleColumns, false);
         } else if (expression.function_call() != null) {
             return processFunctionCall(expression.function_call());
         } else if (expression.unary_arithmetic_operator() != null) {
@@ -618,7 +629,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         return ret;
     }
 
-    private AliasExpressionPair processColumnName(SQLParser.Column_nameContext columnNameContext, boolean allowMultipleColumns) {
+    private AliasExpressionPair processColumnName(SQLParser.Column_nameContext columnNameContext, boolean allowMultipleColumns, boolean isUsingClause) {
         //Column name can be alias.* for concrete table or just * for all tables
         Optional<String> tableAliasCandidate = getTableAlias(columnNameContext);
         boolean selectAllColumns = columnNameContext.MULTIPLY() != null;
@@ -627,7 +638,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             String tableAlias = tableAliasCandidate.get();
             return processAliasedColumnName(tableAlias, columnName, selectAllColumns, allowMultipleColumns);
         } else {
-            return processStandaloneColumnName(columnName, selectAllColumns, allowMultipleColumns);
+            return processStandaloneColumnName(columnName, selectAllColumns, allowMultipleColumns, isUsingClause);
         }
     }
     
@@ -650,7 +661,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         return new AliasExpressionPair(String.format("%s.%s", tableAlias, columnName), new ColumnExpression(columnName, tableAlias));
     }
     
-    private AliasExpressionPair processStandaloneColumnName(String columnName, boolean selectAllColumns, boolean allowMultipleColumns) {
+    private AliasExpressionPair processStandaloneColumnName(String columnName, boolean selectAllColumns, boolean allowMultipleColumns, boolean isUsingClause) {
         if (selectAllColumns) {
             if (!allowMultipleColumns) {
                 errors.add("Selecting * is not allowed in this context");
@@ -662,7 +673,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             errors.add(String.format("Column \"%s\" is not available for selection", columnName));
             return emptyPair();
         }
-        if (getAvailableColumns().get(columnName).size() > 1) {
+        if (getAvailableColumns().get(columnName).size() > 1 && !isUsingClause) {
             errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
             return emptyPair();
         }

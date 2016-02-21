@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.hamcrest.Matchers.*;
@@ -65,6 +66,9 @@ public class ExpressionEvaluatorImplTest {
         assertThat(expressionEvaluator.evaluate(true, EMPTY_ROW), equalTo(true));
         assertThat(expressionEvaluator.evaluate(false, EMPTY_ROW), equalTo(false));
         assertThat(expressionEvaluator.evaluate(DataType.NULL, EMPTY_ROW), equalTo(DataType.NULL));
+
+        ZonedDateTime now = ZonedDateTime.now();
+        assertThat(expressionEvaluator.evaluate(now, EMPTY_ROW), equalTo(now));
     }
     
     @Test

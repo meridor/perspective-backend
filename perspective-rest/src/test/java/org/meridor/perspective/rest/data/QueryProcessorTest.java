@@ -4,7 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.*;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TableName;
@@ -22,7 +24,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Contains end-to-end SQL engine tests. Real tables from rest module are needed
- * for this test to work propertly.
+ * for this test to work properly.
  */
 @ContextConfiguration(locations = "/META-INF/spring/query-processor-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -36,10 +38,14 @@ public class QueryProcessorTest {
 
     @Autowired
     private InstancesAware instancesAware;
+    
+    @Autowired
+    private ProjectsAware projectsAware;
 
     @Before
     public void before() {
         instancesAware.saveInstance(EntityGenerator.getInstance());
+        projectsAware.saveProject(EntityGenerator.getProject());
     }
 
     @Test
@@ -74,7 +80,7 @@ public class QueryProcessorTest {
         String[] columnNames = columnNamesList.toArray(new String[columnNamesList.size()]);
         assertThat(queryResult.getData().getColumnNames(), contains(columnNames));
         List<DataRow> rows = queryResult.getData().getRows();
-        assertThat(rows.size(), equalTo(1));
+        assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("name"), equalTo("test-instance"));
     }
 
@@ -101,8 +107,48 @@ public class QueryProcessorTest {
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), containsInAnyOrder("state"));
         List<DataRow> rows = queryResult.getData().getRows();
-        assertThat(rows.size(), is(greaterThan(0)));
+        assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("state"), equalTo("launched"));
     }
-
+    
+    @Test
+    public void testInnerJoinWithCondition() {
+        Query query = new Query(){
+            {
+                setSql("select p.name as project_name, i.name as instance_name " +
+                        "from instances as i inner join projects as p " +
+                        "on i.project_id = p.id");
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("project_name", "instance_name"));
+        List<DataRow> rows = queryResult.getData().getRows();
+        assertThat(rows, hasSize(1));
+        assertThat(rows.get(0).get("project_name"), equalTo("test-project - test-region"));
+        assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
+    }
+    
+    @Test
+    public void testInnerJoinWithUsingClause() {
+        Query query = new Query(){
+            {
+                setSql("select f.name as flavor_name, i.name as instance_name " +
+                        "from instances as i inner join flavors as f " +
+                        "using (project_id)");
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("flavor_name", "instance_name"));
+        List<DataRow> rows = queryResult.getData().getRows();
+        assertThat(rows, hasSize(1));
+        assertThat(rows.get(0).get("flavor_name"), equalTo("test-flavor"));
+        assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
+    }
+    
 }

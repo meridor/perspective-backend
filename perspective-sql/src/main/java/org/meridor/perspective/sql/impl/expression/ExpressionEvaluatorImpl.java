@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -90,7 +91,12 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     }
 
     private boolean isConstant(Class<?> expressionClass) {
-        return Number.class.isAssignableFrom(expressionClass) || String.class.isAssignableFrom(expressionClass) || Boolean.class.isAssignableFrom(expressionClass) || expressionClass.isEnum();
+        return 
+                isNumber(expressionClass) ||
+                isString(expressionClass) ||
+                isDate(expressionClass) ||
+                isBoolean(expressionClass) ||
+                expressionClass.isEnum();
     }
 
     private boolean isString(Class<?> expressionClass) {
@@ -107,6 +113,14 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
 
     private boolean isNumber(Class<?> expressionClass) {
         return isInteger(expressionClass) || isDouble(expressionClass);
+    }
+    
+    private boolean isBoolean(Class<?> expressionClass) {
+        return Boolean.class.isAssignableFrom(expressionClass);
+    }
+    
+    private boolean isDate(Class<?> expressionClass) {
+        return ZonedDateTime.class.isAssignableFrom(expressionClass);
     }
     
     private boolean oneOfIsNull(Object left, Object right) {
