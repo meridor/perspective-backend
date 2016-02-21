@@ -2,14 +2,19 @@ package org.meridor.perspective.sql.impl.task;
 
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.ExecutionResult;
+import org.meridor.perspective.sql.impl.expression.ColumnExpression;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
+import org.meridor.perspective.sql.impl.table.TableName;
+import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,15 +26,28 @@ public class SelectTask implements Task {
     @Autowired
     private ExpressionEvaluator expressionEvaluator;
     
-    private final Map<String, Object> selectionMap;
-    
     @Autowired
+    private TablesAware tablesAware;
+
+    private Map<String, Object> selectionMap;
+
+    private boolean selectAll;
+
     public SelectTask(Map<String, Object> selectionMap) {
         this.selectionMap = selectionMap;
     }
 
+    @PostConstruct
+    public void init() {
+        selectionMap = processSelectionMap(selectionMap);
+    }
+
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
+        if (selectAll) {
+            return previousTaskResult;
+        }
+
         DataContainer newData = new DataContainer(selectionMap.keySet());
         previousTaskResult.getData().getRows().stream()
                 .map(dr -> selectionMap.keySet().stream()
@@ -42,6 +60,29 @@ public class SelectTask implements Task {
                 setCount(newData.getRows().size());
             }
         };
+    }
+
+    //Here we convert ColumnExpression(*) expressions to a list of ColumnExpression(columnName) 
+    private Map<String, Object> processSelectionMap(Map<String, Object> selectionMap) {
+        Map<String, Object> ret = new LinkedHashMap<>();
+        selectionMap.keySet().forEach(alias -> {
+            Object expression = selectionMap.get(alias);
+            if (expression instanceof ColumnExpression) {
+                ColumnExpression columnExpression = (ColumnExpression) expression;
+                if (columnExpression.useAnyTable() && columnExpression.useAnyColumn()) {
+                    this.selectAll = true;
+                    return;
+                } else if (columnExpression.useAnyColumn()) {
+                    TableName tableName = TableName.fromString(columnExpression.getTableAlias());
+                    tablesAware.getColumns(tableName).forEach(c ->
+                            ret.put(c.getName(), new ColumnExpression(c.getName(), alias))
+                    );
+                    return;
+                }
+            }
+            ret.put(alias, expression);
+        });
+        return ret;
     }
 
 }

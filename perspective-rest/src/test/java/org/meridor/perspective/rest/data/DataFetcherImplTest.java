@@ -147,6 +147,16 @@ public class DataFetcherImplTest {
     }
     
     @Test
+    public void testFetchInstances() {
+        checkAssertions(TableName.INSTANCES, new LinkedHashMap<String, Object>(){
+            {
+                put("id", "test-instance");
+                put("state", "launched");
+            }
+        });
+    }
+    
+    @Test
     public void testFetchInstanceNetworks() {
         checkAssertions(TableName.INSTANCE_NETWORKS, new LinkedHashMap<String, Object>(){
             {

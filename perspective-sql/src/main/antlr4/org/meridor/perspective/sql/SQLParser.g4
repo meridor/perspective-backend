@@ -19,8 +19,8 @@ alias
    ;
    
 column_name
-   : ( table_name DOT )? ( ID | ASTERISK ) 
-   | ( alias DOT )? ( ID | ASTERISK )
+   : ( table_name DOT )? ( ID | MULTIPLY ) 
+   | ( alias DOT )? ( ID | MULTIPLY )
    ;
    
    

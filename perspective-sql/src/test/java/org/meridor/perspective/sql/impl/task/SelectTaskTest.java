@@ -7,6 +7,7 @@ import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ColumnExpression;
 import org.meridor.perspective.sql.impl.expression.FunctionExpression;
+import org.meridor.perspective.sql.impl.table.Column;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,7 +25,9 @@ public class SelectTaskTest {
 
     private static final String TABLE_NAME = "mock";
     private static final String FIRST_COLUMN = "str";
-    private static final String SECOND_COLUMN = "missingDefaultValue";
+    private static final String SECOND_COLUMN = "num";
+    private static final String THIRD_COLUMN = "numWithDefaultValue";
+    private static final String FOURTH_COLUMN = "missingDefaultValue";
     private static final String FIRST_ALIAS = "first";
     private static final String SECOND_ALIAS = "second";
     private static final String THIRD_ALIAS = "third";
@@ -33,11 +36,11 @@ public class SelectTaskTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testExecute() throws Exception {
+    public void testSimpleSelect() throws Exception {
         Map<String, Object> selectionMap = new HashMap<String, Object>(){
             {
                 put(FIRST_ALIAS, new ColumnExpression(FIRST_COLUMN, TABLE_NAME));
-                put(SECOND_ALIAS, new FunctionExpression("abs", Collections.singletonList(new ColumnExpression(SECOND_COLUMN, TABLE_NAME))));
+                put(SECOND_ALIAS, new FunctionExpression("abs", Collections.singletonList(new ColumnExpression(FOURTH_COLUMN, TABLE_NAME))));
                 put(THIRD_ALIAS, 42);
             }
         };
@@ -47,17 +50,71 @@ public class SelectTaskTest {
         );
         ExecutionResult inputData = getInput();
         ExecutionResult executionResult = selectTask.execute(inputData);
+
         assertThat(executionResult.getCount(), equalTo(2));
         List<DataRow> rows = executionResult.getData().getRows();
         assertThat(rows.size(), equalTo(2));
-        assertThat(rows.get(0).getValues(), hasSize(3));
-        assertThat(rows.get(0).get(FIRST_ALIAS), equalTo("one"));
-        assertThat(rows.get(0).get(SECOND_ALIAS), equalTo(333d));
-        assertThat(rows.get(0).get(THIRD_ALIAS), equalTo(42));
-        assertThat(rows.get(1).getValues(), hasSize(3));
-        assertThat(rows.get(1).get(FIRST_ALIAS), equalTo("two"));
-        assertThat(rows.get(1).get(SECOND_ALIAS), equalTo(222d));
-        assertThat(rows.get(1).get(THIRD_ALIAS), equalTo(42));
+
+        DataRow firstRow = rows.get(0);
+        assertThat(firstRow.getValues(), hasSize(3));
+        assertThat(firstRow.get(FIRST_ALIAS), equalTo("one"));
+        assertThat(firstRow.get(SECOND_ALIAS), equalTo(333d));
+        assertThat(firstRow.get(THIRD_ALIAS), equalTo(42));
+
+        DataRow secondRow = rows.get(1);
+        assertThat(secondRow.getValues(), hasSize(3));
+        assertThat(secondRow.get(FIRST_ALIAS), equalTo("two"));
+        assertThat(secondRow.get(SECOND_ALIAS), equalTo(222d));
+        assertThat(secondRow.get(THIRD_ALIAS), equalTo(42));
+    }
+
+    @Test
+    public void testSelectAll() throws Exception {
+        Map<String, Object> selectionMap = new HashMap<String, Object>() {
+            {
+                put("*", new ColumnExpression());
+            }
+        };
+        SelectTask selectTask = applicationContext.getBean(
+                SelectTask.class,
+                selectionMap
+        );
+        ExecutionResult inputData = getInput();
+        ExecutionResult executionResult = selectTask.execute(inputData);
+        assertThat(executionResult, equalTo(inputData));
+    }
+
+    @Test
+    public void testSelectAllFromOneTable() throws Exception {
+        Map<String, Object> selectionMap = new HashMap<String, Object>() {
+            {
+                put("*", new ColumnExpression(Column.ANY, TABLE_NAME));
+            }
+        };
+        SelectTask selectTask = applicationContext.getBean(
+                SelectTask.class,
+                selectionMap
+        );
+        ExecutionResult inputData = getInput();
+        ExecutionResult executionResult = selectTask.execute(inputData);
+
+        assertThat(executionResult.getCount(), equalTo(2));
+        List<DataRow> rows = executionResult.getData().getRows();
+
+        assertThat(rows.size(), equalTo(2));
+        DataRow firstRow = rows.get(0);
+        assertThat(firstRow.getValues(), hasSize(4));
+        assertThat(firstRow.get(FIRST_COLUMN), equalTo("one"));
+        assertThat(firstRow.get(SECOND_COLUMN), equalTo(444f));
+        assertThat(firstRow.get(THIRD_COLUMN), equalTo(555));
+        assertThat(firstRow.get(FOURTH_COLUMN), equalTo(-333L));
+
+        DataRow secondRow = rows.get(1);
+        assertThat(secondRow.getValues(), hasSize(4));
+        assertThat(secondRow.get(FIRST_COLUMN), equalTo("two"));
+        assertThat(secondRow.get(SECOND_COLUMN), equalTo(666f));
+        assertThat(secondRow.get(THIRD_COLUMN), equalTo(777));
+        assertThat(secondRow.get(FOURTH_COLUMN), equalTo(222L));
     }
 
     private static ExecutionResult getInput() {
@@ -65,21 +122,23 @@ public class SelectTaskTest {
         input.setCount(2);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
             {
-                put(TABLE_NAME, Arrays.asList(FIRST_COLUMN, SECOND_COLUMN));
+                put(TABLE_NAME, Arrays.asList(FIRST_COLUMN, SECOND_COLUMN, THIRD_COLUMN, FOURTH_COLUMN));
             }
         };
         DataContainer dataContainer = new DataContainer(columnsMap);
-        dataContainer.addRow(createRow("one", -333L));
-        dataContainer.addRow(createRow("two", 222L));
+        dataContainer.addRow(createRow("one", 444f, 555, -333L));
+        dataContainer.addRow(createRow("two", 666f, 777, 222L));
         input.setData(dataContainer);
         return input;
     }
 
-    private static List<Object> createRow(String first, Long second) {
+    private static List<Object> createRow(String first, Float second, Integer third, Long fourth) {
         return new ArrayList<Object>(){
             {
                 add(first);
                 add(second);
+                add(third);
+                add(fourth);
             }
         };
     }

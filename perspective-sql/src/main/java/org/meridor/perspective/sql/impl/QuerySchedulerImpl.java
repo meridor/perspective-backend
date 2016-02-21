@@ -62,36 +62,41 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
                     });
                 }
                 
-                SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap());
-                tasksQueue.add(selectTask);
-                
                 if (selectQueryAware.getWhereExpression().isPresent()){
                     FilterTask filterTask = applicationContext.getBean(FilterTask.class);
                     Object whereExpression = selectQueryAware.getWhereExpression().get();
                     filterTask.setCondition(dr -> expressionEvaluator.evaluateAs(whereExpression, dr, Boolean.class));
                     tasksQueue.add(filterTask);
                 }
+
                 if (!selectQueryAware.getGroupByExpressions().isEmpty()) {
                     GroupTask groupTask = applicationContext.getBean(GroupTask.class);
                     selectQueryAware.getGroupByExpressions().forEach(groupTask::addExpression);
                     tasksQueue.add(groupTask);
                 }
+
                 if (selectQueryAware.getHavingExpression().isPresent()) {
                     FilterTask filterTask = applicationContext.getBean(FilterTask.class);
                     Object havingExpression = selectQueryAware.getHavingExpression().get();
                     filterTask.setCondition(dr -> expressionEvaluator.evaluateAs(havingExpression, dr, Boolean.class));
                     tasksQueue.add(filterTask);
                 }
+
                 if (!selectQueryAware.getOrderByExpressions().isEmpty()) {
                     OrderTask orderTask = applicationContext.getBean(OrderTask.class);
                     selectQueryAware.getOrderByExpressions().forEach(orderTask::addExpression);
                 }
+
+                SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap());
+                tasksQueue.add(selectTask);
+
                 if (selectQueryAware.getLimitCount().isPresent()) {
                     tasksQueue.add(createLimitTask(
                             selectQueryAware.getLimitOffset(),
                             selectQueryAware.getLimitCount().get()
                     ));
                 }
+
                 break;
             }
             case SHOW_TABLES: {

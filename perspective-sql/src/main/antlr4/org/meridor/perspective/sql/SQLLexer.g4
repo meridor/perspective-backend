@@ -157,10 +157,6 @@ ESCAPE
    : 'escape'
    ;
 
-ASTERISK
-   : '*'
-   ;
-
 USE
   : 'use'
   ;

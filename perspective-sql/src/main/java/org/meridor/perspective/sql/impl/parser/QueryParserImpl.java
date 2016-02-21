@@ -45,13 +45,13 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     
     @Autowired
     private TablesAware tablesAware;
-    
-    private SQLParser.Select_clauseContext selectClauseContext;
-    private Optional<SQLParser.From_clauseContext> fromClauseContext;
-    private Optional<SQLParser.Where_clauseContext> whereClauseContext;
-    private Optional<SQLParser.Having_clauseContext> havingClauseContext;
-    private Optional<SQLParser.Group_clauseContext> groupByClauseContext;
-    private Optional<SQLParser.Order_clauseContext> orderByClauseContext;
+
+    private Optional<SQLParser.Select_clauseContext> selectClauseContext = Optional.empty();
+    private Optional<SQLParser.From_clauseContext> fromClauseContext = Optional.empty();
+    private Optional<SQLParser.Where_clauseContext> whereClauseContext = Optional.empty();
+    private Optional<SQLParser.Having_clauseContext> havingClauseContext = Optional.empty();
+    private Optional<SQLParser.Group_clauseContext> groupByClauseContext = Optional.empty();
+    private Optional<SQLParser.Order_clauseContext> orderByClauseContext = Optional.empty();
     
     private QueryType queryType = QueryType.UNKNOWN;
     private Set<String> errors = new HashSet<>();
@@ -81,7 +81,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         ParseTree parseTree = sqlParser.query();
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(this, parseTree);
-        if (errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             String message = errors.stream().collect(Collectors.joining("; "));
             throw new SQLSyntaxErrorException(message);
         }
@@ -107,7 +107,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     @Override
     public void exitSelect_clause(SQLParser.Select_clauseContext ctx) {
         this.queryType = QueryType.SELECT;
-        selectClauseContext = ctx;
+        selectClauseContext = Optional.of(ctx);
     }
 
     @Override
@@ -330,7 +330,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         List<DataSource> dataSources = tableReferencesContext.table_reference().stream()
                 .map(this::processTableReference)
                 .collect(Collectors.toList());
-        return chainDataSources(Optional.empty(), dataSources);
+        return dataSources.size() > 1 ?
+                chainDataSources(Optional.empty(), dataSources) :
+                Optional.of(dataSources.get(0));
     }
     
     private Optional<DataSource> chainDataSources(Optional<DataSource> previousDataSourceCandidate, List<DataSource> remainingDataSources) {
@@ -542,10 +544,12 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void processSelectClause() {
-        this.selectClauseContext.select_expression().aliased_expression().stream().forEach(ae -> {
-            AliasExpressionPair pair = processAliasedExpression(ae);
-            selectionMap.put(pair.getAlias(), pair.getExpression());
-        });
+        if (this.selectClauseContext.isPresent()) {
+            this.selectClauseContext.get().select_expression().aliased_expression().stream().forEach(ae -> {
+                AliasExpressionPair pair = processAliasedExpression(ae);
+                selectionMap.put(pair.getAlias(), pair.getExpression());
+            });
+        }
     }
 
     private AliasExpressionPair processAliasedExpression(SQLParser.Aliased_expressionContext ctx) {
@@ -553,7 +557,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         SQLParser.ExpressionContext expressionCtx = ctx.expression();
         AliasExpressionPair defaultAliasExpressionPair = processExpression(expressionCtx, true);
         String alias = getAliasOr(aliasCtxCandidate, defaultAliasExpressionPair.getAlias());
-        return pair(alias, defaultAliasExpressionPair.getAlias());
+        return pair(alias, defaultAliasExpressionPair.getExpression());
     }
 
     private String getAliasOr(Optional<SQLParser.Alias_clauseContext> ctxCandidate, String value) {
@@ -581,7 +585,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     private AliasExpressionPair processLiteral(SQLParser.LiteralContext literal) {
         if (literal.STRING() != null) {
-            String stringValue = literal.STRING().getText();
+            String stringValue = stripApostrophes(literal.STRING().getText());
             return pair(stringValue, stringValue);
         } else if (literal.INT() != null) {
             Integer intValue = Integer.valueOf(literal.INT().getText());
@@ -599,10 +603,25 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         throw new IllegalArgumentException("Unsupported literal type");
     }
 
+    private static String stripApostrophes(String str) {
+        final char APOSTROPHE = '\'';
+        if (str.length() < 2) {
+            return str;
+        }
+        String ret = str;
+        if (ret.charAt(0) == APOSTROPHE) {
+            ret = ret.substring(1);
+        }
+        if (ret.charAt(ret.length() - 1) == APOSTROPHE) {
+            ret = ret.substring(0, ret.length() - 1);
+        }
+        return ret;
+    }
+
     private AliasExpressionPair processColumnName(SQLParser.Column_nameContext columnNameContext, boolean allowMultipleColumns) {
         //Column name can be alias.* for concrete table or just * for all tables
         Optional<String> tableAliasCandidate = getTableAlias(columnNameContext);
-        boolean selectAllColumns = columnNameContext.ASTERISK() != null;
+        boolean selectAllColumns = columnNameContext.MULTIPLY() != null;
         String columnName = (columnNameContext.ID() != null) ? columnNameContext.ID().getText() : null;
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
@@ -647,8 +666,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
             return emptyPair();
         }
-        String tableAlias = getAvailableColumns().get(columnName).get(0);
-        return new AliasExpressionPair(columnName, tableAlias);
+//        String tableAlias = getAvailableColumns().get(columnName).get(0);
+        return new AliasExpressionPair(columnName, new ColumnExpression(columnName));
     }
     
     private Optional<String> getTableAlias(SQLParser.Column_nameContext columnName) {

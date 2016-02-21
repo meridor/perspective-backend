@@ -33,4 +33,8 @@ public class ColumnExpression {
         return Column.ANY.equals(getTableAlias());
     }
 
+    public boolean useAnyColumn() {
+        return Column.ANY.equals(getColumnName());
+    }
+
 }

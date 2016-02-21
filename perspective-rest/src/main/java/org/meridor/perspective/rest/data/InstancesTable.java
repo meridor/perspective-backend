@@ -11,7 +11,7 @@ public class InstancesTable implements Table {
     
     public String id;
     public String name;
-    public String cloudId;
+    public String cloud_id;
     public String cloud_type;
     public String project_id;
     public String flavor_id;

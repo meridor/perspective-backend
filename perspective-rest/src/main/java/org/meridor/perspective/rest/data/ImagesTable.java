@@ -14,7 +14,7 @@ public class ImagesTable implements Table {
     
     public String id;
     public String name;
-    public String cloudId;
+    public String cloud_id;
     public String cloud_type;
     public ZonedDateTime created;
     public ZonedDateTime last_updated;

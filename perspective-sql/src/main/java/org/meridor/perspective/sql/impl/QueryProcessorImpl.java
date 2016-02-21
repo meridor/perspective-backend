@@ -58,7 +58,8 @@ public class QueryProcessorImpl implements QueryProcessor {
         if (!tasks.hasNext()) {
             return previousTaskResult;
         }
-        return executeTasks(tasks, tasks.next().execute(previousTaskResult));
+        Task currentTask = tasks.next();
+        return executeTasks(tasks, currentTask.execute(previousTaskResult));
     }
     
     private static QueryResult getQueryResult(QueryStatus queryStatus, int count, DataContainer data, String message) {
