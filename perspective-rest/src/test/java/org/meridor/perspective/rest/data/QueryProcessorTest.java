@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.framework.EntityGenerator;
-import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.*;
@@ -156,5 +155,22 @@ public class QueryProcessorTest {
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("n.name"), equalTo("test-subnet"));
         assertThat(rows.get(0).get("id"), equalTo("test-instance"));
+    }
+    
+    @Test
+    public void testLeftJoinWithCondition() {
+        Query query = new Query();
+        //All i2 columns should be null
+        query.setSql("select i1.id as id1, i2.id as id2 from instances as i1 left join instances as i2 on i1.id = i2.state");
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("id1", "id2"));
+        List<DataRow> rows = queryResult.getData().getRows();
+        assertThat(rows, hasSize(1));
+        assertThat(rows.get(0).get("id1"), equalTo("test-instance"));
+        assertThat(rows.get(0).get("id2"), is(nullValue()));
+        
     }
 }

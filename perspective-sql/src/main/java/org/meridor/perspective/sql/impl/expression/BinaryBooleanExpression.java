@@ -23,4 +23,8 @@ public class BinaryBooleanExpression {
     public Object getRight() {
         return right;
     }
+    
+    public static BinaryBooleanExpression alwaysTrue() {
+        return new BinaryBooleanExpression(true, BinaryBooleanOperator.OR, true);
+    }
 }

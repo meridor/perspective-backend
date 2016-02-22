@@ -144,16 +144,19 @@ public class DataSourceTask implements Task {
         if (columnNames.size() == 0) {
             return joinCondition;
         }
-        String columnName = columnNames.remove(0);
-        SimpleBooleanExpression simpleBooleanExpression = new SimpleBooleanExpression(
-                new ColumnExpression(columnName, leftTableAlias),
-                BooleanRelation.EQUAL,
-                new ColumnExpression(columnName, rightTableAlias)
+        return Optional.of(
+                columnNames.stream()
+                    .map(cn -> new SimpleBooleanExpression(
+                            new ColumnExpression(cn, leftTableAlias),
+                            BooleanRelation.EQUAL,
+                            new ColumnExpression(cn, rightTableAlias)
+                    ))
+                    .reduce(
+                            BinaryBooleanExpression.alwaysTrue(),
+                            (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s),
+                            (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s)
+                    )
         );
-        BinaryBooleanExpression nextJoinCondition = joinCondition.isPresent() ?
-                new BinaryBooleanExpression(joinCondition.get(), BinaryBooleanOperator.AND, simpleBooleanExpression) :
-                new BinaryBooleanExpression(true, BinaryBooleanOperator.AND, simpleBooleanExpression);
-        return columnsToCondition(Optional.of(nextJoinCondition), leftTableAlias, columnNames, rightTableAlias);
     }
     
     //A naive implementation filtering cross join by condition
@@ -181,16 +184,22 @@ public class DataSourceTask implements Task {
         return innerJoin(left, right, Optional.of(newJoinCondition));
     }
     
-    //Converts join condition like a.col = b.col to a.col = b.col or b.col is null 
+    //Converts join condition like a.col = b.col to a.col = b.col or (b.col1 is null and b.col2 is null and ...) 
     private Object convertJoinCondition(Object joinCondition, List<String> columnNames, String rightTableAlias) {
         if (columnNames.isEmpty()) {
             return joinCondition;
         }
-        String columnName = columnNames.remove(0);
-        ColumnExpression columnExpression = new ColumnExpression(columnName, rightTableAlias);
-        FunctionExpression isNullExpression = new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(columnExpression, DataType.NULL));
-        Object newJoinCondition = new BinaryBooleanExpression(joinCondition, BinaryBooleanOperator.OR, isNullExpression);
-        return convertJoinCondition(newJoinCondition, columnNames, rightTableAlias);
+        BinaryBooleanExpression isNullExpression = columnNames.stream()
+                .map(cn -> {
+                    ColumnExpression columnExpression = new ColumnExpression(cn, rightTableAlias);
+                    return new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(columnExpression, DataType.NULL));
+                })
+                .reduce(
+                        BinaryBooleanExpression.alwaysTrue(),
+                        (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s),
+                        (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s)
+                );
+        return new BinaryBooleanExpression(joinCondition, BinaryBooleanOperator.OR, isNullExpression);
     }
     
     //Based on http://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists
