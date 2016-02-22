@@ -78,7 +78,7 @@ public class QueryProcessorTest {
                 .map(Column::getName).collect(Collectors.toList());
         String[] columnNames = columnNamesList.toArray(new String[columnNamesList.size()]);
         assertThat(queryResult.getData().getColumnNames(), contains(columnNames));
-        List<DataRow> rows = queryResult.getData().getRows();
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("name"), equalTo("test-instance"));
     }
@@ -105,7 +105,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), containsInAnyOrder("state"));
-        List<DataRow> rows = queryResult.getData().getRows();
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("state"), equalTo("launched"));
     }
@@ -124,7 +124,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("project_name", "instance_name"));
-        List<DataRow> rows = queryResult.getData().getRows();
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("project_name"), equalTo("test-project - test-region"));
         assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
@@ -151,7 +151,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("n.name", "id"));
-        List<DataRow> rows = queryResult.getData().getRows();
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("n.name"), equalTo("test-subnet"));
         assertThat(rows.get(0).get("id"), equalTo("test-instance"));
@@ -167,7 +167,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("id1", "id2"));
-        List<DataRow> rows = queryResult.getData().getRows();
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("id1"), equalTo("test-instance"));
         assertThat(rows.get(0).get("id2"), is(nullValue()));

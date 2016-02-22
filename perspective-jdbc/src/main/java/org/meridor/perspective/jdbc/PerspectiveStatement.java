@@ -1,7 +1,14 @@
 package org.meridor.perspective.jdbc;
 
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.client.Perspective;
 import org.meridor.perspective.jdbc.impl.DataRow;
+import org.meridor.perspective.sql.Parameter;
+import org.meridor.perspective.sql.Query;
+import org.meridor.perspective.sql.QueryResult;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.core.GenericType;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -13,23 +20,23 @@ import java.util.List;
 
 public class PerspectiveStatement extends BaseEntity implements PreparedStatement {
 
-    private final String sql;
+    private String sql;
     
-    private final List<DataRow> parameterRowsList = new ArrayList<>();
+    private final List<List<Parameter>> parametersList = new ArrayList<>();
     
     private int currentRowIndex = 0;
     
-    private final Connection connection;
+    private final PerspectiveConnection connection;
     
     private boolean isClosed = false;
     
     private boolean closeOnCompletion = false;
 
-    public PerspectiveStatement(Connection connection) {
+    public PerspectiveStatement(PerspectiveConnection connection) {
         this(null, connection);
     }
     
-    public PerspectiveStatement(String sql, Connection connection) {
+    public PerspectiveStatement(String sql, PerspectiveConnection connection) {
         this.sql = sql;
         this.connection = connection;
     }
@@ -43,13 +50,21 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
     @Override
     public ResultSet executeQuery() throws SQLException {
         assertNotClosed();
-        return null;
+        Client client = this.connection.getClient();
+        Query query = new Query();
+        query.setSql(this.sql);
+        GenericType<ArrayList<QueryResult>> queryResultListType = new GenericType<ArrayList<QueryResult>>() {};
+        ArrayList<QueryResult> queryResults = Perspective.query(client).postXmlAs(query, queryResultListType);
+        if (queryResults.isEmpty()) {
+            throw new SQLException("Request returned no data");
+        }
+        return new PerspectiveResultSet(this, queryResults.get(0).getData());
     }
 
     @Override
     public int executeUpdate() throws SQLException {
         assertNotClosed();
-        return 0;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -139,7 +154,7 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public void clearParameters() throws SQLException {
-        parameterRowsList.clear();
+        parametersList.clear();
     }
 
     @Override
@@ -154,8 +169,8 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public boolean execute() throws SQLException {
-        //TODO: implement it!
-        return false;
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -265,10 +280,13 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
-        if (parameterRowsList.size() <= currentRowIndex) {
-            parameterRowsList.add(new DataRow());
+        Parameter parameter = new Parameter();
+        parameter.setIndex(parameterIndex);
+        parameter.setValue(x.toString());
+        if (parametersList.size() <= currentRowIndex) {
+            parametersList.add(new ArrayList<>());
         }
-        parameterRowsList.get(currentRowIndex).put(parameterIndex, x);
+        parametersList.get(currentRowIndex).add(parameterIndex - 1, parameter);
     }
 
     @Override
@@ -323,12 +341,14 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return null;
+        this.sql = sql;
+        return executeQuery();
     }
 
     @Override
     public int executeUpdate(String sql) throws SQLException {
-        return 0;
+        this.sql = sql;
+        return executeUpdate();
     }
 
     @Override
@@ -338,52 +358,52 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public int getMaxFieldSize() throws SQLException {
-        return 0;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void setMaxFieldSize(int max) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public int getMaxRows() throws SQLException {
-        return 0;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void setMaxRows(int max) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void setEscapeProcessing(boolean enable) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public int getQueryTimeout() throws SQLException {
-        return 0;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void setQueryTimeout(int seconds) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void cancel() throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -393,13 +413,13 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public boolean execute(String sql) throws SQLException {
-        //TODO: implement it!
-        return false;
+        this.sql = sql;
+        return execute();
     }
 
     @Override
     public ResultSet getResultSet() throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -414,7 +434,7 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public void setFetchDirection(int direction) throws SQLException {
-        //Ignored
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -424,12 +444,12 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public void setFetchSize(int rows) throws SQLException {
-        //Ignored
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public int getFetchSize() throws SQLException {
-        return 0;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -444,18 +464,18 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public void addBatch(String sql) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public void clearBatch() throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public int[] executeBatch() throws SQLException {
-        //TODO: implement it!
-        return new int[0];
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -466,12 +486,12 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public boolean getMoreResults(int current) throws SQLException {
-        return false;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
@@ -486,23 +506,26 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
 
     @Override
     public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-        return 0;
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-        return false;
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-        return false;
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override
     public boolean execute(String sql, String[] columnNames) throws SQLException {
-        //TODO: implement it!
-        return false;
+        assertNotClosed();
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override

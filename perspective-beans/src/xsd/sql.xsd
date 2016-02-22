@@ -49,12 +49,37 @@
         </xsd:all>
     </xsd:complexType>
 
-    <xsd:complexType name="data"/>
+    <xsd:complexType name="data">
+        <xsd:all>
+            <xsd:element name="columnNames" type="tns:columnNames"/>
+            <xsd:element name="rows" type="tns:rows"/>
+        </xsd:all>
+    </xsd:complexType>
 
+    <xsd:complexType name="columnNames">
+        <xsd:sequence>
+            <xsd:element name="columnName" type="xsd:string" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="rows">
+        <xsd:sequence>
+            <xsd:element name="row" type="tns:row" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="row">
+        <xsd:sequence>
+            <xsd:element name="value" type="xsd:anyType" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="dataContainer"/>
+    
     <xsd:complexType name="executionResult">
         <xsd:all>
             <xsd:element name="count" type="xsd:int" default="0"/>
-            <xsd:element name="data" type="tns:data"/>
+            <xsd:element name="data" type="tns:dataContainer"/>
         </xsd:all>
     </xsd:complexType>
 

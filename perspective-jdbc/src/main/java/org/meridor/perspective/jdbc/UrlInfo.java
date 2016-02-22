@@ -3,12 +3,12 @@ package org.meridor.perspective.jdbc;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UrlParser {
+public class UrlInfo {
     
     private final boolean isValid;
     private URL url;
     
-    public UrlParser(String url) {
+    public UrlInfo(String url) {
         this.isValid = parse(url);
     }
     
@@ -46,5 +46,8 @@ public class UrlParser {
     public String getPassword() {
         return getUserData()[1];
     }
-    
+
+    public String getUrl() {
+        return url.toString();
+    }
 }

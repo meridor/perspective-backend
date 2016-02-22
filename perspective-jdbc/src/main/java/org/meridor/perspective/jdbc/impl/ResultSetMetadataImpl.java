@@ -2,13 +2,15 @@ package org.meridor.perspective.jdbc.impl;
 
 import org.meridor.perspective.jdbc.BaseEntity;
 import org.meridor.perspective.jdbc.PerspectiveResultSet;
+import org.meridor.perspective.sql.Row;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
+
+import static org.meridor.perspective.jdbc.impl.DataUtils.*;
 
 public class ResultSetMetadataImpl extends BaseEntity implements ResultSetMetaData {
     
@@ -23,18 +25,18 @@ public class ResultSetMetadataImpl extends BaseEntity implements ResultSetMetaDa
     }
 
     private boolean isDataEmpty() {
-        return getResultSet().getData().size() == 0;
+        return getDataSize(getResultSet().getData()) == 0;
     }
     
-    private Map<Integer, Object> getFirstRow() {
-        return getResultSet().getData().get(0);
+    private Row getFirstRow() {
+        return getRow(getResultSet().getData(), 0);
     }
     
     @Override
     public int getColumnCount() throws SQLException {
         return isDataEmpty() ?
                 0 :
-                getFirstRow().size() ;
+                getColumnsNames(getResultSet().getData()).size();
     }
 
     @Override
@@ -79,11 +81,11 @@ public class ResultSetMetadataImpl extends BaseEntity implements ResultSetMetaDa
 
     @Override
     public String getColumnName(int column) throws SQLException {
-        Optional<String> columnNameCandidate = resultSet.getColumnNameByIndex(column);
-        if (!columnNameCandidate.isPresent()) {
+        List<String> columnsNames = DataUtils.getColumnsNames(resultSet.getData());
+        if (column < 0 || column >= columnsNames.size()) {
             throw new SQLException(String.format("Column with index %d does not exist", column));
         }
-        return columnNameCandidate.get();
+        return columnsNames.get(column);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class ResultSetMetadataImpl extends BaseEntity implements ResultSetMetaDa
             throw new SQLException(String.format("Invalid column index: %d", column));
         }
         return isDataEmpty() ? 
-                getFirstRow().get(column).getClass() :
+                get(getResultSet().getData(), getFirstRow(), column).getClass() :
                 Object.class;
     }
     

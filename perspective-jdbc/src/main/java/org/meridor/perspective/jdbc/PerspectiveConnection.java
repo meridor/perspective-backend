@@ -1,16 +1,13 @@
 package org.meridor.perspective.jdbc;
 
+import javax.ws.rs.client.Client;
 import java.sql.Connection;
 
 public interface PerspectiveConnection extends Connection {
     
-    String getUrl();
+    UrlInfo getUrlInfo();
 
-    String getHost();
+    Client getClient();
 
-    Integer getPort();
-    
-    String getUserName();
-    
     String getServerVersion();
 }

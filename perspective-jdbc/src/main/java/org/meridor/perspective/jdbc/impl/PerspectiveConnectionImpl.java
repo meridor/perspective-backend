@@ -1,21 +1,26 @@
 package org.meridor.perspective.jdbc.impl;
 
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.meridor.perspective.client.Perspective;
 import org.meridor.perspective.jdbc.*;
+import org.meridor.perspective.sql.Data;
+import org.meridor.perspective.sql.QueryResult;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class PerspectiveConnectionImpl extends BaseEntity implements PerspectiveConnection {
+import static org.meridor.perspective.jdbc.impl.DataUtils.*;
 
-    private final String url;
+public class PerspectiveConnectionImpl extends BaseEntity implements PerspectiveConnection {
     
-    private final String host;
+    private final UrlInfo urlInfo;
     
-    private final Integer port;
-    
-    private final String userName;
+    private final Client client;
     
     private boolean isClosed = false;
     
@@ -26,37 +31,39 @@ public class PerspectiveConnectionImpl extends BaseEntity implements Perspective
     private int networkTimeout = 1000;
     
     public PerspectiveConnectionImpl(String url) {
-        UrlParser urlParser = new UrlParser(url);
-        this.url = url;
-        this.host = urlParser.getHost();
-        this.port = urlParser.getPort();
-        this.userName = urlParser.getUserName();
+        this.urlInfo = new UrlInfo(url);
+        this.client = createClient(urlInfo);
     }
+    
+    private Client createClient(UrlInfo urlInfo) {
+        HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder()
+                .nonPreemptive()
+                .credentials(urlInfo.getUserName(), urlInfo.getPassword())
+                .build();
 
-    @Override 
-    public String getUrl() {
-        return url;
-    }
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(feature);
 
-    @Override 
-    public String getHost() {
-        return host;
-    }
-
-    @Override 
-    public Integer getPort() {
-        return port;
+        return ClientBuilder.newClient(clientConfig);
     }
 
     @Override
-    public String getUserName() {
-        return userName;
+    public UrlInfo getUrlInfo() {
+        return urlInfo;
+    }
+
+    @Override
+    public Client getClient() {
+        return client;
     }
 
     @Override
     public String getServerVersion() {
-        //TODO: implement it!
-        return null;
+        final String SERVER_VERSION = "version";
+        QueryResult queryResult = Perspective.root(getClient()).version()
+                .getAs(QueryResult.class);
+        Data data = queryResult.getData();
+        return (getDataSize(data) == 1) ? get(data, getRow(data, 0), SERVER_VERSION).toString() : "unknown";
     }
 
     private void assertNotClosed() throws SQLException {

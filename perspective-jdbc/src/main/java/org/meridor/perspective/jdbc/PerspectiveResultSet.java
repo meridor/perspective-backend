@@ -1,7 +1,9 @@
 package org.meridor.perspective.jdbc;
 
-import org.meridor.perspective.jdbc.impl.DataRow;
+import org.meridor.perspective.jdbc.impl.DataUtils;
 import org.meridor.perspective.jdbc.impl.ResultSetMetadataImpl;
+import org.meridor.perspective.sql.Data;
+import org.meridor.perspective.sql.Row;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -9,15 +11,16 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
-import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Map;
+
+import static org.meridor.perspective.jdbc.impl.DataUtils.*;
 
 public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     
-    private final Map<String, Integer> columnIndexByLabel;
-    private final List<DataRow> dataByColumnIndex;
+    private final Data data;
     private final Statement statement;
     
     private boolean isClosed = false;
@@ -27,24 +30,17 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
         return new PerspectiveResultSet();
     }
 
-    public PerspectiveResultSet(Statement statement, Map<String, Integer> columnIndexByLabel, List<DataRow> dataByColumnIndex) {
+    public PerspectiveResultSet(Statement statement, Data data) {
         this.statement = statement;
-        this.columnIndexByLabel = columnIndexByLabel;
-        this.dataByColumnIndex = dataByColumnIndex;
+        this.data = data;
     }
 
-    public List<DataRow> getData() {
-        return dataByColumnIndex;
+    public Data getData() {
+        return data;
     }
     
-    public Optional<String> getColumnNameByIndex(int index) {
-        return columnIndexByLabel.entrySet().stream()
-                .filter(e -> e.getValue().equals(index)).map(Map.Entry::getKey)
-                .findFirst();
-    } 
-
     private PerspectiveResultSet() {
-        this(null, Collections.emptyMap(), Collections.emptyList());
+        this(null, new Data());
     }
 
     private void assertNotClosed() throws SQLException {
@@ -157,10 +153,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
 
     @Override
     public int findColumn(String columnLabel) throws SQLException {
-        if (!columnIndexByLabel.containsKey(columnLabel)) {
-            throw new SQLException(String.format("Column %s not found", columnLabel));
-        }
-        return columnIndexByLabel.get(columnLabel);
+        return getColumnIndex(getData(), columnLabel);
     }
     
     @Override
@@ -269,26 +262,19 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
         return getRowColumn(columnIndex);
     }
     
-    private DataRow getCurrentRow() throws SQLException {
+    private Row getCurrentRow() throws SQLException {
         assertNotClosed();
         assertOnRow();
-        return dataByColumnIndex.get(position);
+        return DataUtils.getRow(getData(), position);
     }
     
     private Object getRowColumn(int columnIndex) throws SQLException {
-        DataRow row = getCurrentRow();
-        if (!row.containsKey(columnIndex)) {
-            throw new SQLException(String.format("Specified column %d does not exist", columnIndex));
-        }
-        return row.get(columnIndex);
+        Row row = getCurrentRow();
+        return get(getData(), row, columnIndex);
     }
     
     private void updateRowColumn(int columnIndex, Object value) throws SQLException {
-        DataRow row = getCurrentRow();
-        if (!row.containsKey(columnIndex)) {
-            throw new SQLException(String.format("Specified column %d does not exist", columnIndex));
-        }
-        row.put(columnIndex, value);
+        put(getData(), getCurrentRow(), columnIndex, value);
     }
 
     @Override
@@ -322,10 +308,14 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
         return position == -1;
     }
 
+    private int getColumnsSize() {
+        return getColumnsNames(getData()).size();
+    }
+    
     @Override
     public boolean isAfterLast() throws SQLException {
         assertNotClosed();
-        return position >= columnIndexByLabel.size();
+        return position >= getColumnsSize();
     }
 
     @Override
@@ -337,7 +327,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     @Override
     public boolean isLast() throws SQLException {
         assertNotClosed();
-        return position == columnIndexByLabel.size() - 1;
+        return position == getColumnsSize() - 1;
     }
 
     @Override
@@ -349,7 +339,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     @Override
     public void afterLast() throws SQLException {
         assertNotClosed();
-        position = columnIndexByLabel.size();
+        position = getColumnsSize();
     }
 
     @Override
@@ -361,7 +351,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     @Override
     public boolean last() throws SQLException {
         assertNotClosed();
-        return position == columnIndexByLabel.size() - 1;
+        return position == getColumnsSize() - 1;
     }
 
     @Override
@@ -373,7 +363,7 @@ public class PerspectiveResultSet extends BaseEntity implements ResultSet {
     @Override
     public boolean absolute(int row) throws SQLException {
         assertNotClosed();
-        if (row >= 1 || row <= columnIndexByLabel.size()) {
+        if (row >= 1 || row <= getColumnsSize()) {
             position = row - 1;
             return true;
         }

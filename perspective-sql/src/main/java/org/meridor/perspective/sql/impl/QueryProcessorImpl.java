@@ -62,11 +62,11 @@ public class QueryProcessorImpl implements QueryProcessor {
         return executeTasks(tasks, currentTask.execute(previousTaskResult));
     }
     
-    private static QueryResult getQueryResult(QueryStatus queryStatus, int count, DataContainer data, String message) {
+    private static QueryResult getQueryResult(QueryStatus queryStatus, int count, DataContainer dataContainer, String message) {
         QueryResult queryResult = new QueryResult();
         queryResult.setStatus(queryStatus);
         queryResult.setCount(count);
-        queryResult.setData(data);
+        queryResult.setData(dataContainer.toData());
         queryResult.setMessage(message);
         return queryResult;
     }

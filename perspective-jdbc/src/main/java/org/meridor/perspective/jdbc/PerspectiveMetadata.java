@@ -22,12 +22,12 @@ public class PerspectiveMetadata extends BaseEntity implements DatabaseMetaData 
 
     @Override
     public String getURL() throws SQLException {
-        return connection.getUrl();
+        return connection.getUrlInfo().getUrl();
     }
 
     @Override
     public String getUserName() throws SQLException {
-        return connection.getUserName();
+        return connection.getUrlInfo().getUserName();
     }
 
     @Override

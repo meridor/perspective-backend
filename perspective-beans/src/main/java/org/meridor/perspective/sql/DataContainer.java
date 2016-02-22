@@ -62,5 +62,22 @@ public class DataContainer {
     public List<DataRow> getRows() {
         return rows;
     }
+    
+    public Data toData() {
+        Data data = new Data();
+        data.getColumnNames().addAll(getColumnNames());
+        getRows().forEach(r -> {
+            Row row = new Row();
+            row.getValues().addAll(r.getValues());
+            data.getRows().add(row);
+        });
+        return data;
+    }
+    
+    public static DataContainer fromData(Data data) {
+        DataContainer dataContainer = new DataContainer(data.getColumnNames());
+        data.getRows().forEach(r -> dataContainer.addRow(r.getValues()));
+        return dataContainer;
+    }
 
 }

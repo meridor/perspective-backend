@@ -34,7 +34,7 @@ public class Driver implements java.sql.Driver {
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
-        return new UrlParser(url).isValid();
+        return new UrlInfo(url).isValid();
     }
 
     @Override
