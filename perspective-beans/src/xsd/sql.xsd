@@ -10,7 +10,9 @@
             <xsd:element name="parameters" type="tns:parameters"/>
         </xsd:all>
     </xsd:complexType>
-
+    
+    <xsd:element name="query" type="tns:query"/>
+    
     <xsd:complexType name="parameter">
         <xsd:attribute name="index" type="xsd:int"/>
         <xsd:attribute name="name" type="xsd:string"/>
@@ -49,6 +51,8 @@
         </xsd:all>
     </xsd:complexType>
 
+    <xsd:element name="queryResult" type="tns:queryResult"/>
+    
     <xsd:complexType name="data">
         <xsd:all>
             <xsd:element name="columnNames" type="tns:columnNames"/>

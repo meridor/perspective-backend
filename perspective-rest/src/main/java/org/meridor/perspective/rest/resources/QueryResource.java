@@ -29,7 +29,7 @@ public class QueryResource {
     public List<QueryResult> query(List<Query> queries) {
         return queries.stream().flatMap(q -> {
             LOG.info(
-                    "Processing query = {} with parameters = [{}]",
+                    "Processing query = \"{}\" with parameters = [{}]",
                     q.getSql(),
                     q.getParameters().stream().map(Parameter::toString).collect(Collectors.joining(", "))
             );

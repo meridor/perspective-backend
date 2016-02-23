@@ -27,6 +27,10 @@ public class ApiProvider {
         return getApiOrException(() -> Perspective.images(Perspective.createClient(), new URI(getBaseUri())));
     }
     
+    public Perspective.Query getQueryApi() {
+        return getApiOrException(() -> Perspective.query(Perspective.createClient(), new URI(getBaseUri())));
+    }
+    
     private <T> T getApiOrException(Callable<T> apiSupplier) {
         try {
             return apiSupplier.call();
