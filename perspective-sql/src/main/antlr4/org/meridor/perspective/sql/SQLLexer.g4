@@ -271,19 +271,6 @@ RIGHT
 ON
    : 'on'
    ;
-
-// Built-in functions
-COUNT
-   : 'count'
-   ;
-   
-ABS
-   : 'abs'
-   ;
-   
-TYPEOF
-   : 'typeof'
-   ;
    
 // Basic types
 NULL

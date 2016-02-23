@@ -62,6 +62,24 @@ public class QueryProcessorTest {
         assertThat(queryResult.getCount(), is(greaterThan(0)));
         assertThat(queryResult.getData().getRows().size(), is(greaterThan(0)));
     }
+    
+    @Test
+    public void testSelectVersion() {
+        Query query = new Query() {
+            {
+                setSql("select version() as version");
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("version"));
+        assertThat(queryResult.getCount(), equalTo(1));
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        assertThat(rows, hasSize(1));
+        assertThat(rows.get(0).get("version"), is(notNullValue()));
+    }
 
     @Test
     public void testSelectAsterisk() {

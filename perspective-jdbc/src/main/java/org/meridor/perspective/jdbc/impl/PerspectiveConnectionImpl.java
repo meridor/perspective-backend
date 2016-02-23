@@ -1,26 +1,17 @@
 package org.meridor.perspective.jdbc.impl;
 
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.meridor.perspective.client.Perspective;
 import org.meridor.perspective.jdbc.*;
-import org.meridor.perspective.sql.Data;
-import org.meridor.perspective.sql.QueryResult;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import static org.meridor.perspective.jdbc.impl.DataUtils.*;
-
 public class PerspectiveConnectionImpl extends BaseEntity implements PerspectiveConnection {
     
     private final UrlInfo urlInfo;
     
-    private final Client client;
+    private QueryExecutor queryExecutor;
     
     private boolean isClosed = false;
     
@@ -32,19 +23,7 @@ public class PerspectiveConnectionImpl extends BaseEntity implements Perspective
     
     public PerspectiveConnectionImpl(String url) {
         this.urlInfo = new UrlInfo(url);
-        this.client = createClient(urlInfo);
-    }
-    
-    private Client createClient(UrlInfo urlInfo) {
-        HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder()
-                .nonPreemptive()
-                .credentials(urlInfo.getUserName(), urlInfo.getPassword())
-                .build();
-
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(feature);
-
-        return ClientBuilder.newClient(clientConfig);
+        this.queryExecutor = new QueryExecutorImpl(urlInfo);
     }
 
     @Override
@@ -53,17 +32,27 @@ public class PerspectiveConnectionImpl extends BaseEntity implements Perspective
     }
 
     @Override
-    public Client getClient() {
-        return client;
+    public QueryExecutor getQueryExecutor() {
+        return queryExecutor;
+    }
+
+    @Override
+    public void setQueryExecutor(QueryExecutor queryExecutor) {
+        this.queryExecutor = queryExecutor;
     }
 
     @Override
     public String getServerVersion() {
-        final String SERVER_VERSION = "version";
-        QueryResult queryResult = Perspective.root(getClient()).version()
-                .getAs(QueryResult.class);
-        Data data = queryResult.getData();
-        return (getDataSize(data) == 1) ? get(data, getRow(data, 0), SERVER_VERSION).toString() : "unknown";
+        try {
+            PreparedStatement preparedStatement = prepareStatement("select version() as version");
+            ResultSet data = preparedStatement.executeQuery();
+            if (!data.next()) {
+                throw new SQLException("No data returned");
+            }
+            return data.getString("version");
+        } catch (SQLException e) {
+            return "unknown";
+        }
     }
 
     private void assertNotClosed() throws SQLException {
@@ -339,7 +328,7 @@ public class PerspectiveConnectionImpl extends BaseEntity implements Perspective
 
     @Override
     public void setSchema(String schema) throws SQLException {
-        //Silently ignoring as schema is not supported
+        throw new SQLFeatureNotSupportedException();
     }
 
     @Override

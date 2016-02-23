@@ -4,7 +4,6 @@ import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.Row;
 
 import java.util.List;
-import java.util.Optional;
 
 public final class DataUtils {
 

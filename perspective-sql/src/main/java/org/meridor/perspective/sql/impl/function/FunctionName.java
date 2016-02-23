@@ -6,7 +6,8 @@ import java.util.Optional;
 public enum FunctionName {
     
     ABS,
-    TYPEOF;
+    TYPEOF,
+    VERSION;
 
     public static Optional<FunctionName> fromString(String name) {
         return Arrays.asList(values()).stream()

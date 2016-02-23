@@ -1,14 +1,9 @@
 package org.meridor.perspective.jdbc;
 
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.client.Perspective;
-import org.meridor.perspective.jdbc.impl.DataRow;
 import org.meridor.perspective.sql.Parameter;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.GenericType;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -16,6 +11,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class PerspectiveStatement extends BaseEntity implements PreparedStatement {
@@ -50,11 +46,10 @@ public class PerspectiveStatement extends BaseEntity implements PreparedStatemen
     @Override
     public ResultSet executeQuery() throws SQLException {
         assertNotClosed();
-        Client client = this.connection.getClient();
+        QueryExecutor queryExecutor = this.connection.getQueryExecutor();
         Query query = new Query();
         query.setSql(this.sql);
-        GenericType<ArrayList<QueryResult>> queryResultListType = new GenericType<ArrayList<QueryResult>>() {};
-        ArrayList<QueryResult> queryResults = Perspective.query(client).postXmlAs(query, queryResultListType);
+        List<QueryResult> queryResults = queryExecutor.execute(Collections.singletonList(query));
         if (queryResults.isEmpty()) {
             throw new SQLException("Request returned no data");
         }

@@ -681,13 +681,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private AliasExpressionPair processFunctionCall(SQLParser.Function_callContext functionCall) {
-        String functionName = functionCall.function_name().getText();
+        String functionName = functionCall.ID().getText();
         List<Object> argExpressions = new ArrayList<>();
         List<String> argDefaultAliases = new ArrayList<>();
-        foreachExpression(functionCall.expressions().expression(), p -> {
-            argDefaultAliases.add(p.getAlias());
-            argExpressions.add(p.getExpression());
-        });
+        if (functionCall.expressions() != null) {
+            foreachExpression(functionCall.expressions().expression(), p -> {
+                argDefaultAliases.add(p.getAlias());
+                argExpressions.add(p.getExpression());
+            });
+        }
         String joinedArgs = argDefaultAliases.stream().collect(Collectors.joining(", "));
         String defaultAlias = String.format("%s(%s)", functionName, joinedArgs);
         return pair(defaultAlias, new FunctionExpression(functionName, argExpressions));

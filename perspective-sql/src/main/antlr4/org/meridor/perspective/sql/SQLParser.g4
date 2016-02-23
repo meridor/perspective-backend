@@ -6,7 +6,7 @@ options
 
 query
    : select_query
-   | show_tables_query
+   | show_tables_query //TODO: migrate this to SELECT tables(); query
    ;
 
 //Entities
@@ -88,12 +88,6 @@ complex_boolean_expression
    | complex_boolean_expression (binary_boolean_operator complex_boolean_expression)+
    ;
 
-function_name
-   : COUNT
-   | ABS
-   | TYPEOF
-   ;
-
 expressions
    : expression ( COMMA expression )*
    ;
@@ -107,7 +101,7 @@ order_expression
    ;
    
 function_call
-   : function_name LPAREN expressions RPAREN
+   : ID LPAREN (expressions)? RPAREN
    ;
 
 literal
