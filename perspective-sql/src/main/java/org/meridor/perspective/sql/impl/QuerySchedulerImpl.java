@@ -85,6 +85,7 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
                 if (!selectQueryAware.getOrderByExpressions().isEmpty()) {
                     OrderTask orderTask = applicationContext.getBean(OrderTask.class);
                     selectQueryAware.getOrderByExpressions().forEach(orderTask::addExpression);
+                    tasksQueue.add(orderTask);
                 }
 
                 SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap());

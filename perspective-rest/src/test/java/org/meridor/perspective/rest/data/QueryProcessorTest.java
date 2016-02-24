@@ -3,7 +3,9 @@ package org.meridor.perspective.rest.data;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.*;
@@ -40,11 +42,22 @@ public class QueryProcessorTest {
     
     @Autowired
     private ProjectsAware projectsAware;
+    
+    @Autowired
+    private ImagesAware imagesAware;
 
     @Before
     public void before() {
         instancesAware.saveInstance(EntityGenerator.getInstance());
         projectsAware.saveProject(EntityGenerator.getProject());
+        
+        //We need more than one row for some queries
+        Image firstImage = EntityGenerator.getImage();
+        Image secondImage = EntityGenerator.getImage();
+        secondImage.setId("second-image");
+        secondImage.setName("second-image");
+        imagesAware.saveImage(firstImage);
+        imagesAware.saveImage(secondImage);
     }
 
     @Test
@@ -191,4 +204,20 @@ public class QueryProcessorTest {
         assertThat(rows.get(0).get("id2"), is(nullValue()));
         
     }
+    
+    @Test
+    public void testOrderBy() {
+        Query query = new Query();
+        query.setSql("select id, name from images order by name asc");
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("id", "name"));
+        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        assertThat(rows, hasSize(2));
+        assertThat(rows.get(0).get("name"), equalTo("second-image"));
+        assertThat(rows.get(1).get("name"), equalTo("test-image"));
+    }
+    
 }
