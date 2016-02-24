@@ -36,7 +36,7 @@ public class DeleteCommands extends BaseCommands {
         validateConfirmExecuteShowStatus(
                 modifyInstancesQuery,
                 instances -> String.format("Going to delete %d instances.", instances.size()),
-                instances -> new String[]{"Name", "Project", "Image", "Flavor", "State", "Last modified"},
+                instances -> new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 instances -> entityFormatter.formatInstances(instances, cloud),
                 instancesRepository::deleteInstances
         );

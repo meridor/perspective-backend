@@ -34,7 +34,7 @@ public class ModifyCommands extends BaseCommands {
                 instances -> hard ?
                         String.format("Going to hard reboot %d instances.", instances.size()):
                         String.format("Going to reboot %d instances.", instances.size()),
-                instances -> new String[]{"Name", "Project", "Image", "Flavor", "State", "Last modified"},
+                instances -> new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 instances -> entityFormatter.formatInstances(instances, cloud),
                 hard ? instancesRepository::hardRebootInstances : instancesRepository::rebootInstances
         );
