@@ -23,7 +23,7 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
 
     private static final Logger LOG = HandlerUtils.getLogger(RuntimeConfigurationProvider.class);
     
-    private static final Logger COMMAND_LOG = HandlerUtils.getLogger(LoggingUtils.class);
+    private static final Logger COMMAND_LOG = HandlerUtils.getLogger(org.meridor.perspective.shell.misc.Logger.class);
     
     @Autowired
     private AbstractShell shell;

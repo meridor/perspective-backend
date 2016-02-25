@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.wizard;
 
+import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -7,17 +8,19 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.meridor.perspective.shell.misc.LoggingUtils.warn;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.isExitKey;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.joinLines;
 
 @Component
-public abstract class FreeInputStep implements Step {
+public abstract class FreeInputStep extends AbstractStep {
 
     private String answer;
 
     @Autowired
     private ObjectValidator objectValidator;
+    
+    @Autowired
+    private Logger logger;
 
     @Override
     public boolean run() {
@@ -49,7 +52,7 @@ public abstract class FreeInputStep implements Step {
         Set<String> errors = objectValidator.validate(this);
         boolean isValid = (errors.size() == 0);
         if (!isValid) {
-            warn(String.format("Invalid data provided: %s\n Please try again or type q to quit:", joinLines(errors)));
+            logger.warn(String.format("Invalid data provided: %s\n Please try again or type q to quit:", joinLines(errors)));
         }
         return isValid;
     }

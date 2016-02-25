@@ -1,7 +1,7 @@
 package org.meridor.perspective.shell.wizard;
 
-import org.meridor.perspective.shell.misc.TableRenderer;
-import org.meridor.perspective.shell.repository.impl.SettingsStorage;
+import org.meridor.perspective.shell.misc.Logger;
+import org.meridor.perspective.shell.misc.Pager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +11,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.misc.LoggingUtils.*;
-import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.isExitKey;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.isSkipKey;
 
 @Component
-public abstract class BaseChoiceStep implements Step {
+public abstract class BaseChoiceStep extends AbstractStep {
 
     @Autowired
-    private SettingsStorage settingsStorage;
-
+    private Logger logger;
+    
     @Autowired
-    private TableRenderer tableRenderer;
+    private Pager pager;
 
     private String answer;
 
@@ -35,20 +35,20 @@ public abstract class BaseChoiceStep implements Step {
             return returnValue.get();
         }
         printPossibleChoices(choicesMap);
-        ok(getPrompt());
+        logger.ok(getPrompt());
         Optional<String> answerCandidate = processAnswer();
         if (!answerCandidate.isPresent()) {
             return false;
         }
         if (isSkipKey(answerCandidate.get())) {
             if (answerRequired()) {
-                warn("You can not skip this step.");
+                logger.warn("You can not skip this step.");
             } else {
                 return true;
             }
         }
         while (!validateAnswer(choicesMap, answerCandidate.get())) {
-            warn(getIncorrectChoiceMessage(choicesMap));
+            logger.warn(getIncorrectChoiceMessage(choicesMap));
             answerCandidate = processAnswer();
             if (!answerCandidate.isPresent()) {
                 return false;
@@ -89,24 +89,23 @@ public abstract class BaseChoiceStep implements Step {
         List<String[]> choicesRows = possibleChoices.keySet().stream()
                 .map(k -> new String[]{k.toString(), possibleChoices.get(k)})
                 .collect(Collectors.toList());
-        final Integer PAGE_SIZE = getPageSize(settingsStorage);
-        page(preparePages(tableRenderer, PAGE_SIZE, new String[]{"Number", "Name"}, choicesRows));
+        pager.page(new String[]{"Number", "Name"}, choicesRows);
     }
     
     protected Optional<Boolean> processZeroOrOneChoice(Map<Integer, String> choicesMap) {
         if (choicesMap.size() == 0) {
             if (answerRequired()) {
-                error("We're sorry but no possible answers exist. Exiting.");
+                logger.error("We're sorry but no possible answers exist. Exiting.");
                 return Optional.of(false);
             } else {
-                warn("Skipping this step because no possible answers exist.");
+                logger.warn("Skipping this step because no possible answers exist.");
                 return Optional.of(true);
             }
         }
         if (choicesMap.size() == 1) {
             Integer singleKey = choicesMap.keySet().toArray(new Integer[choicesMap.keySet().size()])[0];
             String singleAnswer = choicesMap.get(singleKey);
-            ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
+            logger.ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
             this.answer = singleAnswer;
             return Optional.of(true);
         }

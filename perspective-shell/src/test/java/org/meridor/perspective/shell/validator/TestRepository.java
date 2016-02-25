@@ -8,10 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+import static org.meridor.perspective.shell.validator.Setting.PAGE_SIZE;
+
 @Repository
 public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware {
-    
-    public static final String TEST = "test";
+
     public static final String ONE = "one";
     public static final String TWO = "two";
     
@@ -118,9 +119,18 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public <T> T getSettingAs(Setting setting, Class<T> cls) {
-        throw new UnsupportedOperationException();
+        return getValue(cls);
     }
 
+    private <T> T getValue(Class<T> cls) {
+        if (Integer.class.isAssignableFrom(cls) || Long.class.isAssignableFrom(cls)) {
+            return cls.cast(200);
+        } else if (String.class.isAssignableFrom(cls)) {
+            return cls.cast(ONE);
+        }
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public Map<String, String> getSettings(boolean all) {
         return getSettingsMap();
@@ -157,7 +167,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public <T> T getFilterAs(Field field, Class<T> cls) {
-        throw new UnsupportedOperationException();
+        return getValue(cls);
     }
 
     @Override

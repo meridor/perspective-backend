@@ -1,12 +1,11 @@
 package org.meridor.perspective.shell.wizard;
 
+import org.meridor.perspective.shell.misc.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-
-import static org.meridor.perspective.shell.misc.LoggingUtils.ok;
 
 @Component
 public abstract class BaseWizard implements Wizard {
@@ -20,6 +19,9 @@ public abstract class BaseWizard implements Wizard {
     @Autowired
     private AbstractShell shell;
 
+    @Autowired
+    private Logger logger;
+    
     @Override
     public boolean runSteps() {
         for (WizardScreen wizardScreen : this) {
@@ -81,7 +83,7 @@ public abstract class BaseWizard implements Wizard {
     @Override
     public void runCommand() {
         String command = getCommand();
-        ok(String.format("Executing command: %s", command));
+        logger.ok(String.format("Executing command: %s", command));
         shell.executeCommand(command);
     }
 

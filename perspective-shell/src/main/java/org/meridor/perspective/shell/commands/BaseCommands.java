@@ -1,11 +1,12 @@
 package org.meridor.perspective.shell.commands;
 
 import jline.console.ConsoleReader;
-import org.meridor.perspective.shell.misc.LoggingUtils;
+import org.meridor.perspective.shell.misc.Logger;
+import org.meridor.perspective.shell.misc.Pager;
 import org.meridor.perspective.shell.misc.TableRenderer;
 import org.meridor.perspective.shell.query.InvalidQueryException;
 import org.meridor.perspective.shell.query.Query;
-import org.meridor.perspective.shell.repository.impl.SettingsStorage;
+import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
@@ -26,29 +27,35 @@ public abstract class BaseCommands implements CommandMarker {
     private TableRenderer tableRenderer;
 
     @Autowired
-    private SettingsStorage settingsStorage;
+    private SettingsAware settingsAware;
 
-    public static void ok() {
-        LoggingUtils.ok();
+    @Autowired
+    private Logger logger;
+    
+    @Autowired
+    private Pager pager;
+    
+    protected void ok() {
+        logger.ok();
     }
 
-    public static void ok(String message) {
-        LoggingUtils.ok(message);
+    protected void ok(String message) {
+        logger.ok(message);
     }
     
-    public static void warn(String message) {
-        LoggingUtils.warn(message);
+    protected void warn(String message) {
+        logger.warn(message);
     }
     
-    public static void error(String message) {
-        LoggingUtils.error(message);
+    protected void error(String message) {
+        logger.error(message);
     }
 
     protected static String nothingToShow() {
         return "Nothing to show";
     }
 
-    protected static void okOrShowErrors(Set<String> errors) {
+    protected void okOrShowErrors(Set<String> errors) {
         if (!errors.isEmpty()) {
             error(joinLines(errors));
         } else {
@@ -57,7 +64,7 @@ public abstract class BaseCommands implements CommandMarker {
     }
     
     protected void tableOrNothing(String[] columns, List<String[]> rows) {
-        final Integer PAGE_SIZE = getPageSize(settingsStorage);
+        final Integer PAGE_SIZE = pager.getPageSize();
         if (!rows.isEmpty()){
             if (rows.size() > PAGE_SIZE) {
                 ok(String.format(
@@ -65,7 +72,7 @@ public abstract class BaseCommands implements CommandMarker {
                         rows.size(),
                         PAGE_SIZE
                 ));
-                page(preparePages(tableRenderer, PAGE_SIZE, columns, rows));
+                pager.page(columns, rows);
             } else {
                 ok(tableRenderer.render(columns, rows));
             }
@@ -75,7 +82,7 @@ public abstract class BaseCommands implements CommandMarker {
     }
 
     private boolean alwaysSayYes() {
-        return (settingsStorage.hasSetting(Setting.ALWAYS_SAY_YES));
+        return (settingsAware.hasSetting(Setting.ALWAYS_SAY_YES));
     }
 
     protected <T, Q extends Query<T>> void validateConfirmExecuteShowStatus(
