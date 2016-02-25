@@ -13,6 +13,7 @@ import static org.meridor.perspective.sql.impl.table.TableName.INSTANCES;
 public class ImagesTable implements Table {
     
     public String id;
+    public String real_id;
     public String name;
     public String cloud_id;
     public String cloud_type;

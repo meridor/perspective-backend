@@ -249,6 +249,7 @@ public class DataFetcherImpl implements DataFetcher {
         Map<String, Function<Image, Object>> columnMapping = new HashMap<String, Function<Image, Object>>(){
             {
                 put("id", Image::getId);
+                put("real_id", Image::getRealId);
                 put("name", Image::getName);
                 put("cloud_id", Image::getCloudId);
                 put("cloud_type", Image::getCloudType);
@@ -290,7 +291,7 @@ public class DataFetcherImpl implements DataFetcher {
         Map<String, Function<Instance, Object>> columnMapping = new HashMap<String, Function<Instance, Object>>(){
             {
                 put("id", Instance::getId);
-                put("name", Instance::getName);
+                put("real_id", Instance::getRealId);
                 put("name", Instance::getName);
                 put("cloud_id", Instance::getCloudId);
                 put("cloud_type", i -> i.getCloudType().value());
