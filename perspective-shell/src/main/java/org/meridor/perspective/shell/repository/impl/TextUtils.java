@@ -23,6 +23,7 @@ public final class TextUtils {
     private static final String PREVIOUS = "p";
     private static final String SKIP = "s";
     private static final String QUIT = "q";
+    private static final String REPEAT = "r";
     public static final String DASH = "-";
     private static final Integer DEFAULT_PAGE_SIZE = 20;
 
@@ -243,6 +244,10 @@ public final class TextUtils {
     
     public static boolean isNoKey(String key) {
         return NO.equals(key);
+    }
+    
+    public static boolean isRepeatKey(String key) {
+        return REPEAT.equals(key);
     }
 
     public static boolean isNumericKey(String key) {

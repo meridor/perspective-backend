@@ -164,6 +164,12 @@ public class TextUtilsTest {
         assertThat(isNoKey("n"), is(true));
         assertThat(isNoKey("y"), is(false));
     }
+    
+    @Test
+    public void testIsRepeatKey(){
+        assertThat(isRepeatKey("r"), is(true));
+        assertThat(isRepeatKey("y"), is(false));
+    }
 
     @Test
     public void testIsNumericKey(){

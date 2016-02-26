@@ -103,7 +103,9 @@ public abstract class BaseCommands implements CommandMarker {
             }
             ok(confirmationMessage);
             tableOrNothing(columns, rows);
-            if (confirmOperation()) {
+            if (confirmOperation(
+                    () -> tableOrNothing(columns, rows)
+            )) {
                 Set<String> errors = task.apply(query);
                 okOrShowErrors(errors);
             } else {
@@ -114,9 +116,9 @@ public abstract class BaseCommands implements CommandMarker {
         }
     }
 
-    private boolean confirmOperation() {
+    private boolean confirmOperation(Runnable repeatAction) {
         try {
-            ok("Press y to proceed, n or q to abort operation.");
+            ok("Press y to proceed, n or q to abort operation, r to repeat this list again.");
             if (alwaysSayYes()) {
                 ok("Proceeding as always_say_yes mode is enabled.");
                 return true;
@@ -128,6 +130,9 @@ public abstract class BaseCommands implements CommandMarker {
                     return true;
                 } else if (isNoKey(key) || isExitKey(key)) {
                     return false;
+                } else if (isRepeatKey(key)) {
+                    repeatAction.run();
+                    return confirmOperation(repeatAction);
                 } else {
                     warn(String.format("Invalid key: %s. Please try again.", key));
                 }
