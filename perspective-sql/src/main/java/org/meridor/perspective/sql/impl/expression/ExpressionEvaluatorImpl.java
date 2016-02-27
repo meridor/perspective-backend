@@ -4,6 +4,8 @@ import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.function.Function;
 import org.meridor.perspective.sql.impl.function.FunctionsAware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ExpressionEvaluator.class);
     
     @Autowired
     private FunctionsAware functionsAware;
@@ -234,7 +238,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                             .replace("\\_", "_");
                     return Pattern.matches(rightAsRegex, leftAsString);
                 }
-                case REGEXP: return Pattern.matches(rightAsString, leftAsString);
+                case REGEXP: return matchPattern(leftAsString, rightAsString);
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
             }
         } else if (bothAreNumbers(leftClass, rightClass)) {
@@ -251,6 +255,16 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             }
         }
         throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
+    }
+    
+    private static boolean matchPattern(String value, String regex) {
+        try {
+            Pattern pattern = Pattern.compile(regex);
+            return pattern.matcher(value).find();
+        } catch (Exception e) {
+            LOG.debug("Evaluating pattern expression to false as provided pattern is not correct", e);
+            return false;
+        }
     }
 
     private boolean evaluateBinaryBooleanExpression(BinaryBooleanExpression binaryBooleanExpression, DataRow dataRow) {
