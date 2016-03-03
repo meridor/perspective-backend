@@ -1,4 +1,4 @@
-package org.meridor.perspective.sql.impl;
+package org.meridor.perspective.sql;
 
 import java.util.*;
 import java.util.stream.Collectors;

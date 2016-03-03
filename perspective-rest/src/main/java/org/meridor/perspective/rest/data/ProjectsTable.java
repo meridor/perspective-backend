@@ -16,7 +16,7 @@ public class ProjectsTable implements Table {
     public String name;
     public String cloud_id;
     public String cloud_type;
-    public ZonedDateTime last_updated;
+    public String last_updated;
     
     @Override
     public TableName getName() {

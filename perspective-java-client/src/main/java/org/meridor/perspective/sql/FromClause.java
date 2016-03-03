@@ -1,4 +1,4 @@
-package org.meridor.perspective.sql.impl;
+package org.meridor.perspective.sql;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -31,6 +31,10 @@ public class FromClause extends BaseQueryPart {
             Arrays.stream(names).forEach(this::table);
         }
         return this;
+    }
+    
+    public JoinClause innerJoin() {
+        return new JoinClause(this, JoinClause.JoinType.INNER);
     }
 
     public WhereClause where() {

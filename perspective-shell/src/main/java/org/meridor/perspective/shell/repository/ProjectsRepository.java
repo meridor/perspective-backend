@@ -1,25 +1,24 @@
 package org.meridor.perspective.shell.repository;
 
-import org.meridor.perspective.beans.Flavor;
-import org.meridor.perspective.beans.Keypair;
-import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.query.ShowFlavorsQuery;
-import org.meridor.perspective.shell.query.ShowKeypairsQuery;
-import org.meridor.perspective.shell.query.ShowNetworksQuery;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.request.FindFlavorsRequest;
+import org.meridor.perspective.shell.request.FindKeypairsRequest;
+import org.meridor.perspective.shell.request.FindNetworksRequest;
+import org.meridor.perspective.shell.request.FindProjectsRequest;
+import org.meridor.perspective.shell.result.FindFlavorsResult;
+import org.meridor.perspective.shell.result.FindKeypairsResult;
+import org.meridor.perspective.shell.result.FindNetworksResult;
+import org.meridor.perspective.shell.result.FindProjectsResult;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ProjectsRepository {
     
-    List<Project> showProjects(ShowProjectsQuery query);
+    List<FindProjectsResult> findProjects(FindProjectsRequest findProjectsRequest);
 
-    Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery);
+    List<FindFlavorsResult> findFlavors(FindFlavorsRequest findFlavorsRequest);
 
-    Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery);
+    List<FindNetworksResult> findNetworks(FindNetworksRequest findNetworksRequest);
     
-    Map<Project, List<Keypair>> showKeypairs(ShowKeypairsQuery showKeypairsQuery);
+    List<FindKeypairsResult> findKeypairs(FindKeypairsRequest findKeypairsRequest);
     
 }

@@ -1,4 +1,4 @@
-package org.meridor.perspective.sql.impl;
+package org.meridor.perspective.sql;
 
 public enum OrderDirection {
     ASC("asc"),

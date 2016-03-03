@@ -1,4 +1,4 @@
-package org.meridor.perspective.jdbc.impl;
+package org.meridor.perspective.sql;
 
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.Row;

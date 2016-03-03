@@ -20,8 +20,8 @@ public class InstancesTable implements Table {
     public String flavor_id;
     public String image_id;
     public String state;
-    public ZonedDateTime last_updated;
-    public ZonedDateTime created;
+    public String last_updated;
+    public String created;
     public String availability_zone;
     public String addresses; //Networks are provided via instance_networks table
     

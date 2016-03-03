@@ -3,6 +3,7 @@ package org.meridor.perspective.framework;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 
 import static org.meridor.perspective.events.EventFactory.now;
@@ -19,6 +20,7 @@ public class EntityGenerator {
         project.getNetworks().add(getNetwork());
         project.getKeypairs().add(getKeypair());
         project.getAvailabilityZones().add(getAvailabilityZone());
+        project.setTimestamp(ZonedDateTime.now());
         MetadataMap metadataMap = new MetadataMap();
         metadataMap.put(MetadataKey.REGION, "test-region");
         project.setMetadata(metadataMap);
@@ -71,8 +73,10 @@ public class EntityGenerator {
         Image image = new Image();
         image.setId("test-image");
         image.setRealId("test-image");
+        image.setRealId("test-image");
         image.setProjectIds(Collections.singletonList(getProject().getId()));
         image.setName("test-image");
+        image.setCloudType(CloudType.MOCK);
         image.setState(ImageState.SAVED);
         image.setCreated(now().minusDays(2));
         image.setTimestamp(now().minusHours(4));
@@ -85,6 +89,7 @@ public class EntityGenerator {
     public static Instance getInstance() {
         Instance instance = new Instance();
         instance.setId("test-instance");
+        instance.setRealId("test-instance");
         instance.setTimestamp(now());
         instance.setCreated(now());
         instance.setCloudType(CloudType.MOCK);
@@ -92,6 +97,7 @@ public class EntityGenerator {
         instance.setName("test-instance");
         instance.setFlavor(getFlavor());
         instance.getNetworks().add(getNetwork());
+        instance.getAddresses().add("5.255.210.3");
         instance.setImage(getImage());
         instance.setState(InstanceState.LAUNCHED);
         instance.setAvailabilityZone(getAvailabilityZone());

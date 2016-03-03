@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.wizard.instances.screen;
 
-import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.FindProjectsRequest;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.result.FindProjectsResult;
 import org.meridor.perspective.shell.wizard.Step;
 import org.meridor.perspective.shell.wizard.WizardScreen;
 import org.meridor.perspective.shell.wizard.instances.step.ImageStep;
@@ -43,7 +43,7 @@ public class ImageScreen implements WizardScreen {
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
         String projectName = previousAnswers.get(ProjectStep.class);
-        Optional<Project> maybeProject = getProject(projectName);
+        Optional<FindProjectsResult> maybeProject = getProject(projectName);
         if (maybeProject.isPresent()) {
             switch (maybeProject.get().getCloudType()) {
                 case OPENSTACK: return Optional.of(flavorScreen);
@@ -54,8 +54,8 @@ public class ImageScreen implements WizardScreen {
         return Optional.empty();
     }
     
-    private Optional<Project> getProject(String projectName) {
-        List<Project> projects = projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectName));
+    private Optional<FindProjectsResult> getProject(String projectName) {
+        List<FindProjectsResult> projects = projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(projectName));
         return (projects.size() >= 1) ?
                 Optional.of(projects.get(0)) :
                 Optional.empty();

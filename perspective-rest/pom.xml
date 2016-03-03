@@ -131,6 +131,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <!--<version>2.6</version> &lt;!&ndash; This causes errors! &ndash;&gt;-->
                 <configuration>
                     <archive>
                         <manifest>

@@ -4,14 +4,12 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowProjectsQuery;
+import org.meridor.perspective.shell.request.QueryProvider;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
@@ -24,40 +22,19 @@ public class EntityFormatter {
     
     @Autowired
     private QueryProvider queryProvider;
-    
-    public List<String[]> formatInstances(List<Instance> instances, String cloud) {
-        Map<String, Project> projectsMap = getProjects(cloud);
-        return instances.stream()
-                .map(i -> new String[]{
-                i.getName(),
-                projectsMap.containsKey(i.getProjectId()) ?
-                        projectsMap.get(i.getProjectId()).getName() : DASH,
-                (i.getImage() != null) ? i.getImage().getName() : DASH,
-                (i.getFlavor() != null) ? i.getFlavor().getName() : DASH,
-                (i.getAddresses() != null) ? getAddresses(i) : DASH, //TODO: this one can also contain Docker ports information
-                (i.getState() != null) ?  i.getState().value() : DASH,
-                (i.getTimestamp() != null) ? humanizedDuration(i.getTimestamp()) : DASH
-        }).collect(Collectors.toList());
-    }
-    
+
     private Map<String, Project> getProjects(String cloud) {
-        return projectsRepository.showProjects(
-                queryProvider.get(ShowProjectsQuery.class)
-                        .withClouds(cloud)
-        ).stream().collect(Collectors.toMap(Project::getId, Function.identity()));
+        return Collections.emptyMap();
+//        return projectsRepository.findProjects(
+//                queryProvider.get(ShowProjectsRequest.class)
+//                        .withClouds(cloud)
+//        ).stream().collect(Collectors.toMap(Project::getId, Function.identity()));
     }
     
     private Map<String, Project> getProjects() {
         return getProjects(null);
     }
-    
-    private static String getAddresses(Instance instance) {
-        return joinLines(instance.getAddresses().stream()
-                .sorted((a1, a2) -> Comparator.<String>naturalOrder().compare(a1, a2))
-                .collect(Collectors.toList())
-        );
-    }
-    
+
     public List<String[]> formatNewInstances(List<Instance> instances) {
         Map<String, Project> projectsMap = getProjects();
         return instances.stream()
@@ -89,22 +66,6 @@ public class EntityFormatter {
         return additionalProperties.isEmpty() ? DASH : joinLines(additionalProperties);
     }
 
-
-    public List<String[]> formatImages(List<Image> images) {
-        Map<String, Project> projectsMap = getProjects();
-        
-        return images.stream().map(i -> new String[]{
-                i.getName(),
-                enumerateValues(
-                        i.getProjectIds().stream()
-                                .filter(projectsMap::containsKey)
-                                .map(id -> projectsMap.get(id).getName())
-                                .collect(Collectors.toList())
-                ),
-                (i.getState() != null) ? i.getState().value() : DASH,
-                (i.getTimestamp() != null) ? humanizedDuration(i.getTimestamp()) : DASH
-        }).collect(Collectors.toList());
-    }
 
     public List<String[]> formatNewImages(List<Image> images) {
         Map<String, Project> projectsMap = getProjects();

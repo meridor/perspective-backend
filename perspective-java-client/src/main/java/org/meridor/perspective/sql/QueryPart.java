@@ -1,7 +1,4 @@
-package org.meridor.perspective.sql.impl;
-
-import org.meridor.perspective.sql.Parameter;
-import org.meridor.perspective.sql.Query;
+package org.meridor.perspective.sql;
 
 import java.util.ArrayList;
 import java.util.List;

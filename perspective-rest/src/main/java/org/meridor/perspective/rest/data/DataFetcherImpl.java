@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class DataFetcherImpl implements DataFetcher {
     
     private static final Logger LOG = LoggerFactory.getLogger(DataFetcher.class);
-    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_ZONED_DATE_TIME;
     @Autowired
     private ProjectsAware projectsAware;
     
@@ -126,7 +127,7 @@ public class DataFetcherImpl implements DataFetcher {
                 put("name", Project::getName);
                 put("cloud_id", Project::getCloudId);
                 put("cloud_type", p -> p.getCloudType().value());
-                put("last_updated", Project::getTimestamp);
+                put("last_updated", p -> p.getTimestamp().format(DATE_FORMATTER));
             }
         };
         return prepareData(
@@ -253,8 +254,8 @@ public class DataFetcherImpl implements DataFetcher {
                 put("name", Image::getName);
                 put("cloud_id", Image::getCloudId);
                 put("cloud_type", Image::getCloudType);
-                put("last_updated", Image::getTimestamp);
-                put("created", Image::getCreated);
+                put("last_updated", i -> i.getTimestamp().format(DATE_FORMATTER));
+                put("created", i -> i.getCreated().format(DATE_FORMATTER));
                 put("state", i -> i.getState().value());
                 put("checksum", Image::getChecksum);
             }
@@ -297,10 +298,10 @@ public class DataFetcherImpl implements DataFetcher {
                 put("cloud_type", i -> i.getCloudType().value());
                 put("project_id", Instance::getProjectId);
                 put("flavor_id", i -> i.getFlavor().getId());
-                put("image_id", i -> i.getImage().getId());
+                put("image_id", i -> (i.getImage() != null) ? i.getImage().getId() : null);
                 put("state", i -> i.getState().value());
-                put("last_updated", Instance::getTimestamp);
-                put("created", Instance::getCreated);
+                put("last_updated", i -> i.getTimestamp().format(DATE_FORMATTER));
+                put("created", i -> i.getCreated().format(DATE_FORMATTER));
                 put("availability_zone", i -> i.getAvailabilityZone().getName());
                 put("addresses", i -> i.getAddresses().stream().collect(Collectors.joining("\n")));
             }
@@ -309,7 +310,7 @@ public class DataFetcherImpl implements DataFetcher {
                 () -> instancesAware.getInstances(Optional.empty()),
                 columnMapping,
                 columns,
-                () -> "Failed to fetch \"project_images\" table contents"
+                () -> "Failed to fetch \"instances\" table contents"
         );
     }
 

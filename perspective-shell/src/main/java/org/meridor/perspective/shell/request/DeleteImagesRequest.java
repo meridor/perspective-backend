@@ -1,7 +1,7 @@
-package org.meridor.perspective.shell.query;
+package org.meridor.perspective.shell.request;
 
-import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.shell.result.FindImagesResult;
 import org.meridor.perspective.shell.validator.Field;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.Required;
@@ -11,22 +11,20 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class DeleteImagesQuery implements Query<List<Image>> {
+public class DeleteImagesRequest implements Request<List<String>> {
 
     @Autowired
     private ImagesRepository imagesRepository;
 
     @Filter(Field.IMAGE_NAMES)
     @Required
-    private Set<String> names;
+    private String names;
     
     @Filter(Field.CLOUDS)
     @SupportedCloud
@@ -35,23 +33,22 @@ public class DeleteImagesQuery implements Query<List<Image>> {
     @Autowired
     private QueryProvider queryProvider;
 
-    public DeleteImagesQuery withNames(String names) {
-        this.names = parseEnumeration(names);
+    public DeleteImagesRequest withNames(String names) {
+        this.names = names;
         return this;
     }
     
-    public DeleteImagesQuery withClouds(String clouds) {
+    public DeleteImagesRequest withClouds(String clouds) {
         this.clouds = clouds;
         return this;
     }
 
     @Override
-    public List<Image> getPayload() {
-        return names.stream().flatMap(n -> {
-            ShowImagesQuery showImagesQuery = queryProvider.get(ShowImagesQuery.class)
-                    .withNames(n)
-                    .withCloudNames(clouds);
-            return imagesRepository.showImages(showImagesQuery).stream();
-        }).collect(Collectors.toList());
+    public List<String> getPayload() {
+        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class)
+                    .withNames(names)
+                    .withClouds(clouds))
+                .stream().map(FindImagesResult::getId)
+                .collect(Collectors.toList());
     }
 }

@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.wizard.images.step;
 
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowInstancesQuery;
+import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.FindInstancesRequest;
 import org.meridor.perspective.shell.repository.InstancesRepository;
+import org.meridor.perspective.shell.result.FindInstancesResult;
 import org.meridor.perspective.shell.wizard.MultipleChoicesStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,8 +22,8 @@ public class InstanceStep extends MultipleChoicesStep {
     
     @Override
     protected List<String> getPossibleChoices() {
-        return instancesRepository.showInstances(queryProvider.get(ShowInstancesQuery.class)).stream()
-                .map(Instance::getName)
+        return instancesRepository.findInstances(queryProvider.get(FindInstancesRequest.class)).stream()
+                .map(FindInstancesResult::getName)
                 .collect(Collectors.toList());
     }
 

@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.validator;
 
-import org.meridor.perspective.beans.*;
-import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.request.*;
+import org.meridor.perspective.shell.result.*;
 import org.meridor.perspective.shell.validator.annotation.ExistingEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Component
 public class ExistingEntityValidator implements Validator {
@@ -41,50 +41,39 @@ public class ExistingEntityValidator implements Validator {
         return entities.size() >= minCount && entities.size() <= maxCount;
     }
     
-    private Collection<Project> getProjectsByName(String name) {
-        return projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(name));
+    private Collection<FindProjectsResult> getProjectsByName(String name) {
+        return projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(name));
     }
     
-    private Collection<Keypair> getKeypairsByName(String name) {
+    private List<FindKeypairsResult> getKeypairsByName(String name) {
         return projectsRepository
-                .showKeypairs(
-                        queryProvider.get(ShowKeypairsQuery.class)
+                .findKeypairs(
+                        queryProvider.get(FindKeypairsRequest.class)
                                 .withNames(name)
                                 .withProjects(projectName)
-                )
-                .values()
-                .stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                );
     }
     
-    private Collection<Flavor> getFlavorsByName(String name) {
+    private Collection<FindFlavorsResult> getFlavorsByName(String name) {
         return projectsRepository
-                .showFlavors(
-                        queryProvider.get(ShowFlavorsQuery.class)
-                        .withNames(name)
-                        .withProjects(projectName))
-                .values()
-                .stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-    
-    private Collection<Network> getNetworksByName(String name) {
-        return projectsRepository.showNetworks(
-                queryProvider.get(ShowNetworksQuery.class)
+                .findFlavors(
+                        queryProvider.get(FindFlavorsRequest.class)
                         .withNames(name)
                         .withProjects(projectName)
-        )
-                .values()
-                .stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                );
     }
     
-    private Collection<Image> getImagesByName(String name) {
-        return imagesRepository.showImages(
-                queryProvider.get(ShowImagesQuery.class)
+    private Collection<FindNetworksResult> getNetworksByName(String name) {
+        return projectsRepository.findNetworks(
+                queryProvider.get(FindNetworksRequest.class)
+                        .withNames(name)
+                        .withProjects(projectName)
+        );
+    }
+    
+    private Collection<FindImagesResult> getImagesByName(String name) {
+        return imagesRepository.findImages(
+                queryProvider.get(FindImagesRequest.class)
                     .withNames(name)
                     .withProjectNames(projectName)
         );

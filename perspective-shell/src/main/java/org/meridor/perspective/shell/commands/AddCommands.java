@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.commands;
 
-import org.meridor.perspective.shell.query.AddImagesQuery;
-import org.meridor.perspective.shell.query.AddInstancesQuery;
-import org.meridor.perspective.shell.query.QueryProvider;
+import org.meridor.perspective.shell.request.AddImagesRequest;
+import org.meridor.perspective.shell.request.AddInstancesRequest;
+import org.meridor.perspective.shell.request.QueryProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.wizard.images.AddImagesWizard;
@@ -46,7 +46,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "options", help = "Various instance options") String options
     ) {
         if (name != null) {
-            AddInstancesQuery addInstancesQuery = queryProvider.get(AddInstancesQuery.class)
+            AddInstancesRequest addInstancesQuery = queryProvider.get(AddInstancesRequest.class)
                     .withName(name)
                     .withProject(project)
                     .withFlavor(flavor)
@@ -77,7 +77,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "name", help = "Image name") String imageName
     ) {
         if (instanceNames != null) {
-            AddImagesQuery addImagesQuery = queryProvider.get(AddImagesQuery.class).withInstanceNames(instanceNames).withName(imageName);
+            AddImagesRequest addImagesQuery = queryProvider.get(AddImagesRequest.class).withInstanceNames(instanceNames).withName(imageName);
             validateConfirmExecuteShowStatus(
                     addImagesQuery,
                     images -> String.format("Going to add %d images.", images.size()),

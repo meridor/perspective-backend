@@ -292,7 +292,7 @@ public final class TextUtils {
     public static boolean oneOfMatches(String value, Collection<String> candidates) {
         return value != null && candidates.stream().anyMatch(c -> matches(value, c));
     }
-    
+
     public static boolean matches(String candidate, String expression) {
         if (candidate == null || expression == null) {
             return false;

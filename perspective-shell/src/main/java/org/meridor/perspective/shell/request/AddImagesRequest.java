@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.query;
+package org.meridor.perspective.shell.request;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
@@ -7,6 +7,7 @@ import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.shell.misc.DateUtils;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.impl.Placeholder;
+import org.meridor.perspective.shell.result.FindInstancesResult;
 import org.meridor.perspective.shell.validator.annotation.Required;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -22,10 +23,10 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class AddImagesQuery implements Query<List<Image>> {
+public class AddImagesRequest implements Request<List<Image>> {
 
     @Required
-    private Set<String> instanceNames;
+    private String instanceNames;
     
     @Required
     private String imageName;
@@ -39,12 +40,12 @@ public class AddImagesQuery implements Query<List<Image>> {
     @Autowired
     private DateUtils dateUtils;
     
-    public AddImagesQuery withInstanceNames(String instanceNames) {
-        this.instanceNames = parseEnumeration(instanceNames);
+    public AddImagesRequest withInstanceNames(String instanceNames) {
+        this.instanceNames = instanceNames;
         return this;
     }
     
-    public AddImagesQuery withName(String name) {
+    public AddImagesRequest withName(String name) {
         this.imageName = name;
         return this;
     }
@@ -52,14 +53,13 @@ public class AddImagesQuery implements Query<List<Image>> {
     @Override
     public List<Image> getPayload() {
         List<Image> images = new ArrayList<>();
-        List<Instance> matchingInstances = instanceNames.stream()
-                .flatMap(n -> instancesRepository.showInstances(queryProvider.get(ShowInstancesQuery.class).withNames(n)).stream())
-                .collect(Collectors.toList());
+        List<FindInstancesResult> matchingInstances = instancesRepository
+                .findInstances(queryProvider.get(FindInstancesRequest.class).withNames(instanceNames));
         matchingInstances.forEach(i -> images.add(createImage(imageName, i)));
         return images;
     }
     
-    private Image createImage(String imageName, Instance instance) {
+    private Image createImage(String imageName, FindInstancesResult instance) {
         Image image = new Image();
         String finalImageName = (imageName != null) ?
                 replacePlaceholders(imageName, new HashMap<Placeholder, String>() {
@@ -77,9 +77,6 @@ public class AddImagesQuery implements Query<List<Image>> {
         image.setCloudId(instance.getCloudId());
         image.setCloudType(instance.getCloudType());
         MetadataMap metadataMap = new MetadataMap();
-        if (instance.getMetadata() != null && instance.getMetadata().containsKey(MetadataKey.REGION)) {
-            metadataMap.put(MetadataKey.REGION, instance.getMetadata().get(MetadataKey.REGION));
-        }
         metadataMap.put(MetadataKey.INSTANCE_ID, instance.getRealId());
         image.setMetadata(metadataMap);
         return image;

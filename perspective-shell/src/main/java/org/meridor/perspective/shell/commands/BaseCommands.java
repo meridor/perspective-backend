@@ -4,8 +4,8 @@ import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.misc.Pager;
 import org.meridor.perspective.shell.misc.TableRenderer;
-import org.meridor.perspective.shell.query.InvalidQueryException;
-import org.meridor.perspective.shell.query.Query;
+import org.meridor.perspective.shell.request.InvalidRequestException;
+import org.meridor.perspective.shell.request.Request;
 import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -85,18 +86,20 @@ public abstract class BaseCommands implements CommandMarker {
         return (settingsAware.hasSetting(Setting.ALWAYS_SAY_YES));
     }
 
-    protected <T, Q extends Query<T>> void validateConfirmExecuteShowStatus(
-            Q query,
+    protected <T, I, P, R extends Request<P>> void validateConfirmExecuteShowStatus(
+            R request,
+            Function<R, T> payloadProcessor,
             Function<T, String> confirmationMessageProvider,
             Function<T, String[]> confirmationColumnsProvider,
             Function<T, List<String[]>> confirmationRowsProvider,
-            Function<Q, Set<String>> task
+            BiFunction<R, T, I> taskDataProvider,
+            Function<I, Set<String>> task
     ) {
         try {
-            T payload = query.getPayload();
-            String confirmationMessage = confirmationMessageProvider.apply(payload);
-            String[] columns = confirmationColumnsProvider.apply(payload);
-            List<String[]> rows = confirmationRowsProvider.apply(payload);
+            T confirmationData = payloadProcessor.apply(request);
+            String confirmationMessage = confirmationMessageProvider.apply(confirmationData);
+            String[] columns = confirmationColumnsProvider.apply(confirmationData);
+            List<String[]> rows = confirmationRowsProvider.apply(confirmationData);
             if (rows.size() == 0) {
                 error("Nothing selected for this operation. Exiting.");
                 return;
@@ -106,14 +109,33 @@ public abstract class BaseCommands implements CommandMarker {
             if (confirmOperation(
                     () -> tableOrNothing(columns, rows)
             )) {
-                Set<String> errors = task.apply(query);
+                I taskData = taskDataProvider.apply(request, confirmationData);
+                Set<String> errors = task.apply(taskData);
                 okOrShowErrors(errors);
             } else {
                 warn("Aborted.");
             }
-        } catch (InvalidQueryException e) {
+        } catch (InvalidRequestException e) {
             error(joinLines(e.getErrors()));
         }
+    }
+
+    protected <T, R extends Request<T>> void validateConfirmExecuteShowStatus(
+            R request,
+            Function<T, String> confirmationMessageProvider,
+            Function<T, String[]> confirmationColumnsProvider,
+            Function<T, List<String[]>> confirmationRowsProvider,
+            Function<R, Set<String>> task
+    ) {
+        validateConfirmExecuteShowStatus(
+                request,
+                Request::getPayload,
+                confirmationMessageProvider,
+                confirmationColumnsProvider,
+                confirmationRowsProvider,
+                (r, cd) -> r,
+                task
+        );
     }
 
     private boolean confirmOperation(Runnable repeatAction) {
@@ -143,7 +165,7 @@ public abstract class BaseCommands implements CommandMarker {
         }
     }
     
-    protected <T extends Query<?>> void validateExecuteShowResult(
+    protected <T extends Request<?>> void validateExecuteShowResult(
             T query,
             String[] columns,
             Function<T, List<String[]>> task
@@ -151,18 +173,18 @@ public abstract class BaseCommands implements CommandMarker {
         try {
             List<String[]> data = task.apply(query);
             tableOrNothing(columns, data);
-        } catch (InvalidQueryException e) {
+        } catch (InvalidRequestException e) {
             error(joinLines(e.getErrors()));
         }
     }
     
-    protected <T extends Query<?>> void validateExecuteShowResult(
+    protected <T extends Request<?>> void validateExecuteShowResult(
             T query,
             Consumer<T> task
     ) {
         try {
             task.accept(query);
-        } catch (InvalidQueryException e) {
+        } catch (InvalidRequestException e) {
             error(joinLines(e.getErrors()));
         }
     }

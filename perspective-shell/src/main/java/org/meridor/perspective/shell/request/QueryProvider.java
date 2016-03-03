@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.query;
+package org.meridor.perspective.shell.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -10,7 +10,7 @@ public final class QueryProvider {
     @Autowired
     private ApplicationContext applicationContext;
     
-    public <T extends Query> T get(Class<T> cls) {
+    public <T extends Request> T get(Class<T> cls) {
         return applicationContext.getBean(cls);
     }
     

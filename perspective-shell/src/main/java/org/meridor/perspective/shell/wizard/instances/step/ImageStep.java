@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowImagesQuery;
+import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.FindImagesRequest;
 import org.meridor.perspective.shell.repository.ImagesRepository;
+import org.meridor.perspective.shell.result.FindImagesResult;
 import org.meridor.perspective.shell.validator.annotation.Required;
 import org.meridor.perspective.shell.wizard.SingleChoiceStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,8 @@ public class ImageStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withProjectNames(projectName)).stream()
-                .map(Image::getName)
+        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withProjectNames(projectName)).stream()
+                .map(FindImagesResult::getName)
                 .collect(Collectors.toList());
     }
 

@@ -51,6 +51,7 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
             String imageId = instance.getImage().getRealId();
             ServerCreated createdServer = serverApi.create(instanceName, imageId, flavorId, getServerOptions(instance));
             String realId = createdServer.getId();
+            instance.getMetadata().put(MetadataKey.REGION, region);
             instance.setRealId(realId);
             String instanceId = idGenerator.getInstanceId(cloud, realId);
             instance.setId(instanceId);

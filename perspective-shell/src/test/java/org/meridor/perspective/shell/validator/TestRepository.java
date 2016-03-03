@@ -1,14 +1,18 @@
 package org.meridor.perspective.shell.validator;
 
-import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.framework.EntityGenerator;
-import org.meridor.perspective.shell.query.*;
 import org.meridor.perspective.shell.repository.*;
+import org.meridor.perspective.shell.request.*;
+import org.meridor.perspective.shell.result.*;
 import org.springframework.stereotype.Repository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.validator.Setting.PAGE_SIZE;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.enumerateValues;
 
 @Repository
 public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware {
@@ -17,64 +21,127 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     public static final String TWO = "two";
     
     @Override
-    public List<Image> showImages(ShowImagesQuery showImagesQuery) {
-        return Collections.singletonList(EntityGenerator.getImage());
+    public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
+        FindImagesResult findImagesResult = new FindImagesResult(
+                EntityGenerator.getImage().getId(),
+                EntityGenerator.getImage().getRealId(),
+                EntityGenerator.getImage().getName(),
+                EntityGenerator.getImage().getCloudType().value(),
+                EntityGenerator.getImage().getState().value(),
+                EntityGenerator.getImage().getTimestamp().format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        );
+        findImagesResult.getProjectIds().add(EntityGenerator.getProject().getId());
+        findImagesResult.getProjectNames().add(EntityGenerator.getProject().getName());
+        return Collections.singletonList(findImagesResult);
     }
 
     @Override
-    public Set<String> addImages(AddImagesQuery addImagesQuery) {
+    public Set<String> addImages(AddImagesRequest addImagesRequest) {
         return Collections.emptySet();
     }
 
     @Override
-    public Set<String> deleteImages(DeleteImagesQuery deleteImagesQuery) {
-        deleteImagesQuery.getPayload();
+    public Set<String> deleteImages(Collection<String> imageIds) {
         return Collections.emptySet();
     }
 
     @Override
-    public List<Instance> showInstances(ShowInstancesQuery showInstancesQuery) {
-        return Collections.singletonList(EntityGenerator.getInstance());
+    public List<FindInstancesResult> findInstances(FindInstancesRequest findInstancesRequest) {
+        return Collections.singletonList(new FindInstancesResult(
+                EntityGenerator.getInstance().getId(),
+                EntityGenerator.getInstance().getRealId(),
+                EntityGenerator.getInstance().getName(),
+                EntityGenerator.getProject().getId(),
+                EntityGenerator.getProject().getName(),
+                EntityGenerator.getInstance().getCloudId(),
+                EntityGenerator.getInstance().getCloudType().value(),
+                EntityGenerator.getImage().getName(),
+                EntityGenerator.getFlavor().getName(),
+                enumerateValues(EntityGenerator.getInstance().getAddresses()),
+                EntityGenerator.getInstance().getState().value(),
+                EntityGenerator.getInstance().getTimestamp().format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        ));
     }
 
     @Override
-    public Set<String> addInstances(AddInstancesQuery addInstancesQuery) {
+    public Map<String, Map<String, String>> getInstancesMetadata(FindInstancesRequest findInstancesRequest) {
+        return Collections.singletonMap(EntityGenerator.getInstance().getName(), Collections.singletonMap(MetadataKey.CONSOLE_URL.value(), "http://localhost/"));
+    }
+
+    @Override
+    public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {
         return Collections.emptySet();
     }
 
     @Override
-    public Set<String> deleteInstances(ModifyInstancesQuery modifyInstancesQuery) {
+    public Set<String> deleteInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }
 
     @Override
-    public Set<String> rebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+    public Set<String> rebootInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }
 
     @Override
-    public Set<String> hardRebootInstances(ModifyInstancesQuery modifyInstancesQuery) {
+    public Set<String> hardRebootInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }
 
     @Override
-    public List<Project> showProjects(ShowProjectsQuery query) {
-        return Collections.singletonList(EntityGenerator.getProject());
+    public List<FindProjectsResult> findProjects(FindProjectsRequest findProjectsRequest) {
+        return Collections.singletonList(new FindProjectsResult(
+                EntityGenerator.getProject().getId(),
+                EntityGenerator.getProject().getName(),
+                EntityGenerator.getProject().getCloudId(),
+                EntityGenerator.getProject().getCloudType()
+        ));
     }
 
     @Override
-    public Map<Project, List<Flavor>> showFlavors(ShowFlavorsQuery showFlavorsQuery) {
-        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getFlavor()));
+    public List<FindFlavorsResult> findFlavors(FindFlavorsRequest findFlavorsRequest) {
+        return Collections.singletonList(new FindFlavorsResult(
+                EntityGenerator.getFlavor().getId(),
+                EntityGenerator.getFlavor().getName(),
+                EntityGenerator.getProject().getName(),
+                String.valueOf(EntityGenerator.getFlavor().getVcpus()),
+                String.valueOf(EntityGenerator.getFlavor().getRam()),
+                String.valueOf(EntityGenerator.getFlavor().getRootDisk()),
+                String.valueOf(EntityGenerator.getFlavor().getEphemeralDisk())
+        ));
     }
 
     @Override
-    public Map<Project, List<Network>> showNetworks(ShowNetworksQuery showNetworksQuery) {
-        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getNetwork()));
+    public List<FindNetworksResult> findNetworks(FindNetworksRequest findNetworksRequest) {
+        Network network = EntityGenerator.getNetwork();
+        List<String> subnets = EntityGenerator.getNetwork().getSubnets().stream()
+                .map(
+                        s -> String.format(
+                                "%s/%s",
+                                s.getCidr().getAddress(),
+                                String.valueOf(s.getCidr().getPrefixSize())
+                        )
+                )
+                .collect(Collectors.toList());
+
+        FindNetworksResult findNetworksResult = new FindNetworksResult(
+                network.getId(),
+                network.getName(),
+                EntityGenerator.getProject().getId(),
+                EntityGenerator.getNetwork().getState(),
+                EntityGenerator.getNetwork().isIsShared()
+        );
+        findNetworksResult.getSubnets().addAll(subnets);
+        return Collections.singletonList(findNetworksResult);
     }
 
     @Override
-    public Map<Project, List<Keypair>> showKeypairs(ShowKeypairsQuery showKeypairsQuery) {
-        return Collections.singletonMap(EntityGenerator.getProject(), Collections.singletonList(EntityGenerator.getKeypair()));
+    public List<FindKeypairsResult> findKeypairs(FindKeypairsRequest findKeypairsRequest) {
+        return Collections.singletonList(new FindKeypairsResult(
+                EntityGenerator.getKeypair().getName(),
+                EntityGenerator.getKeypair().getFingerprint(),
+                EntityGenerator.getProject().getName()
+        ));
     }
 
     @Override

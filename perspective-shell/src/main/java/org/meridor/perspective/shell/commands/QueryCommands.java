@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.repository.QueryRepository;
 import org.meridor.perspective.sql.Data;
+import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -19,9 +20,11 @@ public class QueryCommands extends BaseCommands {
     
     @CliCommand(value = "select", help = "Execute SELECT query")
     public void select(
-            @CliOption(key = "", mandatory = true, help = "Query body") String query
+            @CliOption(key = "", mandatory = true, help = "Query body") String sql
     ) {
-        QueryResult result = queryRepository.query("select " + query);
+        Query query = new Query();
+        query.setSql(sql);
+        QueryResult result = queryRepository.query(query);
         switch (result.getStatus()) {
             case SUCCESS: {
                 pageData(result);

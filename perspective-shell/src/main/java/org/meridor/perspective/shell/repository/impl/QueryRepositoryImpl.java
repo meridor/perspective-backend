@@ -2,7 +2,6 @@ package org.meridor.perspective.shell.repository.impl;
 
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.QueryRepository;
-import org.meridor.perspective.sql.Parameter;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -21,10 +19,7 @@ public class QueryRepositoryImpl implements QueryRepository {
     private ApiProvider apiProvider;
     
     @Override
-    public QueryResult query(String sql, Parameter... parameter) {
-        Query query = new Query();
-        query.setSql(sql);
-        query.setParameters(Arrays.asList(parameter));
+    public QueryResult query(Query query) {
         GenericType<ArrayList<QueryResult>> queryResultListType = new GenericType<ArrayList<QueryResult>>() {};
         List<Query> queriesList = new ArrayList<>();
         queriesList.add(query);

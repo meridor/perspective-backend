@@ -17,8 +17,8 @@ public class ImagesTable implements Table {
     public String name;
     public String cloud_id;
     public String cloud_type;
-    public ZonedDateTime created;
-    public ZonedDateTime last_updated;
+    public String created;
+    public String last_updated;
     public String state;
     public String checksum;
     

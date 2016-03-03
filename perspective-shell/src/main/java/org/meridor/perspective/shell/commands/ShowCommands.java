@@ -1,11 +1,11 @@
 package org.meridor.perspective.shell.commands;
 
-import org.meridor.perspective.beans.*;
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.shell.query.*;
+import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.request.*;
+import org.meridor.perspective.shell.result.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -14,13 +14,11 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.joinLines;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.enumerateValues;
 
 @Component
 public class ShowCommands extends BaseCommands {
@@ -35,9 +33,6 @@ public class ShowCommands extends BaseCommands {
     private ImagesRepository imagesRepository;
     
     @Autowired
-    private EntityFormatter entityFormatter;
-    
-    @Autowired
     private QueryProvider queryProvider;
     
     @CliCommand(value = "show projects", help = "Show available projects")
@@ -45,12 +40,14 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        ShowProjectsQuery showProjectsQuery = getShowProjectsQuery(cloud, name);
+        FindProjectsRequest showProjectsQuery = queryProvider.get(FindProjectsRequest.class)
+                .withClouds(cloud)
+                .withNames(name);
         validateExecuteShowResult(
                 showProjectsQuery,
                 new String[]{"Name", "Cloud"},
                 q -> {
-                    List<Project> projects = projectsRepository.showProjects(q);
+                    List<FindProjectsResult> projects = projectsRepository.findProjects(q);
                     return projects.stream()
                             .map(p -> new String[]{p.getName(), p.getCloudType().value()})
                             .collect(Collectors.toList());
@@ -64,7 +61,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowFlavorsQuery showFlavorsQuery = queryProvider.get(ShowFlavorsQuery.class)
+        FindFlavorsRequest showFlavorsQuery = queryProvider.get(FindFlavorsRequest.class)
                 .withNames(name)
                 .withProjects(projectName)
                 .withClouds(cloud);
@@ -72,15 +69,15 @@ public class ShowCommands extends BaseCommands {
                 showFlavorsQuery,
                 new String[]{"Name", "Project", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
-                    Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(q);
-                    return flavorsMap.keySet().stream()
-                            .flatMap(p -> {
-                                List<Flavor> flavors = flavorsMap.get(p);
-                                return flavors.stream().map(f -> new String[]{
-                                        f.getName(), p.getName(),
-                                        String.valueOf(f.getVcpus()), String.valueOf(f.getRam()),
-                                        String.valueOf(f.getRootDisk()), String.valueOf(f.getEphemeralDisk())
-                                });
+                    List<FindFlavorsResult> flavors = projectsRepository.findFlavors(q);
+                    return flavors.stream()
+                            .map(f -> new String[]{
+                                    f.getName(),
+                                    f.getProjectName(),
+                                    f.getVcpus(),
+                                    f.getRam(),
+                                    f.getRootDisk(),
+                                    f.getEphemeralDisk()
                             })
                             .collect(Collectors.toList());
                 }
@@ -93,31 +90,21 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowNetworksQuery showNetworksQuery = queryProvider.get(ShowNetworksQuery.class).withNames(name)
+        FindNetworksRequest showNetworksQuery = queryProvider.get(FindNetworksRequest.class).withNames(name)
                 .withProjects(projectName)
                 .withClouds(cloud);
         validateExecuteShowResult(
                 showNetworksQuery,
                 new String[]{"Name", "Project", "Subnets", "State", "Is Shared"},
                 q -> {
-                    Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(q);
-                    return networksMap.keySet().stream()
-                            .flatMap(p -> {
-                                List<Network> networks = networksMap.get(p);
-                                return networks.stream().map(n -> new String[]{
-                                        n.getName(), p.getName(),
-                                        joinLines(
-                                                n.getSubnets().stream()
-                                                .map(s -> String.format(
-                                                        "%s/%s",
-                                                        s.getCidr().getAddress(),
-                                                        String.valueOf(s.getCidr().getPrefixSize()))
-                                                )
-                                                .sorted((c1, c2) -> Comparator.<String>naturalOrder().compare(c1, c2))
-                                                .collect(Collectors.toSet())
-                                        ),
-                                        n.getState(), String.valueOf(n.isIsShared())
-                                });
+                    List<FindNetworksResult> networks = projectsRepository.findNetworks(q);
+                    return networks.stream()
+                            .map(n -> new String[]{
+                                    n.getName(),
+                                    n.getProjectName(),
+                                    n.getSubnets().stream().collect(Collectors.joining("\n")),
+                                    n.getState(),
+                                    String.valueOf(n.isShared())
                             })
                             .collect(Collectors.toList());
                 }
@@ -130,21 +117,16 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "projectName", help = "Project name") String projectName,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowKeypairsQuery showKeypairsQuery = queryProvider.get(ShowKeypairsQuery.class).withNames(name)
+        FindKeypairsRequest showKeypairsQuery = queryProvider.get(FindKeypairsRequest.class).withNames(name)
                 .withProjects(projectName)
                 .withClouds(cloud);
         validateExecuteShowResult(
                 showKeypairsQuery,
                 new String[]{"Name", "Fingerprint", "Project"},
                 q -> {
-                    Map<Project, List<Keypair>> keypairsMap = projectsRepository.showKeypairs(q);
-                    return keypairsMap.keySet().stream()
-                            .flatMap(p -> {
-                                List<Keypair> keypairs = keypairsMap.get(p);
-                                return keypairs.stream().map(k -> new String[]{
-                                        k.getName(), k.getFingerprint(), p.getName()
-                                });
-                            })
+                    List<FindKeypairsResult> keypairs = projectsRepository.findKeypairs(q);
+                    return keypairs.stream()
+                            .map(k -> new String[]{k.getName(), k.getFingerprint(), k.getProjectName()})
                             .collect(Collectors.toList());
                 }
         );
@@ -160,7 +142,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "cloud", help = "Cloud type") String cloud,
             @CliOption(key = "projects", help = "Project names") String projects
     ) {
-        ShowInstancesQuery showInstancesQuery = queryProvider.get(ShowInstancesQuery.class)
+        FindInstancesRequest showInstancesQuery = queryProvider.get(FindInstancesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withFlavors(flavor)
@@ -172,8 +154,18 @@ public class ShowCommands extends BaseCommands {
                 showInstancesQuery,
                 new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 q -> {
-                    List<Instance> instances = instancesRepository.showInstances(q);
-                    return entityFormatter.formatInstances(instances, cloud);
+                    List<FindInstancesResult> instances = instancesRepository.findInstances(q);
+                    return instances.stream()
+                            .map(i -> new String[]{
+                                    i.getName(),
+                                    i.getProjectName(),
+                                    i.getImageName(),
+                                    i.getFlavorName(),
+                                    i.getAddresses(),
+                                    i.getState(),
+                                    i.getLastUpdated()
+                            })
+                            .collect(Collectors.toList());
                 }
         );
     }
@@ -185,17 +177,24 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "state", help = "Image state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        ShowImagesQuery showImagesQuery = queryProvider.get(ShowImagesQuery.class)
+        FindImagesRequest showImagesQuery = queryProvider.get(FindImagesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withStates(state)
-                .withCloudNames(cloud);
+                .withClouds(cloud);
         validateExecuteShowResult(
                 showImagesQuery,
                 new String[]{"Name", "Projects", "State", "Last modified"},
                 q -> {
-                    List<Image> images = imagesRepository.showImages(q);
-                    return entityFormatter.formatImages(images);
+                    List<FindImagesResult> images = imagesRepository.findImages(q);
+                    return images.stream()
+                            .map(i -> new String[] {
+                                    i.getName(),
+                                    enumerateValues(i.getProjectNames()),
+                                    i.getState(),
+                                    i.getLastUpdated()
+                            })
+                            .collect(Collectors.toList());
                 }
         );
     }
@@ -207,38 +206,35 @@ public class ShowCommands extends BaseCommands {
         if (!Desktop.isDesktopSupported()) {
             warn("This operation is not supported on your platform.");
         }
-        ShowInstancesQuery showInstancesQuery = queryProvider.get(ShowInstancesQuery.class)
+        FindInstancesRequest showInstancesQuery = queryProvider.get(FindInstancesRequest.class)
                 .withNames(names);
         validateExecuteShowResult(
                 showInstancesQuery,
                 q -> {
-                    List<Instance> instances = instancesRepository.showInstances(q);
-                    if (instances.isEmpty()) {
+                    Map<String, Map<String, String>> instancesMetadata = instancesRepository.getInstancesMetadata(q);
+                    if (instancesMetadata.isEmpty()) {
                         error(String.format("Instances not found: %s", names));
                     }
-                    instances.forEach(i -> {
-                        if (!i.getMetadata().containsKey(MetadataKey.CONSOLE_URL)) {
-                            warn(String.format("Matched instance \"%s\" but it didn't contain console information.", i.getName()));
+                    instancesMetadata.keySet().forEach(instanceName -> {
+                        Map<String, String> metadata = instancesMetadata.get(instanceName);
+                        String consoleUrlKey = MetadataKey.CONSOLE_URL.value();
+                        if (!metadata.containsKey(consoleUrlKey)) {
+                            warn(String.format("Matched instance \"%s\" but it didn't contain console information.", instanceName));
                             return;
                         }
-                        String consoleUriString = i.getMetadata().get(MetadataKey.CONSOLE_URL);
+                        String consoleUriString = metadata.get(consoleUrlKey);
                         try {
                             URI consoleUri = new URI(consoleUriString);
-                            ok(String.format("Opening console for instance \"%s\"...", i.getName()));
+                            ok(String.format("Opening console for instance \"%s\"...", instanceName));
                             Desktop.getDesktop().browse(consoleUri);
                         } catch (URISyntaxException e) {
-                            warn(String.format("Instance \"%s\" contains wrong console URL: %s.", i.getName(), consoleUriString));
+                            warn(String.format("Instance \"%s\" contains wrong console URL: %s.", instanceName, consoleUriString));
                         } catch (Exception e) {
-                            error(String.format("Failed to open console for instance \"%s\". Either default browser is not set or it failed to open console at: %s", i.getName(), consoleUriString));
+                            error(String.format("Failed to open console for instance \"%s\". Either default browser is not set or it failed to open console at: %s", instanceName, consoleUriString));
                         }
                     });
                 }
         );
     }
 
-    private ShowProjectsQuery getShowProjectsQuery(String clouds, String projects) {
-        return queryProvider.get(ShowProjectsQuery.class)
-                .withClouds(clouds)
-                .withNames(projects);
-    }
 }

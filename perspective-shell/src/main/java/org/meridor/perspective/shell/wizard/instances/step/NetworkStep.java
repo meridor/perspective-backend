@@ -1,15 +1,14 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.shell.query.QueryProvider;
-import org.meridor.perspective.shell.query.ShowNetworksQuery;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.FindNetworksRequest;
+import org.meridor.perspective.shell.result.FindNetworksResult;
 import org.meridor.perspective.shell.validator.annotation.Required;
 import org.meridor.perspective.shell.wizard.SingleChoiceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,9 +30,8 @@ public class NetworkStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return projectsRepository.showNetworks(queryProvider.get(ShowNetworksQuery.class).withProjects(projectName)).values().stream()
-                .flatMap(Collection::stream)
-                .map(Network::getName)
+        return projectsRepository.findNetworks(queryProvider.get(FindNetworksRequest.class).withProjects(projectName)).stream()
+                .map(FindNetworksResult::getName)
                 .collect(Collectors.toList());
     }
 

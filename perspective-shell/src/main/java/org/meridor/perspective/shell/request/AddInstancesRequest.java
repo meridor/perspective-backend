@@ -1,10 +1,14 @@
-package org.meridor.perspective.shell.query;
+package org.meridor.perspective.shell.request;
 
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.repository.impl.Placeholder;
 import org.meridor.perspective.shell.repository.impl.TextUtils;
+import org.meridor.perspective.shell.result.FindImagesResult;
+import org.meridor.perspective.shell.result.FindFlavorsResult;
+import org.meridor.perspective.shell.result.FindNetworksResult;
+import org.meridor.perspective.shell.result.FindProjectsResult;
 import org.meridor.perspective.shell.validator.annotation.*;
 import org.meridor.perspective.shell.validator.annotation.Metadata;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +16,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 import static org.meridor.perspective.shell.validator.Entity.*;
@@ -20,7 +25,7 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class AddInstancesQuery implements Query<List<Instance>> {
+public class AddInstancesRequest implements Request<List<Instance>> {
     
     @Required
     private String name;
@@ -62,42 +67,42 @@ public class AddInstancesQuery implements Query<List<Instance>> {
     @Autowired
     private QueryProvider queryProvider;
 
-    public AddInstancesQuery withName(String name) {
+    public AddInstancesRequest withName(String name) {
         this.name = name;
         return this;
     }
 
-    public AddInstancesQuery withProject(String project) {
+    public AddInstancesRequest withProject(String project) {
         this.project = project;
         return this;
     }
 
-    public AddInstancesQuery withFlavor(String flavor) {
+    public AddInstancesRequest withFlavor(String flavor) {
         this.flavor = flavor;
         return this;
     }
 
-    public AddInstancesQuery withImage(String image) {
+    public AddInstancesRequest withImage(String image) {
         this.image = image;
         return this;
     }
 
-    public AddInstancesQuery withNetwork(String network) {
+    public AddInstancesRequest withNetwork(String network) {
         this.network = network;
         return this;
     }
 
-    public AddInstancesQuery withRange(String range) {
+    public AddInstancesRequest withRange(String range) {
         this.range = range;
         return this;
     }
     
-    public AddInstancesQuery withCount(Integer count) {
+    public AddInstancesRequest withCount(Integer count) {
         this.range = rangeFromCount(count);
         return this;
     }
     
-    public AddInstancesQuery withKeypair(String keypair) {
+    public AddInstancesRequest withKeypair(String keypair) {
         this.keypair = keypair;
         return this;
     }
@@ -106,7 +111,7 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         return String.format("1-%d", count);
     }
     
-    public AddInstancesQuery withOptions(String options) {
+    public AddInstancesRequest withOptions(String options) {
         this.options = parseAssignment(options);
         return this;
     }
@@ -135,33 +140,36 @@ public class AddInstancesQuery implements Query<List<Instance>> {
         Instance instance = new Instance();
         instance.setName(name);
 
-        List<Project> projects = projectsRepository.showProjects(queryProvider.get(ShowProjectsQuery.class).withNames(projectName));
-        Project project = projects.get(0);
+        List<FindProjectsResult> projects = projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(projectName));
+        FindProjectsResult project = projects.get(0);
         instance.setProjectId(project.getId());
         instance.setCloudId(project.getCloudId());
         instance.setCloudType(project.getCloudType());
         
         if (flavorName != null) {
-            Map<Project, List<Flavor>> flavorsMap = projectsRepository.showFlavors(
-                    queryProvider.get(ShowFlavorsQuery.class)
-                        .withNames(flavorName)
-                        .withProjects(project.getName())
-                        .withClouds(project.getCloudType().name().toLowerCase())
+            List<FindFlavorsResult> flavors = projectsRepository.findFlavors(
+                    queryProvider.get(FindFlavorsRequest.class)
+                            .withNames(flavorName)
+                            .withProjects(project.getName())
+                            .withClouds(project.getCloudType().name().toLowerCase())
             );
-            instance.setFlavor(flavorsMap.get(project).get(0));
+            instance.setFlavor(flavors.get(0).toFlavor());
         }
 
-        List<Image> images = imagesRepository.showImages(queryProvider.get(ShowImagesQuery.class).withNames(imageName));
-        instance.setImage(images.get(0));
+        List<FindImagesResult> images = imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withNames(imageName));
+        instance.setImage(images.get(0).toImage());
         
         if (networkName != null) {
-            Map<Project, List<Network>> networksMap = projectsRepository.showNetworks(
-                    queryProvider.get(ShowNetworksQuery.class)
-                        .withNames(networkName)
-                        .withProjects(project.getName())
-                        .withClouds(project.getCloudType().name().toLowerCase())
+            List<FindNetworksResult> networkResults = projectsRepository.findNetworks(
+                    queryProvider.get(FindNetworksRequest.class)
+                            .withNames(networkName)
+                            .withProjects(project.getName())
+                            .withClouds(project.getCloudType().name().toLowerCase())
             );
-            instance.setNetworks(networksMap.get(project));
+            List<Network> networks = networkResults.stream()
+                    .map(FindNetworksResult::toNetwork)
+                    .collect(Collectors.toList());
+            instance.setNetworks(networks);
         }
         
         if (keypairName !=  null) {
@@ -179,10 +187,6 @@ public class AddInstancesQuery implements Query<List<Instance>> {
                     metadataMap.put(metadataKey, metadataValue);
                 }
         );
-        
-        if (project.getMetadata() != null && project.getMetadata().containsKey(MetadataKey.REGION)) {
-            metadataMap.put(MetadataKey.REGION, project.getMetadata().get(MetadataKey.REGION));
-        }
         
         instance.setMetadata(metadataMap);
 

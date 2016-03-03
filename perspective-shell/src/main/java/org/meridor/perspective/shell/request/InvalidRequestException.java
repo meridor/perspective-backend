@@ -1,12 +1,12 @@
-package org.meridor.perspective.shell.query;
+package org.meridor.perspective.shell.request;
 
 import java.util.Set;
 
-public class InvalidQueryException extends RuntimeException {
+public class InvalidRequestException extends RuntimeException {
     
     private final Set<String> errors;
 
-    public InvalidQueryException(Set<String> errors) {
+    public InvalidRequestException(Set<String> errors) {
         this.errors = errors;
     }
 
