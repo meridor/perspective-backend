@@ -40,7 +40,6 @@
         <module>perspective-storage</module>
         <module>perspective-rest</module>
         <module>perspective-java-client</module>
-        <module>perspective-jdbc</module>
         <module>perspective-worker</module>
         <module>perspective-openstack</module>
         <module>perspective-docker</module>
