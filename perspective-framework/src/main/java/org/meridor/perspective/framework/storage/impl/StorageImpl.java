@@ -170,11 +170,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Instance> getInstances(Optional<String> query) throws IllegalQueryException {
-        if (query.isPresent() && !query.get().isEmpty()) {
-            Predicate predicate = getPredicateFromQuery(query.get());
-            return getInstancesByIdMap().values(predicate);
-        }
+    public Collection<Instance> getInstances() {
         return getInstancesByIdMap().values();
     }
 
@@ -210,11 +206,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Image> getImages(Optional<String> query) throws IllegalQueryException {
-        if (query.isPresent() && !query.get().isEmpty()) {
-            Predicate predicate = getPredicateFromQuery(query.get());
-            return getImagesByIdMap().values(predicate);
-        }
+    public Collection<Image> getImages() {
         return getImagesByIdMap().values();
     }
 

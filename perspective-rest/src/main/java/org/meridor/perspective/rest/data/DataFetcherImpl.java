@@ -261,7 +261,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> imagesAware.getImages(Optional.empty()),
+                () -> imagesAware.getImages(),
                 columnMapping,
                 columns,
                 () -> "Failed to fetch \"images\" table contents"
@@ -276,7 +276,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> imagesAware.getImages(Optional.empty()).stream()
+                () -> imagesAware.getImages().stream()
                 .flatMap(i -> 
                         i.getProjectIds().stream()
                         .map(p -> new ProjectImage(p, i.getId()))
@@ -307,7 +307,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> instancesAware.getInstances(Optional.empty()),
+                () -> instancesAware.getInstances(),
                 columnMapping,
                 columns,
                 () -> "Failed to fetch \"instances\" table contents"
@@ -322,7 +322,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> instancesAware.getInstances(Optional.empty()).stream()
+                () -> instancesAware.getInstances().stream()
                         .flatMap(i ->
                                 i.getNetworks().stream()
                                         .map(n -> new InstanceNetwork(i.getId(), n.getId()))
@@ -343,7 +343,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> instancesAware.getInstances(Optional.empty()).stream()
+                () -> instancesAware.getInstances().stream()
                         .flatMap(i ->
                                 i.getMetadata().keySet().stream()
                                         .map(k -> new EntityMetadata(i.getId(), k.toString().toLowerCase(), i.getMetadata().get(k)))
@@ -364,7 +364,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> imagesAware.getImages(Optional.empty()).stream()
+                () -> imagesAware.getImages().stream()
                         .flatMap(i ->
                                 i.getMetadata().keySet().stream()
                                         .map(k -> new EntityMetadata(i.getId(), k.toString().toLowerCase(), i.getMetadata().get(k)))

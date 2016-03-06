@@ -10,7 +10,7 @@ public interface ImagesAware {
 
     boolean imageExists(String imageId);
 
-    Collection<Image> getImages(Optional<String> query) throws IllegalQueryException;
+    Collection<Image> getImages();
 
     Optional<Image> getImage(String imageId);
 

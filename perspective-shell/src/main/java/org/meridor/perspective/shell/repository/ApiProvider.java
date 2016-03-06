@@ -15,10 +15,6 @@ public class ApiProvider {
     @Autowired
     private SettingsAware settingsAware;
     
-    public Perspective.Projects getProjectsApi() {
-        return getApiOrException(() -> Perspective.projects(Perspective.createClient(), new URI(getBaseUri())));
-    }
-    
     public Perspective.Instances getInstancesApi() {
         return getApiOrException(() -> Perspective.instances(Perspective.createClient(), new URI(getBaseUri())));
     }

@@ -4,13 +4,14 @@ import org.meridor.perspective.beans.Instance;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 public interface InstancesAware {
 
 
     boolean instanceExists(String instanceId);
 
-    Collection<Instance> getInstances(Optional<String> query) throws IllegalQueryException;
+    Collection<Instance> getInstances();
 
     Optional<Instance> getInstance(String instanceId);
 
