@@ -7,6 +7,7 @@ public enum Setting {
     API_URL,
     DATE_FORMAT,
     DISABLE_PROJECTS_CACHE,
+    INSTANCE_SUFFIXES,
     LOG_LEVEL,
     PAGE_SIZE,
     TABLE_WIDTH;

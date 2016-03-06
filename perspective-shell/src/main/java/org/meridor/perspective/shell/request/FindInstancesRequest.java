@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.request;
 
+import org.meridor.perspective.shell.repository.SettingsAware;
+import org.meridor.perspective.shell.validator.Setting;
 import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.meridor.perspective.shell.validator.annotation.Pattern;
 import org.meridor.perspective.shell.validator.annotation.SupportedCloud;
@@ -7,11 +9,13 @@ import org.meridor.perspective.shell.validator.annotation.SupportedInstanceState
 import org.meridor.perspective.sql.JoinClause;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.SelectQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static org.meridor.perspective.shell.repository.impl.TextUtils.removeSuffixes;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
@@ -20,6 +24,9 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class FindInstancesRequest implements Request<Query> {
 
+    @Autowired
+    private SettingsAware settingsAware;
+    
     private Set<String> ids;
 
     @Pattern
@@ -85,7 +92,7 @@ public class FindInstancesRequest implements Request<Query> {
     public Query getPayload() {
         return getInstanceQuery(
                 Optional.ofNullable(ids),
-                Optional.ofNullable(names),
+                Optional.of(new HashSet<>(removeSuffixes(names, getInstanceSuffixes()))),
                 Optional.ofNullable(flavors),
                 Optional.ofNullable(images),
                 Optional.ofNullable(states),
@@ -94,6 +101,13 @@ public class FindInstancesRequest implements Request<Query> {
         );
     }
 
+    private Set<String> getInstanceSuffixes() {
+        if (settingsAware.hasSetting(Setting.API_URL)) {
+            return settingsAware.getSetting(Setting.INSTANCE_SUFFIXES);
+        }
+        return Collections.emptySet();
+    }
+    
     private Query getInstanceQuery(
             Optional<Set<String>> ids,
             Optional<Set<String>> names,

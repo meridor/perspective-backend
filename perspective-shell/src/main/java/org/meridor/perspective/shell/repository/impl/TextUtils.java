@@ -324,6 +324,26 @@ public final class TextUtils {
     public static String getAsExactMatch(String value) {
         return String.format("^%s$", value);
     }
+    
+    public static Collection<String> removeSuffixes(Collection<String> seed, Collection<String> suffixes) {
+        if (seed == null || seed.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return seed.stream()
+            .map(str -> {
+                Optional<String> matchingSuffix = suffixes.stream()
+                        .filter(str::endsWith)
+                        .findFirst();
+                if (matchingSuffix.isPresent()) {
+                    int strLength = str.length();
+                    int suffixLength = matchingSuffix.get().length();
+                    int end = strLength - suffixLength;
+                    return str.substring(0, end);
+                }
+                return str;
+            })
+            .collect(Collectors.toList());
+    }
 
     private TextUtils() {
         

@@ -232,4 +232,14 @@ public class TextUtilsTest {
         assertThat(getAsExactMatch("text"), equalTo("^text$"));
     }
     
+    @Test
+    public void testRemoveSuffixes() {
+        List<String> seed = Arrays.asList("one.four", "two.five", "three");
+        List<String> suffixes = Arrays.asList(".four", ".five");
+        Collection<String> enrichedSeed = removeSuffixes(seed, suffixes);
+        
+        assertThat(enrichedSeed, hasSize(3));
+        assertThat(enrichedSeed, contains("one", "two", "three"));
+    }
+    
 }

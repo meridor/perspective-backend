@@ -23,7 +23,7 @@ public class QueryCommands extends BaseCommands {
             @CliOption(key = "", mandatory = true, help = "Query body") String sql
     ) {
         Query query = new Query();
-        query.setSql(sql);
+        query.setSql("select " + sql);
         QueryResult result = queryRepository.query(query);
         switch (result.getStatus()) {
             case SUCCESS: {
