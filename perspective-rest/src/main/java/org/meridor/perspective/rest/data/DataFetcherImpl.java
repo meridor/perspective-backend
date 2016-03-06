@@ -253,7 +253,7 @@ public class DataFetcherImpl implements DataFetcher {
                 put("real_id", Image::getRealId);
                 put("name", Image::getName);
                 put("cloud_id", Image::getCloudId);
-                put("cloud_type", Image::getCloudType);
+                put("cloud_type", i -> i.getCloudType().value());
                 put("last_updated", i -> i.getTimestamp().format(DATE_FORMATTER));
                 put("created", i -> i.getCreated().format(DATE_FORMATTER));
                 put("state", i -> i.getState().value());

@@ -28,9 +28,6 @@ import static org.meridor.perspective.sql.DataUtils.get;
 public class ProjectsRepositoryImpl implements ProjectsRepository {
 
     @Autowired
-    private QueryProvider queryProvider;
-    
-    @Autowired
     private QueryRepository queryRepository;
     
     @Autowired

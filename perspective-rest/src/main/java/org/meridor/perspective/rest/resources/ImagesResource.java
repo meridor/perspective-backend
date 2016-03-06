@@ -19,8 +19,6 @@ import static org.meridor.perspective.rest.resources.ResponseUtils.notFound;
 @Path("/images")
 public class ImagesResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ImagesResource.class);
-
     @Autowired
     private ImagesService imagesService;
     

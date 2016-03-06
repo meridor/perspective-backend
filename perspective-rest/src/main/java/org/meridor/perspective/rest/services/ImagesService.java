@@ -7,7 +7,6 @@ import org.meridor.perspective.events.ImageSavingEvent;
 import org.meridor.perspective.framework.messaging.Destination;
 import org.meridor.perspective.framework.messaging.Producer;
 import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,6 @@ public class ImagesService {
     @Autowired
     private ImagesAware imagesAware;
     
-    @Autowired
-    private ProjectsAware projectsAware;
-
     @Destination(WRITE_TASKS)
     private Producer producer;
 

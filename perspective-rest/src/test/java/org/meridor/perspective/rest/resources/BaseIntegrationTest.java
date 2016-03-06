@@ -13,21 +13,9 @@ public abstract class BaseIntegrationTest extends JerseyTest {
     protected Application configure() {
         org.meridor.perspective.rest.Application app = new org.meridor.perspective.rest.Application();
         app.register(SpringLifecycleListener.class);
-        app.property("contextConfigLocation", "classpath:META-INF/spring/context-test.xml");
+        app.property("contextConfigLocation", "classpath:META-INF/spring/integration-test-context.xml");
+        app.register(this);
         return app;
     }
-
-    protected <T> T getBean(Class<T> beanClass) {
-        return getBean(null, beanClass);
-    }
-
-    protected <T> T getBean(String beanName, Class<T> beanClass) {
-        BeanFactory beanFactory = ContextLoader
-                .getCurrentWebApplicationContext()
-                .getAutowireCapableBeanFactory();
-        return (beanName != null) ?
-                beanFactory.getBean(beanName, beanClass) :
-                beanFactory.getBean(beanClass);
-    }
-
+    
 }
