@@ -28,6 +28,7 @@ public abstract class BaseChoiceStep extends AbstractStep {
 
     @Override
     public boolean run() {
+        answer = null;
         printMessageWithDefaultAnswer();
         Map<Integer, String> choicesMap = getPossibleChoicesMap();
         Optional<Boolean> returnValue = processZeroOrOneChoice(choicesMap);

@@ -34,6 +34,7 @@ public abstract class YesNoStep extends AbstractStep {
 
     @Override
     public boolean run() {
+        yes = null;
         printMessageWithDefaultAnswer();
         String answer = waitForAnswer();
         while (!validateAnswer(answer)) {

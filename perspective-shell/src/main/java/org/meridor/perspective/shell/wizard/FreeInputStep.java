@@ -24,6 +24,7 @@ public abstract class FreeInputStep extends AbstractStep {
 
     @Override
     public boolean run() {
+        answer = null;
         printMessageWithDefaultAnswer();
         Optional<String> answer = processAnswer();
         if (!answer.isPresent()) {

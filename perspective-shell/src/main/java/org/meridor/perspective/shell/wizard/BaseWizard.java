@@ -32,7 +32,7 @@ public abstract class BaseWizard implements Wizard {
             Optional<String> answer = Optional.ofNullable(currentStep.getAnswer());
             if (answer.isPresent()) {
                 Class<? extends Step> stepClass = currentStep.getClass();
-                answers.put(stepClass, answer.get());
+                getAnswers().put(stepClass, answer.get());
             }
         }
         return true;
