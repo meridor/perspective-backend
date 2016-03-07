@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class CloudConfigurationProviderImpl implements CloudConfigurationProvider {
@@ -48,9 +50,18 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
         JAXBContext context = JAXBContext.newInstance(ObjectFactory.class.getPackage().getName());
         Unmarshaller unmarshaller = context.createUnmarshaller();
         Clouds clouds = (Clouds) unmarshaller.unmarshal(configFileInputStream);
-        clouds.getClouds().stream()
+        List<Cloud> enabledClouds = clouds.getClouds().stream()
                 .filter(Cloud::isEnabled)
-                .forEach(c -> cloudsMap.put(c.getId(), c));
+                .collect(Collectors.toList());
+        if (enabledClouds.isEmpty()) {
+            LOG.warn(
+                    clouds.getClouds().isEmpty() ?
+                            "Cloud configuration file is empty - will not work." :
+                            "All clouds defined in configuration file are disabled - will not work."
+                    
+            );
+        }
+        enabledClouds.forEach(c -> cloudsMap.put(c.getId(), c));
     }
 
     public Cloud getCloud(String cloudId) {
