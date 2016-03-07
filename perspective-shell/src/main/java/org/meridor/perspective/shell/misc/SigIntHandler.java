@@ -5,7 +5,7 @@ import sun.misc.SignalHandler;
 
 /**
  * This class is loaded by Class.forName only if legacy signals API is present in current JDK
- * @see @see <a href="http://stackoverflow.com/questions/3250280/ignore-sigint-in-java></a>
+ * @see <a href="http://stackoverflow.com/questions/3250280/ignore-sigint-in-java></a>
  */
 public final class SigIntHandler implements SignalHandler {
     

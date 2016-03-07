@@ -61,6 +61,13 @@
                     </plugins>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/xjc</sourcepath>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
