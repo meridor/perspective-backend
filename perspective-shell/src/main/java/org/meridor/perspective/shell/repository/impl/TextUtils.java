@@ -326,7 +326,10 @@ public final class TextUtils {
     }
     
     public static Collection<String> removeSuffixes(Collection<String> seed, Collection<String> suffixes) {
-        if (seed == null || seed.isEmpty()) {
+        if (seed == null) {
+            return null;
+        }
+        if (seed.isEmpty()) {
             return Collections.emptyList();
         }
         return seed.stream()

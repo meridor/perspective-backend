@@ -1,12 +1,14 @@
 package org.meridor.perspective.shell.repository;
 
-import org.meridor.perspective.client.Perspective;
+import org.meridor.perspective.client.ApiAware;
+import org.meridor.perspective.client.ImagesApi;
+import org.meridor.perspective.client.InstancesApi;
+import org.meridor.perspective.client.QueryApi;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Repository;
 
-import java.net.URI;
 import java.util.concurrent.Callable;
 
 @Repository
@@ -15,16 +17,16 @@ public class ApiProvider {
     @Autowired
     private SettingsAware settingsAware;
     
-    public Perspective.Instances getInstancesApi() {
-        return getApiOrException(() -> Perspective.instances(Perspective.createClient(), new URI(getBaseUri())));
+    public InstancesApi getInstancesApi() {
+        return getApiOrException(() -> ApiAware.withUrl(getBaseUri()).get(InstancesApi.class));
     }
     
-    public Perspective.Images getImagesApi() {
-        return getApiOrException(() -> Perspective.images(Perspective.createClient(), new URI(getBaseUri())));
+    public ImagesApi getImagesApi() {
+        return getApiOrException(() -> ApiAware.withUrl(getBaseUri()).get(ImagesApi.class));
     }
     
-    public Perspective.Query getQueryApi() {
-        return getApiOrException(() -> Perspective.query(Perspective.createClient(), new URI(getBaseUri())));
+    public QueryApi getQueryApi() {
+        return getApiOrException(() -> ApiAware.withUrl(getBaseUri()).get(QueryApi.class));
     }
     
     private <T> T getApiOrException(Callable<T> apiSupplier) {
@@ -41,5 +43,13 @@ public class ApiProvider {
         }
         return "http://localhost:8080/";
     }
-    
+
+    public static <T> T processRequestOrException(Callable<T> action) {
+        try {
+            return action.call();
+        } catch (Exception e) {
+            throw new ShellException("Failed to process request to API", e);
+        }
+    }
+
 }

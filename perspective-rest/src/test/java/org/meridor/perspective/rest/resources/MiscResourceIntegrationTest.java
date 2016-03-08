@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class MiscResourceTest extends BaseIntegrationTest {
+public class MiscResourceIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void testPing() throws Exception {

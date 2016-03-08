@@ -11,69 +11,23 @@
     <name>Perspective REST Java Client</name>
 
     <properties>
-        <api.base.url>http://localhost:8080/</api.base.url>
+        <retrofit.version>2.0.0-beta4</retrofit.version>
     </properties>
     
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jvnet.ws.wadl</groupId>
-                <artifactId>wadl-client-plugin</artifactId>
-                <version>1.1.6</version>
-                <executions>
-                    <execution>
-                        <id>generate-client</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <generationStyle>jaxrs20</generationStyle>
-                    <customizations>
-                        <customization>${project.basedir}/src/wadl/bindings.xjb</customization>
-                    </customizations>
-                    <targets>
-                        <url>file://${project.parent.basedir}/perspective-rest/target/classes/application.wadl</url>
-                    </targets>
-                    <packageName>org.meridor.perspective.client</packageName>
-                    <customClassNames>
-                        <property>
-                            <name>${api.base.url}</name>
-                            <value>Perspective</value>
-                        </property>
-                    </customClassNames>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/wadl</sourcepath>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-beans</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-jaxb</artifactId>
-            <version>${jersey.version}</version>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>${retrofit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-gson</artifactId>
+            <version>${retrofit.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

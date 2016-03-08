@@ -34,8 +34,8 @@ public interface QueryPart {
                 .collect(Collectors.toList());
         Query query = new Query();
         query.setSql(sql);
-        Query.Parameters parametersEntity = new Query.Parameters();
-        parametersEntity.getParameters().addAll(parameters);
+        List<Parameter> parametersEntity = new ArrayList<>();
+        parametersEntity.addAll(parameters);
         query.setParameters(parametersEntity);
         return query;
     }

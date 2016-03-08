@@ -13,14 +13,14 @@ import org.meridor.perspective.sql.QueryResult;
 import org.meridor.perspective.sql.SelectQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import retrofit2.Call;
 
-import javax.ws.rs.core.GenericEntity;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.valueOf;
+import static org.meridor.perspective.shell.repository.ApiProvider.processRequestOrException;
 import static org.meridor.perspective.sql.DataUtils.get;
-import static org.meridor.perspective.sql.DataUtils.put;
 
 @Repository
 public class InstancesRepositoryImpl implements InstancesRepository {
@@ -87,32 +87,33 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
 
     @Override public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {
-        List<Instance> instances = addInstancesRequest.getPayload();
-        GenericEntity<List<Instance>> data = new GenericEntity<List<Instance>>(instances) {
-        };
-        apiProvider.getInstancesApi().postXmlAs(data, String.class);
-        return Collections.emptySet();
+        return processRequestOrException(() -> {
+            List<Instance> instances = addInstancesRequest.getPayload();
+            Call<Collection<Instance>> call = apiProvider.getInstancesApi().launch(instances);
+            call.execute();
+            return Collections.emptySet();
+        });
     }
     
     @Override public Set<String> deleteInstances(Collection<String> instanceIds) {
-        GenericEntity<List<String>> data = new GenericEntity<List<String>>(new ArrayList<>(instanceIds)) {
-        };
-        apiProvider.getInstancesApi().delete().postXmlAs(data, String.class);
-        return Collections.emptySet();
+        return processRequestOrException(() -> {
+            apiProvider.getInstancesApi().delete(instanceIds);
+            return Collections.emptySet();
+        });
     }
     
     @Override public Set<String> rebootInstances(Collection<String> instanceIds) {
-        GenericEntity<List<String>> data = new GenericEntity<List<String>>(new ArrayList<>(instanceIds)) {
-        };
-        apiProvider.getInstancesApi().reboot().putXmlAs(data, String.class);
-        return Collections.emptySet();
+        return processRequestOrException(() -> {
+            apiProvider.getInstancesApi().reboot(instanceIds);
+            return Collections.emptySet();
+        });
     }
     
     @Override public Set<String> hardRebootInstances(Collection<String> instanceIds) {
-        GenericEntity<List<String>> data = new GenericEntity<List<String>>(new ArrayList<>(instanceIds)) {
-        };
-        apiProvider.getInstancesApi().hardReboot().putXmlAs(data, String.class);
-        return Collections.emptySet();
+        return processRequestOrException(() -> {
+            apiProvider.getInstancesApi().hardReboot(instanceIds);
+            return Collections.emptySet();
+        });
     }
-    
+
 }

@@ -4,10 +4,9 @@ import org.meridor.perspective.shell.repository.ApiProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.ProcessingException;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
-import java.net.ConnectException;
 
 //TODO: use it (find the way to intercept command calls)
 @Component
@@ -23,13 +22,12 @@ public class ErrorHandler {
     private Logger logger;
     
     public void handleErrors(Throwable e) throws Throwable {
-        if (e instanceof  ProcessingException) {
-            if (e.getCause() != null && e.getCause() instanceof ConnectException) {
-                String apiUrl = apiProvider.getBaseUri();
-                logger.error(String.format("Failed to connect to the API. Is your connection url = \"%s\" correct?", apiUrl));
-            } else {
-                printErrorMessage(e);
-            }
+        if (
+                e instanceof IOException ||
+                e.getCause() != null && e.getCause() instanceof IOException
+        ) {
+            String apiUrl = apiProvider.getBaseUri();
+            logger.error(String.format("Failed to connect to the API. Is your connection url = \"%s\" correct?", apiUrl));
         } else {
             printErrorMessage(e);
         }

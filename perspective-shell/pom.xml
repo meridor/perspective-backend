@@ -65,10 +65,6 @@
         <!-- Own modules -->
         <dependency>
             <groupId>org.meridor.perspective</groupId>
-            <artifactId>perspective-beans</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-java-client</artifactId>
         </dependency>
         <dependency>

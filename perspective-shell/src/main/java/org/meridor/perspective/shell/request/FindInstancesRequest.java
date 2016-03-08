@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.removeSuffixes;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
+import static org.meridor.perspective.shell.repository.impl.TextUtils.removeSuffixes;
 import static org.meridor.perspective.shell.validator.Field.*;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
@@ -92,7 +92,7 @@ public class FindInstancesRequest implements Request<Query> {
     public Query getPayload() {
         return getInstanceQuery(
                 Optional.ofNullable(ids),
-                Optional.of(new HashSet<>(removeSuffixes(names, getInstanceSuffixes()))),
+                Optional.ofNullable(removeSuffixes(names, getInstanceSuffixes())),
                 Optional.ofNullable(flavors),
                 Optional.ofNullable(images),
                 Optional.ofNullable(states),
@@ -110,7 +110,7 @@ public class FindInstancesRequest implements Request<Query> {
     
     private Query getInstanceQuery(
             Optional<Set<String>> ids,
-            Optional<Set<String>> names,
+            Optional<Collection<String>> names,
             Optional<Set<String>> flavors,
             Optional<Set<String>> images,
             Optional<Set<String>> states,
