@@ -44,6 +44,7 @@
         <module>perspective-openstack</module>
         <module>perspective-docker</module>
         <module>perspective-shell</module>
+        <module>perspective-api-common</module>
     </modules>
 
     <dependencyManagement>
@@ -78,6 +79,11 @@
             <dependency>
                 <groupId>org.meridor.perspective</groupId>
                 <artifactId>perspective-sql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.meridor.perspective</groupId>
+                <artifactId>perspective-api-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

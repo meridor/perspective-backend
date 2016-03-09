@@ -20,13 +20,17 @@
             <artifactId>perspective-beans</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-api-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>retrofit</artifactId>
             <version>${retrofit.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-gson</artifactId>
+            <artifactId>converter-jackson</artifactId>
             <version>${retrofit.version}</version>
         </dependency>
         <dependency>

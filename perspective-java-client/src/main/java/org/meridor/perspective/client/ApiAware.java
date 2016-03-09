@@ -1,9 +1,13 @@
 package org.meridor.perspective.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.meridor.perspective.api.ObjectMapperFactory;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public final class ApiAware {
     
@@ -20,11 +24,12 @@ public final class ApiAware {
     }
 
     public <S> S get(Class<S> serviceClass) {
-        Retrofit.Builder builder =
+        ObjectMapper objectMapper = ObjectMapperFactory.createDefaultMapper();
+        Retrofit retrofit =
                 new Retrofit.Builder()
                         .baseUrl(baseUrl)
-                        .addConverterFactory(GsonConverterFactory.create());
-        Retrofit retrofit = builder.client(httpClient).build();
+                        .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+                        .client(httpClient).build();
         return retrofit.create(serviceClass);
     }
     
@@ -37,6 +42,9 @@ public final class ApiAware {
                             .build();
                     return chain.proceed(request);
                 })
+                .readTimeout(2, TimeUnit.MINUTES)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(1, TimeUnit.MINUTES)
                 .build();
     }
     
