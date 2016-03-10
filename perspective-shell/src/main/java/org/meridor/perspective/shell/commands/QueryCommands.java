@@ -46,7 +46,7 @@ public class QueryCommands extends BaseCommands {
         List<String[]> rows = data.getRows().stream()
                 .map(r -> r.getValues()
                         .stream()
-                        .map(Object::toString)
+                        .map(String::valueOf)
                         .toArray(String[]::new)
                 )
                 .collect(Collectors.toList());

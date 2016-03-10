@@ -53,8 +53,8 @@ public class FindImagesResult {
         return projectNames;
     }
 
-    public String getCloudType() {
-        return cloudType;
+    public CloudType getCloudType() {
+        return CloudType.fromValue(cloudType);
     }
 
     public String getState() {
@@ -72,7 +72,7 @@ public class FindImagesResult {
         image.setRealId(getRealId());
         image.setName(getName());
         image.getProjectIds().addAll(getProjectIds());
-        image.setCloudType(CloudType.valueOf(getCloudType()));
+        image.setCloudType(getCloudType());
         return image;
     }
 }

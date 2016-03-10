@@ -18,7 +18,7 @@ public class FindInstancesResult {
     private final String projectId;
     private final String projectName;
     private final String cloudId;
-    private final CloudType cloudType;
+    private final String cloudType;
     private final String imageName;
     private final String flavorName;
     private final String addresses;
@@ -32,7 +32,7 @@ public class FindInstancesResult {
         this.projectId = projectId;
         this.projectName = projectName;
         this.cloudId = cloudId;
-        this.cloudType = CloudType.valueOf(cloudType.toUpperCase());
+        this.cloudType = cloudType;
         this.imageName = imageName;
         this.flavorName = flavorName;
         this.addresses = addresses;
@@ -53,7 +53,7 @@ public class FindInstancesResult {
     }
 
     public CloudType getCloudType() {
-        return cloudType;
+        return CloudType.fromValue(cloudType);
     }
 
     public String getId() {

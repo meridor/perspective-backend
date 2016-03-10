@@ -94,7 +94,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
                 EntityGenerator.getProject().getId(),
                 EntityGenerator.getProject().getName(),
                 EntityGenerator.getProject().getCloudId(),
-                EntityGenerator.getProject().getCloudType()
+                EntityGenerator.getProject().getCloudType().value()
         ));
     }
 

@@ -297,12 +297,12 @@ public class DataFetcherImpl implements DataFetcher {
                 put("cloud_id", Instance::getCloudId);
                 put("cloud_type", i -> i.getCloudType().value());
                 put("project_id", Instance::getProjectId);
-                put("flavor_id", i -> i.getFlavor().getId());
+                put("flavor_id", i -> (i.getFlavor() != null) ? i.getFlavor().getId() : null);
                 put("image_id", i -> (i.getImage() != null) ? i.getImage().getId() : null);
                 put("state", i -> i.getState().value());
                 put("last_updated", i -> i.getTimestamp().format(DATE_FORMATTER));
                 put("created", i -> i.getCreated().format(DATE_FORMATTER));
-                put("availability_zone", i -> i.getAvailabilityZone().getName());
+                put("availability_zone", i -> (i.getAvailabilityZone() != null) ? i.getAvailabilityZone().getName() : null);
                 put("addresses", i -> i.getAddresses().stream().collect(Collectors.joining("\n")));
             }
         };

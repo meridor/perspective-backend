@@ -45,7 +45,7 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                             valueOf(get(data, r, "id")),
                             valueOf(get(data, r, "name")),
                             valueOf(get(data, r, "cloud_id")),
-                            CloudType.valueOf(valueOf(get(data, r, "cloud_type")))
+                            valueOf(get(data, r, "cloud_type"))
                     ))
                     .collect(Collectors.toList());
             projectsCache.addAll(projects);

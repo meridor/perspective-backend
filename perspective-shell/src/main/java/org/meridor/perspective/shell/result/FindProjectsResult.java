@@ -7,9 +7,9 @@ public class FindProjectsResult {
     private final String id;
     private final String name;
     private final String cloudId;
-    private final CloudType cloudType;
+    private final String cloudType;
 
-    public FindProjectsResult(String id, String name, String cloudId, CloudType cloudType) {
+    public FindProjectsResult(String id, String name, String cloudId, String cloudType) {
         this.id = id;
         this.name = name;
         this.cloudId = cloudId;
@@ -29,6 +29,6 @@ public class FindProjectsResult {
     }
 
     public CloudType getCloudType() {
-        return cloudType;
+        return CloudType.fromValue(cloudType);
     }
 }

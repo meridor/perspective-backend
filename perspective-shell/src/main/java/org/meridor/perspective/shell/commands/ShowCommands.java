@@ -49,7 +49,7 @@ public class ShowCommands extends BaseCommands {
                 q -> {
                     List<FindProjectsResult> projects = projectsRepository.findProjects(q);
                     return projects.stream()
-                            .map(p -> new String[]{p.getName(), p.getCloudType().value()})
+                            .map(p -> new String[]{p.getName(), p.getCloudType().name().toLowerCase()})
                             .collect(Collectors.toList());
                 }
         );

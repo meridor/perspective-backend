@@ -65,7 +65,7 @@ public class DeleteCommands extends BaseCommands {
                 images -> String.format("Going to delete %d images.", images.size()),
                 images -> new String[]{"Name", "Cloud", "State", "Last modified"},
                 images -> images.stream()
-                        .map(i -> new String[]{i.getName(), i.getCloudType(), i.getState(), i.getLastUpdated()})
+                        .map(i -> new String[]{i.getName(), i.getCloudType().name().toLowerCase(), i.getState(), i.getLastUpdated()})
                         .collect(Collectors.toList()),
                 (r, images) -> images.stream().map(FindImagesResult::getId).collect(Collectors.toSet()),
                 imagesRepository::deleteImages
