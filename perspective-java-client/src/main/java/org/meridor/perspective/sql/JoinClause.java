@@ -54,7 +54,7 @@ public class JoinClause extends BaseQueryPart {
         Map<String, Collection<String>> joinPairs = leftRightPairs.keySet().stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        Collections::singletonList
+                        l -> Collections.singletonList(leftRightPairs.get(l))
                 ));
         return joinWith(joinPairs, this::equal, this::and, this);
     }

@@ -2,10 +2,7 @@ package org.meridor.perspective.sql;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -150,6 +147,25 @@ public class SelectQueryTest {
         Parameter secondParameter = query.getParameters().get(1);
         assertThat(secondParameter.getName(), equalTo("two1"));
         assertThat(secondParameter.getValue(), equalTo("four"));
+    }
+    
+    @Test
+    public void testMultiConditionJoin() {
+        Query query = new SelectQuery()
+                .all()
+                .from()
+                .table("one")
+                .innerJoin()
+                .table("two")
+                .on()
+                .and(new HashMap<String, String>(){
+                    {
+                        put("one.id", "two.id");
+                        put("one.name", "two.name");
+                    }
+                })
+                .getQuery();
+        assertThat(query.getSql(), equalTo("select * from one inner join two on one.id = two.id and one.name = two.name"));
     }
     
 }
