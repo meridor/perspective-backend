@@ -65,6 +65,10 @@ public abstract class BaseCommands implements CommandMarker {
     }
     
     protected void tableOrNothing(String[] columns, List<String[]> rows) {
+        tableOrNothing(columns,  rows, false);
+    }
+    
+    protected void tableOrNothing(String[] columns, List<String[]> rows, boolean showResultsCountAnyway) {
         final Integer PAGE_SIZE = pager.getPageSize();
         if (!rows.isEmpty()){
             if (rows.size() > PAGE_SIZE) {
@@ -75,6 +79,9 @@ public abstract class BaseCommands implements CommandMarker {
                 ));
                 pager.page(columns, rows);
             } else {
+                if (showResultsCountAnyway) {
+                    ok(String.format("Results contain %d entries.", rows.size()));
+                }
                 ok(tableRenderer.render(columns, rows));
             }
         } else {
