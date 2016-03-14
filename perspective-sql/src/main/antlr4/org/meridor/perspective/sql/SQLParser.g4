@@ -179,15 +179,25 @@ table_reference
    ;
 
 table_join
-   : table_atom_or_natural_or_outer_join ( ( INNER | CROSS )? JOIN table_atom ( join_condition )? )?
+   : table_atom ( join_clause )+
    ;
 
-table_atom_or_natural_or_outer_join
-   : table_atom_or_natural_join ( ( LEFT | RIGHT ) ( OUTER )? JOIN table_reference join_condition )?
+inner_join_clause
+   : ( INNER | CROSS )? JOIN table_atom ( join_condition )?
    ;
 
-table_atom_or_natural_join
-   : table_atom (NATURAL ( ( LEFT | RIGHT ) OUTER )? JOIN table_atom)?
+outer_join_clause
+   : ( LEFT | RIGHT ) ( OUTER )? JOIN table_atom join_condition
+   ;
+
+natural_join_clause
+   : NATURAL ( ( LEFT | RIGHT ) OUTER )? JOIN table_atom
+   ;
+   
+join_clause
+   : inner_join_clause
+   | outer_join_clause
+   | natural_join_clause
    ;
 
 table_atom

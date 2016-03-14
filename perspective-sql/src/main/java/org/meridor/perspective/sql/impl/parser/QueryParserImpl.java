@@ -196,9 +196,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         Object left = previousExpression.isPresent() ?
                 previousExpression.get() :
                 processComplexBooleanExpression(remainingExpressions.remove(0));
-        Object right = previousExpression.isPresent() ?
-                processComplexBooleanExpression(remainingExpressions.remove(0)) :
-                processComplexBooleanExpression(remainingExpressions.remove(1));
+        Object right = processComplexBooleanExpression(remainingExpressions.remove(0)); //First remove call shifts indexes to the left
         BinaryBooleanExpression binaryBooleanExpression = new BinaryBooleanExpression(left, binaryBooleanOperator, right);
         return processComplexBooleanExpressionsList(Optional.of(binaryBooleanExpression), remainingExpressions, remainingOperators);
     }
@@ -424,58 +422,68 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         throw new UnsupportedOperationException("Unsupported table reference type");
     }
 
-    private DataSource processTableJoin(SQLParser.Table_joinContext tableJoincontext) {
-        if (tableJoincontext.JOIN() != null) {
-            return processInnerJoin(
-                    tableJoincontext.table_atom_or_natural_or_outer_join(),
-                    tableJoincontext.table_atom(),
-                    Optional.ofNullable(tableJoincontext.join_condition())
-            );
-        } else {
-            return processTableAtomOrNaturalOrOuterJoin(tableJoincontext.table_atom_or_natural_or_outer_join());
-        }
-    }
-
-    private DataSource processInnerJoin(
-            SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext,
-            SQLParser.Table_atomContext tableAtomContext,
-            Optional<SQLParser.Join_conditionContext> joinConditionContextCandidate
-    ) {
-        DataSource first = processTableAtomOrNaturalOrOuterJoin(tableAtomOrNaturalOrOuterJoinContext);
-        DataSource second = processTableAtom(tableAtomContext);
-        second.setJoinType(JoinType.INNER);
-        if (joinConditionContextCandidate.isPresent()) {
-            processJoinCondition(second, joinConditionContextCandidate.get());
-        }
-        first.setNextDatasource(second);
-        return first;
-    }
-
-    private DataSource processTableAtomOrNaturalOrOuterJoin(SQLParser.Table_atom_or_natural_or_outer_joinContext tableAtomOrNaturalOrOuterJoinContext) {
-        if (tableAtomOrNaturalOrOuterJoinContext.LEFT() != null || tableAtomOrNaturalOrOuterJoinContext.RIGHT() != null) {
-            JoinType joinType = tableAtomOrNaturalOrOuterJoinContext.LEFT() != null ? 
-                    JoinType.LEFT :
-                    JoinType.RIGHT;
-            return processOuterJoin(
-                    tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join(),
-                    joinType,
-                    tableAtomOrNaturalOrOuterJoinContext.table_reference(),
-                    tableAtomOrNaturalOrOuterJoinContext.join_condition()
-            );
-        } else {
-            return processTableAtomOrNaturalJoin(tableAtomOrNaturalOrOuterJoinContext.table_atom_or_natural_join());
-        }
-    }
-
-    private DataSource processOuterJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext, JoinType joinType, SQLParser.Table_referenceContext tableReferenceContext, SQLParser.Join_conditionContext joinConditionContext) {
-        DataSource first = processTableAtomOrNaturalJoin(tableAtomOrNaturalJoinContext);
-        DataSource second = processTableReference(tableReferenceContext);
-        second.setJoinType(joinType);
-        processJoinCondition(second, joinConditionContext);
-        first.setNextDatasource(second);
-        return first;
+    private DataSource processTableJoin(SQLParser.Table_joinContext tableJoinContext) {
+        DataSource firstDataSource = processTableAtom(tableJoinContext.table_atom());
+        List<SQLParser.Join_clauseContext> joinClauseContexts = tableJoinContext.join_clause();
+        return appendJoinClauses(firstDataSource, Optional.empty(), joinClauseContexts);
     }
     
+    private DataSource appendJoinClauses(DataSource firstDataSource, Optional<DataSource> previousDataSourceCandidate, List<SQLParser.Join_clauseContext> remainingJoinClauseContexts) {
+        if (remainingJoinClauseContexts.isEmpty()) {
+            firstDataSource.setNextDatasource(previousDataSourceCandidate.get());
+            return firstDataSource;
+        }
+        SQLParser.Join_clauseContext currentJoinClauseContext = remainingJoinClauseContexts.remove(remainingJoinClauseContexts.size() - 1);
+        DataSource currentDataSource = processJoinClause(currentJoinClauseContext);
+        if (previousDataSourceCandidate.isPresent()) {
+            currentDataSource.setNextDatasource(previousDataSourceCandidate.get());
+        }
+        return appendJoinClauses(firstDataSource, Optional.of(currentDataSource), remainingJoinClauseContexts);
+    }
+
+    private DataSource processJoinClause(SQLParser.Join_clauseContext joinClauseContext) {
+        if (joinClauseContext.inner_join_clause() != null) {
+            return processInnerJoinClause(joinClauseContext.inner_join_clause());
+        } else if (joinClauseContext.outer_join_clause() != null) {
+            return processOuterJoinClause(joinClauseContext.outer_join_clause());
+        } else if (joinClauseContext.natural_join_clause() != null) {
+            return processNaturalJoinClause(joinClauseContext.natural_join_clause());
+        }
+        throw new UnsupportedOperationException("Unknown join clause type");
+    }
+
+    private DataSource processInnerJoinClause(SQLParser.Inner_join_clauseContext innerJoinClauseContext) {
+        return joinClauseToDataSource(innerJoinClauseContext.table_atom(), JoinType.INNER, Optional.ofNullable(innerJoinClauseContext.join_condition()));
+    }
+
+    private DataSource processOuterJoinClause(SQLParser.Outer_join_clauseContext outerJoinClauseContext) {
+        JoinType joinType = outerJoinClauseContext.LEFT() != null ?
+                JoinType.LEFT :
+                JoinType.RIGHT;
+        return joinClauseToDataSource(outerJoinClauseContext.table_atom(), joinType, Optional.of(outerJoinClauseContext.join_condition()));
+    }
+
+    private DataSource processNaturalJoinClause(SQLParser.Natural_join_clauseContext naturalJoinClauseContext) {
+        JoinType joinType = JoinType.INNER;
+        if (naturalJoinClauseContext.LEFT() != null) {
+            joinType = JoinType.LEFT;
+        } else if (naturalJoinClauseContext.RIGHT() != null) {
+            joinType = JoinType.RIGHT;
+        }
+        DataSource dataSource = joinClauseToDataSource(naturalJoinClauseContext.table_atom(), joinType, Optional.empty());
+        dataSource.setNaturalJoin(true);
+        return dataSource;
+    }
+
+    private DataSource joinClauseToDataSource(SQLParser.Table_atomContext tableAtom, JoinType joinType, Optional<SQLParser.Join_conditionContext> joinConditionContextCandidate) {
+        DataSource dataSource = processTableAtom(tableAtom);
+        dataSource.setJoinType(joinType);
+        if (joinConditionContextCandidate.isPresent()) {
+            processJoinCondition(dataSource, joinConditionContextCandidate.get());
+        }
+        return dataSource;
+    }
+
     private void processJoinCondition(DataSource dataSource, SQLParser.Join_conditionContext joinConditionContext) {
         if (joinConditionContext.ON() != null) {
             Object joinCondition = processComplexBooleanExpression(joinConditionContext.complex_boolean_expression());
@@ -490,26 +498,6 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else {
             throw new UnsupportedOperationException("Unsupported join condition type");
         }
-    }
-
-    private DataSource processTableAtomOrNaturalJoin(SQLParser.Table_atom_or_natural_joinContext tableAtomOrNaturalJoinContext) {
-        if (tableAtomOrNaturalJoinContext.NATURAL() != null) {
-            JoinType joinType = (tableAtomOrNaturalJoinContext.OUTER() != null) ?
-                    ((tableAtomOrNaturalJoinContext.LEFT() != null) ? JoinType.LEFT : JoinType.RIGHT) :
-                    JoinType.INNER;
-            return processNaturalJoin(tableAtomOrNaturalJoinContext.table_atom(0), joinType, tableAtomOrNaturalJoinContext.table_atom(1));
-        } else {
-            return processTableAtom(tableAtomOrNaturalJoinContext.table_atom(0));
-        }
-    }
-
-    private DataSource processNaturalJoin(SQLParser.Table_atomContext firstTableAtomContext, JoinType joinType, SQLParser.Table_atomContext secondTableAtomContext) {
-        DataSource first = processTableAtom(firstTableAtomContext);
-        DataSource second = processTableAtom(secondTableAtomContext);
-        second.setJoinType(joinType);
-        second.setNaturalJoin(true);
-        first.setNextDatasource(second);
-        return first;
     }
 
     private DataSource processTableAtom(SQLParser.Table_atomContext tableAtom) {

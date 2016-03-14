@@ -145,20 +145,23 @@ public class QueryProcessorTest {
     public void testInnerJoinWithCondition() {
         Query query = new Query(){
             {
-                setSql("select p.name as project_name, i.name as instance_name " +
+                setSql("select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
                         "from instances as i inner join projects as p " +
-                        "on i.project_id = p.id");
+                        "on i.project_id = p.id inner join flavors as f " +
+                        "on i.flavor_id = f.id and i.project_id = f.project_id"
+                );
             }
         };
         List<QueryResult> queryResults = queryProcessor.process(query);
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
-        assertThat(queryResult.getData().getColumnNames(), contains("project_name", "instance_name"));
+        assertThat(queryResult.getData().getColumnNames(), contains("project_name", "instance_name", "flavor_name"));
         List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("project_name"), equalTo("test-project - test-region"));
         assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
+        assertThat(rows.get(0).get("flavor_name"), equalTo("test-flavor"));
     }
     
     @Test
