@@ -1,10 +1,13 @@
 package org.meridor.perspective.sql;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class DataRow {
+    
+    private static final String COMPOUND_NAME_DELIMITER_REGEX = "\\."; 
     
     private final List<Object> values;
     
@@ -15,24 +18,28 @@ public class DataRow {
             throw new IllegalArgumentException("Values can't be null");
         }
         this.dataContainer = dataContainer;
-        this.values = values;
+        this.values = new ArrayList<>(values);
     }
     
     public Object get(int columnIndex) {
         if (!isColumnIndexValid(columnIndex)) {
-            throw new IllegalArgumentException(String.format("Index should be one of 0..%d", values.size() - 1));
+            throw new IllegalArgumentException(String.format("Index should be one of 0..%d", getColumnsCount() - 1));
         }
         return (columnIndex <= values.size() - 1) ? values.get(columnIndex) : null;
     }
     
     private boolean isColumnIndexValid(int columnIndex) {
-        return columnIndex >= 0 && columnIndex < dataContainer.getColumnNames().size();
+        return columnIndex >= 0 && columnIndex <= getColumnsCount();
+    }
+    
+    private int getColumnsCount() {
+        return dataContainer.getColumnNames().size() - 1;
     }
     
     public Object get(String columnName, String tableAlias) {
         Optional<Integer> columnIndex = getColumnIndex(columnName, tableAlias);
         if (!columnIndex.isPresent()) {
-            throw new IllegalArgumentException(String.format("No such column: %s for table: %s", columnName, tableAlias));
+            throw new IllegalArgumentException(String.format("Column %s does not exist for table %s", columnName, tableAlias));
         }
         return get(columnIndex.get());
     }
@@ -40,7 +47,7 @@ public class DataRow {
     public Object get(String columnName) {
         Optional<Integer> columnIndex = getColumnIndex(columnName);
         if (!columnIndex.isPresent()) {
-            throw new IllegalArgumentException(String.format("No such column: %s", columnName));
+            throw new IllegalArgumentException(String.format("Column %s does not exist", columnName));
         }
         return get(columnIndex.get());
     }
@@ -69,7 +76,21 @@ public class DataRow {
     }
 
     private Optional<Integer> getColumnIndex(String columnName) {
-        return getColumnIndex(columnName, dataContainer.getColumnNames());
+        Optional<Integer> columnIndexCandidate = getColumnIndex(columnName, dataContainer.getColumnNames());
+        if (!columnIndexCandidate.isPresent()) {
+            return getColumnIndexFromCompoundName(columnName);
+        }
+        return columnIndexCandidate;
+    }
+    
+    private Optional<Integer> getColumnIndexFromCompoundName(String compoundColumnName) {
+        String[] compoundName = compoundColumnName.split(COMPOUND_NAME_DELIMITER_REGEX);
+        if (compoundName.length == 2) {
+            String tableAlias = compoundName[0];
+            String columnName = compoundName[1];
+            return getColumnIndex(columnName, tableAlias);
+        }
+        return Optional.empty();
     }
     
     private static Optional<Integer> getColumnIndex(String columnName, List<String> columnNames) {
