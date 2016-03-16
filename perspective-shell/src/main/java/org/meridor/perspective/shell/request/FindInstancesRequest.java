@@ -118,7 +118,20 @@ public class FindInstancesRequest implements Request<Query> {
             Optional<Set<String>> projects
     ) {
         JoinClause joinClause = new SelectQuery()
-                .all()
+                .columns(
+                        "instances.id",
+                        "instances.real_id",
+                        "instances.name",
+                        "projects.id",
+                        "projects.name",
+                        "instances.cloud_id",
+                        "instances.cloud_type",
+                        "images.name",
+                        "flavors.name",
+                        "instances.addresses",
+                        "instances.state",
+                        "instances.last_updated"
+                )
                 .from()
                 .table("instances")
                 .innerJoin()

@@ -71,9 +71,9 @@ public class InstancesRepositoryImpl implements InstancesRepository {
         QueryResult metadataResult = queryRepository.query(query);
         Data metadataData = metadataResult.getData();
         metadataData.getRows().forEach(r -> {
-            String instanceId = valueOf(get(metadataData, r, "instance_metadata.instance_id"));
-            String key = valueOf(get(metadataData, r, "instance_metadata.key"));
-            String value = valueOf(get(metadataData, r, "instance_metadata.value"));
+            String instanceId = valueOf(get(metadataData, r, "instance_id"));
+            String key = valueOf(get(metadataData, r, "key"));
+            String value = valueOf(get(metadataData, r, "value"));
             instancesMetadata.compute(instanceId, (k, ov) -> new HashMap<String, String>(){
                 {
                     if (ov != null) {

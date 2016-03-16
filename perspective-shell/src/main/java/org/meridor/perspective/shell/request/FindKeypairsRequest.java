@@ -53,7 +53,11 @@ public class FindKeypairsRequest implements Request<Query> {
 
     private Query getQuery(Optional<Set<String>> names, Optional<Set<String>> clouds, Optional<Set<String>> projects) {
         JoinClause joinClause = new SelectQuery()
-                .all()
+                .columns(
+                        "keypairs.name",
+                        "keypairs.fingerprint",
+                        "projects.name"
+                )
                 .from()
                 .table("keypairs")
                 .innerJoin()

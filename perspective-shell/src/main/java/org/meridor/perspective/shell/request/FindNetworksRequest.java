@@ -53,7 +53,14 @@ public class FindNetworksRequest implements Request<Query> {
 
     private Query getNetworkQuery(Optional<Set<String>> names, Optional<Set<String>> clouds, Optional<Set<String>> projects) {
         JoinClause joinClause = new SelectQuery()
-                .all()
+                .columns(
+                        "networks.id",
+                        "networks.name",
+                        "projects.name",
+                        "networks.state",
+                        "networks.is_shared",
+                        "network_subnets.cidr"
+                )
                 .from()
                 .table("networks")
                 .innerJoin()

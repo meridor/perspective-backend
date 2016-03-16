@@ -102,9 +102,9 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         Data data = keypairsResult.getData();
         return data.getRows().stream()
                 .map(r -> new FindKeypairsResult(
-                        valueOf(get(data, r, "name")),
-                        valueOf(get(data, r, "fingerprint")),
-                        valueOf(get(data, r, "name"))
+                        valueOf(get(data, r, "keypairs.name")),
+                        valueOf(get(data, r, "keypairs.fingerprint")),
+                        valueOf(get(data, r, "projects.name"))
                 ))
                 .collect(Collectors.toList());
     }

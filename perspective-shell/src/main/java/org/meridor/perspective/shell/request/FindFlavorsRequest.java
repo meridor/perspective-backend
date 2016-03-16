@@ -11,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static java.lang.String.valueOf;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
+import static org.meridor.perspective.sql.DataUtils.get;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component
@@ -53,7 +55,15 @@ public class FindFlavorsRequest implements Request<Query> {
 
     private Query getFlavorQuery(Optional<Set<String>> names, Optional<Set<String>> clouds, Optional<Set<String>> projects) {
         JoinClause joinClause = new SelectQuery()
-                .all()
+                .columns(
+                        "flavors.id",
+                        "flavors.name",
+                        "projects.name",
+                        "flavors.vcpus",
+                        "flavors.ram",
+                        "flavors.root_disk",
+                        "flavors.ephemeral_disk"
+                )
                 .from()
                 .table("flavors")
                 .innerJoin()
