@@ -13,7 +13,5 @@ public interface Storage {
     Lock getLock(String name);
     
     <T> T executeSynchronized(String lockName, long timeout, Supplier<T> action);
-    
-    long DEFAULT_LOCK_WAIT_TIMEOUT = 1000;
 
 }
