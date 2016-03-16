@@ -90,13 +90,15 @@ public class PlaceholderConfigurer extends ParametersParserBaseListener {
 
     @Override
     public void exitNamed_placeholder(ParametersParser.Named_placeholderContext ctx) {
-        String parameterName = ctx.ID().getText();
-        if (!parametersByName.containsKey(parameterName)) {
-            String message = String.format("Parameter for placeholder \"%s\" is missing", parameterName);
-            exception = Optional.of(new SQLDataException(message));
-            return;
+        if (ctx.ID() != null) {
+            String parameterName = ctx.ID().getText();
+            if (!parametersByName.containsKey(parameterName)) {
+                String message = String.format("Parameter for placeholder \"%s\" is missing", parameterName);
+                exception = Optional.of(new SQLDataException(message));
+                return;
+            }
+            currentQuery += processValue(parametersByName.get(parameterName));
         }
-        currentQuery += processValue(parametersByName.get(parameterName));
     }
 
     private String processValue(String value) {

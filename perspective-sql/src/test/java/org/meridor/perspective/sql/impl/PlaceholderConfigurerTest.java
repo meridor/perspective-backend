@@ -30,9 +30,9 @@ public class PlaceholderConfigurerTest {
     
     @Test
     public void testQueryWithNamedPlaceholder() throws Exception {
-        String query = "SELECT * FROM some_table WHERE id = :id: AND name = :name:;";
+        String query = "SELECT * FROM some_table WHERE id = :some.id: AND name = :name:;";
         List<Parameter> parameters = Arrays.asList(
-                createParameter("id", "42"),
+                createParameter("some.id", "42"),
                 createParameter("name", "test-\\name")
         );
         PlaceholderConfigurer placeholderConfigurer = new PlaceholderConfigurer(query, parameters);
