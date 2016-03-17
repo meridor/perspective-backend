@@ -22,7 +22,7 @@ public interface InstancesApi {
     @PUT("/instances/hard-reboot")
     Call<ResponseBody> hardReboot(@Body Collection<String> instanceIds);
 
-    @PUT("/instances/delete")
+    @POST("/instances/delete")
     Call<ResponseBody> delete(@Body Collection<String> instanceIds);
     
 }

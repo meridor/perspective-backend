@@ -20,7 +20,7 @@ public interface ImagesApi {
     @POST("/images")
     Call<Collection<Instance>> add(@Body Collection<Image> images);
     
-    @POST("/instances/delete")
+    @POST("/images/delete")
     Call<ResponseBody> delete(@Body Collection<String> imageIds);
     
 }
