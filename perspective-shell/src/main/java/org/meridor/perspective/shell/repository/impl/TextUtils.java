@@ -332,6 +332,9 @@ public final class TextUtils {
         if (seed.isEmpty()) {
             return Collections.emptyList();
         }
+        if (suffixes == null || suffixes.isEmpty()) {
+            return seed;
+        }
         return seed.stream()
             .map(str -> {
                 Optional<String> matchingSuffix = suffixes.stream()

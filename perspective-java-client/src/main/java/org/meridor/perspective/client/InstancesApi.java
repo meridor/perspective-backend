@@ -1,5 +1,6 @@
 package org.meridor.perspective.client;
 
+import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Instance;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -16,12 +17,12 @@ public interface InstancesApi {
     Call<Collection<Instance>> launch(@Body Collection<Instance> instances);
 
     @PUT("/instances/reboot")
-    Call<Response> reboot(@Body Collection<String> instanceIds);
+    Call<ResponseBody> reboot(@Body Collection<String> instanceIds);
 
     @PUT("/instances/hard-reboot")
-    Call<Response> hardReboot(@Body Collection<String> instanceIds);
+    Call<ResponseBody> hardReboot(@Body Collection<String> instanceIds);
 
     @PUT("/instances/delete")
-    Call<Response> delete(@Body Collection<String> instanceIds);
+    Call<ResponseBody> delete(@Body Collection<String> instanceIds);
     
 }

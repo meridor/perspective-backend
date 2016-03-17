@@ -1,5 +1,6 @@
 package org.meridor.perspective.client;
 
+import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import retrofit2.Call;
@@ -20,6 +21,6 @@ public interface ImagesApi {
     Call<Collection<Instance>> add(@Body Collection<Image> images);
     
     @POST("/instances/delete")
-    Call<Response> delete(@Body Collection<String> imageIds);
+    Call<ResponseBody> delete(@Body Collection<String> imageIds);
     
 }

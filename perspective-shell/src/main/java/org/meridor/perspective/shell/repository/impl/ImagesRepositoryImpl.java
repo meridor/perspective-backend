@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.ApiProvider;
@@ -68,7 +69,7 @@ public class ImagesRepositoryImpl implements ImagesRepository {
     @Override 
     public Set<String> deleteImages(Collection<String> imageIds) {
         return processRequestOrException(() -> {
-            Call<Response> call = apiProvider.getImagesApi().delete(imageIds);
+            Call<ResponseBody> call = apiProvider.getImagesApi().delete(imageIds);
             call.execute();
             return Collections.emptySet();
         });

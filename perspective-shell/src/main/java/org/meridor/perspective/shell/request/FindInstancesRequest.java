@@ -102,7 +102,7 @@ public class FindInstancesRequest implements Request<Query> {
     }
 
     private Set<String> getInstanceSuffixes() {
-        if (settingsAware.hasSetting(Setting.API_URL)) {
+        if (settingsAware.hasSetting(Setting.INSTANCE_SUFFIXES)) {
             return settingsAware.getSetting(Setting.INSTANCE_SUFFIXES);
         }
         return Collections.emptySet();

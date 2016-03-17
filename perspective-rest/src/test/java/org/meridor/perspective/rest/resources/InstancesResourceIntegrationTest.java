@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.framework.EntityGenerator;
-import org.meridor.perspective.framework.messaging.TestStorage;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,6 +13,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,7 +46,6 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
         assertThat(response.getStatus(), equalTo(Response.Status.NOT_FOUND.getStatusCode()));
     }
 
-    @Ignore("For some reason returns 400 instead of 200")
     @Test
     public void testLaunchInstances() throws Exception {
         List<Instance> instances = new ArrayList<>();
@@ -58,6 +57,28 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
                 .post(entity);
 
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+    
+    @Test
+    public void testRebootInstances() throws Exception {
+        Response response = target("/instances/reboot")
+                .request()
+                .put(getInstanceIdsEntity());
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+    
+    @Test
+    public void testHardRebootInstances() throws Exception {
+        Response response = target("/instances/hard-reboot")
+                .request()
+                .put(getInstanceIdsEntity());
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+    
+    private Entity<List<String>> getInstanceIdsEntity() {
+        return Entity.entity(Collections.singletonList(EntityGenerator.getInstance().getId()), MediaType.APPLICATION_JSON);
     }
 
     @Test

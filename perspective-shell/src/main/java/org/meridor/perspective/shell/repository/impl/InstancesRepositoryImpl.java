@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.InstancesRepository;
@@ -97,21 +98,24 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     
     @Override public Set<String> deleteInstances(Collection<String> instanceIds) {
         return processRequestOrException(() -> {
-            apiProvider.getInstancesApi().delete(instanceIds);
+            Call<ResponseBody> call = apiProvider.getInstancesApi().delete(instanceIds);
+            call.execute();
             return Collections.emptySet();
         });
     }
     
     @Override public Set<String> rebootInstances(Collection<String> instanceIds) {
         return processRequestOrException(() -> {
-            apiProvider.getInstancesApi().reboot(instanceIds);
+            Call<ResponseBody> call = apiProvider.getInstancesApi().reboot(instanceIds);
+            call.execute();
             return Collections.emptySet();
         });
     }
     
     @Override public Set<String> hardRebootInstances(Collection<String> instanceIds) {
         return processRequestOrException(() -> {
-            apiProvider.getInstancesApi().hardReboot(instanceIds);
+            Call<ResponseBody> call = apiProvider.getInstancesApi().hardReboot(instanceIds);
+            call.execute();
             return Collections.emptySet();
         });
     }
