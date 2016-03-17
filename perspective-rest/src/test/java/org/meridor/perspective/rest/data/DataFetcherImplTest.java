@@ -182,8 +182,8 @@ public class DataFetcherImplTest {
         checkAssertions(TableName.IMAGE_METADATA, new LinkedHashMap<String, Object>(){
             {
                 put("image_id", "test-image");
-                put("key", "instance_id");
-                put("value", "test-instance");
+                put("key", "architecture");
+                put("value", "x86");
             }
         });
     }

@@ -81,7 +81,7 @@ public class AddCommands extends BaseCommands {
             validateConfirmExecuteShowStatus(
                     addImagesQuery,
                     images -> String.format("Going to add %d images.", images.size()),
-                    images -> new String[]{"Name", "Project"},
+                    images -> new String[]{"Name", "Instance", "Project"},
                     images -> entityFormatter.formatNewImages(images),
                     imagesRepository::addImages
             );

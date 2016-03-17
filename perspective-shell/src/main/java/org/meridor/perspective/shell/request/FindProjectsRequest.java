@@ -20,6 +20,8 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class FindProjectsRequest implements Request<Query> {
     
+    private Set<String> ids;
+    
     @Pattern
     @Filter(PROJECTS)
     private Set<String> names;
@@ -33,6 +35,11 @@ public class FindProjectsRequest implements Request<Query> {
         return this;
     }
     
+    public FindProjectsRequest withIds(String ids) {
+        this.ids = parseEnumeration(ids);
+        return this;
+    }
+    
     public FindProjectsRequest withClouds(String clouds) {
         this.clouds = parseEnumeration(clouds);
         return this;
@@ -40,24 +47,27 @@ public class FindProjectsRequest implements Request<Query> {
 
     @Override
     public Query getPayload() {
-        return getProjectQuery(Optional.ofNullable(names), Optional.ofNullable(clouds));
+        return getProjectQuery(Optional.ofNullable(ids), Optional.ofNullable(names), Optional.ofNullable(clouds));
     }
 
-    private Query getProjectQuery(Optional<Set<String>> projectNames, Optional<Set<String>> clouds) {
+    private Query getProjectQuery(Optional<Set<String>> ids, Optional<Set<String>> names, Optional<Set<String>> clouds) {
         FromClause fromClause = new SelectQuery()
                 .all()
                 .from()
                 .table("projects");
         Map<String, Collection<String>> whereMap = new HashMap<>();
-        if (projectNames.isPresent()) {
-            whereMap.put("name", projectNames.get());
+        if (ids.isPresent()) {
+            whereMap.put("id", ids.get());
+        }
+        if (names.isPresent()) {
+            whereMap.put("name", names.get());
         }
         if (clouds.isPresent()) {
             whereMap.put("cloud_type", clouds.get());
         }
         return whereMap.isEmpty() ? 
                 fromClause.getQuery() :
-                fromClause.where().or(whereMap).getQuery();
+                fromClause.where().and(whereMap).getQuery();
     }
 
 }

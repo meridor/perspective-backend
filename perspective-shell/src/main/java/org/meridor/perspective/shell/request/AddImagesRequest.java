@@ -74,8 +74,8 @@ public class AddImagesRequest implements Request<List<Image>> {
         image.setCloudType(instance.getCloudType());
         List<String> projectIds = Collections.singletonList(instance.getProjectId());
         image.setProjectIds(projectIds);
+        image.setInstanceId(instance.getId());
         MetadataMap metadataMap = new MetadataMap();
-        metadataMap.put(MetadataKey.INSTANCE_ID, instance.getRealId());
         image.setMetadata(metadataMap);
         return image;
     }

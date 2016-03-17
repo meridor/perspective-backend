@@ -235,6 +235,7 @@ public class TextUtilsTest {
     @Test
     public void testRemoveSuffixes() {
         assertThat(removeSuffixes(null, Collections.emptySet()), is(nullValue()));
+        assertThat(removeSuffixes(Collections.emptySet(), null), is(empty()));
         assertThat(removeSuffixes(Collections.emptySet(), Collections.emptySet()), is(empty()));
         
         List<String> seed = Arrays.asList("one.four", "two.five", "three");

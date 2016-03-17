@@ -4,9 +4,11 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
@@ -28,16 +31,24 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     
     @Autowired
     private IdGenerator idGenerator;
-    
+
+    @Autowired
+    private InstancesAware instancesAware;
+
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
         try {
             DockerClient dockerApi = apiProvider.getApi(cloud);
-            String instanceId = image.getMetadata().get(MetadataKey.INSTANCE_ID);
+            String instanceId = image.getInstanceId();
+            Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
+            if (!instanceCandidate.isPresent()) {
+                throw new IllegalArgumentException(String.format("Failed to add image: instance with ID = %s does not exist", image.getInstanceId()));
+            }
+            String instanceRealId = instanceCandidate.get().getRealId();
             ContainerConfig containerConfig = ContainerConfig.builder().build();
             ContainerCreation createdImage = dockerApi.commitContainer(
-                    instanceId,
+                    instanceRealId,
                     image.getName(),
                     null,
                     containerConfig,

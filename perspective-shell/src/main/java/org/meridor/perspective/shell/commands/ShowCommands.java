@@ -37,10 +37,12 @@ public class ShowCommands extends BaseCommands {
     
     @CliCommand(value = "show projects", help = "Show available projects")
     public void showProjects(
+            @CliOption(key = "id", help = "Project id") String id,
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
         FindProjectsRequest showProjectsQuery = queryProvider.get(FindProjectsRequest.class)
+                .withIds(id)
                 .withClouds(cloud)
                 .withNames(name);
         validateExecuteShowResult(

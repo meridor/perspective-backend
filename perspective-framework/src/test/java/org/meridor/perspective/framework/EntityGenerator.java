@@ -76,12 +76,13 @@ public class EntityGenerator {
         image.setRealId("test-image");
         image.setProjectIds(Collections.singletonList(getProject().getId()));
         image.setName("test-image");
+        image.setInstanceId("test-instance");
         image.setCloudType(CloudType.MOCK);
         image.setState(ImageState.SAVED);
         image.setCreated(now().minusDays(2));
         image.setTimestamp(now().minusHours(4));
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.INSTANCE_ID, "test-instance");
+        metadata.put(MetadataKey.ARCHITECTURE, "x86");
         image.setMetadata(metadata);
         return image;
     }

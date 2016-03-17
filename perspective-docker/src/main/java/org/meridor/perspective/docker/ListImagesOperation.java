@@ -72,7 +72,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         metadata.put(MetadataKey.ARCHITECTURE, dockerImageInfo.architecture());
         metadata.put(MetadataKey.OPERATING_SYSTEM, dockerImageInfo.os());
         metadata.put(MetadataKey.PARENT, dockerImageInfo.parent());
-        metadata.put(MetadataKey.INSTANCE_ID, dockerImageInfo.container());
         metadata.put(MetadataKey.SIZE, dockerImage.virtualSize().toString());
         image.setMetadata(metadata);
         String imageName = dockerImage.repoTags().isEmpty() ?

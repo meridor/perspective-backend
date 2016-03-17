@@ -49,7 +49,6 @@
             <xsd:enumeration value="command"/>
             <xsd:enumeration value="console_url"/>
             <xsd:enumeration value="id"/>
-            <xsd:enumeration value="instance_id"/>
             <xsd:enumeration value="keypair"/>
             <xsd:enumeration value="parent"/>
             <xsd:enumeration value="region"/>
@@ -123,6 +122,7 @@
             <xsd:element name="realId" type="xsd:string"/>
             <xsd:element name="timestamp" type="xsd:dateTime"/>
             <xsd:element name="created" type="xsd:dateTime"/>
+            <xsd:element name="instanceId" type="xsd:string"/>
             <xsd:element name="cloudId" type="xsd:string"/>
             <xsd:element name="cloudType" type="config:cloudType"/>
             <xsd:element name="projectIds" type="tns:projectIds"/>

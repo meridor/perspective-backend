@@ -75,7 +75,7 @@ public class ExistingEntityValidator implements Validator {
         return imagesRepository.findImages(
                 queryProvider.get(FindImagesRequest.class)
                     .withNames(name)
-                    .withProjectNames(projectName)
+                    .withProjects(projectName)
         );
     }
     

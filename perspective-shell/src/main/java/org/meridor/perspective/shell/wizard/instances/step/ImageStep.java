@@ -30,7 +30,7 @@ public class ImageStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withProjectNames(projectName)).stream()
+        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withProjects(projectName)).stream()
                 .map(FindImagesResult::getName)
                 .collect(Collectors.toList());
     }

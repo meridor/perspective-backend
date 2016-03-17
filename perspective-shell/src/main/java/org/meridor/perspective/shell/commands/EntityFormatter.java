@@ -3,9 +3,13 @@ package org.meridor.perspective.shell.commands;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Network;
-import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
+import org.meridor.perspective.shell.request.FindInstancesRequest;
+import org.meridor.perspective.shell.request.FindProjectsRequest;
+import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.result.FindInstancesResult;
+import org.meridor.perspective.shell.result.FindProjectsResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,27 +25,45 @@ public class EntityFormatter {
     private ProjectsRepository projectsRepository;
     
     @Autowired
+    private InstancesRepository instancesRepository;
+    
+    @Autowired
     private QueryProvider queryProvider;
 
-    private Map<String, Project> getProjects(String cloud) {
-        return Collections.emptyMap();
-//        return projectsRepository.findProjects(
-//                queryProvider.get(ShowProjectsRequest.class)
-//                        .withClouds(cloud)
-//        ).stream().collect(Collectors.toMap(Project::getId, Function.identity()));
+    private Map<String, String> getProjects(Collection<String> projectIds) {
+        FindProjectsRequest findProjectsRequest = queryProvider.get(FindProjectsRequest.class);
+        if (projectIds != null && !projectIds.isEmpty()) {
+            findProjectsRequest = findProjectsRequest.withIds(enumerateValues(projectIds));
+        }
+        return projectsRepository.findProjects(findProjectsRequest).stream()
+                .collect(Collectors.toMap(
+                    FindProjectsResult::getId,
+                    FindProjectsResult::getName
+                ));
     }
     
-    private Map<String, Project> getProjects() {
-        return getProjects(null);
+    private Map<String, String> getInstances(Collection<String> instanceIds) {
+        FindInstancesRequest findInstancesRequest = queryProvider.get(FindInstancesRequest.class);
+        if (instanceIds != null && !instanceIds.isEmpty()) {
+            findInstancesRequest = findInstancesRequest.withIds(enumerateValues(instanceIds));
+        }
+        return instancesRepository.findInstances(findInstancesRequest).stream()
+                .collect(Collectors.toMap(
+                    FindInstancesResult::getId,
+                    FindInstancesResult::getName
+                ));
     }
-
+    
     public List<String[]> formatNewInstances(List<Instance> instances) {
-        Map<String, Project> projectsMap = getProjects();
+        Set<String> projectIds = instances.stream()
+                .map(Instance::getProjectId)
+                .collect(Collectors.toSet());
+        Map<String, String> projectsMap = getProjects(projectIds);
         return instances.stream()
                 .map(i -> new String[]{
                         i.getName(),
                         projectsMap.containsKey(i.getProjectId()) ?
-                                projectsMap.get(i.getProjectId()).getName() : DASH,
+                                projectsMap.get(i.getProjectId()) : DASH,
                         (i.getImage() != null) ? i.getImage().getName() : DASH,
                         (i.getFlavor() != null) ? i.getFlavor().getName() : DASH,
                         formatInstanceAdditionalProperties(i)
@@ -68,16 +90,26 @@ public class EntityFormatter {
 
 
     public List<String[]> formatNewImages(List<Image> images) {
-        Map<String, Project> projectsMap = getProjects();
+        Set<String> projectIds = images.stream()
+                .flatMap(i -> i.getProjectIds().stream())
+                .collect(Collectors.toSet());
+        Map<String, String> projectsMap = getProjects(projectIds);
+
+        Set<String> instanceIds = images.stream()
+                .map(Image::getInstanceId)
+                .collect(Collectors.toSet());
+        Map<String, String> instancesMap = getInstances(instanceIds);
         return images.stream().map(i -> {
-            Optional<String> realProjectId = projectsMap.keySet().stream()
+            Optional<String> projectId = projectsMap.keySet().stream()
                     .filter(id -> i.getProjectIds().contains(id))
                     .findFirst();
+            String instanceId = i.getInstanceId();
             return new String[]{
                     i.getName(),
-                    //TODO: insert instance name
-                     realProjectId.isPresent() ?
-                            projectsMap.get(realProjectId.get()).getName() : DASH
+                    instancesMap.containsKey(instanceId) ?
+                            instancesMap.get(instanceId) : DASH,
+                     projectId.isPresent() ?
+                            projectsMap.get(projectId.get()) : DASH
             };
         }).collect(Collectors.toList());
     }

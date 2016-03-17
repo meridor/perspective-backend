@@ -88,7 +88,7 @@ public class FindNetworksRequest implements Request<Query> {
         }
         return whereMap.isEmpty() ?
                 joinClause.getQuery() :
-                joinClause.where().or(whereMap).getQuery();
+                joinClause.where().and(whereMap).getQuery();
     }
 
 }

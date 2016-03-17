@@ -36,7 +36,6 @@ public class ImagesResourceIntegrationTest extends BaseIntegrationTest {
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
 
-    @Ignore("For some reason returns 400 instead of 200")
     @Test
     public void testSaveImages() throws Exception {
         List<Image> images = new ArrayList<>();

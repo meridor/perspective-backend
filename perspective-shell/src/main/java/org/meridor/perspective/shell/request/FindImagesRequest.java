@@ -60,7 +60,7 @@ public class FindImagesRequest implements Request<Query> {
         return this;
     }
 
-    public FindImagesRequest withProjectNames(String projectNames) {
+    public FindImagesRequest withProjects(String projectNames) {
         this.projects = parseEnumeration(projectNames);
         return this;
     }
@@ -125,7 +125,7 @@ public class FindImagesRequest implements Request<Query> {
         }
         return whereMap.isEmpty() ?
                 joinClause.getQuery() :
-                joinClause.where().or(whereMap).getQuery();
+                joinClause.where().and(whereMap).getQuery();
     }
 
 }
