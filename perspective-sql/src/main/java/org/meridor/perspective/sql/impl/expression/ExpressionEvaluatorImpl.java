@@ -232,11 +232,11 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 case NOT_EQUAL: return !leftAsString.equals(rightAsString);
                 case LIKE: {
                     String rightAsRegex = rightAsString
-                            .replace("%", ".*")
-                            .replace("\\%", "%")
-                            .replace("_", ".")
-                            .replace("\\_", "_");
-                    return Pattern.matches(rightAsRegex, leftAsString);
+                            .replaceAll("(?<!\\\\)%", ".*") //We use look-behinds here (http://www.regular-expressions.info/lookaround.html)
+                            .replaceAll("\\%", "%")
+                            .replaceAll("(?<!\\\\)_", ".")
+                            .replaceAll("\\_", "_");
+                    return matchPattern(leftAsString, rightAsRegex);
                 }
                 case REGEXP: return matchPattern(leftAsString, rightAsString);
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
@@ -262,7 +262,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             Pattern pattern = Pattern.compile(regex);
             return pattern.matcher(value).find();
         } catch (Exception e) {
-            LOG.debug("Evaluating pattern expression to false as provided pattern is not correct", e);
+            LOG.debug(String.format("Evaluating pattern expression to false as provided pattern \"%s\" is not correct", regex), e);
             return false;
         }
     }

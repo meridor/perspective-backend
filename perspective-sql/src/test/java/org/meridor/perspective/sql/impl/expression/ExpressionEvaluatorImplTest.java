@@ -141,6 +141,7 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool(1L, NOT_EQUAL, 2), is(true));
         assertThat(bool("123", EQUAL, "123"), is(true));
         assertThat(bool("123", NOT_EQUAL, "456"), is(true));
+        assertThat(bool("01234", LIKE, "123"), is(true));
         assertThat(bool("123", LIKE, "1_3"), is(true));
         assertThat(bool("123", LIKE, "1\\_3"), is(false));
         assertThat(bool("123", LIKE, "%3%"), is(true));
