@@ -10,6 +10,7 @@ public enum Setting {
     INSTANCE_SUFFIXES,
     LOG_LEVEL,
     PAGE_SIZE,
+    SHOW_BOTTOM_TABLE_HEADER,
     TABLE_WIDTH;
 
     public static boolean contains(String name) {

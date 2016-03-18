@@ -26,6 +26,10 @@ public class TableRenderer {
             table.addRule();
             table.addRow(row);
         }
+        if (showBottomHeader()) {
+            table.addRule();
+            table.addRow(header);
+        }
         table.addStrongRule();
 
         V2_AsciiTableRenderer renderer = new V2_AsciiTableRenderer();
@@ -44,6 +48,10 @@ public class TableRenderer {
         } catch (Exception e) {
             return DEFAULT_TABLE_WIDTH;
         }
+    }
+    
+    private boolean showBottomHeader() {
+        return settingsAware.hasSetting(Setting.SHOW_BOTTOM_TABLE_HEADER);
     }
     
 }
