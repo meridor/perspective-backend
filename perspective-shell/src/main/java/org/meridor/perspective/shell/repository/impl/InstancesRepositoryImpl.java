@@ -57,34 +57,36 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     public Map<String, Map<String, String>> getInstancesMetadata(FindInstancesRequest findInstancesRequest) {
         QueryResult instancesResult = queryRepository.query(findInstancesRequest.getPayload());
         Data instancesData = instancesResult.getData();
-        List<String> instanceIds = instancesData.getRows().stream()
+        Set<String> instanceIds = instancesData.getRows().stream()
                 .map(r -> valueOf(get(instancesData, r, "instances.id")))
-                .collect(Collectors.toList());
-        Query query = new SelectQuery()
-                .all()
-                .from()
-                .table("instance_metadata")
-                .where()
-                .in("instance_id", instanceIds)
-                .getQuery();
-        
+                .collect(Collectors.toSet());
         Map<String, Map<String, String>> instancesMetadata = new HashMap<>();
-        QueryResult metadataResult = queryRepository.query(query);
-        Data metadataData = metadataResult.getData();
-        metadataData.getRows().forEach(r -> {
-            String instanceId = valueOf(get(metadataData, r, "instance_id"));
-            String key = valueOf(get(metadataData, r, "key"));
-            String value = valueOf(get(metadataData, r, "value"));
-            instancesMetadata.compute(instanceId, (k, ov) -> new HashMap<String, String>(){
-                {
-                    if (ov != null) {
-                        putAll(ov);
+        if (!instanceIds.isEmpty()) {
+            Query query = new SelectQuery()
+                    .all()
+                    .from()
+                    .table("instance_metadata")
+                    .where()
+                    .in("instance_id", instanceIds)
+                    .getQuery();
+            
+            QueryResult metadataResult = queryRepository.query(query);
+            Data metadataData = metadataResult.getData();
+            metadataData.getRows().forEach(r -> {
+                String instanceId = valueOf(get(metadataData, r, "instance_id"));
+                String key = valueOf(get(metadataData, r, "key"));
+                String value = valueOf(get(metadataData, r, "value"));
+                instancesMetadata.compute(instanceId, (k, ov) -> new HashMap<String, String>(){
+                    {
+                        if (ov != null) {
+                            putAll(ov);
+                        }
+                        put(key, value);
                     }
-                    put(key, value);
-                }
+                });
             });
-        });
-        return Collections.emptyMap();
+        }
+        return instancesMetadata;
     }
 
     @Override public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {

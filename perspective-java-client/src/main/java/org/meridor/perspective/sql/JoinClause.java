@@ -63,6 +63,10 @@ public class JoinClause extends BaseQueryPart {
         return new JoinClause(this, JoinType.INNER);
     }
     
+    public JoinClause leftJoin() {
+        return new JoinClause(this, JoinType.LEFT);
+    }
+    
     public WhereClause where() {
         return new WhereClause(this);
     }

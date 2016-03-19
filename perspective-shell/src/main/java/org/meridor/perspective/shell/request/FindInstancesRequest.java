@@ -138,7 +138,7 @@ public class FindInstancesRequest implements Request<Query> {
                     .table("projects")
                     .on()
                     .equal("instances.project_id", "projects.id")
-                .innerJoin()
+                .leftJoin()
                     .table("flavors")
                     .on()
                     .and(new HashMap<String, String>(){
@@ -147,7 +147,7 @@ public class FindInstancesRequest implements Request<Query> {
                             put("instances.project_id", "flavors.project_id");
                         }
                     })
-                .innerJoin()
+                .leftJoin()
                     .table("images")
                     .on()
                     .equal("instances.image_id", "images.id");
