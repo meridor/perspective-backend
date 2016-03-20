@@ -161,56 +161,33 @@ public class DataSourceTask implements Task {
     
     //A naive implementation filtering cross join by condition
     private DataContainer innerJoin(DataContainer left, DataContainer right, Optional<Object> joinCondition) {
-        DataContainer crossJoin = crossJoin(left, right);
-        return joinCondition.isPresent() ?
-                new DataContainer(
-                        crossJoin,
-                        rows -> rows.stream()
-                                .filter(row -> expressionEvaluator.evaluateAs(joinCondition.get(), row, Boolean.class))
-                                .collect(Collectors.toList())
-                ) : crossJoin;
+        return crossJoin(left, right, joinCondition, JoinType.INNER);
     }
     
     //We add a row with nulls to cross product, then relax join condition with is null clauses
     private DataContainer outerJoin(DataContainer left, JoinType joinType, DataContainer right, Object joinCondition) {
-        DataContainer containerToAddNullRow = joinType.equals(JoinType.LEFT) ?
-                right : left;
-        List<Object> rowWithNulls = containerToAddNullRow.getColumnNames().stream()
-                .map(cn -> null)
-                .collect(Collectors.toList());
-        containerToAddNullRow.addRow(rowWithNulls);
-        String tableAlias = getTableAlias(containerToAddNullRow);
-        Object newJoinCondition = convertJoinCondition(joinCondition, containerToAddNullRow.getColumnNames(), tableAlias);
-        return innerJoin(left, right, Optional.of(newJoinCondition));
+        return crossJoin(left, right, Optional.ofNullable(joinCondition), joinType);
     }
-    
-    //Converts join condition like a.col = b.col to a.col = b.col or (b.col1 is null and b.col2 is null and ...) 
-    private Object convertJoinCondition(Object joinCondition, List<String> columnNames, String rightTableAlias) {
-        if (columnNames.isEmpty()) {
-            return joinCondition;
-        }
-        BinaryBooleanExpression isNullExpression = columnNames.stream()
-                .map(cn -> {
-                    ColumnExpression columnExpression = new ColumnExpression(cn, rightTableAlias);
-                    return new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(columnExpression, DataType.NULL));
-                })
-                .reduce(
-                        BinaryBooleanExpression.alwaysTrue(),
-                        (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s),
-                        (f, s) -> new BinaryBooleanExpression(f, BinaryBooleanOperator.AND, s)
-                );
-        return new BinaryBooleanExpression(joinCondition, BinaryBooleanOperator.OR, isNullExpression);
-    }
-    
+
     //Based on http://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists
-    private DataContainer crossJoin(DataContainer left, DataContainer right) {
+    private DataContainer crossJoin(DataContainer left, DataContainer right, Optional<Object> joinCondition, JoinType joinType) {
         final List<DataRow> leftRows = left.getRows();
         final List<DataRow> rightRows = right.getRows();
         final int SIZE = leftRows.size() * rightRows.size();
+        final Set<Integer> matchedIndexes = new HashSet<>();
+        
+        boolean isLeftJoin = joinType == JoinType.LEFT;
+        boolean isRightJoin = joinType == JoinType.RIGHT;
+        boolean isOuterJoin = isLeftJoin || isRightJoin;
+        int leftColumnsCount = left.getColumnNames().size();
+        int rightColumnsCount = right.getColumnNames().size();
+        
         DataContainer dataContainer = mergeContainerColumns(left, right);
         for (int i = 0; i < SIZE; i++) {
-            List<Object> newRow = new ArrayList<>();
+            List<Object> newRowValues = new ArrayList<>();
             int j = 1;
+            Integer currentIndex = null;
+            boolean isLeftRow = true;
             for (List<DataRow> rowsList : new ArrayList<List<DataRow>>() {
                 {
                     add(leftRows);
@@ -218,13 +195,59 @@ public class DataSourceTask implements Task {
                 }
             }) {
                 final int index = ( i / j ) % rowsList.size();
+                if (
+                        (isLeftJoin && isLeftRow) ||
+                        (isRightJoin && !isLeftRow)
+                ) {
+                    currentIndex = index;
+                }
                 DataRow dataRow = rowsList.get(index);
-                newRow.addAll(dataRow.getValues());
+                List<Object> rowPart = dataRow.getValues();
+                newRowValues.addAll(rowPart);
                 j *= rowsList.size();
+                isLeftRow = false;
             }
-            dataContainer.addRow(newRow);
+            
+            DataRow dataRow = new DataRow(dataContainer, newRowValues);
+            if (!joinCondition.isPresent() || expressionEvaluator.evaluateAs(joinCondition.get(), dataRow, Boolean.class)) {
+                dataContainer.addRow(dataRow);
+                if (isOuterJoin && (currentIndex != null) ) {
+                    matchedIndexes.add(currentIndex);
+                }
+            }
+        }
+        
+        if (isOuterJoin) {
+            int rowsCount = isLeftJoin ? leftRows.size() : rightRows.size();
+            for (int i = 0; i <= rowsCount - 1; i++) {
+                if (!matchedIndexes.contains(i)) {
+                    DataRow rowWithNulls = new DataRow(
+                            dataContainer,
+                            rowWithNullsValues(leftRows, leftColumnsCount, rightRows, rightColumnsCount, i, isLeftJoin)
+                    );
+                    dataContainer.addRow(rowWithNulls);
+                }
+            }
         }
         return dataContainer;
+    }
+
+    private List<Object> rowWithNullsValues(List<DataRow> leftRows, int leftColumnsCount, List<DataRow> rightRows, int rightColumnsCount, int index, boolean isLeftJoin) {
+        List<Object> ret = new ArrayList<>();
+        if (isLeftJoin) {
+            ret.addAll(leftRows.get(index).getValues());
+            ret.addAll(listWithNulls(rightColumnsCount));
+        } else {
+            ret.addAll(listWithNulls(leftColumnsCount));
+            ret.addAll(rightRows.get(index).getValues());
+        }
+        return ret;
+    }
+    
+    private List<Object> listWithNulls(int size) {
+        Object[] array = new Object[size];
+        Arrays.fill(array, null);
+        return Arrays.asList(array);
     }
     
     private DataContainer mergeContainerColumns(DataContainer left, DataContainer right) {
