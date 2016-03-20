@@ -36,20 +36,23 @@ public class InstancesRepositoryImpl implements InstancesRepository {
         QueryResult instancesResult = queryRepository.query(findInstancesRequest.getPayload());
         Data data = instancesResult.getData();
         return data.getRows().stream()
-                .map(r -> new FindInstancesResult(
-                        valueOf(get(data, r, "instances.id")),
-                        valueOf(get(data, r, "instances.real_id")),
-                        valueOf(get(data, r, "instances.name")),
-                        valueOf(get(data, r, "projects.id")),
-                        valueOf(get(data, r, "projects.name")),
-                        valueOf(get(data, r, "instances.cloud_id")),
-                        valueOf(get(data, r, "instances.cloud_type")),
-                        valueOf(get(data, r, "images.name")),
-                        valueOf(get(data, r, "flavors.name")),
-                        valueOf(get(data, r, "instances.addresses")),
-                        valueOf(get(data, r, "instances.state")),
-                        valueOf(get(data, r, "instances.last_updated"))
-                ))
+                .map(r -> {
+                    ValueFormatter vf = new ValueFormatter(data , r);
+                    return new FindInstancesResult(
+                            vf.getString("instances.id"),
+                            vf.getString("instances.real_id"),
+                            vf.getString("instances.name"),
+                            vf.getString("projects.id"),
+                            vf.getString("projects.name"),
+                            vf.getString("instances.cloud_id"),
+                            vf.getString("instances.cloud_type"),
+                            vf.getString("images.name"),
+                            vf.getString("flavors.name"),
+                            vf.getString("instances.addresses"),
+                            vf.getString("instances.state"),
+                            vf.getString("instances.last_updated")
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -73,9 +76,10 @@ public class InstancesRepositoryImpl implements InstancesRepository {
             QueryResult metadataResult = queryRepository.query(query);
             Data metadataData = metadataResult.getData();
             metadataData.getRows().forEach(r -> {
-                String instanceId = valueOf(get(metadataData, r, "instance_id"));
-                String key = valueOf(get(metadataData, r, "key"));
-                String value = valueOf(get(metadataData, r, "value"));
+                ValueFormatter vf = new ValueFormatter(metadataData, r);
+                String instanceId = vf.getString("instance_id");
+                String key = vf.getString("key");
+                String value = vf.getString("value");
                 instancesMetadata.compute(instanceId, (k, ov) -> new HashMap<String, String>(){
                     {
                         if (ov != null) {

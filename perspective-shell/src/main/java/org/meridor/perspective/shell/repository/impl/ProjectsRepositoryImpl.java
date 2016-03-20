@@ -1,10 +1,12 @@
 package org.meridor.perspective.shell.repository.impl;
 
-import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.repository.QueryRepository;
 import org.meridor.perspective.shell.repository.SettingsAware;
-import org.meridor.perspective.shell.request.*;
+import org.meridor.perspective.shell.request.FindFlavorsRequest;
+import org.meridor.perspective.shell.request.FindKeypairsRequest;
+import org.meridor.perspective.shell.request.FindNetworksRequest;
+import org.meridor.perspective.shell.request.FindProjectsRequest;
 import org.meridor.perspective.shell.result.FindFlavorsResult;
 import org.meridor.perspective.shell.result.FindKeypairsResult;
 import org.meridor.perspective.shell.result.FindNetworksResult;
@@ -20,9 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.lang.String.valueOf;
-import static org.meridor.perspective.sql.DataUtils.get;
 
 @Repository
 public class ProjectsRepositoryImpl implements ProjectsRepository {
@@ -41,12 +40,15 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
             QueryResult projectsResult = queryRepository.query(findProjectsRequest.getPayload());
             Data data = projectsResult.getData();
             List<FindProjectsResult> projects = data.getRows().stream()
-                    .map(r -> new FindProjectsResult(
-                            valueOf(get(data, r, "id")),
-                            valueOf(get(data, r, "name")),
-                            valueOf(get(data, r, "cloud_id")),
-                            valueOf(get(data, r, "cloud_type"))
-                    ))
+                    .map(r -> {
+                        ValueFormatter vf = new ValueFormatter(data, r);
+                        return new FindProjectsResult(
+                                vf.getString("id"),
+                                vf.getString("name"),
+                                vf.getString("cloud_id"),
+                                vf.getString("cloud_type")
+                        );
+                    })
                     .collect(Collectors.toList());
             projectsCache.addAll(projects);
         }
@@ -62,15 +64,18 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         QueryResult flavorsResult = queryRepository.query(findFlavorsRequest.getPayload());
         Data data = flavorsResult.getData();
         return data.getRows().stream()
-                .map(r -> new FindFlavorsResult(
-                        valueOf(get(data, r, "flavors.id")),
-                        valueOf(get(data, r, "flavors.name")),
-                        valueOf(get(data, r, "projects.name")),
-                        valueOf(get(data, r, "flavors.vcpus")),
-                        valueOf(get(data, r, "flavors.ram")),
-                        valueOf(get(data, r, "flavors.root_disk")),
-                        valueOf(get(data, r, "flavors.ephemeral_disk"))
-                ))
+                .map(r -> {
+                    ValueFormatter vf = new ValueFormatter(data, r);
+                    return new FindFlavorsResult(
+                            vf.getString("flavors.id"),
+                            vf.getString("flavors.name"),
+                            vf.getString("projects.name"),
+                            vf.getString("flavors.vcpus"),
+                            vf.getString("flavors.ram"),
+                            vf.getString("flavors.root_disk"),
+                            vf.getString("flavors.ephemeral_disk")
+                    );
+                })
                 .collect(Collectors.toList());
     }
     
@@ -81,15 +86,16 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         Map<String, FindNetworksResult> resultsMap = new HashMap<>();
         data.getRows().stream()
                 .forEach(r -> {
-                    String networkId = valueOf(get(data, r, "networks.id"));
+                    ValueFormatter vf = new ValueFormatter(data, r);
+                    String networkId = vf.getString("networks.id");
                     FindNetworksResult findNetworksResult = resultsMap.getOrDefault(networkId, new FindNetworksResult(
-                            valueOf(get(data, r, "networks.id")),
-                            valueOf(get(data, r, "networks.name")),
-                            valueOf(get(data, r, "projects.name")),
-                            valueOf(get(data, r, "networks.state")),
-                            Boolean.valueOf(valueOf(get(data, r, "networks.is_shared")))
-                    ));
-                    String cidr = valueOf(get(data, r, "network_subnets.cidr"));
+                            vf.getString("networks.id"),
+                            vf.getString("networks.name"),
+                            vf.getString("projects.name"),
+                            vf.getString("networks.state"),
+                            Boolean.valueOf(vf.getString("networks.is_shared")))
+                    );
+                    String cidr = vf.getString("network_subnets.cidr");
                     findNetworksResult.getSubnets().add(cidr);
                     resultsMap.put(networkId, findNetworksResult);
                 });
@@ -101,11 +107,14 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         QueryResult keypairsResult = queryRepository.query(findKeypairsRequest.getPayload());
         Data data = keypairsResult.getData();
         return data.getRows().stream()
-                .map(r -> new FindKeypairsResult(
-                        valueOf(get(data, r, "keypairs.name")),
-                        valueOf(get(data, r, "keypairs.fingerprint")),
-                        valueOf(get(data, r, "projects.name"))
-                ))
+                .map(r -> {
+                        ValueFormatter vf = new ValueFormatter(data, r);
+                        return new FindKeypairsResult(
+                                vf.getString("keypairs.name"),
+                                vf.getString("keypairs.fingerprint"),
+                                vf.getString("projects.name")
+                        );
+                })
                 .collect(Collectors.toList());
     }
 
