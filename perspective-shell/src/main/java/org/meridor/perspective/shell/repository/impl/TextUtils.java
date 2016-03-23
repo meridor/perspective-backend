@@ -288,24 +288,7 @@ public final class TextUtils {
         }
         return value.contains(SPACE) ? String.format("'%s'", value) : value;
     }
-    
-    public static boolean oneOfMatches(String value, Collection<String> candidates) {
-        return value != null && candidates.stream().anyMatch(c -> matches(value, c));
-    }
 
-    public static boolean matches(String candidate, String expression) {
-        if (candidate == null || expression == null) {
-            return false;
-        }
-        if (isExactMatch(expression)) {
-            return candidate.equals(removeFirstAndLastChars(expression));
-        }
-        if (isContainsMatch(expression)) {
-            return candidate.contains(removeFirstAndLastChars(expression));
-        }
-        return Pattern.compile(expression).matcher(candidate).find();
-    }
-    
     private static boolean isExactMatch(String expression) {
         return expression != null && expression.startsWith("^") && expression.endsWith("$");
     }
@@ -314,13 +297,6 @@ public final class TextUtils {
         return expression != null && expression.startsWith("%") && expression.endsWith("%");
     }
 
-    private static String removeFirstAndLastChars(String expression) {
-        if (expression.length() < 2) {
-            return expression;
-        }
-        return expression.substring(1, expression.length() - 1);
-    }
-    
     public static String getAsExactMatch(String value) {
         return String.format("^%s$", value);
     }
@@ -338,13 +314,25 @@ public final class TextUtils {
         return seed.stream()
             .map(str -> {
                 Optional<String> matchingSuffix = suffixes.stream()
-                        .filter(str::endsWith)
+                        .filter(s -> 
+                                str.endsWith(s) ||
+                                isContainsMatch(str) && str.endsWith(s + "%") ||
+                                isExactMatch(str) && str.endsWith(s + "$")
+                        )
                         .findFirst();
                 if (matchingSuffix.isPresent()) {
                     int strLength = str.length();
                     int suffixLength = matchingSuffix.get().length();
+                    char lastChar = str.charAt(str.length() - 1);
+                    boolean hasSpecialLastChar = lastChar == '$' || lastChar == '%';
                     int end = strLength - suffixLength;
-                    return str.substring(0, end);
+                    if (hasSpecialLastChar) {
+                        end -= 1;
+                    }
+                    String substr = str.substring(0, end);
+                    return hasSpecialLastChar ?
+                            substr + lastChar :
+                            substr;
                 }
                 return str;
             })

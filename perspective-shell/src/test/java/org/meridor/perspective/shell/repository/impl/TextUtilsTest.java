@@ -193,39 +193,6 @@ public class TextUtilsTest {
         assertThat(quoteIfNeeded("word"), equalTo("word"));
         assertThat(quoteIfNeeded("two words"), equalTo("'two words'"));
     }
-
-    @Test
-    public void testOneOfMatches() throws Exception {
-        final String TEXT = "test-string";
-        assertThat(oneOfMatches(null, Collections.emptySet()), is(false));
-        assertThat(oneOfMatches(TEXT, Collections.singletonList("test-string")), is(true));
-        assertThat(oneOfMatches(TEXT, Arrays.asList("missing", "test")), is(true));
-        assertThat(oneOfMatches(TEXT, Collections.singletonList("missing")), is(false));
-    }
-    
-    @Test
-    public void testMatches() throws Exception {
-        final String CANDIDATE = "candidate";
-        
-        assertThat(matches(null, "something"), is(false));
-        assertThat(matches(CANDIDATE, null), is(false));
-        assertThat(matches(CANDIDATE, "missing"), is(false));
-        
-        //Contains match
-        assertThat(matches(CANDIDATE, "%cand%"), is(true));
-        assertThat(matches(CANDIDATE, "%date%"), is(true));
-        
-        //Exact match
-        assertThat(matches(CANDIDATE, "^candidate$"), is(true));
-        assertThat(matches(CANDIDATE, "^cand$"), is(false));
-        
-        //Regex match
-        assertThat(matches(CANDIDATE, "^candidate$"), is(true));
-        assertThat(matches(CANDIDATE, "candidate"), is(true));
-        assertThat(matches(CANDIDATE, "cand.*"), is(true));
-        assertThat(matches(CANDIDATE, ".*did.*"), is(true));
-        assertThat(matches(CANDIDATE, "ded"), is(false));
-    }
     
     @Test
     public void testGetAsExactMatch() {
@@ -238,12 +205,12 @@ public class TextUtilsTest {
         assertThat(removeSuffixes(Collections.emptySet(), null), is(empty()));
         assertThat(removeSuffixes(Collections.emptySet(), Collections.emptySet()), is(empty()));
         
-        List<String> seed = Arrays.asList("one.four", "two.five", "three");
-        List<String> suffixes = Arrays.asList(".four", ".five");
+        List<String> seed = Arrays.asList("%one.four%", "^two.five$", "three", "%a%", "^b$");
+        List<String> suffixes = Arrays.asList(".four", ".five", "a", "b");
         Collection<String> enrichedSeed = removeSuffixes(seed, suffixes);
         
-        assertThat(enrichedSeed, hasSize(3));
-        assertThat(enrichedSeed, contains("one", "two", "three"));
+        assertThat(enrichedSeed, hasSize(5));
+        assertThat(enrichedSeed, contains("%one%", "^two$", "three", "%%", "^$"));
     }
     
 }
