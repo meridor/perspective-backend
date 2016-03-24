@@ -163,7 +163,7 @@ public class FindInstancesRequest implements Request<Query> {
             whereMap.put("flavors.name", flavors.get());
         }
         if (images.isPresent()) {
-            whereMap.put("images.name", flavors.get());
+            whereMap.put("images.name", images.get());
         }
         if (states.isPresent()) {
             whereMap.put("instances.state", states.get());

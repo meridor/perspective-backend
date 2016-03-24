@@ -60,10 +60,13 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     public Map<String, Map<String, String>> getInstancesMetadata(FindInstancesRequest findInstancesRequest) {
         QueryResult instancesResult = queryRepository.query(findInstancesRequest.getPayload());
         Data instancesData = instancesResult.getData();
-        Set<String> instanceIds = instancesData.getRows().stream()
-                .map(r -> valueOf(get(instancesData, r, "instances.id")))
-                .collect(Collectors.toSet());
+        Map<String, String> instanceIdsNames = instancesData.getRows().stream()
+                .collect(Collectors.toMap(
+                        r -> valueOf(get(instancesData, r, "instances.id")), 
+                        r -> valueOf(get(instancesData, r, "instances.name")) 
+                ));
         Map<String, Map<String, String>> instancesMetadata = new HashMap<>();
+        Set<String> instanceIds = instanceIdsNames.keySet();
         if (!instanceIds.isEmpty()) {
             Query query = new SelectQuery()
                     .all()
@@ -78,9 +81,10 @@ public class InstancesRepositoryImpl implements InstancesRepository {
             metadataData.getRows().forEach(r -> {
                 ValueFormatter vf = new ValueFormatter(metadataData, r);
                 String instanceId = vf.getString("instance_id");
+                String instanceName = instanceIdsNames.get(instanceId);
                 String key = vf.getString("key");
                 String value = vf.getString("value");
-                instancesMetadata.compute(instanceId, (k, ov) -> new HashMap<String, String>(){
+                instancesMetadata.compute(instanceName, (k, ov) -> new HashMap<String, String>(){
                     {
                         if (ov != null) {
                             putAll(ov);
