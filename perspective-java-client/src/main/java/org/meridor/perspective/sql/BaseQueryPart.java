@@ -36,17 +36,35 @@ public class BaseQueryPart implements QueryPart {
         return parameter;
     }
 
-    protected static <T> T joinWith(Map<String, Collection<String>> columnValues, BiFunction<String, String, T> matchingFunction, Runnable joiningOperation, T returnValue) {
+    protected static <T> T joinWith(Map<String, Collection<String>> columnValues, BiFunction<String, String, T> matchingFunction, Runnable keyJoiningOperation, Runnable valueJoiningOperation, T returnValue) {
+        boolean isFirstColumn = true;
+        for (String columnName : columnValues.keySet()) {
+            if (!isFirstColumn) {
+                keyJoiningOperation.run();
+            }
+            Collection<String> values = columnValues.get(columnName);
+            boolean isFirstValue = true;
+            for (String value : values) {
+                if (!isFirstValue) {
+                    valueJoiningOperation.run();
+                }
+                matchingFunction.apply(columnName, value);
+                isFirstValue = false;
+            }
+            isFirstColumn = false;
+        }
+        return returnValue;
+    }
+    
+    protected static <T> T joinCollectionWith(Map<String, Collection<String>> columnValues, BiFunction<String, Collection<String>, T> matchingFunction, Runnable joiningOperation, T returnValue) {
         int position = 0;
         for (String columnName : columnValues.keySet()) {
             Collection<String> values = columnValues.get(columnName);
-            for (String value : values) {
-                if (position > 0) {
-                    joiningOperation.run();
-                }
-                matchingFunction.apply(columnName, value);
-                position++;
+            matchingFunction.apply(columnName, values);
+            if (position > 0) {
+                joiningOperation.run();
             }
+            position++;
         }
         return returnValue;
     }

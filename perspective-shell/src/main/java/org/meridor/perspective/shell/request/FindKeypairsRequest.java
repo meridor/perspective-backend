@@ -80,7 +80,7 @@ public class FindKeypairsRequest implements Request<Query> {
                         .orderBy().column("keypairs.name")
                         .getQuery() :
                 joinClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("keypairs.name")
                         .getQuery();
     }

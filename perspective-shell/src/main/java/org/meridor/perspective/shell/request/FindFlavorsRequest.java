@@ -85,7 +85,7 @@ public class FindFlavorsRequest implements Request<Query> {
                         .orderBy().column("flavors.name")
                         .getQuery() :
                 joinClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("flavors.name")
                         .getQuery();
     }

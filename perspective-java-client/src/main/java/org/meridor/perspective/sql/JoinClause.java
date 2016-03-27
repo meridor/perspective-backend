@@ -56,7 +56,7 @@ public class JoinClause extends BaseQueryPart {
                         Function.identity(),
                         l -> Collections.singletonList(leftRightPairs.get(l))
                 ));
-        return joinWith(joinPairs, this::equal, this::and, this);
+        return joinWith(joinPairs, this::equal, this::and, this::and, this);
     }
     
     public JoinClause innerJoin() {

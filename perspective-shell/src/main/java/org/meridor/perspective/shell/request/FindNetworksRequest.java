@@ -91,7 +91,7 @@ public class FindNetworksRequest implements Request<Query> {
                         .orderBy().column("networks.name")
                         .getQuery() :
                 joinClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("networks.name")
                         .getQuery();
     }

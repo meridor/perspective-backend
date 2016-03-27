@@ -179,7 +179,7 @@ public class FindInstancesRequest implements Request<Query> {
                         .orderBy().column("instances.name")
                         .getQuery() :
                 joinClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("instances.name")
                         .getQuery();
     }

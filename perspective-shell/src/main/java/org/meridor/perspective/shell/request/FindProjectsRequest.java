@@ -70,7 +70,7 @@ public class FindProjectsRequest implements Request<Query> {
                         .orderBy().column("name")
                         .getQuery() :
                 fromClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("name")
                         .getQuery();
     }

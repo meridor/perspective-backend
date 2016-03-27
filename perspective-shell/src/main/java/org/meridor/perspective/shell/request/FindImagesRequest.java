@@ -128,7 +128,7 @@ public class FindImagesRequest implements Request<Query> {
                         .orderBy().column("images.name")
                         .getQuery() :
                 joinClause
-                        .where().and(whereMap)
+                        .where().matches(whereMap)
                         .orderBy().column("images.name")
                         .getQuery();
     }

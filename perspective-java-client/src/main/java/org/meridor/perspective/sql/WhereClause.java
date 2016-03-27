@@ -1,7 +1,6 @@
 package org.meridor.perspective.sql;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -69,8 +68,8 @@ public class WhereClause extends BaseQueryPart {
         return this;
     }
 
-    public WhereClause and(Map<String, Collection<String>> columnValues) {
-        return joinWith(columnValues, this::matches, this::and, this);
+    public WhereClause matches(Map<String, Collection<String>> columnValues) {
+        return joinWith(columnValues, this::matches, this::and, this::or, this);
     }
 
     public WhereClause or() {
@@ -78,10 +77,6 @@ public class WhereClause extends BaseQueryPart {
         return this;
     }
 
-    public WhereClause or(Map<String, Collection<String>> columnValues) {
-        return joinWith(columnValues, this::matches, this::or, this);
-    }
-    
     public OrderClause orderBy() {
         return new OrderClause(this);
     }

@@ -85,7 +85,7 @@ public class SelectQueryTest {
     }
     
     @Test
-    public void testMultiOr() {
+    public void testMatches() {
         Map<String, Collection<String>> columnValues = new LinkedHashMap<String, Collection<String>>() {
             {
                 put("one", Arrays.asList("two", "%three%"));
@@ -97,9 +97,9 @@ public class SelectQueryTest {
                 .from()
                 .table("test")
                 .where()
-                .or(columnValues)
+                .matches(columnValues)
                 .getQuery();
-        assertThat(query.getSql(), equalTo("select one from test where one regexp :one: or one like :one1: or four = :four: or four regexp :four1:"));
+        assertThat(query.getSql(), equalTo("select one from test where one regexp :one: or one like :one1: and four = :four: or four regexp :four1:"));
         assertThat(query.getParameters(), hasSize(4));
         Parameter firstParameter = query.getParameters().get(0);
         assertThat(firstParameter.getName(), equalTo("one"));
