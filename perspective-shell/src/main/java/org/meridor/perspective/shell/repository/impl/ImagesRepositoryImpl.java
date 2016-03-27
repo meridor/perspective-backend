@@ -32,7 +32,7 @@ public class ImagesRepositoryImpl implements ImagesRepository {
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
         QueryResult networksResult = queryRepository.query(findImagesRequest.getPayload());
         Data data = networksResult.getData();
-        Map<String, FindImagesResult> resultsMap = new HashMap<>();
+        Map<String, FindImagesResult> resultsMap = new LinkedHashMap<>();
         data.getRows().stream()
                 .forEach(r -> {
                     ValueFormatter vf = new ValueFormatter(data, r);

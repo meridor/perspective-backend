@@ -175,8 +175,13 @@ public class FindInstancesRequest implements Request<Query> {
             whereMap.put("projects.name", projects.get());
         }
         return whereMap.isEmpty() ?
-                joinClause.getQuery() :
-                joinClause.where().and(whereMap).getQuery();
+                joinClause
+                        .orderBy().column("instances.name")
+                        .getQuery() :
+                joinClause
+                        .where().and(whereMap)
+                        .orderBy().column("instances.name")
+                        .getQuery();
     }
     
 }

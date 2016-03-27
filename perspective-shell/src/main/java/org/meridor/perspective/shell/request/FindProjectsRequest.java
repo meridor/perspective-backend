@@ -66,8 +66,13 @@ public class FindProjectsRequest implements Request<Query> {
             whereMap.put("cloud_type", clouds.get());
         }
         return whereMap.isEmpty() ? 
-                fromClause.getQuery() :
-                fromClause.where().and(whereMap).getQuery();
+                fromClause
+                        .orderBy().column("name")
+                        .getQuery() :
+                fromClause
+                        .where().and(whereMap)
+                        .orderBy().column("name")
+                        .getQuery();
     }
 
 }

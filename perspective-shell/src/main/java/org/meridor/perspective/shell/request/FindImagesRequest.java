@@ -124,8 +124,13 @@ public class FindImagesRequest implements Request<Query> {
             whereMap.put("projects.name", projects.get());
         }
         return whereMap.isEmpty() ?
-                joinClause.getQuery() :
-                joinClause.where().and(whereMap).getQuery();
+                joinClause
+                        .orderBy().column("images.name")
+                        .getQuery() :
+                joinClause
+                        .where().and(whereMap)
+                        .orderBy().column("images.name")
+                        .getQuery();
     }
 
 }

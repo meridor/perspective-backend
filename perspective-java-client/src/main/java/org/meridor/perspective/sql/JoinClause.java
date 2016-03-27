@@ -70,7 +70,11 @@ public class JoinClause extends BaseQueryPart {
     public WhereClause where() {
         return new WhereClause(this);
     }
-
+    
+    public OrderClause orderBy() {
+        return new OrderClause(this);
+    }
+    
     @Override
     public Optional<QueryPart> getPreviousPart() {
         return Optional.of(previousQueryPart);
