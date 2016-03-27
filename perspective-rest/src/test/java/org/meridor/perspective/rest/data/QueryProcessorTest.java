@@ -147,7 +147,7 @@ public class QueryProcessorTest {
             {
                 setSql("select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
                         "from instances as i inner join projects as p " +
-                        "on i.project_id = p.id inner join flavors as f " +
+                        "on (i.project_id = p.id) inner join flavors as f " +
                         "on i.flavor_id = f.id and i.project_id = f.project_id"
                 );
             }

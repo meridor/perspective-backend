@@ -86,6 +86,7 @@ complex_boolean_expression
    | simple_boolean_expression binary_boolean_operator simple_boolean_expression
    | unary_boolean_operator complex_boolean_expression
    | complex_boolean_expression (binary_boolean_operator complex_boolean_expression)+
+   | LPAREN complex_boolean_expression RPAREN
    ;
 
 expressions

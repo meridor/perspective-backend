@@ -180,6 +180,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     complexBooleanExpression.complex_boolean_expression(),
                     complexBooleanExpression.binary_boolean_operator()
             );
+        } else if (complexBooleanExpression.LPAREN() != null && complexBooleanExpression.complex_boolean_expression(0) != null) {
+            return processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
         }
         throw new UnsupportedOperationException("Unknown boolean expression type");
     }
