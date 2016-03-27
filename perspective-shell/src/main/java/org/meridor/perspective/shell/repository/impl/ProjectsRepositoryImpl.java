@@ -28,35 +28,22 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
 
     @Autowired
     private QueryRepository queryRepository;
-    
-    @Autowired
-    private SettingsAware settingsAware;
-    
-    private final List<FindProjectsResult> projectsCache = new ArrayList<>();
-    
+
     @Override 
     public List<FindProjectsResult> findProjects(FindProjectsRequest findProjectsRequest) {
-        if (projectsCache.isEmpty() || isProjectsCacheDisabled()) {
-            QueryResult projectsResult = queryRepository.query(findProjectsRequest.getPayload());
-            Data data = projectsResult.getData();
-            List<FindProjectsResult> projects = data.getRows().stream()
-                    .map(r -> {
-                        ValueFormatter vf = new ValueFormatter(data, r);
-                        return new FindProjectsResult(
-                                vf.getString("id"),
-                                vf.getString("name"),
-                                vf.getString("cloud_id"),
-                                vf.getString("cloud_type")
-                        );
-                    })
-                    .collect(Collectors.toList());
-            projectsCache.addAll(projects);
-        }
-        return projectsCache;
-    }
-    
-    private boolean isProjectsCacheDisabled() {
-        return settingsAware.hasSetting(Setting.DISABLE_PROJECTS_CACHE);
+        QueryResult projectsResult = queryRepository.query(findProjectsRequest.getPayload());
+        Data data = projectsResult.getData();
+        return data.getRows().stream()
+                .map(r -> {
+                    ValueFormatter vf = new ValueFormatter(data, r);
+                    return new FindProjectsResult(
+                            vf.getString("id"),
+                            vf.getString("name"),
+                            vf.getString("cloud_id"),
+                            vf.getString("cloud_type")
+                    );
+                })
+                .collect(Collectors.toList());
     }
     
     @Override 

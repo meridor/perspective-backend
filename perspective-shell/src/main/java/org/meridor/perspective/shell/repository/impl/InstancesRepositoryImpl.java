@@ -100,7 +100,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     @Override public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {
         return processRequestOrException(() -> {
             List<Instance> instances = addInstancesRequest.getPayload();
-            Call<Collection<Instance>> call = apiProvider.getInstancesApi().launch(instances);
+            Call<ResponseBody> call = apiProvider.getInstancesApi().launch(instances);
             call.execute();
             return Collections.emptySet();
         });

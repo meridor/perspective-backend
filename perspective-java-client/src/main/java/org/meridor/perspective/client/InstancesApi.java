@@ -14,7 +14,7 @@ public interface InstancesApi {
     Call<Instance> getById(@Path("id") String instanceId);
     
     @POST("/instances")
-    Call<Collection<Instance>> launch(@Body Collection<Instance> instances);
+    Call<ResponseBody> launch(@Body Collection<Instance> instances);
 
     @PUT("/instances/reboot")
     Call<ResponseBody> reboot(@Body Collection<String> instanceIds);

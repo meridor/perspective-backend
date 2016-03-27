@@ -18,7 +18,7 @@ public interface ImagesApi {
     Call<Instance> getById(@Path("id") String instanceId);
     
     @POST("/images")
-    Call<Collection<Instance>> add(@Body Collection<Image> images);
+    Call<ResponseBody> add(@Body Collection<Image> images);
     
     @POST("/images/delete")
     Call<ResponseBody> delete(@Body Collection<String> imageIds);

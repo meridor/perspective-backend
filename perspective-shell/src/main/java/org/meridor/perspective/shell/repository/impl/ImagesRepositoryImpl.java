@@ -58,7 +58,7 @@ public class ImagesRepositoryImpl implements ImagesRepository {
     public Set<String> addImages(AddImagesRequest addImagesRequest) {
         return processRequestOrException(() -> {
             List<Image> images = addImagesRequest.getPayload();
-            Call<Collection<Instance>> call = apiProvider.getImagesApi().add(images);
+            Call<ResponseBody> call = apiProvider.getImagesApi().add(images);
             call.execute();
             return Collections.emptySet();
         });
