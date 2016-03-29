@@ -11,3 +11,9 @@ Perspective is a scalable multi-cloud management API and related tools. If you'r
 * [Documentation](https://github.com/meridor/perspective-backend/wiki)
 * [Issue Tracking](https://github.com/meridor/perspective-backend/issues)
 * [Releases and Changelog](https://github.com/meridor/perspective-backend/releases)
+
+## Contact us
+* Mailing list: support@meridor.org
+* Gitter chat room: https://gitter.im/meridor/perspective-backend
+* StackOverflow tag: [Perspective](http://stackoverflow.com/questions/tagged/allure)
+
