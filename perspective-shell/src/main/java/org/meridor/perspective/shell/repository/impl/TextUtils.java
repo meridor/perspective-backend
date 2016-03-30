@@ -4,7 +4,6 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class TextUtils {
@@ -301,17 +300,17 @@ public final class TextUtils {
         return String.format("^%s$", value);
     }
     
-    public static Collection<String> removeSuffixes(Collection<String> seed, Collection<String> suffixes) {
-        if (seed == null) {
+    public static Collection<String> removeSuffixes(Collection<String> input, Collection<String> suffixes) {
+        if (input == null) {
             return null;
         }
-        if (seed.isEmpty()) {
+        if (input.isEmpty()) {
             return Collections.emptyList();
         }
         if (suffixes == null || suffixes.isEmpty()) {
-            return seed;
+            return input;
         }
-        return seed.stream()
+        return input.stream()
             .map(str -> {
                 Optional<String> matchingSuffix = suffixes.stream()
                         .filter(s -> 
@@ -327,12 +326,12 @@ public final class TextUtils {
                     boolean hasSpecialLastChar = lastChar == '$' || lastChar == '%';
                     int end = strLength - suffixLength;
                     if (hasSpecialLastChar) {
-                        end -= 1;
+                        end--;
                     }
                     String substr = str.substring(0, end);
                     return hasSpecialLastChar ?
                             substr + lastChar :
-                            substr;
+                            getAsExactMatch(substr);
                 }
                 return str;
             })

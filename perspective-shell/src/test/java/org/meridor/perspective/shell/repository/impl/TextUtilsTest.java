@@ -205,12 +205,12 @@ public class TextUtilsTest {
         assertThat(removeSuffixes(Collections.emptySet(), null), is(empty()));
         assertThat(removeSuffixes(Collections.emptySet(), Collections.emptySet()), is(empty()));
         
-        List<String> seed = Arrays.asList("%one.four%", "^two.five$", "three", "%a%", "^b$");
-        List<String> suffixes = Arrays.asList(".four", ".five", "a", "b");
-        Collection<String> enrichedSeed = removeSuffixes(seed, suffixes);
+        List<String> seed = Arrays.asList("%example.com%", "^test.net$", "touch", "click.net", "three", "%a%", "^b$");
+        List<String> suffixes = Arrays.asList(".com", ".net", "a", "b");
+        Collection<String> output = removeSuffixes(seed, suffixes);
         
-        assertThat(enrichedSeed, hasSize(5));
-        assertThat(enrichedSeed, contains("%one%", "^two$", "three", "%%", "^$"));
+        assertThat(output, hasSize(7));
+        assertThat(output, contains("%example%", "^test$", "touch", "^click$", "three", "%%", "^$"));
     }
     
 }
