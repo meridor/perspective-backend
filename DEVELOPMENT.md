@@ -4,13 +4,6 @@
 ### Project
 * GET /projects - list projects [+]
 
-// These urls probably aren't needed!
-* GET /projects/$id/access - return endpoint urls for project services available
-* GET /projects/$id/rcfile - get Openstack RC file
-* GET /keypairs - list current user keypairs
-* POST /keypairs - add keypair
-* DELETE /keypairs/$id - delete keypair
-
 ### Instances (/instances)
 * GET /?query - list project instance [+]
 * POST / - launch instance [+]
@@ -43,7 +36,7 @@
 
 ## Shell
 
-~/.perspective/rc (/etc/perspective/shell/rc) file support
+~/.perspective/rc (/etc/perspective/shell/rc) file support [+]
 
 ### Generic show commands
 * show projects [+]
@@ -103,17 +96,6 @@ E.g. error, active, running and stopped instances.
 * show views
 
 ### SQL statements
-* show tables
-* select ...
+* select ... [+]
 * insert ...
 * delete ...
-* show columns <table>
-
-# Преимущества Perspective по сравнению со стандартным Openstack API
-
-* Очень быстрое асинхронное API (за счет кеширования в память определенной информации наподобие списка флаворов, сетей и т.п.)
-* Поддержка bulk для всех типов операций (выполнение одной операции для нескольких сущностей: инстансов, контейнеров и т.п.)
-* Поддержка Swagger (возможность нагенерировать клиента для любого языка программирования)
-* В отдаленном будущем - поддержка других облачных платформ или нескольких облачных платформ как отдельных проектов в UI
-* Более простая аутентификация и авторизация (поддержка OAuth, LDAP и т.п.), по-умолчанию не нужно получать токен для каждой операции (это делается прозрачно для пользователя)
-* Более удобный клиентский UI (standalone client-side application)
