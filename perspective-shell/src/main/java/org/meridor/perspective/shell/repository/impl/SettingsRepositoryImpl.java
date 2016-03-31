@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import org.meridor.perspective.shell.misc.PromptManager;
+import org.meridor.perspective.shell.misc.ShellInformationProvider;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.repository.SettingsRepository;
@@ -20,6 +22,9 @@ public class SettingsRepositoryImpl implements SettingsRepository {
 
     @Autowired
     private SettingsAware settingsAware;
+    
+    @Autowired
+    private PromptManager promptManager;
 
     @Override public Set<String> set(String data) {
         Set<String> errors = new HashSet<>();
@@ -34,6 +39,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
                     } else if (Field.contains(enumName)) {
                         Field field = Field.valueOf(enumName);
                         filtersAware.setFilter(field, value);
+                        changePromptIfNeeded();
                     } else if (Setting.contains(enumName)) {
                         Setting setting = Setting.valueOf(enumName);
                         settingsAware.setSetting(setting, value);
@@ -54,6 +60,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
                     if (Field.contains(enumName)) {
                         Field field = Field.valueOf(enumName);
                         filtersAware.unsetFilter(field);
+                        changePromptIfNeeded();
                     } else if (Setting.contains(enumName)) {
                         Setting setting = Setting.valueOf(enumName);
                         settingsAware.unsetSetting(setting);
@@ -63,6 +70,14 @@ public class SettingsRepositoryImpl implements SettingsRepository {
                 }
         );
         return errors;
+    }
+    
+    private void changePromptIfNeeded() {
+        if (filtersAware.getFilters(false).isEmpty()) {
+            promptManager.resetPrompt();
+        } else {
+            promptManager.setPrompt("perspective*>");
+        }
     }
     
     @Override public Map<String, String> showSettings(boolean all) {
