@@ -4,9 +4,9 @@ import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.misc.Pager;
 import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.request.InvalidRequestException;
 import org.meridor.perspective.shell.request.Request;
-import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
@@ -65,10 +65,6 @@ public abstract class BaseCommands implements CommandMarker {
     }
     
     protected void tableOrNothing(String[] columns, List<String[]> rows) {
-        tableOrNothing(columns,  rows, false);
-    }
-    
-    protected void tableOrNothing(String[] columns, List<String[]> rows, boolean showResultsCountAnyway) {
         final Integer PAGE_SIZE = pager.getPageSize();
         if (!rows.isEmpty()){
             if (rows.size() > PAGE_SIZE) {
@@ -79,9 +75,7 @@ public abstract class BaseCommands implements CommandMarker {
                 ));
                 pager.page(columns, rows);
             } else {
-                if (showResultsCountAnyway) {
-                    ok(String.format("Results contain %d entries.", rows.size()));
-                }
+                ok(String.format("Results contain %d entries.", rows.size()));
                 ok(tableRenderer.render(columns, rows));
             }
         } else {

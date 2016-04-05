@@ -50,7 +50,7 @@ public class QueryCommands extends BaseCommands {
                         .toArray(String[]::new)
                 )
                 .collect(Collectors.toList());
-        tableOrNothing(columns, rows, true);
+        tableOrNothing(columns, rows);
     }
     
 }
