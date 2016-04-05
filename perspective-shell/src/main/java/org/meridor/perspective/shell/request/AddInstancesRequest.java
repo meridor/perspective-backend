@@ -65,7 +65,7 @@ public class AddInstancesRequest implements Request<List<Instance>> {
     private ImagesRepository imagesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     public AddInstancesRequest withName(String name) {
         this.name = name;
@@ -140,7 +140,7 @@ public class AddInstancesRequest implements Request<List<Instance>> {
         Instance instance = new Instance();
         instance.setName(name);
 
-        List<FindProjectsResult> projects = projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(projectName));
+        List<FindProjectsResult> projects = projectsRepository.findProjects(requestProvider.get(FindProjectsRequest.class).withNames(projectName));
         FindProjectsResult project = projects.get(0);
         instance.setProjectId(project.getId());
         instance.setCloudId(project.getCloudId());
@@ -148,7 +148,7 @@ public class AddInstancesRequest implements Request<List<Instance>> {
         
         if (flavorName != null) {
             List<FindFlavorsResult> flavors = projectsRepository.findFlavors(
-                    queryProvider.get(FindFlavorsRequest.class)
+                    requestProvider.get(FindFlavorsRequest.class)
                             .withNames(flavorName)
                             .withProjects(project.getName())
                             .withClouds(project.getCloudType().name().toLowerCase())
@@ -156,12 +156,12 @@ public class AddInstancesRequest implements Request<List<Instance>> {
             instance.setFlavor(flavors.get(0).toFlavor());
         }
 
-        List<FindImagesResult> images = imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withNames(imageName));
+        List<FindImagesResult> images = imagesRepository.findImages(requestProvider.get(FindImagesRequest.class).withNames(imageName));
         instance.setImage(images.get(0).toImage());
         
         if (networkName != null) {
             List<FindNetworksResult> networkResults = projectsRepository.findNetworks(
-                    queryProvider.get(FindNetworksRequest.class)
+                    requestProvider.get(FindNetworksRequest.class)
                             .withNames(networkName)
                             .withProjects(project.getName())
                             .withClouds(project.getCloudType().name().toLowerCase())

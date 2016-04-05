@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.request.FindFlavorsRequest;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.result.FindFlavorsResult;
@@ -19,7 +19,7 @@ public class FlavorStep extends SingleChoiceStep {
     private ProjectsRepository projectsRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     @Required
     private String projectName;
@@ -30,7 +30,7 @@ public class FlavorStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return projectsRepository.findFlavors(queryProvider.get(FindFlavorsRequest.class).withProjects(projectName)).stream()
+        return projectsRepository.findFlavors(requestProvider.get(FindFlavorsRequest.class).withProjects(projectName)).stream()
                 .map(FindFlavorsResult::getName)
                 .collect(Collectors.toList());
     }

@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.request.FindKeypairsRequest;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.result.FindKeypairsResult;
@@ -19,7 +19,7 @@ public class KeypairStep extends SingleChoiceStep {
     private ProjectsRepository projectsRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     @Required
     private String projectName;
@@ -30,7 +30,7 @@ public class KeypairStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return projectsRepository.findKeypairs(queryProvider.get(FindKeypairsRequest.class).withProjects(projectName)).stream()
+        return projectsRepository.findKeypairs(requestProvider.get(FindKeypairsRequest.class).withProjects(projectName)).stream()
                 .map(FindKeypairsResult::getName)
                 .collect(Collectors.toList());
     }

@@ -4,7 +4,7 @@ import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.request.FindImagesRequest;
 import org.meridor.perspective.shell.request.FindInstancesRequest;
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.result.FindImagesResult;
 import org.meridor.perspective.shell.result.FindInstancesResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +24,14 @@ public class DeleteCommands extends BaseCommands {
     private ImagesRepository imagesRepository;
 
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     @CliCommand(value = "delete instances", help = "Completely delete (terminate) instances")
     public void deleteInstances(
             @CliOption(key = "", mandatory = true, help = "Comma separated instances names or patterns to match against instance name") String names,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindInstancesRequest findInstancesRequest = queryProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findInstancesRequest,
                 r -> instancesRepository.findInstances(findInstancesRequest),
@@ -58,7 +58,7 @@ public class DeleteCommands extends BaseCommands {
             @CliOption(key = "", mandatory = true, help = "Comma separated instances names or patterns to match against instance name") String patterns,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindImagesRequest findImagesRequest = queryProvider.get(FindImagesRequest.class).withNames(patterns).withClouds(cloud);
+        FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class).withNames(patterns).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findImagesRequest,
                 r -> imagesRepository.findImages(r),

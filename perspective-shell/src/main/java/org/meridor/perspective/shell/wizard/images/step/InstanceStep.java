@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.images.step;
 
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.request.FindInstancesRequest;
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.result.FindInstancesResult;
@@ -18,11 +18,11 @@ public class InstanceStep extends MultipleChoicesStep {
     private InstancesRepository instancesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     @Override
     protected List<String> getPossibleChoices() {
-        return instancesRepository.findInstances(queryProvider.get(FindInstancesRequest.class)).stream()
+        return instancesRepository.findInstances(requestProvider.get(FindInstancesRequest.class)).stream()
                 .map(FindInstancesResult::getName)
                 .collect(Collectors.toList());
     }

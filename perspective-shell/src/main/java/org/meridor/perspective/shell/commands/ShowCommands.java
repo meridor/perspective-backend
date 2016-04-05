@@ -33,7 +33,7 @@ public class ShowCommands extends BaseCommands {
     private ImagesRepository imagesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     @CliCommand(value = "show projects", help = "Show available projects")
     public void showProjects(
@@ -41,7 +41,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        FindProjectsRequest showProjectsQuery = queryProvider.get(FindProjectsRequest.class)
+        FindProjectsRequest showProjectsQuery = requestProvider.get(FindProjectsRequest.class)
                 .withIds(id)
                 .withClouds(cloud)
                 .withNames(name);
@@ -63,7 +63,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindFlavorsRequest showFlavorsQuery = queryProvider.get(FindFlavorsRequest.class)
+        FindFlavorsRequest showFlavorsQuery = requestProvider.get(FindFlavorsRequest.class)
                 .withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
@@ -92,7 +92,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindNetworksRequest showNetworksQuery = queryProvider.get(FindNetworksRequest.class).withNames(name)
+        FindNetworksRequest showNetworksQuery = requestProvider.get(FindNetworksRequest.class).withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
@@ -119,7 +119,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindKeypairsRequest showKeypairsQuery = queryProvider.get(FindKeypairsRequest.class).withNames(name)
+        FindKeypairsRequest showKeypairsQuery = requestProvider.get(FindKeypairsRequest.class).withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
@@ -144,7 +144,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "cloud", help = "Cloud type") String cloud,
             @CliOption(key = "project", help = "Project names") String project
     ) {
-        FindInstancesRequest showInstancesQuery = queryProvider.get(FindInstancesRequest.class)
+        FindInstancesRequest showInstancesQuery = requestProvider.get(FindInstancesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withFlavors(flavor)
@@ -179,7 +179,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "state", help = "Image state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindImagesRequest showImagesQuery = queryProvider.get(FindImagesRequest.class)
+        FindImagesRequest showImagesQuery = requestProvider.get(FindImagesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withStates(state)
@@ -208,7 +208,7 @@ public class ShowCommands extends BaseCommands {
         if (!Desktop.isDesktopSupported()) {
             warn("This operation is not supported on your platform.");
         }
-        FindInstancesRequest showInstancesQuery = queryProvider.get(FindInstancesRequest.class)
+        FindInstancesRequest showInstancesQuery = requestProvider.get(FindInstancesRequest.class)
                 .withNames(names);
         validateExecuteShowResult(
                 showInstancesQuery,

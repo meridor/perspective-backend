@@ -1,8 +1,6 @@
 package org.meridor.perspective.shell.request;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.shell.misc.DateUtils;
 import org.meridor.perspective.shell.repository.InstancesRepository;
@@ -14,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.meridor.perspective.events.EventFactory.now;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
@@ -35,7 +32,7 @@ public class AddImagesRequest implements Request<List<Image>> {
     private InstancesRepository instancesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     @Autowired
     private DateUtils dateUtils;
@@ -54,7 +51,7 @@ public class AddImagesRequest implements Request<List<Image>> {
     public List<Image> getPayload() {
         List<Image> images = new ArrayList<>();
         List<FindInstancesResult> matchingInstances = instancesRepository
-                .findInstances(queryProvider.get(FindInstancesRequest.class).withNames(instanceNames));
+                .findInstances(requestProvider.get(FindInstancesRequest.class).withNames(instanceNames));
         matchingInstances.forEach(i -> images.add(createImage(imageName, i)));
         return images;
     }

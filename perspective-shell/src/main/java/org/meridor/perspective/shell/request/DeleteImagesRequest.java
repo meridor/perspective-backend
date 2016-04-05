@@ -31,7 +31,7 @@ public class DeleteImagesRequest implements Request<List<String>> {
     private String clouds;
 
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     public DeleteImagesRequest withNames(String names) {
         this.names = names;
@@ -45,7 +45,7 @@ public class DeleteImagesRequest implements Request<List<String>> {
 
     @Override
     public List<String> getPayload() {
-        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class)
+        return imagesRepository.findImages(requestProvider.get(FindImagesRequest.class)
                     .withNames(names)
                     .withClouds(clouds))
                 .stream().map(FindImagesResult::getId)

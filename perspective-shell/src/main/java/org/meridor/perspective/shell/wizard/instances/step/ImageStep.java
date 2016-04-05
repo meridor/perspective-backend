@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.instances.step;
 
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.request.FindImagesRequest;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.result.FindImagesResult;
@@ -19,7 +19,7 @@ public class ImageStep extends SingleChoiceStep {
     private ImagesRepository imagesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     @Required
     private String projectName;
@@ -30,7 +30,7 @@ public class ImageStep extends SingleChoiceStep {
 
     @Override
     protected List<String> getPossibleChoices() {
-        return imagesRepository.findImages(queryProvider.get(FindImagesRequest.class).withProjects(projectName)).stream()
+        return imagesRepository.findImages(requestProvider.get(FindImagesRequest.class).withProjects(projectName)).stream()
                 .map(FindImagesResult::getName)
                 .collect(Collectors.toList());
     }

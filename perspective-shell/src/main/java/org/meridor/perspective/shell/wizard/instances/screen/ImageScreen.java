@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.instances.screen;
 
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.request.FindProjectsRequest;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.result.FindProjectsResult;
@@ -31,7 +31,7 @@ public class ImageScreen implements WizardScreen {
     private ProjectsRepository projectsRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
@@ -55,7 +55,7 @@ public class ImageScreen implements WizardScreen {
     }
     
     private Optional<FindProjectsResult> getProject(String projectName) {
-        List<FindProjectsResult> projects = projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(projectName));
+        List<FindProjectsResult> projects = projectsRepository.findProjects(requestProvider.get(FindProjectsRequest.class).withNames(projectName));
         return (projects.size() >= 1) ?
                 Optional.of(projects.get(0)) :
                 Optional.empty();

@@ -2,7 +2,7 @@ package org.meridor.perspective.shell.commands;
 
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.request.FindInstancesRequest;
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.result.FindInstancesResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -18,7 +18,7 @@ public class ModifyCommands extends BaseCommands {
     private InstancesRepository instancesRepository;
 
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
@@ -26,7 +26,7 @@ public class ModifyCommands extends BaseCommands {
             @CliOption(key = "cloud", help = "Cloud types") String cloud,
             @CliOption(key = "hard", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Whether to hard reboot instance") boolean hard
     ) {
-        FindInstancesRequest findInstancesRequest = queryProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findInstancesRequest,
                 r -> instancesRepository.findInstances(r),

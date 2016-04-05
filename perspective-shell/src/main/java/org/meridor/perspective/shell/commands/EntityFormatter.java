@@ -7,7 +7,7 @@ import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.request.FindInstancesRequest;
 import org.meridor.perspective.shell.request.FindProjectsRequest;
-import org.meridor.perspective.shell.request.QueryProvider;
+import org.meridor.perspective.shell.request.RequestProvider;
 import org.meridor.perspective.shell.result.FindInstancesResult;
 import org.meridor.perspective.shell.result.FindProjectsResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +28,10 @@ public class EntityFormatter {
     private InstancesRepository instancesRepository;
     
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
 
     private Map<String, String> getProjects(Collection<String> projectIds) {
-        FindProjectsRequest findProjectsRequest = queryProvider.get(FindProjectsRequest.class);
+        FindProjectsRequest findProjectsRequest = requestProvider.get(FindProjectsRequest.class);
         if (projectIds != null && !projectIds.isEmpty()) {
             findProjectsRequest = findProjectsRequest.withIds(enumerateValues(projectIds));
         }
@@ -43,7 +43,7 @@ public class EntityFormatter {
     }
     
     private Map<String, String> getInstances(Collection<String> instanceIds) {
-        FindInstancesRequest findInstancesRequest = queryProvider.get(FindInstancesRequest.class);
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class);
         if (instanceIds != null && !instanceIds.isEmpty()) {
             findInstancesRequest = findInstancesRequest.withIds(enumerateValues(instanceIds));
         }

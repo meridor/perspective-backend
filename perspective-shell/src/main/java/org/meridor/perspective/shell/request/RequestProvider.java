@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class QueryProvider {
+public final class RequestProvider {
     
     @Autowired
     private ApplicationContext applicationContext;

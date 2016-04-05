@@ -23,7 +23,7 @@ public class ExistingEntityValidator implements Validator {
     private ImagesRepository imagesRepository;
 
     @Autowired
-    private QueryProvider queryProvider;
+    private RequestProvider requestProvider;
     
     private String projectName;
 
@@ -42,13 +42,13 @@ public class ExistingEntityValidator implements Validator {
     }
     
     private Collection<FindProjectsResult> getProjectsByName(String name) {
-        return projectsRepository.findProjects(queryProvider.get(FindProjectsRequest.class).withNames(name));
+        return projectsRepository.findProjects(requestProvider.get(FindProjectsRequest.class).withNames(name));
     }
     
     private List<FindKeypairsResult> getKeypairsByName(String name) {
         return projectsRepository
                 .findKeypairs(
-                        queryProvider.get(FindKeypairsRequest.class)
+                        requestProvider.get(FindKeypairsRequest.class)
                                 .withNames(name)
                                 .withProjects(projectName)
                 );
@@ -57,7 +57,7 @@ public class ExistingEntityValidator implements Validator {
     private Collection<FindFlavorsResult> getFlavorsByName(String name) {
         return projectsRepository
                 .findFlavors(
-                        queryProvider.get(FindFlavorsRequest.class)
+                        requestProvider.get(FindFlavorsRequest.class)
                         .withNames(name)
                         .withProjects(projectName)
                 );
@@ -65,7 +65,7 @@ public class ExistingEntityValidator implements Validator {
     
     private Collection<FindNetworksResult> getNetworksByName(String name) {
         return projectsRepository.findNetworks(
-                queryProvider.get(FindNetworksRequest.class)
+                requestProvider.get(FindNetworksRequest.class)
                         .withNames(name)
                         .withProjects(projectName)
         );
@@ -73,7 +73,7 @@ public class ExistingEntityValidator implements Validator {
     
     private Collection<FindImagesResult> getImagesByName(String name) {
         return imagesRepository.findImages(
-                queryProvider.get(FindImagesRequest.class)
+                requestProvider.get(FindImagesRequest.class)
                     .withNames(name)
                     .withProjects(projectName)
         );
