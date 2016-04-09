@@ -1,12 +1,20 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import jline.console.ConsoleReader;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
 public class TextUtilsTest {
@@ -211,6 +219,41 @@ public class TextUtilsTest {
         
         assertThat(output, hasSize(7));
         assertThat(output, contains("%example%", "^test$", "touch", "^click$", "three", "%%", "^$"));
+    }
+    
+    @Test
+    public void testRouteByKey() throws IOException {
+        List<Exception> exceptions = new ArrayList<>();
+        List<String> invalidKeys = new ArrayList<>();
+        Consumer<Exception> onException = exceptions::add;
+        Consumer<String> onInvalidKey = invalidKeys::add;
+        Map<Predicate<String>, Function<String, Boolean>> routes = new LinkedHashMap<Predicate<String>, Function<String, Boolean>>(){
+            {
+                put(k -> k.equals("y"), k -> true);
+                put(k -> k.equals("n"), k -> false);
+                put(k -> k.equals("e"), k -> Boolean.TRUE.compareTo(null) > 0); //Always throws NPE
+            }
+        };
+
+        Optional<Boolean> routeWithYes = routeByKey(mockConsoleReader("y"), routes, onInvalidKey, onException);
+        assertTrue(routeWithYes.isPresent());
+        assertThat(routeWithYes.get(), equalTo(true));
+        
+        Optional<Boolean> routeWithNo = routeByKey(mockConsoleReader("n"), routes, onInvalidKey, onException);
+        assertTrue(routeWithNo.isPresent());
+        assertThat(routeWithNo.get(), equalTo(false));
+
+        routeByKey(mockConsoleReader("iy"), routes, onInvalidKey, onException);
+        assertThat(invalidKeys, contains("i"));
+        
+        routeByKey(mockConsoleReader("e"), routes, onInvalidKey, onException);
+        assertThat(exceptions, hasSize(1));
+        
+    }
+    
+    private static ConsoleReader mockConsoleReader(String input) throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
+        return new ConsoleReader(inputStream, System.out);
     }
     
 }

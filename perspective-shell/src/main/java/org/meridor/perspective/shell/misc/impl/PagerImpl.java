@@ -1,17 +1,21 @@
 package org.meridor.perspective.shell.misc.impl;
 
 import com.google.common.collect.Lists;
-import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.misc.Pager;
 import org.meridor.perspective.shell.misc.TableRenderer;
 import org.meridor.perspective.shell.repository.SettingsAware;
+import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
@@ -51,42 +55,39 @@ public class PagerImpl implements Pager {
             if (NUM_PAGES == 1) {
                 return; //No need to wait for keys in case of one page
             }
-            ConsoleReader consoleReader = new ConsoleReader();
             while (currentPage <= NUM_PAGES) {
-                boolean pageNumberChanged = false;
-                String key = String.valueOf((char) consoleReader.readCharacter());
-                if (isExitKey(key)) {
+                final int cp = currentPage;
+                Map<Predicate<String>, Function<String, Integer>> routes = new LinkedHashMap<Predicate<String>, Function<String, Integer>>(){
+                    {
+                        put(TextUtils::isExitKey, k -> 0);
+                        put(TextUtils::isNextElementKey, k -> (cp == NUM_PAGES) ? 0 : cp + 1);
+                        put(k -> isPrevElementKey(k) && cp > 1, k -> cp - 1);
+                        put(k -> isFirstElementKey(k) && cp != 1, k -> 1);
+                        put(k -> isLastElementKey(k) && cp != NUM_PAGES, k -> NUM_PAGES);
+                        put(TextUtils::isNumericKey, k -> {
+                            Integer pageNumber = Integer.valueOf(k);
+                            if (pageNumber < 1 || pageNumber > NUM_PAGES) {
+                                logger.warn(String.format("Wrong page number: %d. Should be one of 1..%d.", pageNumber, NUM_PAGES));
+                            } else if (pageNumber != cp) {
+                                return pageNumber;
+                            }
+                            return cp;
+                        });
+                    }
+                };
+
+                Optional<Integer> nextPageCandidate = routeByKey(routes);
+                if (!nextPageCandidate.isPresent() || nextPageCandidate.get() < 1) {
                     break;
-                } else if (isNextElementKey(key)) {
-                    if (currentPage == NUM_PAGES) {
-                        break;
-                    }
-                    currentPage++;
-                    pageNumberChanged = true;
-                } else if (isPrevElementKey(key) && currentPage > 1) {
-                    currentPage--;
-                    pageNumberChanged = true;
-                } else if (isFirstElementKey(key) && currentPage != 1) {
-                    currentPage = 1;
-                    pageNumberChanged = true;
-                } else if (isLastElementKey(key) && currentPage != NUM_PAGES) {
-                    currentPage = NUM_PAGES;
-                    pageNumberChanged = true;
-                } else if (isNumericKey(key)) {
-                    Integer pageNumber = Integer.valueOf(key);
-                    if (pageNumber < 1 || pageNumber > NUM_PAGES) {
-                        logger.warn(String.format("Wrong page number: %d. Should be one of 1..%d.", pageNumber, NUM_PAGES));
-                        continue;
-                    } else if (pageNumber != currentPage) {
-                        currentPage = pageNumber;
-                        pageNumberChanged = true;
-                    }
                 }
-                if (pageNumberChanged) {
+
+                Integer nextPage = nextPageCandidate.get();
+                if (nextPage != currentPage) {
+                    currentPage = nextPage;
                     showPage(currentPage, NUM_PAGES, pages);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(String.format("Failed to show pages: %s", e.getMessage()));
         }
     }

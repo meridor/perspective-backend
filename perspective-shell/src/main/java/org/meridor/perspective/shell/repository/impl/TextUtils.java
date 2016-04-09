@@ -1,9 +1,13 @@
 package org.meridor.perspective.shell.repository.impl;
 
+import jline.console.ConsoleReader;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public final class TextUtils {
@@ -24,7 +28,6 @@ public final class TextUtils {
     private static final String QUIT = "q";
     private static final String REPEAT = "r";
     public static final String DASH = "-";
-    private static final Integer DEFAULT_PAGE_SIZE = 20;
 
     public static String replacePlaceholders(final String template, Map<Placeholder, String> values) {
         String ret = template;
@@ -336,6 +339,38 @@ public final class TextUtils {
                 return str;
             })
             .collect(Collectors.toList());
+    }
+
+    public static <T> Optional<T> routeByKey(Map<Predicate<String>, Function<String, T>> routes) {
+        return routeByKey(null, routes, null, null);
+    }
+    
+    public static <T> Optional<T> routeByKey(Map<Predicate<String>, Function<String, T>> routes, Consumer<String> onInvalidKey, Consumer<Exception> onException) {
+        return routeByKey(null, routes, onInvalidKey, onException);
+    }
+    
+    static <T> Optional<T> routeByKey(ConsoleReader consoleReader, Map<Predicate<String>, Function<String, T>> routes, Consumer<String> onInvalidKey, Consumer<Exception> onException) {
+        try {
+            if (consoleReader == null) {
+                consoleReader = new ConsoleReader();
+            }
+            while (true) {
+                String key = String.valueOf((char) consoleReader.readCharacter());
+                for (Predicate<String> keyPredicate : routes.keySet()) {
+                    if (keyPredicate.test(key)) {
+                        return Optional.ofNullable(routes.get(keyPredicate).apply(key));
+                    }
+                }
+                if (onInvalidKey != null) {
+                    onInvalidKey.accept(key);
+                }
+            }
+        } catch (Exception e) {
+            if (onException != null) {
+                onException.accept(e);
+            }
+            return Optional.empty();
+        }
     }
 
     private TextUtils() {
