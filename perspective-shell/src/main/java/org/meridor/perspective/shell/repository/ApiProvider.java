@@ -4,9 +4,9 @@ import org.meridor.perspective.client.ApiAware;
 import org.meridor.perspective.client.ImagesApi;
 import org.meridor.perspective.client.InstancesApi;
 import org.meridor.perspective.client.QueryApi;
+import org.meridor.perspective.shell.misc.HumanReadableException;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.Callable;
@@ -33,7 +33,7 @@ public class ApiProvider {
         try {
             return apiSupplier.call();
         } catch (Exception e) {
-            throw new ShellException("Wrong base URL", e);
+            throw new HumanReadableException("Wrong API URL");
         }
     }
     
@@ -48,7 +48,7 @@ public class ApiProvider {
         try {
             return action.call();
         } catch (Exception e) {
-            throw new ShellException("Failed to process request to API", e);
+            throw new HumanReadableException(e);
         }
     }
 

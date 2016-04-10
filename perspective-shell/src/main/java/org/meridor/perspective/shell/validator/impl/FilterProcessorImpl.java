@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.validator.impl;
 
+import org.meridor.perspective.shell.misc.HumanReadableException;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.validator.Field;
 import org.meridor.perspective.shell.validator.FilterProcessor;
@@ -7,7 +8,6 @@ import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class FilterProcessorImpl implements FilterProcessor {
                     }
                 }
             } catch (IllegalAccessException e) {
-                throw new ShellException("Failed to process field " + f.getName(), e);
+                throw new HumanReadableException(String.format("Failed to process field %s while searching for filters in %s", f.getName(), o.getClass().getCanonicalName()));
             }
         }
         return false;
@@ -70,7 +70,7 @@ public class FilterProcessorImpl implements FilterProcessor {
                             }
                         }
                     } catch (IllegalAccessException e) {
-                        throw new ShellException("Failed to apply filter for field " + f.getName(), e);
+                        throw new HumanReadableException(String.format("Failed to process field %s while applying filters to %s", f.getName(), o.getClass().getCanonicalName()));
                     }
                 });
 
@@ -96,7 +96,7 @@ public class FilterProcessorImpl implements FilterProcessor {
                             f.set(o, null);
                         }
                     } catch (IllegalAccessException e) {
-                        throw new ShellException("Failed to unset field " + f.getName(), e);
+                        throw new HumanReadableException(String.format("Failed to process field %s while unsetting filters of %s", f.getName(), o.getClass().getCanonicalName()));
                     }
                 });
         return o; //We remove validation logic by returning original object (not proxy with aspects)

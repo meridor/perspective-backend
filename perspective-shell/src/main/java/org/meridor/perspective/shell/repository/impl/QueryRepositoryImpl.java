@@ -3,19 +3,18 @@ package org.meridor.perspective.shell.repository.impl;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.meridor.perspective.shell.misc.HumanReadableException;
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.QueryRepository;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.ShellException;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.meridor.perspective.shell.repository.ApiProvider.processRequestOrException;
@@ -42,8 +41,8 @@ public class QueryRepositoryImpl implements QueryRepository {
     public QueryResult query(Query query) {
         try {
             return queryCache.get(query);
-        } catch (ExecutionException e) {
-            throw new ShellException("Failed to process query", e);
+        } catch (Exception e) {
+            throw new HumanReadableException(e);
         }
     }
     
@@ -55,7 +54,7 @@ public class QueryRepositoryImpl implements QueryRepository {
                     .query(queries);
             Collection<QueryResult> body = call.execute().body();
             if (body == null || body.isEmpty()) {
-                throw new RuntimeException("Request returned no data");
+                throw new HumanReadableException("request returned no data");
             }
             return new ArrayList<>(body).get(0);
         });
