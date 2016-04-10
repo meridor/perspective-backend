@@ -113,7 +113,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()),
+                () -> projectsAware.getProjects(),
                 columnMapping,
                 columns,
                 () -> "Failed to fetch \"clouds\" table contents"
@@ -131,7 +131,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()),
+                () -> projectsAware.getProjects(),
                 columnMapping,
                 columns,
                 () -> "Failed to fetch \"projects\" table contents"
@@ -148,7 +148,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p -> p.getKeypairs().stream().map(k -> new ExtendedKeypair(p.getId(), k)))
                         .collect(Collectors.toList()),
                 columnMapping,
@@ -165,7 +165,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p -> p.getAvailabilityZones().stream().map(k -> new ExtendedAvailabilityZone(p.getId(), k)))
                         .collect(Collectors.toList()),
                 columnMapping,
@@ -189,7 +189,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p -> p.getFlavors().stream().map(f -> new ExtendedFlavor(p.getId(), f)))
                         .collect(Collectors.toList()),
                 columnMapping,
@@ -209,7 +209,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p -> p.getNetworks().stream().map(n -> new ExtendedNetwork(p.getId(), n)))
                         .collect(Collectors.toList()),
                 columnMapping,
@@ -232,7 +232,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p -> 
                                 p.getNetworks().stream().flatMap(n -> 
                                         n.getSubnets().stream()
@@ -385,7 +385,7 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         return prepareData(
-                () -> projectsAware.getProjects(Optional.empty()).stream()
+                () -> projectsAware.getProjects().stream()
                         .flatMap(p ->
                                 p.getMetadata().keySet().stream()
                                         .map(k -> new EntityMetadata(p.getId(), k.toString().toLowerCase(), p.getMetadata().get(k)))

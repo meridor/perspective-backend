@@ -51,8 +51,8 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public <T> BlockingQueue<T> getQueue(String name) {
         return isAvailable() ?
-                hazelcastInstance.<T>getQueue(name) :
-                new LinkedBlockingQueue<T>();
+                hazelcastInstance.getQueue(name) :
+                new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -112,11 +112,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Project> getProjects(Optional<String> query) throws IllegalQueryException {
-        if (query.isPresent() && !query.get().isEmpty()) {
-            Predicate predicate = getPredicateFromQuery(query.get());
-            return getProjectsByIdMap().values(predicate);
-        }
+    public Collection<Project> getProjects() throws IllegalQueryException {
         return getProjectsByIdMap().values();
     }
 

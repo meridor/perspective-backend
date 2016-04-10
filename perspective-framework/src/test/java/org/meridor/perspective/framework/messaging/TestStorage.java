@@ -92,7 +92,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public Collection<Project> getProjects(Optional<String> query) throws IllegalQueryException {
+    public Collection<Project> getProjects() throws IllegalQueryException {
         return projectMap.values();
     }
 
