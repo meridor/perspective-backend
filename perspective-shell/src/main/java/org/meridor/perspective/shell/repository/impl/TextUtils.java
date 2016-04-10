@@ -345,6 +345,10 @@ public final class TextUtils {
         return routeByKey(null, routes, null, null);
     }
     
+    public static <T> Optional<T> routeByKey(Map<Predicate<String>, Function<String, T>> routes, Consumer<String> onInvalidKey) {
+        return routeByKey(null, routes, onInvalidKey, null);
+    }
+    
     public static <T> Optional<T> routeByKey(Map<Predicate<String>, Function<String, T>> routes, Consumer<String> onInvalidKey, Consumer<Exception> onException) {
         return routeByKey(null, routes, onInvalidKey, onException);
     }
@@ -363,6 +367,8 @@ public final class TextUtils {
                 }
                 if (onInvalidKey != null) {
                     onInvalidKey.accept(key);
+                } else {
+                    return Optional.empty();
                 }
             }
         } catch (Exception e) {

@@ -1,10 +1,8 @@
 package org.meridor.perspective.shell.validator.impl;
 
-import org.meridor.perspective.shell.repository.FiltersAware;
-import org.meridor.perspective.shell.validator.Field;
+import org.meridor.perspective.shell.validator.FilterProcessor;
 import org.meridor.perspective.shell.validator.ObjectValidator;
 import org.meridor.perspective.shell.validator.Validator;
-import org.meridor.perspective.shell.validator.annotation.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -15,13 +13,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.meridor.perspective.shell.repository.impl.TextUtils.enumerateValues;
-
 @Component
 public class ObjectValidatorImpl implements ObjectValidator {
 
     @Autowired
-    private FiltersAware filtersAware;
+    private FilterProcessor filterProcessor;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -33,18 +29,25 @@ public class ObjectValidatorImpl implements ObjectValidator {
     @Override
     public Set<String> validate(Object object) {
         Set<String> errors = new HashSet<>();
-
+        filterProcessor.applyFilters(object);
         Arrays.stream(object.getClass().getDeclaredFields())
                 .forEach(f -> {
-                        f.setAccessible(true);
-                        Object value = getValueFromFieldOrFilters(object, f, errors);
-                        getValidators().stream()
-                            .filter(v -> f.isAnnotationPresent(v.getAnnotationClass()))
-                            .forEach(v -> {
-                                Set<String> fieldErrors = validateField(v, object, value, f);
-                                errors.addAll(fieldErrors);
-                            });
-                    }
+                            try {
+                                f.setAccessible(true);
+                                Object value = f.get(object);
+                                getValidators().stream()
+                                    .filter(v -> f.isAnnotationPresent(v.getAnnotationClass()))
+                                    .forEach(v -> {
+                                        Set<String> fieldErrors = validateField(v, object, value, f);
+                                        errors.addAll(fieldErrors);
+                                    });
+                            } catch (IllegalAccessException e) {
+                                errors.add(String.format(
+                                        "Failed to read field \"%s\" value",
+                                        f.getName()
+                                ));
+                            }
+                        }
                 );
         
         return errors;
@@ -68,35 +71,7 @@ public class ObjectValidatorImpl implements ObjectValidator {
         }
         return errors;
     }
-    
-    private Object getValueFromFieldOrFilters(Object object, java.lang.reflect.Field f, Set<String> errors) {
-        Object value = null;
-        try {
-            value = f.get(object);
-            if (value == null && f.isAnnotationPresent(Filter.class)) {
-                Field field = f.getAnnotation(Filter.class).value();
-                if (filtersAware.hasFilter(field)) {
-                    Set<String> filterValues = filtersAware.getFilter(field);
-                    if (isSet(f.getType())) {
-                        value = filterValues;
-                    } else if (filterValues.size() > 0) {
-                        value = enumerateValues(filterValues);
-                    }
-                    if (value != null) {
-                        f.set(object, value);
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            errors.add(String.format(
-                    "Failed to read field \"%s\" value",
-                    f.getName()
-            ));
 
-        }
-        return value;
-    }
-    
     private boolean isSet(Class<?> cls) {
         return Set.class.isAssignableFrom(cls);
     }

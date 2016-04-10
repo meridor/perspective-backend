@@ -20,8 +20,8 @@ public class RequestValidationAspect {
 
     @Around("execution(public * org.meridor.perspective.shell.request.Request+.getPayload(..))")
     public Object getPayload(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object query = joinPoint.getTarget();
-        Set<String> validationErrors = objectValidator.validate(query);
+        Object request = joinPoint.getTarget();
+        Set<String> validationErrors = objectValidator.validate(request);
         if (!validationErrors.isEmpty()) {
             throw new InvalidRequestException(validationErrors);
         }

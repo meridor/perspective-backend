@@ -41,12 +41,12 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Project name") String name,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
-        FindProjectsRequest showProjectsQuery = requestProvider.get(FindProjectsRequest.class)
+        FindProjectsRequest findProjectsRequest = requestProvider.get(FindProjectsRequest.class)
                 .withIds(id)
                 .withClouds(cloud)
                 .withNames(name);
         validateExecuteShowResult(
-                showProjectsQuery,
+                findProjectsRequest,
                 new String[]{"Name", "Cloud"},
                 q -> {
                     List<FindProjectsResult> projects = projectsRepository.findProjects(q);
@@ -63,12 +63,12 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindFlavorsRequest showFlavorsQuery = requestProvider.get(FindFlavorsRequest.class)
+        FindFlavorsRequest findFlavorsRequest = requestProvider.get(FindFlavorsRequest.class)
                 .withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
-                showFlavorsQuery,
+                findFlavorsRequest,
                 new String[]{"Name", "Project", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
                 q -> {
                     List<FindFlavorsResult> flavors = projectsRepository.findFlavors(q);
@@ -92,11 +92,11 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindNetworksRequest showNetworksQuery = requestProvider.get(FindNetworksRequest.class).withNames(name)
+        FindNetworksRequest findNetworksRequest = requestProvider.get(FindNetworksRequest.class).withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
-                showNetworksQuery,
+                findNetworksRequest,
                 new String[]{"Name", "Project", "Subnets", "State", "Is Shared"},
                 q -> {
                     List<FindNetworksResult> networks = projectsRepository.findNetworks(q);
@@ -119,11 +119,11 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindKeypairsRequest showKeypairsQuery = requestProvider.get(FindKeypairsRequest.class).withNames(name)
+        FindKeypairsRequest findKeypairsRequest = requestProvider.get(FindKeypairsRequest.class).withNames(name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
-                showKeypairsQuery,
+                findKeypairsRequest,
                 new String[]{"Name", "Fingerprint", "Project"},
                 q -> {
                     List<FindKeypairsResult> keypairs = projectsRepository.findKeypairs(q);
@@ -144,7 +144,7 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "cloud", help = "Cloud type") String cloud,
             @CliOption(key = "project", help = "Project names") String project
     ) {
-        FindInstancesRequest showInstancesQuery = requestProvider.get(FindInstancesRequest.class)
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withFlavors(flavor)
@@ -153,7 +153,7 @@ public class ShowCommands extends BaseCommands {
                 .withClouds(cloud)
                 .withProjectNames(project);
         validateExecuteShowResult(
-                showInstancesQuery,
+                findInstancesRequest,
                 new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 q -> {
                     List<FindInstancesResult> instances = instancesRepository.findInstances(q);
@@ -179,13 +179,13 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "state", help = "Image state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindImagesRequest showImagesQuery = requestProvider.get(FindImagesRequest.class)
+        FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class)
                 .withIds(id)
                 .withNames(name)
                 .withStates(state)
                 .withClouds(cloud);
         validateExecuteShowResult(
-                showImagesQuery,
+                findImagesRequest,
                 new String[]{"Name", "Projects", "State", "Last modified"},
                 q -> {
                     List<FindImagesResult> images = imagesRepository.findImages(q);
@@ -208,10 +208,10 @@ public class ShowCommands extends BaseCommands {
         if (!Desktop.isDesktopSupported()) {
             warn("This operation is not supported on your platform.");
         }
-        FindInstancesRequest showInstancesQuery = requestProvider.get(FindInstancesRequest.class)
+        FindInstancesRequest showInstancesRequest = requestProvider.get(FindInstancesRequest.class)
                 .withNames(names);
         validateExecuteShowResult(
-                showInstancesQuery,
+                showInstancesRequest,
                 q -> {
                     Map<String, Map<String, String>> instancesMetadata = instancesRepository.getInstancesMetadata(q);
                     if (instancesMetadata.isEmpty()) {

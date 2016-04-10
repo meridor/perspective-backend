@@ -61,7 +61,7 @@ public class ObjectValidatorImplTest {
         assertThat(objectValidator.validate(invalidObject), hasSize(1));
     }
     
-    private Object getFieldValue(Object instance, String fieldName) throws Exception {
+    public static Object getFieldValue(Object instance, String fieldName) throws Exception {
         java.lang.reflect.Field field = instance.getClass()
                 .getDeclaredField(fieldName);
         field.setAccessible(true);

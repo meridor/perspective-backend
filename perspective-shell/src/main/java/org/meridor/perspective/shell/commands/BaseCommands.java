@@ -1,23 +1,24 @@
 package org.meridor.perspective.shell.commands;
 
-import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.misc.Pager;
 import org.meridor.perspective.shell.misc.TableRenderer;
+import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.repository.SettingsAware;
+import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.meridor.perspective.shell.request.InvalidRequestException;
 import org.meridor.perspective.shell.request.Request;
+import org.meridor.perspective.shell.validator.FilterProcessor;
 import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 
@@ -29,6 +30,12 @@ public abstract class BaseCommands implements CommandMarker {
 
     @Autowired
     private SettingsAware settingsAware;
+
+    @Autowired
+    private FiltersAware filtersAware;
+    
+    @Autowired
+    private FilterProcessor filterProcessor;
 
     @Autowired
     private Logger logger;
@@ -65,17 +72,25 @@ public abstract class BaseCommands implements CommandMarker {
     }
     
     protected void tableOrNothing(String[] columns, List<String[]> rows) {
+        tableOrNothing(columns, rows, true);
+    }
+    
+    protected void tableOrNothing(String[] columns, List<String[]> rows, boolean showMessage) {
         final Integer PAGE_SIZE = pager.getPageSize();
         if (!rows.isEmpty()){
             if (rows.size() > PAGE_SIZE) {
-                ok(String.format(
-                        "Results contain %d entries. Showing first %d entries.",
-                        rows.size(),
-                        PAGE_SIZE
-                ));
+                if (showMessage) {
+                    ok(String.format(
+                            "Results contain %d entries. Showing first %d entries.",
+                            rows.size(),
+                            PAGE_SIZE
+                    ));
+                }
                 pager.page(columns, rows);
             } else {
-                ok(String.format("Results contain %d entries.", rows.size()));
+                if (showMessage) {
+                    ok(String.format("Results contain %d entries.", rows.size()));
+                }
                 ok(tableRenderer.render(columns, rows));
             }
         } else {
@@ -102,13 +117,38 @@ public abstract class BaseCommands implements CommandMarker {
             String[] columns = confirmationColumnsProvider.apply(confirmationData);
             List<String[]> rows = confirmationRowsProvider.apply(confirmationData);
             if (rows.size() == 0) {
-                error("Nothing selected for this operation. Exiting.");
+                if (filterProcessor.hasAppliedFilters(request)) {
+                    ok("Nothing selected for this operation. However the following filters are set:");
+                    listFilters();
+                    ok("Would you like to search again without filters? Press y to proceed, n or q to abort operation.");
+                    Optional<Boolean> confirmationResult = routeByKey(new LinkedHashMap<Predicate<String>, Function<String, Boolean>>() {
+                        {
+                            put(TextUtils::isYesKey, k -> true);
+                            put(k -> isNoKey(k) || isExitKey(k), k -> false);
+                        }
+                    });
+                    if (confirmationResult.isPresent() && confirmationResult.get()) {
+                        ok("Processing...");
+                        R newRequest = filterProcessor.unsetFilters(request);
+                        validateConfirmExecuteShowStatus(
+                                newRequest,
+                                payloadProcessor,
+                                confirmationMessageProvider,
+                                confirmationColumnsProvider,
+                                confirmationRowsProvider,
+                                taskDataProvider,
+                                task
+                        );
+                    }
+                } else {
+                    error("Nothing selected for this operation. Exiting.");
+                }
                 return;
             }
             ok(confirmationMessage);
-            tableOrNothing(columns, rows);
+            tableOrNothing(columns, rows, false);
             if (confirmOperation(
-                    () -> tableOrNothing(columns, rows)
+                    () -> tableOrNothing(columns, rows, false)
             )) {
                 I taskData = taskDataProvider.apply(request, confirmationData);
                 Set<String> errors = task.apply(taskData);
@@ -121,6 +161,11 @@ public abstract class BaseCommands implements CommandMarker {
         }
     }
 
+    private void listFilters() {
+        Map<String, String> allFilters = filtersAware.getFilters(false);
+        allFilters.keySet().forEach(k -> ok(String.format("%s = %s", k, allFilters.get(k))));
+    }
+    
     protected <T, R extends Request<T>> void validateConfirmExecuteShowStatus(
             R request,
             Function<T, String> confirmationMessageProvider,
@@ -140,39 +185,53 @@ public abstract class BaseCommands implements CommandMarker {
     }
 
     private boolean confirmOperation(Runnable repeatAction) {
-        try {
-            ok("Press y to proceed, n or q to abort operation, r to repeat this list again.");
-            if (alwaysSayYes()) {
-                ok("Proceeding as always_say_yes mode is enabled.");
-                return true;
-            }
-            ConsoleReader consoleReader = new ConsoleReader();
-            while (true) {
-                String key = String.valueOf((char) consoleReader.readCharacter());
-                if (isYesKey(key)) {
-                    return true;
-                } else if (isNoKey(key) || isExitKey(key)) {
-                    return false;
-                } else if (isRepeatKey(key)) {
+        ok("Press y to proceed, n or q to abort operation, r to repeat this list again.");
+        if (alwaysSayYes()) {
+            ok("Proceeding as always_say_yes mode is enabled.");
+            return true;
+        }
+        Map<Predicate<String>, Function<String, Boolean>> routes = new LinkedHashMap<Predicate<String>, Function<String, Boolean>>(){
+            {
+                put(TextUtils::isYesKey, key -> true);
+                put(key -> isNoKey(key) || isExitKey(key), key -> false);
+                put(TextUtils::isRepeatKey, key -> {
                     repeatAction.run();
                     return confirmOperation(repeatAction);
-                } else {
-                    warn(String.format("Invalid key: %s. Please try again.", key));
-                }
+                });
             }
-        } catch (IOException e) {
-            error(String.format("Failed to confirm action: %s", e.getMessage()));
-            return false;
-        }
+        };
+        Optional<Boolean> result = routeByKey(
+                routes,
+                k -> warn(String.format("Invalid key: %s. Please try again.", k)),
+                e -> error(String.format("Failed to read key: %s", e.getMessage()))
+        );
+        return result.isPresent() && result.get();
     }
     
     protected <T extends Request<?>> void validateExecuteShowResult(
-            T query,
+            T request,
             String[] columns,
             Function<T, List<String[]>> task
     ) {
         try {
-            List<String[]> data = task.apply(query);
+            List<String[]> data = task.apply(request);
+            if (data.isEmpty() && filterProcessor.hasAppliedFilters(request)) {
+                ok("Nothing selected. However the following filters are set:");
+                listFilters();
+                ok("Would you like to search again without filters? Press y to proceed, n or q to abort operation.");
+                Optional<Boolean> confirmationResult = routeByKey(new LinkedHashMap<Predicate<String>, Function<String, Boolean>>() {
+                    {
+                        put(TextUtils::isYesKey, k -> true);
+                        put(k -> isNoKey(k) || isExitKey(k), k -> false);
+                    }
+                });
+                if (confirmationResult.isPresent() && confirmationResult.get()) {
+                    ok("Processing...");
+                    T newRequest = filterProcessor.unsetFilters(request);
+                    validateExecuteShowResult(newRequest, columns, task);
+                    return;
+                }
+            }
             tableOrNothing(columns, data);
         } catch (InvalidRequestException e) {
             error(joinLines(e.getErrors()));
@@ -180,11 +239,11 @@ public abstract class BaseCommands implements CommandMarker {
     }
     
     protected <T extends Request<?>> void validateExecuteShowResult(
-            T query,
+            T request,
             Consumer<T> task
     ) {
         try {
-            task.accept(query);
+            task.accept(request);
         } catch (InvalidRequestException e) {
             error(joinLines(e.getErrors()));
         }

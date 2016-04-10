@@ -76,7 +76,10 @@ public class PagerImpl implements Pager {
                     }
                 };
 
-                Optional<Integer> nextPageCandidate = routeByKey(routes);
+                Optional<Integer> nextPageCandidate = routeByKey(
+                        routes,
+                        k -> logger.warn(String.format("Invalid key: %s. Please try again.", k))
+                );
                 if (!nextPageCandidate.isPresent() || nextPageCandidate.get() < 1) {
                     break;
                 }
