@@ -1,6 +1,7 @@
 package org.meridor.perspective.sql.impl.parser;
 
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.meridor.perspective.beans.BooleanRelation;
@@ -39,7 +40,26 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private class InternalErrorListener extends BaseErrorListener {
         @Override
         public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-            errors.add(String.format("Parse error: \"%s\" near \"%s\" at %d:%d", msg, String.valueOf(offendingSymbol), line, charPositionInLine));
+            if (e instanceof InputMismatchException || e instanceof NoViableAltException) {
+                String symbol = (offendingSymbol instanceof Token) ?
+                        ((Token) offendingSymbol).getText() : 
+                        String.valueOf(offendingSymbol);
+                errors.add(String.format(
+                        "Unexpected input \'%s\' at %d:%d. Valid symbols are: %s",
+                        symbol,
+                        line,
+                        charPositionInLine,
+                        e.getExpectedTokens().toString(recognizer.getVocabulary())
+                ));
+            } else {
+                errors.add(String.format("Parse error: \'%s\' near \'%s\' at %d:%d", msg, String.valueOf(offendingSymbol), line, charPositionInLine));
+            }
+        }
+    }
+    
+    private static class ParseException extends RuntimeException {
+        ParseException(String msg) {
+            super(msg);
         }
     }
     
@@ -54,7 +74,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private Optional<SQLParser.Order_clauseContext> orderByClauseContext = Optional.empty();
     
     private QueryType queryType = QueryType.UNKNOWN;
-    private Set<String> errors = new HashSet<>();
+    private Set<String> errors = new LinkedHashSet<>();
     private Map<String, Object> selectionMap = new LinkedHashMap<>();
     private Map<String, String> tableAliases = new HashMap<>();
     private Optional<DataSource> dataSource = Optional.empty();
@@ -69,18 +89,22 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     @Override
     public void parse(String sql) throws SQLSyntaxErrorException {
-        CharStream input = new CaseInsensitiveInputStream(sql);
-        ANTLRErrorListener errorListener = new InternalErrorListener();
-        SQLLexer sqlLexer = new SQLLexer(input);
-        sqlLexer.removeErrorListeners();
-        sqlLexer.addErrorListener(errorListener);
-        CommonTokenStream commonTokenStream = new CommonTokenStream(sqlLexer);
-        SQLParser sqlParser = new SQLParser(commonTokenStream);
-        sqlParser.removeErrorListeners();
-        sqlParser.addErrorListener(errorListener);
-        ParseTree parseTree = sqlParser.query();
-        ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(this, parseTree);
+        try {
+            CharStream input = new CaseInsensitiveInputStream(sql);
+            ANTLRErrorListener errorListener = new InternalErrorListener();
+            SQLLexer sqlLexer = new SQLLexer(input);
+            sqlLexer.removeErrorListeners();
+            sqlLexer.addErrorListener(errorListener);
+            CommonTokenStream commonTokenStream = new CommonTokenStream(sqlLexer);
+            SQLParser sqlParser = new SQLParser(commonTokenStream);
+            sqlParser.removeErrorListeners();
+            sqlParser.addErrorListener(errorListener);
+            ParseTree parseTree = sqlParser.query();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            walker.walk(this, parseTree);
+        } catch (ParseException e) {
+            errors.add(e.getMessage());
+        }
         if (!errors.isEmpty()) {
             String message = errors.stream().collect(Collectors.joining("; "));
             throw new SQLSyntaxErrorException(message);
@@ -183,7 +207,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (complexBooleanExpression.LPAREN() != null && complexBooleanExpression.complex_boolean_expression(0) != null) {
             return processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
         }
-        throw new UnsupportedOperationException("Unknown boolean expression type");
+        throw new ParseException(String.format("Unknown boolean expression: \'%s\'", complexBooleanExpression.getText()));
     }
     
     private BinaryBooleanExpression processComplexBooleanExpressionsList(
@@ -207,7 +231,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (unaryBooleanOperator.NOT() != null) {
             return UnaryBooleanOperator.NOT;
         }
-        throw new UnsupportedOperationException("Unknown unary boolean operator");
+        throw new ParseException(String.format("Unknown unary boolean operator: \'%s\'", unaryBooleanOperator.getText()));
     }
     
     private BinaryBooleanOperator processBinaryBooleanOperator(SQLParser.Binary_boolean_operatorContext binaryBooleanOperator) {
@@ -218,7 +242,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (binaryBooleanOperator.XOR() != null) {
             return BinaryBooleanOperator.XOR;
         }
-        throw new UnsupportedOperationException("Unknown binary boolean operator");
+        throw new ParseException(String.format("Unknown binary boolean operator: \'%s\'", binaryBooleanOperator.getText()));
     }
     
     private Object processSimpleBooleanExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
@@ -235,7 +259,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (simpleBooleanExpression.IN() != null && simpleBooleanExpression.expression().size() >= 2) {
             return processInExpression(simpleBooleanExpression);
         }
-        throw new UnsupportedOperationException("Unsupported simple boolean expression type");
+        throw new ParseException(String.format("Unsupported simple boolean expression: \'%s\'", simpleBooleanExpression.getText()));
     }
 
     private Object getExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression, int pos) {
@@ -314,7 +338,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (relationalOperator.NOT_EQ() != null) {
             return NOT_EQUAL;
         }
-        throw new UnsupportedOperationException("Unknown relational operator");
+        throw new ParseException(String.format("Unknown relational operator: \'%s\'", relationalOperator.getText()));
     }
 
     private void processFromClause() {
@@ -421,7 +445,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (tableReferenceContext.table_join() != null) {
             return processTableJoin(tableReferenceContext.table_join());
         }
-        throw new UnsupportedOperationException("Unsupported table reference type");
+        throw new ParseException(String.format("Unsupported table reference type: \'%s\'", tableReferenceContext.getText()));
     }
 
     private DataSource processTableJoin(SQLParser.Table_joinContext tableJoinContext) {
@@ -443,7 +467,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     } else if (jc.natural_join_clause() != null) {
                         return jc.natural_join_clause().table_atom();
                     }
-                    throw new UnsupportedOperationException("Unknown join clause type");
+                    throw new ParseException(String.format("Unknown join clause type: %s", jc.getText()));
                 })
                 .collect(Collectors.toMap(Function.identity(), this::processTableAtom));
     }
@@ -469,7 +493,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (joinClauseContext.natural_join_clause() != null) {
             return processNaturalJoinClause(tableAtoms, joinClauseContext.natural_join_clause());
         }
-        throw new UnsupportedOperationException("Unknown join clause type");
+        throw new ParseException(String.format("Unknown join clause type: \'%s\'", joinClauseContext.getText()));
     }
 
     private DataSource processInnerJoinClause(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Inner_join_clauseContext innerJoinClauseContext) {
@@ -516,7 +540,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     .collect(Collectors.toList());
             dataSource.getJoinColumns().addAll(joinColumns);
         } else {
-            throw new UnsupportedOperationException("Unsupported join condition type");
+            throw new ParseException(String.format("Unsupported join condition type: \'%s\'", joinConditionContext.getText()));
         }
     }
 
@@ -526,7 +550,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (tableAtom.LPAREN() != null) {
             return processTableReferences(tableAtom.table_references()).get();
         }
-        throw new UnsupportedOperationException("Unsupported table atom type");
+        throw new ParseException(String.format("Unsupported table atom type: \'%s\'", tableAtom.getText()));
     }
 
     private DataSource processTable(SQLParser.Table_nameContext tableNameContext, Optional<SQLParser.Alias_clauseContext> aliasClauseContextCandidate) {
@@ -585,7 +609,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (expression.binary_arithmetic_operator() != null) {
             return processBinaryArithmeticExpression(expression.expression(0), expression.binary_arithmetic_operator(), expression.expression(1));
         }
-        throw new UnsupportedOperationException("Unsupported expression type");
+        throw new ParseException(String.format("Unsupported expression type: \'%s\'", expression.getText()));
     }
 
     private AliasExpressionPair processLiteral(SQLParser.LiteralContext literal) {
@@ -605,7 +629,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (literal.FALSE() != null) {
             return pair("FALSE", false);
         }
-        throw new IllegalArgumentException("Unsupported literal type");
+        throw new ParseException(String.format("Unsupported literal type: \'%s\'", literal.getText()));
     }
 
     private static String stripApostrophes(String str) {
@@ -685,7 +709,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void foreachExpression(List<SQLParser.ExpressionContext> expressions, Consumer<AliasExpressionPair> action) {
-        expressions.stream().map(this::processExpression).forEach(action::accept);
+        expressions.stream().map(this::processExpression).forEach(action);
     }
     
     private AliasExpressionPair processFunctionCall(SQLParser.Function_callContext functionCall) {
@@ -723,7 +747,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (unaryArithmeticOperator.MINUS() != null) {
             return UnaryArithmeticOperator.MINUS;
         }
-        throw new UnsupportedOperationException("Unknown unary arithmetic operator");
+        throw new ParseException(String.format("Unknown unary arithmetic operator: \'%s\'", unaryArithmeticOperator.getText()));
     }
 
     private AliasExpressionPair processBinaryArithmeticExpression(
@@ -762,7 +786,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (binaryArithmeticOperator.SHIFT_RIGHT() != null) {
             return BinaryArithmeticOperator.SHIFT_RIGHT;
         }
-        throw new UnsupportedOperationException("Unknown binary arithmetic operator");
+        throw new ParseException(String.format("Unknown binary arithmetic operator: \'%s\'", binaryArithmeticOperator.getText()));
     }
 
     @Override
