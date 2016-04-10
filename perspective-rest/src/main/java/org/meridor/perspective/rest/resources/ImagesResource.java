@@ -2,8 +2,6 @@ package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.rest.services.ImagesService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

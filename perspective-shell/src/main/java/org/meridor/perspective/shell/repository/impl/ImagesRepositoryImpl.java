@@ -2,7 +2,6 @@ package org.meridor.perspective.shell.repository.impl;
 
 import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.repository.ApiProvider;
 import org.meridor.perspective.shell.repository.ImagesRepository;
 import org.meridor.perspective.shell.repository.QueryRepository;

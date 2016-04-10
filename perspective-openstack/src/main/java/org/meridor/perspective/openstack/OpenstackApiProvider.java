@@ -18,7 +18,7 @@ public class OpenstackApiProvider {
 
     //TODO: probably implement API pooling
 
-    private static final Iterable<Module> LOGGING_MODULES = ImmutableSet.<Module> of(new SLF4JLoggingModule());
+    private static final Iterable<Module> LOGGING_MODULES = ImmutableSet.of(new SLF4JLoggingModule());
 
     public NovaApi getNovaApi(Cloud cloud) {
         

@@ -5,7 +5,6 @@ import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
 import static org.meridor.perspective.sql.impl.table.TableName.FLAVORS;
-import static org.meridor.perspective.sql.impl.table.TableName.KEYPAIRS;
 
 @Component
 public class FlavorsTable implements Table {

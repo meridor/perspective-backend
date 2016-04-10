@@ -1,7 +1,6 @@
 package org.meridor.perspective.shell.repository.impl;
 
 import org.meridor.perspective.shell.misc.PromptManager;
-import org.meridor.perspective.shell.misc.ShellInformationProvider;
 import org.meridor.perspective.shell.repository.FiltersAware;
 import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.repository.SettingsRepository;

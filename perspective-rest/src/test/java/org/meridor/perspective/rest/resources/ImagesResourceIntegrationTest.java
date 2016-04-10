@@ -1,7 +1,6 @@
 package org.meridor.perspective.rest.resources;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.framework.EntityGenerator;

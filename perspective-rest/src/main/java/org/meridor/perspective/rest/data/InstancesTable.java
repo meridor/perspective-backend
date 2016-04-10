@@ -4,8 +4,6 @@ import org.meridor.perspective.sql.impl.table.Table;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
-
 import static org.meridor.perspective.sql.impl.table.TableName.INSTANCES;
 
 @Component

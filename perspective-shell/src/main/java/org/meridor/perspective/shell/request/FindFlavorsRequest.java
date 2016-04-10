@@ -11,10 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static java.lang.String.valueOf;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.validator.Field.*;
-import static org.meridor.perspective.sql.DataUtils.get;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Component

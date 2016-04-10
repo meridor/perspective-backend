@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 import static org.meridor.perspective.events.EventFactory.now;
-import static org.meridor.perspective.shell.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.repository.impl.TextUtils.replacePlaceholders;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 

@@ -5,7 +5,6 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.InstancesAware;

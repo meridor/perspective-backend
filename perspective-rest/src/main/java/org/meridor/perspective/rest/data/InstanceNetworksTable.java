@@ -5,7 +5,6 @@ import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
 import static org.meridor.perspective.sql.impl.table.TableName.INSTANCE_NETWORKS;
-import static org.meridor.perspective.sql.impl.table.TableName.PROJECT_IMAGES;
 
 @Component
 public class InstanceNetworksTable implements Table {

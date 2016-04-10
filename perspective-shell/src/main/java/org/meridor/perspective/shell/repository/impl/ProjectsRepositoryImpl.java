@@ -2,7 +2,6 @@ package org.meridor.perspective.shell.repository.impl;
 
 import org.meridor.perspective.shell.repository.ProjectsRepository;
 import org.meridor.perspective.shell.repository.QueryRepository;
-import org.meridor.perspective.shell.repository.SettingsAware;
 import org.meridor.perspective.shell.request.FindFlavorsRequest;
 import org.meridor.perspective.shell.request.FindKeypairsRequest;
 import org.meridor.perspective.shell.request.FindNetworksRequest;
@@ -11,7 +10,6 @@ import org.meridor.perspective.shell.result.FindFlavorsResult;
 import org.meridor.perspective.shell.result.FindKeypairsResult;
 import org.meridor.perspective.shell.result.FindNetworksResult;
 import org.meridor.perspective.shell.result.FindProjectsResult;
-import org.meridor.perspective.shell.validator.Setting;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;

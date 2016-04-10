@@ -4,7 +4,6 @@ import org.meridor.perspective.sql.impl.table.Table;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.CLOUDS;
 import static org.meridor.perspective.sql.impl.table.TableName.KEYPAIRS;
 
 @Component
