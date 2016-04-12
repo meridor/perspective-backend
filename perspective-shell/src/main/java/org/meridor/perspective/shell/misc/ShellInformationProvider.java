@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.misc;
 
+import org.meridor.perspective.shell.repository.impl.TextUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.shell.plugin.BannerProvider;
@@ -29,8 +30,7 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
 
     @Override
     public String getVersion() {
-        Optional<String> version = Optional.ofNullable(getClass().getPackage().getImplementationVersion());
-        return version.isPresent() ? version.get() : "devel";
+        return TextUtils.getVersion();
     }
 
     @Override

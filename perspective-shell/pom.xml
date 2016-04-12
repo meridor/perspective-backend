@@ -12,6 +12,7 @@
 
     <properties>
         <prettytime.version>4.0.0.Final</prettytime.version>
+        <args4j.version>2.33</args4j.version>
     </properties>
     
     <build>
@@ -118,6 +119,11 @@
             <groupId>org.ocpsoft.prettytime</groupId>
             <artifactId>prettytime</artifactId>
             <version>${prettytime.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>args4j</groupId>
+            <artifactId>args4j</artifactId>
+            <version>${args4j.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

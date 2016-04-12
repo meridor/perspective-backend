@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell;
 
+import org.meridor.perspective.shell.commands.noninteractive.NonInteractiveMain;
 import org.springframework.shell.Bootstrap;
 
 import java.io.IOException;
@@ -8,7 +9,11 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         registerSigIntHandler();
-        Bootstrap.main(args);
+        if (args.length > 0) {
+            new NonInteractiveMain(args).start();
+        } else {
+            Bootstrap.main(args);
+        }
     }
     
     private static void registerSigIntHandler() {

@@ -379,6 +379,11 @@ public final class TextUtils {
         }
     }
 
+    public static String getVersion() {
+        Optional<String> version = Optional.ofNullable(TextUtils.class.getPackage().getImplementationVersion());
+        return version.isPresent() ? version.get() : "devel";
+    }
+    
     private TextUtils() {
         
     }
