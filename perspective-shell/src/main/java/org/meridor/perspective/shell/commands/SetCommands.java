@@ -6,6 +6,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,9 +27,19 @@ public class SetCommands extends BaseCommands {
     
     @CliCommand(value = "unset", help = "Unset filter or option")
     public void unset(
-            @CliOption(key = "", mandatory = true, help = "Data to unset") String data
+            @CliOption(key = "", mandatory = false, help = "Data to unset") String data,
+            @CliOption(key = "filters", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Show all available settings") boolean filters
+            
     ) {
-        Set<String> errors = settingsRepository.unset(data);
+        Set<String> errors = new LinkedHashSet<>();
+        if (filters) {
+            settingsRepository.showFilters(false).keySet()
+                    .forEach(k -> settingsRepository.unset(k));
+        } else if (data == null) {
+            errors.add("Please specify a filter or setting to unset");
+        } else {
+            errors.addAll(settingsRepository.unset(data));
+        }
         okOrShowErrors(errors);
     }
 

@@ -30,6 +30,7 @@ public class CommandsTest {
                 { "show filters" },
                 { "set projects = test" },
                 { "set page_size = 20" },
+                { "unset --filters" },
                 { "show projects" },
                 { "show networks" },
                 { "show flavors" },
