@@ -8,6 +8,7 @@ public enum Setting {
     DATE_FORMAT,
     INSTANCE_SUFFIXES,
     PAGE_SIZE,
+    PAGING_MODE,
     SHOW_BOTTOM_TABLE_HEADER,
     TABLE_WIDTH;
 

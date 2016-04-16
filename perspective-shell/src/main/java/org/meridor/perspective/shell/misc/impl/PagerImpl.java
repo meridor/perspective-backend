@@ -10,10 +10,8 @@ import org.meridor.perspective.shell.validator.Setting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.OutputStream;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -24,6 +22,7 @@ import static org.meridor.perspective.shell.repository.impl.TextUtils.*;
 public class PagerImpl implements Pager {
     
     private static final Integer DEFAULT_PAGE_SIZE = 20;
+    public static final String PAGING_MODE_EXTERNAL = "external"; 
     
     @Autowired
     private Logger logger;
@@ -36,7 +35,9 @@ public class PagerImpl implements Pager {
     
     @Override
     public void page(String[] columns, List<String[]> rows) {
-        page(preparePages(columns, rows));
+        if (!isExternalPaging() || !pageExternal(preparePage(columns, rows))) {
+            page(preparePages(columns, rows));
+        }
     }
 
     @Override
@@ -95,6 +96,42 @@ public class PagerImpl implements Pager {
         }
     }
 
+    private boolean pageExternal(String data) {
+        Map<String, Map<String, String>> candidateCommands = new LinkedHashMap<String, Map<String, String>>(){
+            {
+                //We try the following commands as external pagers
+                put("less", Collections.singletonMap("LESS", "FRX"));
+                put("more", Collections.emptyMap());
+                put("most", Collections.emptyMap());
+            }
+        };
+        for (String command : candidateCommands.keySet()) {
+            Map<String, String> environment = candidateCommands.get(command);
+            if (pageExternalCommand(data, command, environment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean pageExternalCommand(String data, String command, Map<String, String> environment) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            processBuilder.redirectErrorStream(true);
+            processBuilder.inheritIO();
+            processBuilder.redirectInput(ProcessBuilder.Redirect.PIPE);
+            processBuilder.environment().putAll(environment);
+            Process process = processBuilder.start();
+            OutputStream outputStream = process.getOutputStream();
+            outputStream.write(data.getBytes());
+            outputStream.close();
+            int returnCode = process.waitFor();
+            return returnCode == 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     private void showPage(final int pageNumber, final int numPages, List<String> entries) {
         if (numPages > 1) {
             logger.ok(String.format("Showing page %d of %d:", pageNumber, numPages));
@@ -108,11 +145,22 @@ public class PagerImpl implements Pager {
                 settingsAware.getSettingAs(Setting.PAGE_SIZE, Integer.class) :
                 DEFAULT_PAGE_SIZE;
     }
-
+    
+    private boolean isExternalPaging() {
+        return 
+                settingsAware.hasSetting(Setting.PAGING_MODE) &&
+                settingsAware.getSettingAs(Setting.PAGING_MODE, String.class)
+                        .equals(PAGING_MODE_EXTERNAL);
+    }
+    
     private List<String> preparePages(String[] columns, List<String[]> rows) {
         return Lists.partition(rows, getPageSize()).stream().
-                map(b -> tableRenderer.render(columns, b))
+                map(b -> preparePage(columns, b))
                 .collect(Collectors.toList());
+    }
+    
+    private String preparePage(String[] columns, List<String[]> rows) {
+        return tableRenderer.render(columns, rows);
     }
 
 }
