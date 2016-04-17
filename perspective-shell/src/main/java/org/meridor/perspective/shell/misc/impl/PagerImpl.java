@@ -111,6 +111,7 @@ public class PagerImpl implements Pager {
                 return true;
             }
         }
+        logger.warn("Failed to show data in external pager. Using built-in instead.");
         return false;
     }
     
