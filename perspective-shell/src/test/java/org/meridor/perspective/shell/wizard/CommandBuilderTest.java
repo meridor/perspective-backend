@@ -1,7 +1,7 @@
 package org.meridor.perspective.shell.wizard;
 
 import org.junit.Test;
-import org.meridor.perspective.shell.commands.CommandArgument;
+import org.meridor.perspective.shell.commands.interactive.CommandArgument;
 
 import java.util.*;
 

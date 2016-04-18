@@ -9,5 +9,7 @@ public interface Pager {
     void page(List<String> pages);
     
     int getPageSize();
+
+    boolean isExternalPaging();
     
 }

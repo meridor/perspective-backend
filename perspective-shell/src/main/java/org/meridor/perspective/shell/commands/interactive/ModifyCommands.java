@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 import org.meridor.perspective.shell.repository.InstancesRepository;
 import org.meridor.perspective.shell.request.FindInstancesRequest;

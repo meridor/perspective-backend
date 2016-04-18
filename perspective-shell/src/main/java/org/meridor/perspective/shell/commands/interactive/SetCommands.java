@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 import org.meridor.perspective.shell.repository.SettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;

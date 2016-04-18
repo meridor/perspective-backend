@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.meridor.perspective.shell.commands.CommandArgument.*;
+import static org.meridor.perspective.shell.commands.interactive.CommandArgument.*;
 
 @Component
 public class AddInstancesWizard extends BaseWizard {

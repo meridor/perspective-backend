@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard;
 
-import org.meridor.perspective.shell.commands.CommandArgument;
+import org.meridor.perspective.shell.commands.interactive.CommandArgument;
 
 import java.util.Map;
 import java.util.Set;

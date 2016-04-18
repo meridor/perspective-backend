@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 public enum CommandArgument {
     NAME,

@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 import org.meridor.perspective.shell.misc.Logger;
 import org.meridor.perspective.shell.misc.Pager;
@@ -78,7 +78,9 @@ public abstract class BaseCommands implements CommandMarker {
     protected void tableOrNothing(String[] columns, List<String[]> rows, boolean showMessage) {
         final Integer PAGE_SIZE = pager.getPageSize();
         if (!rows.isEmpty()){
-            if (rows.size() > PAGE_SIZE) {
+            if (pager.isExternalPaging()) {
+                pager.page(columns, rows);
+            } else if (rows.size() > PAGE_SIZE) {
                 if (showMessage) {
                     ok(String.format(
                             "Results contain %d entries. Showing first %d entries.",

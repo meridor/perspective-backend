@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.wizard.images;
 
-import org.meridor.perspective.shell.commands.CommandArgument;
+import org.meridor.perspective.shell.commands.interactive.CommandArgument;
 import org.meridor.perspective.shell.wizard.BaseWizard;
 import org.meridor.perspective.shell.wizard.CommandBuilder;
 import org.meridor.perspective.shell.wizard.WizardScreen;

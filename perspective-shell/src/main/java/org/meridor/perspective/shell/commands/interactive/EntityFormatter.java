@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;

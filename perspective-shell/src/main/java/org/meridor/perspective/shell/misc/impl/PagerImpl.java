@@ -123,9 +123,8 @@ public class PagerImpl implements Pager {
             processBuilder.redirectInput(ProcessBuilder.Redirect.PIPE);
             processBuilder.environment().putAll(environment);
             Process process = processBuilder.start();
-            OutputStream outputStream = process.getOutputStream();
-            outputStream.write(data.getBytes());
-            outputStream.close();
+            ProcessDataWriter processDataWriter = new ProcessDataWriter(process, data);
+            processDataWriter.start();
             int returnCode = process.waitFor();
             return returnCode == 0;
         } catch (Exception e) {
@@ -147,7 +146,8 @@ public class PagerImpl implements Pager {
                 DEFAULT_PAGE_SIZE;
     }
     
-    private boolean isExternalPaging() {
+    @Override
+    public boolean isExternalPaging() {
         return 
                 settingsAware.hasSetting(Setting.PAGING_MODE) &&
                 settingsAware.getSettingAs(Setting.PAGING_MODE, String.class)
@@ -163,5 +163,25 @@ public class PagerImpl implements Pager {
     private String preparePage(String[] columns, List<String[]> rows) {
         return tableRenderer.render(columns, rows);
     }
+    
+    private static class ProcessDataWriter extends Thread {
+        
+        private final Process process;
+        private final String data;
 
+        ProcessDataWriter(Process process, String data) {
+            this.process = process;
+            this.data = data;
+        }
+
+        @Override
+        public void run() {
+            try (OutputStream outputStream = process.getOutputStream()){
+                outputStream.write(data.getBytes());
+                outputStream.flush();
+            } catch (Exception ignored) {
+                
+            }
+        }
+    }
 }

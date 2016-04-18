@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.commands;
+package org.meridor.perspective.shell.commands.interactive;
 
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.shell.repository.ImagesRepository;
