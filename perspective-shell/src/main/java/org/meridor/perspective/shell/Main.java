@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell;
 
-import org.meridor.perspective.shell.commands.noninteractive.NonInteractiveMain;
+import org.meridor.perspective.shell.noninteractive.NonInteractiveMain;
 import org.springframework.shell.Bootstrap;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class Main {
     private static void registerSigIntHandler() {
         if (signalsSupported()) {
             try {
-                Class.forName("org.meridor.perspective.shell.misc.SigIntHandler");
+                Class.forName("org.meridor.perspective.shell.common.misc.SigIntHandler");
             } catch (ClassNotFoundException e) {
                 System.out.println("Failed to register SIGINT handler. Pressing Ctrl+C may not work as expected.");
                 e.printStackTrace();

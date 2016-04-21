@@ -11,7 +11,7 @@
     <name>Perspective REST Java Client</name>
 
     <properties>
-        <retrofit.version>2.0.0-beta4</retrofit.version>
+        <retrofit.version>2.0.2</retrofit.version>
     </properties>
     
     <dependencies>

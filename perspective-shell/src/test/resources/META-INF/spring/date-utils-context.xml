@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
-    <bean class="org.meridor.perspective.shell.misc.DateUtils"/>
-    <bean class="org.meridor.perspective.shell.repository.impl.SettingsStorage"/>
+    <bean class="org.meridor.perspective.shell.common.misc.DateUtils"/>
+    <bean class="org.meridor.perspective.shell.common.repository.impl.SettingsStorage"/>
 
 </beans>

@@ -8,7 +8,7 @@
 
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:annotation-config/>
-    <context:component-scan base-package="org.meridor.perspective" />
+    <context:component-scan base-package="org.meridor.perspective.shell.common;org.meridor.perspective.shell.interactive"/>
 
     <bean id="configurationProperties"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">

@@ -7,11 +7,11 @@
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective.shell;org.springframework.shell">
-        <context:exclude-filter expression="org\.meridor\.perspective\.shell\.misc\.impl\.LoggerImpl" type="regex" />
-        <context:exclude-filter expression="org\.meridor\.perspective\.shell\.repository\.impl\..*" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.impl\.LoggerImpl" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\..*" type="regex" />
     </context:component-scan>
     
-    <bean class="org.meridor.perspective.shell.repository.impl.QueryRepositoryImpl"/>
+    <bean class="org.meridor.perspective.shell.common.repository.impl.QueryRepositoryImpl"/>
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
     <bean class="org.springframework.shell.CommandLine">
         <constructor-arg index="0">
