@@ -26,10 +26,10 @@ public class MessageImplTest {
     
     @Test
     public void testGetPayloadEmpty() throws Exception {
-        assertThat(new MessageImpl(CloudType.MOCK, null).getPayload(String.class).isPresent(), is(false));
+        assertThat(new MessageImpl(CloudType.MOCK, null, 1).getPayload(String.class).isPresent(), is(false));
     }
     
     private static Message getMessage() {
-        return new MessageImpl(CloudType.MOCK, 1);
+        return new MessageImpl(CloudType.MOCK, 1, 1);
     }
 }

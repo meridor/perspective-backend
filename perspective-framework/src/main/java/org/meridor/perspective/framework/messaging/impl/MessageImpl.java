@@ -13,11 +13,14 @@ public class MessageImpl implements Message {
     private final CloudType cloudType;
 
     private final Object payload;
+    
+    private final int ttl;
 
-    public MessageImpl(CloudType cloudType, Object payload) {
+    public MessageImpl(CloudType cloudType, Object payload, int ttl) {
         this.id = UUID.randomUUID().toString();
         this.cloudType = cloudType;
         this.payload = payload;
+        this.ttl = ttl;
     }
 
     @Override
@@ -48,5 +51,10 @@ public class MessageImpl implements Message {
             ));
         }
         return Optional.of(cls.cast(payload));
+    }
+
+    @Override
+    public int getTtl() {
+        return ttl;
     }
 }

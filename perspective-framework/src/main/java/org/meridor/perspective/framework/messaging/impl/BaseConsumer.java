@@ -2,6 +2,7 @@ package org.meridor.perspective.framework.messaging.impl;
 
 import org.meridor.perspective.framework.messaging.Dispatcher;
 import org.meridor.perspective.framework.messaging.Message;
+import org.meridor.perspective.framework.messaging.MessageUtils;
 import org.meridor.perspective.framework.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,7 +66,14 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
                             }
                             Message message = (Message) item;
                             LOG.trace("Consumed message = {} from queue = {}", message.getId(), storageKey);
-                            dispatcher.dispatch(message);
+                            Optional<Message> notProcessedMessage = dispatcher.dispatch(message);
+                            if (notProcessedMessage.isPresent()) {
+                                Optional<Message> nextRetry = MessageUtils.retry(notProcessedMessage.get());
+                                if (nextRetry.isPresent()) {
+                                    LOG.trace("Retrying not processed message = {}", message.getId());
+                                    queue.put(nextRetry.get());
+                                }
+                            }
                         } else {
                             LOG.warn("Skipping {} as it is not a message", item);
                         }

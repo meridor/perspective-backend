@@ -1,7 +1,14 @@
 package org.meridor.perspective.framework.messaging;
 
+import java.util.Optional;
+
 public interface Dispatcher {
 
-    void dispatch(Message message);
+    /**
+     * Sends message to respective processor
+     * @param message message to dispatch 
+     * @return empty if ok or Optional.of(message) if error occurred
+     */
+    Optional<Message> dispatch(Message message);
 
 }

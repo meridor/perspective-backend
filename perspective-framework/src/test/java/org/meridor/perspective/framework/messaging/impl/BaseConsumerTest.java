@@ -16,6 +16,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
@@ -38,15 +39,20 @@ public class BaseConsumerTest {
     
     @Test
     public void testConsume() throws Exception {
-        Message msg = message(CloudType.MOCK, PAYLOAD);
+        Message msg = message(CloudType.MOCK, PAYLOAD, 2);
         putToQueue(msg);
         Thread.sleep(1000);
         List<Message> messagesList = testDispatcher.getMessages();
-        assertThat(messagesList, hasSize(1));
-        Message message = messagesList.get(0);
-        assertThat(message.getId(), equalTo(msg.getId()));
-        assertThat(message.getCloudType(), equalTo(msg.getCloudType()));
-        assertThat(message.getPayload(), equalTo(msg.getPayload()));
+        assertThat(messagesList, hasSize(2));
+        Message messageOne = messagesList.get(0);
+        Message messageTwo = messagesList.get(1);
+        assertThat(messageOne.getId(), equalTo(msg.getId()));
+        assertThat(messageOne.getCloudType(), equalTo(msg.getCloudType()));
+        assertThat(messageOne.getPayload(), equalTo(msg.getPayload()));
+        assertThat(messageOne.getTtl(), equalTo(msg.getTtl()));
+        assertThat(messageOne.getTtl(), equalTo(2));
+        assertThat(messageTwo.getTtl(), equalTo(1));
+        assertThat(messageOne.getId(), not(equalTo(messageTwo.getId())));
     }
 
 }
