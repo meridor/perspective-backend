@@ -10,6 +10,7 @@ import org.meridor.perspective.framework.storage.ImagesAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +34,9 @@ public class ImagesService {
     @Destination(WRITE_TASKS)
     private Producer producer;
 
+    @Value("${perspective.messaging.max.retries}")
+    private int maxRetries;
+
     public Optional<Image> getImageById(String imageId) {
         LOG.info("Getting image with id = {}", imageId);
         return imagesAware.getImage(imageId);
@@ -49,7 +53,7 @@ public class ImagesService {
             imagesAware.saveImage(image);
             ImageSavingEvent event = imageEvent(ImageSavingEvent.class, image);
             event.setTemporaryImageId(temporaryId);
-            producer.produce(message(image.getCloudType(), event));
+            producer.produce(message(image.getCloudType(), event, maxRetries));
         }
     }
     
@@ -77,7 +81,7 @@ public class ImagesService {
             ImageEvent event = eventProvider.apply(image);
             Image updatedImage = imageProcessor.apply(image);
             imagesAware.saveImage(updatedImage);
-            producer.produce(message(image.getCloudType(), event));
+            producer.produce(message(image.getCloudType(), event, maxRetries));
         } else {
             LOG.info("Image {} not found", imageId);
         }

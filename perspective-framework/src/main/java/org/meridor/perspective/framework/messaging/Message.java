@@ -4,7 +4,6 @@ import org.meridor.perspective.config.CloudType;
 
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public interface Message extends Serializable {
 
@@ -14,7 +13,7 @@ public interface Message extends Serializable {
     
     CloudType getCloudType();
 
-    Object getPayload();
+    Serializable getPayload();
 
     <T> Optional<T> getPayload(Class<T> cls);
 

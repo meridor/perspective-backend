@@ -3,6 +3,7 @@ package org.meridor.perspective.framework.messaging.impl;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.framework.messaging.Message;
 
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,11 +13,11 @@ public class MessageImpl implements Message {
 
     private final CloudType cloudType;
 
-    private final Object payload;
+    private final Serializable payload;
     
     private final int ttl;
 
-    public MessageImpl(CloudType cloudType, Object payload, int ttl) {
+    public MessageImpl(CloudType cloudType, Serializable payload, int ttl) {
         this.id = UUID.randomUUID().toString();
         this.cloudType = cloudType;
         this.payload = payload;
@@ -34,7 +35,7 @@ public class MessageImpl implements Message {
     }
 
     @Override
-    public Object getPayload() {
+    public Serializable getPayload() {
         return payload;
     }
 

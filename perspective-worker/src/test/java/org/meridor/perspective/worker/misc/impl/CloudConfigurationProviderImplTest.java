@@ -22,16 +22,7 @@ public class CloudConfigurationProviderImplTest {
     @Autowired
     private CloudConfigurationProvider cloudConfigurationProvider;
     
-    private static final Cloud CLOUD = new Cloud(){
-        {
-            setId("test-id");
-            setName("test-name");
-            setEndpoint("endpoint");
-            setIdentity("identity");
-            setCredential("credential");
-            setEnabled(true);
-        }
-    };
+    private static final Cloud CLOUD = new MockCloud();
     
     @Test
     public void testGetCloud() throws Exception {

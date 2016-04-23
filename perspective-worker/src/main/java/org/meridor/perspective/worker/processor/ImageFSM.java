@@ -16,8 +16,6 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
 
-import static org.meridor.perspective.events.EventFactory.imageEvent;
-
 @Component
 @FSM(start = ImageNotAvailableEvent.class)
 @Transitions({
@@ -137,20 +135,8 @@ public class ImageFSM {
     }
 
     @OnException
-    public void onImageException(ImageException e) throws Exception {
-        ImageErrorEvent event = imageEvent(ImageErrorEvent.class, e.getImage());
-        event.setErrorReason(e.getMessage());
-        onImageError(event);
-    }
-
-    @OnException
     public void onUnsupportedOperationException(UnsupportedOperationException e) {
         LOG.error("Trying to do an unsupported operation", e);
-    }
-
-    @OnException
-    public void onException(Exception e) {
-        LOG.error("An uncaught exception discovered", e);
     }
 
 }

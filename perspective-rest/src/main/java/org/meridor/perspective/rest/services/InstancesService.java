@@ -11,6 +11,7 @@ import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +36,9 @@ public class InstancesService {
 
     @Destination(WRITE_TASKS)
     private Producer producer;
+    
+    @Value("${perspective.messaging.max.retries}")
+    private int maxRetries;
     
     public Optional<Instance> getInstanceById(String instanceId) {
         LOG.info("Getting instance with id = {}", instanceId);
@@ -62,7 +66,7 @@ public class InstancesService {
             instancesAware.saveInstance(instance);
             InstanceLaunchingEvent event = instanceEvent(InstanceLaunchingEvent.class, instance);
             event.setTemporaryInstanceId(temporaryId);
-            producer.produce(message(instance.getCloudType(), event));
+            producer.produce(message(instance.getCloudType(), event, maxRetries));
         }
     }
     
@@ -121,7 +125,7 @@ public class InstancesService {
             InstanceEvent event = eventProvider.apply(instance);
             Instance updatedInstance = instanceProcessor.apply(instance);
             instancesAware.saveInstance(updatedInstance);
-            producer.produce(message(instance.getCloudType(), event));
+            producer.produce(message(instance.getCloudType(), event, maxRetries));
         } else {
             LOG.info("Instance {} not found", instanceId);
         }

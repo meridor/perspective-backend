@@ -16,8 +16,6 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
 
-import static org.meridor.perspective.events.EventFactory.instanceEvent;
-
 @Component
 @FSM(start = InstanceNotAvailableEvent.class)
 @Transitions({
@@ -387,20 +385,8 @@ public class InstanceFSM {
     }
 
     @OnException
-    public void onInstanceException(InstanceException e) throws Exception {
-        InstanceErrorEvent event = instanceEvent(InstanceErrorEvent.class, e.getInstance());
-        event.setErrorReason(e.getMessage());
-        onInstanceError(event);
-    }
-
-    @OnException
     public void onUnsupportedOperationException(UnsupportedOperationException e) {
         LOG.error("Trying to do an unsupported operation", e);
-    }
-
-    @OnException
-    public void onException(Exception e) {
-        LOG.error("An uncaught exception discovered", e);
     }
 
 }
