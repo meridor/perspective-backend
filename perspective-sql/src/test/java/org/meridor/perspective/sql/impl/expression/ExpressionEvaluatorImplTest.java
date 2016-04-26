@@ -130,6 +130,8 @@ public class ExpressionEvaluatorImplTest {
     
     @Test
     public void testEvaluateSimpleBooleanExpression() {
+        assertThat(bool(null, EQUAL, 1), is(false));
+        assertThat(bool(1, EQUAL, null), is(false));
         assertThat(bool(1, EQUAL, 1), is(true));
         assertThat(bool(1L, EQUAL, 1d), is(true));
         assertThat(bool(2, GREATER_THAN, 1), is(true));
@@ -139,6 +141,8 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool(1d, LESS_THAN_EQUAL, 2), is(true));
         assertThat(bool(1, NOT_EQUAL, 1), is(false));
         assertThat(bool(1L, NOT_EQUAL, 2), is(true));
+        assertThat(bool("123", EQUAL, 123), is(true));
+        assertThat(bool(123, EQUAL, "123"), is(true));
         assertThat(bool("123", EQUAL, "123"), is(true));
         assertThat(bool("123", NOT_EQUAL, "456"), is(true));
         assertThat(bool("01234", LIKE, "123"), is(true));
@@ -148,11 +152,13 @@ public class ExpressionEvaluatorImplTest {
         assertThat(bool("123", LIKE, "\\%3"), is(false));
         assertThat(bool("123", REGEXP, "..3"), is(true));
         assertThat(bool("123", REGEXP, ".\\.3"), is(false));
+        assertThat(bool(true, EQUAL, false), is(false));
+        assertThat(bool(true, NOT_EQUAL, false), is(true));
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void testEvaluateIncorrectSimpleBooleanExpression() {
-        bool(1, EQUAL, "123");
+        bool(true, GREATER_THAN, false);
     }
     
     @Test

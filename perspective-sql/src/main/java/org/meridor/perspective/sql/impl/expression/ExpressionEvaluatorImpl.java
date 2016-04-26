@@ -138,9 +138,13 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     private boolean bothAreIntegers(Class<?> leftClass, Class<?> rightClass) {
         return isInteger(leftClass) && isInteger(rightClass);
     }
-    
+
     private boolean bothAreStrings(Class<?> leftClass, Class<?> rightClass) {
         return isString(leftClass) && isString(rightClass);
+    }
+
+    private boolean bothAreBooleans(Class<?> leftClass, Class<?> rightClass) {
+        return isBoolean(leftClass) && isBoolean(rightClass);
     }
 
     private int asInt(Object value) {
@@ -153,6 +157,10 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     
     private String asString(Object value) {
         return String.valueOf(value);
+    }
+    
+    private Boolean asBoolean(Object value) {
+        return Boolean.valueOf(asString(value));
     }
     
     private <T extends Comparable<? super T>> T evaluateColumnExpression(ColumnExpression columnExpression, DataRow dataRow) {
@@ -224,7 +232,35 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
         Class<?> leftClass = left.getClass();
         Class<?> rightClass = right.getClass();
-        if (bothAreStrings(leftClass, rightClass)) {
+        if (bothAreNumbers(leftClass, rightClass)) {
+            double leftAsDouble = asDouble(left);
+            double rightAsDouble = asDouble(right);
+            switch (booleanRelation) {
+                case EQUAL:
+                    return leftAsDouble == rightAsDouble; //This one can probably cause rounding problems when comparing integers
+                case GREATER_THAN:
+                    return leftAsDouble > rightAsDouble;
+                case LESS_THAN:
+                    return leftAsDouble < rightAsDouble;
+                case GREATER_THAN_EQUAL:
+                    return leftAsDouble >= rightAsDouble;
+                case LESS_THAN_EQUAL:
+                    return leftAsDouble <= rightAsDouble;
+                case NOT_EQUAL:
+                    return leftAsDouble != rightAsDouble;
+                default:
+                    throw new IllegalArgumentException("This operation is not applicable to numbers");
+            }
+        } else if (bothAreBooleans(leftClass, rightClass)) {
+            boolean leftAsBoolean = asBoolean(left);
+            boolean rightAsBoolean = asBoolean(right);
+            switch (booleanRelation) {
+                case EQUAL: return leftAsBoolean == rightAsBoolean;
+                case NOT_EQUAL: return leftAsBoolean != rightAsBoolean;
+                default:
+                    throw new IllegalArgumentException("This operation is not applicable to booleans");
+            }
+        } else {
             String leftAsString = asString(left);
             String rightAsString = asString(right);
             switch (booleanRelation) {
@@ -241,20 +277,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 case REGEXP: return matchPattern(leftAsString, rightAsString);
                 default: throw new IllegalArgumentException("This operation is not applicable to strings");
             }
-        } else if (bothAreNumbers(leftClass, rightClass)) {
-            double leftAsDouble = asDouble(left.toString());
-            double rightAsDouble = asDouble(right.toString());
-            switch (booleanRelation) {
-                case EQUAL: return leftAsDouble == rightAsDouble; //This one can probably cause rounding problems when comparing integers
-                case GREATER_THAN: return leftAsDouble > rightAsDouble;
-                case LESS_THAN: return leftAsDouble < rightAsDouble;
-                case GREATER_THAN_EQUAL: return leftAsDouble >= rightAsDouble;
-                case LESS_THAN_EQUAL: return leftAsDouble <= rightAsDouble;
-                case NOT_EQUAL: return leftAsDouble != rightAsDouble;
-                default: throw new IllegalArgumentException("This operation is not applicable to numbers");
-            }
         }
-        throw new IllegalArgumentException(String.format("Incorrect boolean expression argument types: %s and %s", leftClass, rightClass));
     }
     
     private static boolean matchPattern(String value, String regex) {
