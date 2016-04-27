@@ -175,7 +175,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         String functionName = functionExpression.getFunctionName();
         Optional<Function<?>> functionCandidate = functionsAware.getFunction(functionName);
         if (!functionCandidate.isPresent()) {
-            throw new IllegalArgumentException(String.format("Function %s does not exist", functionName));
+            throw new IllegalArgumentException(String.format("Function '%s' does not exist", functionName));
         }
         List<Object> passedArgs = functionExpression.getArgs(); //This one can contain expressions, so we try to evaluate them
         List<Object> realArgs = passedArgs.stream()
@@ -249,7 +249,13 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 case NOT_EQUAL:
                     return leftAsDouble != rightAsDouble;
                 default:
-                    throw new IllegalArgumentException("This operation is not applicable to numbers");
+                    throw new IllegalArgumentException(String.format(
+                            "%s operation is not applicable to numbers: %f %s %f",
+                            booleanRelation.getText(),
+                            leftAsDouble,
+                            booleanRelation.getText(),
+                            rightAsDouble
+                    ));
             }
         } else if (bothAreBooleans(leftClass, rightClass)) {
             boolean leftAsBoolean = asBoolean(left);
@@ -258,7 +264,13 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                 case EQUAL: return leftAsBoolean == rightAsBoolean;
                 case NOT_EQUAL: return leftAsBoolean != rightAsBoolean;
                 default:
-                    throw new IllegalArgumentException("This operation is not applicable to booleans");
+                    throw new IllegalArgumentException(String.format(
+                            "%s operation is not applicable to booleans: %s %s %s",
+                            booleanRelation.getText(),
+                            leftAsBoolean,
+                            booleanRelation.getText(),
+                            rightAsBoolean
+                    ));
             }
         } else {
             String leftAsString = asString(left);
@@ -275,7 +287,13 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                     return matchPattern(leftAsString, rightAsRegex);
                 }
                 case REGEXP: return matchPattern(leftAsString, rightAsString);
-                default: throw new IllegalArgumentException("This operation is not applicable to strings");
+                default: throw new IllegalArgumentException(String.format(
+                        "%s operation is not applicable to strings: '%s' %s '%s'",
+                        booleanRelation.getText(),
+                        leftAsString,
+                        booleanRelation.getText(),
+                        rightAsString
+                ));
             }
         }
     }
@@ -314,7 +332,12 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         Object right = binaryArithmeticExpression.getRight();
         BinaryArithmeticOperator binaryArithmeticOperator = binaryArithmeticExpression.getBinaryArithmeticOperator();
         if (oneOfIsNull(left, right)) {
-            throw new IllegalArgumentException("Nulls are not allowed in arithmetic expressions");
+            throw new IllegalArgumentException(String.format(
+                    "Nulls are not allowed in arithmetic expressions: %s %s %s",
+                    left,
+                    binaryArithmeticOperator.getText(),
+                    right
+            ));
         }
         if (!isConstant(left.getClass())) {
             return evaluateBinaryArithmeticExpression(new BinaryArithmeticExpression(evaluate(left, dataRow), binaryArithmeticOperator, right), dataRow);
@@ -325,7 +348,12 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         Class<?> leftClass = left.getClass();
         Class<?> rightClass = right.getClass();
         if (!bothAreNumbers(leftClass, rightClass)) {
-            throw new IllegalArgumentException("Arithmetic expression can contain only numbers");
+            throw new IllegalArgumentException(String.format(
+                    "Arithmetic expression can contain only numbers: %s %s %s",
+                    left,
+                    binaryArithmeticOperator.getText(),
+                    right
+            ));
         }
         switch (binaryArithmeticOperator) {
             default:
@@ -346,31 +374,56 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                     cast(asDouble(left) % asDouble(right), Double.class, Comparable.class);
             case BIT_AND: {
                 if (!bothAreIntegers(leftClass, rightClass)) {
-                    throw new IllegalArgumentException("Bitwise AND operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise AND operation is only applicable to integers: %s %s %s",
+                            left,
+                            binaryArithmeticOperator.getText(),
+                            right
+                    ));
                 }
                 return cast(asInt(left) & asInt(right), Integer.class, Comparable.class);
             }
             case BIT_OR: {
                 if (!bothAreIntegers(leftClass, rightClass)) {
-                    throw new IllegalArgumentException("Bitwise OR operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise OR operation is only applicable to integers: %s %s %s",
+                            left,
+                            binaryArithmeticOperator.getText(),
+                            right
+                    ));
                 }
                 return cast(asInt(left) | asInt(right), Integer.class, Comparable.class);
             }
             case BIT_XOR: {
                 if (!bothAreIntegers(leftClass, rightClass)) {
-                    throw new IllegalArgumentException("Bitwise XOR operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise XOR operation is only applicable to integers: %s %s %s",
+                            left,
+                            binaryArithmeticOperator.getText(),
+                            right
+                    ));
                 }
                 return cast(asInt(left) ^ asInt(right), Integer.class, Comparable.class);
             }
             case SHIFT_LEFT: {
                 if (!bothAreIntegers(leftClass, rightClass)) {
-                    throw new IllegalArgumentException("Bitwise SHIFT LEFT operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise SHIFT LEFT operation is only applicable to integers: %s %s %s",
+                            left,
+                            binaryArithmeticOperator.getText(),
+                            right
+                    ));
                 }
                 return cast(asInt(left) << asInt(right), Integer.class, Comparable.class);
             }
             case SHIFT_RIGHT: {
                 if (!bothAreIntegers(leftClass, rightClass)) {
-                    throw new IllegalArgumentException("Bitwise SHIFT RIGHT operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise SHIFT RIGHT operation is only applicable to integers: %s %s %s",
+                            left,
+                            binaryArithmeticOperator.getText(),
+                            right
+                    ));
                 }
                 return cast(asInt(left) >> asInt(right), Integer.class, Comparable.class);
             }
@@ -388,7 +441,11 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             return evaluateUnaryArithmeticExpression(new UnaryArithmeticExpression(evaluate(value, dataRow), unaryArithmeticOperator), dataRow);
         }
         if (!isNumber(valueClass)) {
-            throw new IllegalArgumentException("Arithmetic expression can contain only numbers");
+            throw new IllegalArgumentException(String.format(
+                    "Arithmetic expression can contain only numbers: %s %s",
+                    unaryArithmeticOperator.getText(),
+                    value
+            ));
         }
         switch (unaryArithmeticOperator) {
             default:
@@ -400,7 +457,11 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
                     cast(-asDouble(value), Double.class, Comparable.class) ;
             case BIT_NOT: {
                 if (!isInteger(valueClass)) {
-                    throw new IllegalArgumentException("Bitwise NOT operation is only applicable to integers");
+                    throw new IllegalArgumentException(String.format(
+                            "Bitwise NOT operation is only applicable to integers: %s %s",
+                            unaryArithmeticOperator.getText(),
+                            value
+                    ));
                 }
                 return cast(~asInt(value), Integer.class, Comparable.class);
             }

@@ -44,22 +44,26 @@ public class SelectTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        if (selectAll) {
-            return previousTaskResult;
-        }
-
-        DataContainer newData = new DataContainer(selectionMap.keySet());
-        previousTaskResult.getData().getRows().stream()
-                .map(dr -> selectionMap.keySet().stream()
-                        .map(alias -> expressionEvaluator.evaluate(selectionMap.get(alias), dr))
-                        .collect(Collectors.toList()))
-                .forEach(newData::addRow);
-        return new ExecutionResult(){
-            {
-                setData(newData);
-                setCount(newData.getRows().size());
+        try {
+            if (selectAll) {
+                return previousTaskResult;
             }
-        };
+
+            DataContainer newData = new DataContainer(selectionMap.keySet());
+            previousTaskResult.getData().getRows().stream()
+                    .map(dr -> selectionMap.keySet().stream()
+                            .map(alias -> expressionEvaluator.evaluate(selectionMap.get(alias), dr))
+                            .collect(Collectors.toList()))
+                    .forEach(newData::addRow);
+            return new ExecutionResult(){
+                {
+                    setData(newData);
+                    setCount(newData.getRows().size());
+                }
+            };
+        } catch (Exception e) {
+            throw new SQLException(e);
+        }
     }
 
     //Here we convert ColumnExpression(*) expressions to a list of ColumnExpression(columnName) 

@@ -223,4 +223,15 @@ public class QueryProcessorTest {
         assertThat(rows.get(1).get("name"), equalTo("test-image"));
     }
     
+    @Test
+    public void testInProcessing() {
+        Query query = new Query();
+        query.setSql("select missing_function()");
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.EVALUATION_ERROR));
+        assertThat(queryResult.getMessage(), is(notNullValue()));
+    }
+    
 }

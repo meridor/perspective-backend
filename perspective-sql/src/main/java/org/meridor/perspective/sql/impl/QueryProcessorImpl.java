@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 
+import static org.meridor.perspective.sql.DataContainer.*;
+import static org.meridor.perspective.sql.QueryStatus.*;
+
 @Component
 public class QueryProcessorImpl implements QueryProcessor {
     
@@ -27,17 +30,18 @@ public class QueryProcessorImpl implements QueryProcessor {
                     Queue<Task> tasks = parseSQL(sqlQuery);
                     try {
                         ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
-                        queryResults.add(getQueryResult(QueryStatus.SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
+                        queryResults.add(getQueryResult(SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
                     } catch (SQLException e) {
-                        queryResults.add(getQueryResult(QueryStatus.EVALUATION_ERROR, 0, DataContainer.empty(), e.getMessage()));
+                        String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                        queryResults.add(getQueryResult(EVALUATION_ERROR, 0, empty(), message));
                     }
                 } catch (SQLSyntaxErrorException e) {
-                    queryResults.add(getQueryResult(QueryStatus.SYNTAX_ERROR, 0, DataContainer.empty(), e.getMessage()));
+                    queryResults.add(getQueryResult(SYNTAX_ERROR, 0, empty(), e.getMessage()));
                 }
             }
             return queryResults;
         } catch (SQLDataException e) {
-            return Collections.singletonList(getQueryResult(QueryStatus.MISSING_PARAMETERS, 0, DataContainer.empty(), e.getMessage()));
+            return Collections.singletonList(getQueryResult(MISSING_PARAMETERS, 0, empty(), e.getMessage()));
         }
     }
     

@@ -35,22 +35,26 @@ public class OrderTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        Optional<Comparator<DataRow>> comparatorCandidate = createComparator(Optional.empty(), expressions);
-        if (comparatorCandidate.isPresent()) {
-            return new ExecutionResult(){
-                {
-                    setCount(previousTaskResult.getCount());
-                    DataContainer newData = new DataContainer(
-                            previousTaskResult.getData(),
-                            rows -> rows.stream()
-                                    .sorted(comparatorCandidate.get())
-                                    .collect(Collectors.toList()) 
-                    );
-                    setData(newData);
-                }
-            };
+        try {
+            Optional<Comparator<DataRow>> comparatorCandidate = createComparator(Optional.empty(), expressions);
+            if (comparatorCandidate.isPresent()) {
+                return new ExecutionResult(){
+                    {
+                        setCount(previousTaskResult.getCount());
+                        DataContainer newData = new DataContainer(
+                                previousTaskResult.getData(),
+                                rows -> rows.stream()
+                                        .sorted(comparatorCandidate.get())
+                                        .collect(Collectors.toList()) 
+                        );
+                        setData(newData);
+                    }
+                };
+            }
+            return previousTaskResult;
+        } catch (Exception e) {
+            throw new SQLException(e);
         }
-        return previousTaskResult;
     }
     
     private Optional<Comparator<DataRow>> createComparator(Optional<Comparator<DataRow>> comparator, List<OrderExpression> remainingExpressions) {

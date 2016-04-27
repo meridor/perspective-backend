@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
-@Component
-@Lazy
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class LimitTask implements Task {
     
     private final int offset;

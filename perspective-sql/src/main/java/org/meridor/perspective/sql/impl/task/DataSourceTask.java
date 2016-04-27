@@ -11,6 +11,7 @@ import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -49,28 +50,32 @@ public class DataSourceTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        DataContainer data = fetchData();
-        DataContainer result = (dataSource.getJoinType().isPresent()) ?
-                join(
-                        previousTaskResult.getData(),
-                        data
-                ) :
-                data;
-        ExecutionResult executionResult = new ExecutionResult() {
-            {
-                setData(result);
-                setCount(result.getRows().size());
+        try {
+            DataContainer data = fetchData();
+            DataContainer result = (dataSource.getJoinType().isPresent()) ?
+                    join(
+                            previousTaskResult.getData(),
+                            data
+                    ) :
+                    data;
+            ExecutionResult executionResult = new ExecutionResult() {
+                {
+                    setData(result);
+                    setCount(result.getRows().size());
+                }
+            };
+            if (dataSource.getNextDataSource().isPresent()) {
+                DataSourceTask nextTask = applicationContext.getBean(
+                        DataSourceTask.class,
+                        dataSource.getNextDataSource().get(),
+                        tableAliases
+                );
+                return nextTask.execute(executionResult);
             }
-        };
-        if (dataSource.getNextDataSource().isPresent()) {
-            DataSourceTask nextTask = applicationContext.getBean(
-                    DataSourceTask.class,
-                    dataSource.getNextDataSource().get(),
-                    tableAliases
-            );
-            return nextTask.execute(executionResult);
+            return executionResult;
+        } catch (SQLException e) {
+            throw new SQLException(e);
         }
-        return executionResult;
     }
     
     private DataContainer fetchData() throws SQLException {
@@ -133,7 +138,11 @@ public class DataSourceTask implements Task {
     private String getTableAlias(DataContainer dataContainer) {
         Set<String> tableAliases = dataContainer.getColumnsMap().keySet();
         if (tableAliases.size() != 1) {
-            throw new IllegalArgumentException(String.format("Data container should contain exactly one table alias but in fact it contains %d", tableAliases.size()));
+            throw new IllegalArgumentException(String.format(
+                    "Data container should contain exactly one table alias but in fact it contains %d: %s",
+                    tableAliases.size(),
+                    tableAliases.stream().collect(Collectors.joining(", "))
+            ));
         }
         return new ArrayList<>(tableAliases).get(0);
     }

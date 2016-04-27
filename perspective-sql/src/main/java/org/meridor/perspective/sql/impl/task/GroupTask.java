@@ -33,23 +33,27 @@ public class GroupTask implements Task {
 
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        DataContainer dataContainer = new DataContainer(previousTaskResult.getData(), rows -> {
-            List<DataRow> data = previousTaskResult.getData().getRows();
-            Map<List<Object>, List<DataRow>> initialMap = new HashMap<List<Object>, List<DataRow>>(){
+        try {
+            DataContainer dataContainer = new DataContainer(previousTaskResult.getData(), rows -> {
+                List<DataRow> data = previousTaskResult.getData().getRows();
+                Map<List<Object>, List<DataRow>> initialMap = new HashMap<List<Object>, List<DataRow>>(){
+                    {
+                        put(new ArrayList<>(), data);
+                    }
+                };
+                return groupData(initialMap, expressions)
+                        .values().stream().map(v -> v.get(0)) //We take only first item
+                        .collect(Collectors.toList());
+            });
+            return new ExecutionResult(){
                 {
-                    put(new ArrayList<>(), data);
+                    setCount(dataContainer.getRows().size());
+                    setData(dataContainer);
                 }
             };
-            return groupData(initialMap, expressions)
-                    .values().stream().map(v -> v.get(0)) //We take only first item
-                    .collect(Collectors.toList());
-        });
-        return new ExecutionResult(){
-            {
-                setCount(dataContainer.getRows().size());
-                setData(dataContainer);
-            }
-        };
+        } catch (Exception e) {
+            throw new SQLException(e);
+        }
     }
     
     private Map<List<Object>, List<DataRow>> groupData(Map<List<Object>, List<DataRow>> previousData, List<Object> remainingExpressions) {

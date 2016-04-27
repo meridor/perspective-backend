@@ -21,16 +21,20 @@ public class FilterTask implements Task {
     
     @Override
     public ExecutionResult execute(ExecutionResult previousTaskResult) throws SQLException {
-        DataContainer newData = new DataContainer(
-                previousTaskResult.getData(),
-                rows -> rows.stream().filter(condition).collect(Collectors.toList())
-        );
-        return new ExecutionResult(){
-            {
-                setCount(newData.getRows().size());
-                setData(newData);
-            }
-        };
+        try {
+            DataContainer newData = new DataContainer(
+                    previousTaskResult.getData(),
+                    rows -> rows.stream().filter(condition).collect(Collectors.toList())
+            );
+            return new ExecutionResult(){
+                {
+                    setCount(newData.getRows().size());
+                    setData(newData);
+                }
+            };
+        } catch (Exception e) {
+            throw new SQLException(e);
+        }
     }
 
     public void setCondition(Predicate<DataRow> condition) {
