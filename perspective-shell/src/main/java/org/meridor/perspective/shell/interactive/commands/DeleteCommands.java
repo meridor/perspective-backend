@@ -34,7 +34,7 @@ public class DeleteCommands extends BaseCommands {
         FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findInstancesRequest,
-                r -> instancesRepository.findInstances(findInstancesRequest),
+                r -> instancesRepository.findInstances(r),
                 instances -> String.format("Going to delete %d instances.", instances.size()),
                 instances -> new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 instances -> instances.stream()
