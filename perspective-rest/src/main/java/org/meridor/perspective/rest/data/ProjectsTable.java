@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.PROJECTS;
+import static org.meridor.perspective.rest.data.TableName.PROJECTS;
 
 @Component
 public class ProjectsTable implements Table {
@@ -16,8 +15,8 @@ public class ProjectsTable implements Table {
     public String last_updated;
     
     @Override
-    public TableName getName() {
-        return PROJECTS;
+    public String getName() {
+        return PROJECTS.getTableName();
     }
     
 }

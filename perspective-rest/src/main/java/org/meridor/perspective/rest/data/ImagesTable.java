@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.IMAGES;
+import static org.meridor.perspective.rest.data.TableName.IMAGES;
 
 @Component
 public class ImagesTable implements Table {
@@ -20,8 +19,8 @@ public class ImagesTable implements Table {
     public String checksum;
     
     @Override
-    public TableName getName() {
-        return IMAGES;
+    public String getName() {
+        return IMAGES.getTableName();
     }
     
 }

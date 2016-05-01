@@ -101,7 +101,7 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
                 break;
             }
             case SHOW_TABLES: {
-                tasksQueue.add(new ShowTablesTask());
+                tasksQueue.add(applicationContext.getBean(ShowTablesTask.class));
                 break;
             }
             case UNKNOWN: throw new SQLSyntaxErrorException("Unknown query type");

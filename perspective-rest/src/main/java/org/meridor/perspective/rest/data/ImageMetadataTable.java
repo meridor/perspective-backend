@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.IMAGE_METADATA;
+import static org.meridor.perspective.rest.data.TableName.IMAGE_METADATA;
 
 @Component
 public class ImageMetadataTable implements Table {
@@ -14,8 +13,8 @@ public class ImageMetadataTable implements Table {
     public String value;
     
     @Override
-    public TableName getName() {
-        return IMAGE_METADATA;
+    public String getName() {
+        return IMAGE_METADATA.getTableName();
     }
     
 }

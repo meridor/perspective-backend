@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.table;
 
+import org.meridor.perspective.sql.impl.index.Index;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,13 @@ public class TablesAwareImpl implements TablesAware {
     @Autowired
     private ApplicationContext applicationContext;
     
-    private Map<TableName, List<Column>> tables = new HashMap<>();
+    private Map<String, List<Column>> tables = new HashMap<>();
     
     @PostConstruct
     public void init() {
         applicationContext.getBeansOfType(Table.class).values().stream()
         .forEach(t -> {
-            TableName tableName = t.getName();
+            String tableName = t.getName();
             List<Column> columns = getTableColumns(t);
             tables.put(tableName, columns);
         });
@@ -41,14 +42,14 @@ public class TablesAwareImpl implements TablesAware {
     }
     
     @Override
-    public List<Column> getColumns(TableName tableName) {
+    public List<Column> getColumns(String tableName) {
         return tables.containsKey(tableName) ? 
                 tables.get(tableName):
                 Collections.emptyList();
     }
 
     @Override
-    public Optional<Column> getColumn(TableName tableName, String columnName) {
+    public Optional<Column> getColumn(String tableName, String columnName) {
         if (columnName == null || !tables.containsKey(tableName)) {
             return Optional.empty();
         }
@@ -57,4 +58,13 @@ public class TablesAwareImpl implements TablesAware {
                 .findFirst();
     }
 
+    @Override
+    public Optional<Index> getIndex(Map<String, Set<Column>> desiredColumns) {
+        throw new UnsupportedOperationException("To be implemented!");
+    }
+
+    @Override
+    public Set<String> getTables() {
+        return tables.keySet();
+    }
 }

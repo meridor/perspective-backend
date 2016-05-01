@@ -13,7 +13,6 @@ import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.function.FunctionName;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.DataType;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -390,7 +389,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             String tableAlias = tableAliasCandidate.get();
             String tableName = getTableAliases().get(tableAlias);
             List<String> columnNames = tablesAware
-                    .getColumns(TableName.fromString(tableName)).stream()
+                    .getColumns(tableName).stream()
                     .map(Column::getName)
                     .collect(Collectors.toList());
             currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));

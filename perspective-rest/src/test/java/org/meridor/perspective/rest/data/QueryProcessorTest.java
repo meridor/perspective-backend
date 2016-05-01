@@ -10,7 +10,6 @@ import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.*;
 import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -105,7 +104,7 @@ public class QueryProcessorTest {
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
-        List<String> columnNamesList = tablesAware.getColumns(TableName.INSTANCES).stream()
+        List<String> columnNamesList = tablesAware.getColumns("instances").stream()
                 .map(Column::getName).collect(Collectors.toList());
         String[] columnNames = columnNamesList.toArray(new String[columnNamesList.size()]);
         assertThat(queryResult.getData().getColumnNames(), contains(columnNames));

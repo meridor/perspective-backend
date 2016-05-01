@@ -4,7 +4,6 @@ import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ColumnExpression;
 import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -77,7 +76,7 @@ public class SelectTask implements Task {
                     this.selectAll = true;
                     return;
                 } else if (columnExpression.useAnyColumn()) {
-                    TableName tableName = TableName.fromString(columnExpression.getTableAlias());
+                    String tableName = columnExpression.getTableAlias();
                     tablesAware.getColumns(tableName).forEach(c ->
                             ret.put(c.getName(), new ColumnExpression(c.getName(), alias))
                     );

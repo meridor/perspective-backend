@@ -11,17 +11,21 @@ import org.meridor.perspective.sql.impl.expression.ColumnExpression;
 import org.meridor.perspective.sql.impl.expression.SimpleBooleanExpression;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.JoinType;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.sql.impl.task.MockDataFetcher.INSTANCES_TABLE;
+import static org.meridor.perspective.sql.impl.task.MockDataFetcher.PROJECTS_TABLE;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -33,8 +37,6 @@ public class DataSourceTaskTest {
     @Autowired
     private MockDataFetcher dataFetcher;
     
-    private static final String FIRST_TABLE = "instances";
-    private static final String SECOND_TABLE = "projects";
     private static final String FIRST_ID = "id";
     private static final String FIRST_PROJECT_ID = "project_id";
     private static final String SECOND_PROJECT_ID = "project_id";
@@ -46,7 +48,7 @@ public class DataSourceTaskTest {
     @Before
     public void before() {
         dataFetcher.setTableData(
-                TableName.INSTANCES,
+                INSTANCES_TABLE,
                 Arrays.asList(FIRST_ID, FIRST_PROJECT_ID),
                 Arrays.asList(
                     Arrays.asList("instance-1", "project-1"),
@@ -54,7 +56,7 @@ public class DataSourceTaskTest {
                 )
         );
         dataFetcher.setTableData(
-                TableName.PROJECTS,
+                PROJECTS_TABLE,
                 Arrays.asList(SECOND_PROJECT_ID, SECOND_NAME),
                 Arrays.asList(
                     Arrays.asList("project-1", "Project One"),
@@ -69,7 +71,7 @@ public class DataSourceTaskTest {
         DataSourceTask dataSourceTask = applicationContext.getBean(
                 DataSourceTask.class,
                 dataSource,
-                Collections.singletonMap(FIRST_ALIAS, FIRST_TABLE)
+                Collections.singletonMap(FIRST_ALIAS, INSTANCES_TABLE)
         );
         ExecutionResult executionResult = dataSourceTask.execute(new ExecutionResult());
         
@@ -188,7 +190,7 @@ public class DataSourceTaskTest {
     
     private void addLeftJoinRow() {
         dataFetcher.addDataRow(
-                TableName.INSTANCES,
+                INSTANCES_TABLE,
                 //There's no project with ID project-3
                 Arrays.asList("instance-3", "project-3")
         );
@@ -217,7 +219,7 @@ public class DataSourceTaskTest {
     @Test
     public void testRightJoinByCondition() throws Exception {
         dataFetcher.addDataRow(
-                TableName.PROJECTS,
+                PROJECTS_TABLE,
                 //There's no instance with project_id = project-3
                 Arrays.asList("project-3", "Project Three")
         );
@@ -256,8 +258,8 @@ public class DataSourceTaskTest {
                 first,
                 new HashMap<String, String>(){
                     {
-                        put(FIRST_ALIAS, FIRST_TABLE);
-                        put(SECOND_ALIAS, SECOND_TABLE);
+                        put(FIRST_ALIAS, INSTANCES_TABLE);
+                        put(SECOND_ALIAS, PROJECTS_TABLE);
                     }
                 }
         );

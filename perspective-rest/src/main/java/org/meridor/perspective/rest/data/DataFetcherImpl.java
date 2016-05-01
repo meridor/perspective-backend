@@ -7,7 +7,6 @@ import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,7 +36,12 @@ public class DataFetcherImpl implements DataFetcher {
     private InstancesAware instancesAware;
 
     @Override
-    public DataContainer fetch(TableName tableName, String tableAlias, List<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns, Set<Integer> rowNumbers) {
+        throw new UnsupportedOperationException("To be implemented!");
+    }
+
+    @Override
+    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
         List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>(){
             {
@@ -44,7 +49,8 @@ public class DataFetcherImpl implements DataFetcher {
             }
         }; 
         DataContainer dataContainer = new DataContainer(columnsMap);
-        List<List<Object>> rows = fetchData(tableName, columns);
+        TableName tn = TableName.fromString(tableName);
+        List<List<Object>> rows = fetchData(tn, columns);
         rows.forEach(dataContainer::addRow);
         return dataContainer;
     }
@@ -69,17 +75,36 @@ public class DataFetcherImpl implements DataFetcher {
                 throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName.name().toLowerCase()));
         }
     }
-    
+
     private static <T> List<List<Object>> prepareData(
             Callable<Collection<T>> rawDataSupplier,
             Map<String, Function<T, Object>> columnMapping,
             List<Column> columns,
             Supplier<String> errorMessageSupplier
     ) {
+        return prepareData(rawDataSupplier, Collections.emptyNavigableSet(), columnMapping, columns, errorMessageSupplier);
+    }
+
+    private static <T> List<List<Object>> prepareData(
+            Callable<Collection<T>> rawDataSupplier,
+            Set<Integer> rowNumbers,
+            Map<String, Function<T, Object>> columnMapping,
+            List<Column> columns,
+            Supplier<String> errorMessageSupplier
+    ) {
         try {
             Collection<T> rawEntities = rawDataSupplier.call();
+            final AtomicInteger rowNumber = new AtomicInteger(1);
+            Collection<T> rawEntitiesFilteredByRowNumber = rowNumbers.isEmpty() ?
+                    rawEntities :
+                    rawEntities.stream()
+                            .filter(e -> {
+                                int rn = rowNumber.getAndIncrement();
+                                return rowNumbers.contains(rn);
+                            })
+                            .collect(Collectors.toList());
             BiFunction<T, Column, Object> columnProcessor = prepareColumnProcessor(columnMapping);
-            return rawEntities.stream()
+            return rawEntitiesFilteredByRowNumber.stream()
                     .map(re -> columns.stream()
                             .map(c -> {
                                 Object value = columnProcessor.apply(re, c);

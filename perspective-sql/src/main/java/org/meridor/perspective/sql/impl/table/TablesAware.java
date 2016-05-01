@@ -1,12 +1,20 @@
 package org.meridor.perspective.sql.impl.table;
 
+import org.meridor.perspective.sql.impl.index.Index;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface TablesAware {
 
-    List<Column> getColumns(TableName tableName);
+    Optional<Index> getIndex(Map<String, Set<Column>> desiredColumns);
     
-    Optional<Column> getColumn(TableName tableName, String columnName);
+    Set<String> getTables();
+    
+    List<Column> getColumns(String tableName);
+    
+    Optional<Column> getColumn(String tableName, String columnName);
     
 }

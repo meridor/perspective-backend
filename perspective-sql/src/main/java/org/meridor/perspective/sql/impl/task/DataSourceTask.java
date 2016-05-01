@@ -9,9 +9,7 @@ import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -88,7 +86,7 @@ public class DataSourceTask implements Task {
             return childTask.execute(new ExecutionResult()).getData();
         } else if (dataSource.getTableAlias().isPresent()) {
             String tableAlias = dataSource.getTableAlias().get();
-            TableName tableName = TableName.fromString(tableAliases.get(tableAlias));
+            String tableName = tableAliases.get(tableAlias);
             return dataFetcher.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
         }
         throw new IllegalArgumentException("Datasource should either contain table name or another datasource");

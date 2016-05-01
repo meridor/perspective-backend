@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.NETWORK_SUBNETS;
+import static org.meridor.perspective.rest.data.TableName.NETWORK_SUBNETS;
 
 @Component
 public class NetworkSubnetsTable implements Table {
@@ -19,8 +18,8 @@ public class NetworkSubnetsTable implements Table {
     public Boolean is_dhcp_enabled;
     
     @Override
-    public TableName getName() {
-        return NETWORK_SUBNETS;
+    public String getName() {
+        return NETWORK_SUBNETS.getTableName();
     }
     
 }

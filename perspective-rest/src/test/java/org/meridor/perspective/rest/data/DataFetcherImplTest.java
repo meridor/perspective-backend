@@ -12,7 +12,6 @@ import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -201,10 +200,11 @@ public class DataFetcherImplTest {
     
     private void checkAssertions(TableName tableName, LinkedHashMap<String, Object> expectedValues) {
         Set<String> columnNames = expectedValues.keySet();
-        List<Column> columns = tablesAware.getColumns(tableName).stream()
+        String tableNameString = tableName.getTableName();
+        List<Column> columns = tablesAware.getColumns(tableNameString).stream()
                 .filter(c -> columnNames.contains(c.getName()))
                 .collect(Collectors.toList());
-        DataContainer data = dataFetcher.fetch(tableName, TEST_ALIAS, columns);
+        DataContainer data = dataFetcher.fetch(tableNameString, TEST_ALIAS, columns);
         Map<String, List<String>> columnsMap = data.getColumnsMap();
         assertThat(columnsMap.keySet(), hasSize(1));
         assertThat(columnsMap.keySet(), contains(TEST_ALIAS));

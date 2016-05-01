@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.NETWORKS;
+import static org.meridor.perspective.rest.data.TableName.NETWORKS;
 
 @Component
 public class NetworksTable implements Table {
@@ -16,8 +15,8 @@ public class NetworksTable implements Table {
     public Boolean is_shared;
     
     @Override
-    public TableName getName() {
-        return NETWORKS;
+    public String getName() {
+        return NETWORKS.getTableName();
     }
     
 }

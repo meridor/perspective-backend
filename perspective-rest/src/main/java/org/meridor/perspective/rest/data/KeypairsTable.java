@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.KEYPAIRS;
+import static org.meridor.perspective.rest.data.TableName.KEYPAIRS;
 
 @Component
 public class KeypairsTable implements Table {
@@ -15,8 +14,8 @@ public class KeypairsTable implements Table {
     public String public_key;
     
     @Override
-    public TableName getName() {
-        return KEYPAIRS;
+    public String getName() {
+        return KEYPAIRS.getTableName();
     }
     
 }

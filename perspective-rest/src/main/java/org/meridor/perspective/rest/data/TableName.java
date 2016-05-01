@@ -1,9 +1,10 @@
-package org.meridor.perspective.sql.impl.table;
+package org.meridor.perspective.rest.data;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public enum TableName {
+    
     AVAILABILITY_ZONES,
     CLOUDS,
     FLAVORS,
@@ -13,27 +14,12 @@ public enum TableName {
     INSTANCE_NETWORKS,
     INSTANCE_METADATA,
     KEYPAIRS,
-    MOCK(false),
     NETWORKS,
     NETWORK_SUBNETS,
     PROJECTS,
     PROJECT_IMAGES,
     PROJECT_METADATA;
-
-    private final boolean visible;
-
-    TableName(boolean visible) {
-        this.visible = visible;
-    }
-
-    TableName() {
-        this(true);
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
+    
     public String getTableName() {
         return name().toLowerCase();
     }

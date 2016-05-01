@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.CLOUDS;
+import static org.meridor.perspective.rest.data.TableName.CLOUDS;
 
 @Component
 public class CloudsTable implements Table {
@@ -13,8 +12,8 @@ public class CloudsTable implements Table {
     public String type;
     
     @Override
-    public TableName getName() {
-        return CLOUDS;
+    public String getName() {
+        return CLOUDS.getTableName();
     }
     
 }

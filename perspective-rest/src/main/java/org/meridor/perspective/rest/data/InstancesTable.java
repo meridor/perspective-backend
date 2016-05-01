@@ -1,10 +1,9 @@
 package org.meridor.perspective.rest.data;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.meridor.perspective.sql.impl.table.TableName;
 import org.springframework.stereotype.Component;
 
-import static org.meridor.perspective.sql.impl.table.TableName.INSTANCES;
+import static org.meridor.perspective.rest.data.TableName.INSTANCES;
 
 @Component
 public class InstancesTable implements Table {
@@ -24,8 +23,8 @@ public class InstancesTable implements Table {
     public String addresses; //Networks are provided via instance_networks table
     
     @Override
-    public TableName getName() {
-        return INSTANCES;
+    public String getName() {
+        return INSTANCES.getTableName();
     }
     
 }
