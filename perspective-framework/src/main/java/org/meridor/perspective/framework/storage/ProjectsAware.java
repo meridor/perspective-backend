@@ -9,7 +9,7 @@ public interface ProjectsAware {
 
     Optional<Project> getProject(String projectId);
 
-    Collection<Project> getProjects() throws IllegalQueryException;
+    Collection<Project> getProjects();
 
     void saveProject(Project project);
 

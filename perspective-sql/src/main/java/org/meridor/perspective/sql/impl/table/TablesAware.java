@@ -9,7 +9,7 @@ import java.util.Set;
 
 public interface TablesAware {
 
-    Optional<Index> getIndex(Map<String, Set<Column>> desiredColumns);
+    Optional<Index> getIndex(Map<String, Set<String>> desiredColumns);
     
     Set<String> getTables();
     

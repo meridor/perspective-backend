@@ -3,12 +3,13 @@ package org.meridor.perspective.framework.storage.impl;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.query.Predicate;
-import com.hazelcast.query.SqlPredicate;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.storage.*;
+import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.framework.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,24 +87,34 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return hazelcastInstance.getMap(name);
     }
 
-    private void modifyProject(String projectId, Consumer<Map<String, Project>> action) {
-        IMap<String, Project> projectsByIdMap = getProjectsByIdMap();
-        projectsByIdMap.lock(projectId, lockTimeout, TimeUnit.MILLISECONDS);
+    @Override
+    public <T> void modifyMap(String mapId, String key, Consumer<Map<String, T>> action) {
+        IMap<String, T> map = getMap(mapId);
+        map.lock(key, lockTimeout, TimeUnit.MILLISECONDS);
         try {
-            action.accept(projectsByIdMap);
+            action.accept(map);
         } finally {
-            projectsByIdMap.unlock(projectId);
+            map.unlock(key);
         }
+    }
+    
+    @Override
+    public <I, O> O readFromMap(String mapId, String key, Function<Map<String, I>, O> function) {
+        IMap<String, I> map = getMap(mapId);
+        map.lock(key, lockTimeout, TimeUnit.MILLISECONDS);
+        try {
+            return function.apply(map);
+        } finally {
+            map.unlock(key);
+        }
+    }
+    
+    private void modifyProject(String projectId, Consumer<Map<String, Project>> action) {
+        modifyMap(projectsById(), projectId, action);
     }
 
     private <T> T readProject(String projectId, Function<Map<String, Project>, T> function) {
-        IMap<String, Project> projectsByIdMap = getProjectsByIdMap();
-        projectsByIdMap.lock(projectId, lockTimeout, TimeUnit.MILLISECONDS);
-        try {
-            return function.apply(projectsByIdMap);
-        } finally {
-            projectsByIdMap.unlock(projectId);
-        }
+        return readFromMap(projectsById(), projectId, function);
     }
 
     @Override
@@ -112,7 +123,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Project> getProjects() throws IllegalQueryException {
+    public Collection<Project> getProjects() {
         return getProjectsByIdMap().values();
     }
 
@@ -127,23 +138,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     private void modifyInstance(String instanceId, Consumer<Map<String, Instance>> action) {
-        IMap<String, Instance> instancesByIdMap = getInstancesByIdMap();
-        instancesByIdMap.lock(instanceId, lockTimeout, TimeUnit.MILLISECONDS);
-        try {
-            action.accept(instancesByIdMap);
-        } finally {
-            instancesByIdMap.unlock(instanceId);
-        }
+        modifyMap(instancesById(), instanceId, action);
     }
 
     private <T> T readInstance(String instanceId, Function<Map<String, Instance>, T> function) {
-        IMap<String, Instance> instancesByIdMap = getInstancesByIdMap();
-        instancesByIdMap.lock(instanceId, lockTimeout, TimeUnit.MILLISECONDS);
-        try {
-            return function.apply(instancesByIdMap);
-        } finally {
-            instancesByIdMap.unlock(instanceId);
-        }
+        return readFromMap(instancesById(), instanceId, function);
     }
 
     //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
@@ -177,23 +176,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
 
     private void modifyImage(String imageId, Consumer<Map<String, Image>> action) {
-        IMap<String, Image> imagesByIdMap = getImagesByIdMap();
-        imagesByIdMap.lock(imageId, lockTimeout, TimeUnit.MILLISECONDS);
-        try {
-            action.accept(imagesByIdMap);
-        } finally {
-            imagesByIdMap.unlock(imageId);
-        }
+        modifyMap(imagesById(), imageId, action);
     }
 
     private <T> T readImage(String imageId, Function<Map<String, Image>, T> function) {
-        IMap<String, Image> imagesByIdMap = getImagesByIdMap();
-        imagesByIdMap.lock(imageId, lockTimeout, TimeUnit.MILLISECONDS);
-        try {
-            return function.apply(imagesByIdMap);
-        } finally {
-            imagesByIdMap.unlock(imageId);
-        }
+        return readFromMap(imagesById(), imageId, function);
     }
 
     @Override
@@ -247,14 +234,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
     private Map<String, Image> getDeletedImagesByIdMap() {
         return getMap(deletedImagesByCloud());
-    }
-
-    private Predicate getPredicateFromQuery(String query) throws IllegalQueryException {
-        try {
-            return new SqlPredicate(query);
-        } catch (Exception e) {
-            throw new IllegalQueryException(e);
-        }
     }
 
     @Override

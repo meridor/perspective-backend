@@ -3,10 +3,14 @@ package org.meridor.perspective.framework.messaging;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.storage.*;
+import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.framework.storage.Storage;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -15,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
@@ -25,6 +31,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     private volatile Map<String, Image> imageMap = new ConcurrentHashMap<>();
     private volatile Map<String, Instance> instanceMap = new ConcurrentHashMap<>();
     private volatile Map<String, Project> projectMap = new ConcurrentHashMap<>();
+    private volatile Map<String, Map<String, Object>> otherMaps = new ConcurrentHashMap<>();
     
     @Override
     public boolean imageExists(String imageId) {
@@ -92,7 +99,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public Collection<Project> getProjects() throws IllegalQueryException {
+    public Collection<Project> getProjects() {
         return projectMap.values();
     }
 
@@ -133,5 +140,21 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
         } catch (InterruptedException e) {
             return null;
         }
+    }
+
+    @Override
+    public <T> void modifyMap(String mapId, String key, Consumer<Map<String, T>> action) {
+        otherMaps.putIfAbsent(mapId, new HashMap<>());
+        @SuppressWarnings("unchecked")
+        Map<String, T> map = (Map<String, T>) otherMaps.get(mapId);
+        action.accept(map);
+    }
+
+    @Override
+    public <I, O> O readFromMap(String mapId, String key, Function<Map<String, I>, O> function) {
+        otherMaps.putIfAbsent(mapId, new HashMap<>());
+        @SuppressWarnings("unchecked")
+        Map<String, I> map = (Map<String, I>) otherMaps.get(mapId);
+        return function.apply(map);
     }
 }

@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.*;
 
 @Component
 public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
@@ -94,74 +95,6 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         throw new IllegalArgumentException(String.format("Constant should be a string or a number but %s was given", expressionClass.getCanonicalName()));
     }
 
-    private boolean isConstant(Class<?> expressionClass) {
-        return 
-                isNumber(expressionClass) ||
-                isString(expressionClass) ||
-                isDate(expressionClass) ||
-                isBoolean(expressionClass) ||
-                expressionClass.isEnum();
-    }
-
-    private boolean isString(Class<?> expressionClass) {
-        return String.class.isAssignableFrom(expressionClass);
-    }
-
-    private boolean isInteger(Class<?> expressionClass) {
-        return Integer.class.isAssignableFrom(expressionClass) || Long.class.isAssignableFrom(expressionClass);
-    }
-
-    private boolean isDouble(Class<?> expressionClass) {
-        return Float.class.isAssignableFrom(expressionClass) || Double.class.isAssignableFrom(expressionClass);
-    }
-
-    private boolean isNumber(Class<?> expressionClass) {
-        return isInteger(expressionClass) || isDouble(expressionClass);
-    }
-    
-    private boolean isBoolean(Class<?> expressionClass) {
-        return Boolean.class.isAssignableFrom(expressionClass);
-    }
-    
-    private boolean isDate(Class<?> expressionClass) {
-        return ZonedDateTime.class.isAssignableFrom(expressionClass);
-    }
-    
-    private boolean oneOfIsNull(Object left, Object right) {
-        return left == null || right == null;
-    }
-    
-    private boolean bothAreNumbers(Class<?> leftClass, Class<?> rightClass) {
-        return isNumber(leftClass) && isNumber(rightClass);
-    }
-    
-    private boolean bothAreIntegers(Class<?> leftClass, Class<?> rightClass) {
-        return isInteger(leftClass) && isInteger(rightClass);
-    }
-
-    private boolean bothAreStrings(Class<?> leftClass, Class<?> rightClass) {
-        return isString(leftClass) && isString(rightClass);
-    }
-
-    private boolean bothAreBooleans(Class<?> leftClass, Class<?> rightClass) {
-        return isBoolean(leftClass) && isBoolean(rightClass);
-    }
-
-    private int asInt(Object value) {
-        return Integer.valueOf(value.toString());
-    }
-    
-    private double asDouble(Object value) {
-        return Double.valueOf(value.toString());
-    }
-    
-    private String asString(Object value) {
-        return String.valueOf(value);
-    }
-    
-    private Boolean asBoolean(Object value) {
-        return Boolean.valueOf(asString(value));
-    }
     
     private <T extends Comparable<? super T>> T evaluateColumnExpression(ColumnExpression columnExpression, DataRow dataRow) {
         String columnName = columnExpression.getColumnName();

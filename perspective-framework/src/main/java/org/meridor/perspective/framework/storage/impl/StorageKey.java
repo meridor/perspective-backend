@@ -21,6 +21,10 @@ public final class StorageKey {
     public static String deletedImagesByCloud() {
         return "deleted-images";
     }
+    
+    public static String indexes() {
+        return "indexes";
+    }
 
 
     private StorageKey() {
