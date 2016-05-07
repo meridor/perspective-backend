@@ -6,6 +6,7 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.worker.misc.impl.LimitedSizeMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -16,8 +17,10 @@ public class IdGenerator {
     @Autowired
     private WorkerMetadata workerMetadata;
 
-    //Size probably can be exposed as property 
-    private final LimitedSizeMap<String, String> idCache = new LimitedSizeMap<>(1000);
+    @Value("${perspective.storage.id.cache.size:1000}")
+    private int cacheSize;
+
+    private final LimitedSizeMap<String, String> idCache = new LimitedSizeMap<>(cacheSize);
     
     public String generate(Class<?> role, String id) {
         String cloudId = workerMetadata.getId();
