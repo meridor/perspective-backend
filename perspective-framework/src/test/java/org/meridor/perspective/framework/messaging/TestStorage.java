@@ -3,16 +3,10 @@ package org.meridor.perspective.framework.messaging;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.ProjectsAware;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.framework.storage.*;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.meridor.perspective.framework.storage.StorageEvent.*;
+
 @Component
 public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, Storage {
 
@@ -32,6 +28,9 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     private volatile Map<String, Instance> instanceMap = new ConcurrentHashMap<>();
     private volatile Map<String, Project> projectMap = new ConcurrentHashMap<>();
     private volatile Map<String, Map<String, Object>> otherMaps = new ConcurrentHashMap<>();
+    private List<EntityListener<Project>> projectListeners = new ArrayList<>();
+    private List<EntityListener<Image>> imageListeners = new ArrayList<>();
+    private List<EntityListener<Instance>> instanceListeners = new ArrayList<>();
     
     @Override
     public boolean imageExists(String imageId) {
@@ -50,6 +49,10 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveImage(Image image) {
+        StorageEvent event = imageExists(image.getId()) ?
+                MODIFIED :
+                ADDED;
+        imageListeners.forEach(l -> l.onEvent(image, event));
         imageMap.put(image.getId(), image);
     }
 
@@ -60,7 +63,14 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void deleteImage(String imageId) {
+        Image image = getImage(imageId).get();
+        imageListeners.forEach(l -> l.onEvent(image, DELETED));
         imageMap.remove(imageId);
+    }
+
+    @Override
+    public void addImageListener(EntityListener<Image> listener) {
+        imageListeners.add(listener);
     }
 
     @Override
@@ -80,6 +90,10 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveInstance(Instance instance) {
+        StorageEvent event = instanceExists(instance.getId()) ?
+                MODIFIED :
+                ADDED;
+        instanceListeners.forEach(l -> l.onEvent(instance, event));
         instanceMap.put(instance.getId(), instance);
     }
 
@@ -90,7 +104,14 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void deleteInstance(String instanceId) {
+        Instance instance = getInstance(instanceId).get();
+        instanceListeners.forEach(l -> l.onEvent(instance, DELETED));
         instanceMap.remove(instanceId);
+    }
+
+    @Override
+    public void addInstanceListener(EntityListener<Instance> listener) {
+        instanceListeners.add(listener);
     }
 
     @Override
@@ -105,7 +126,16 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveProject(Project project) {
+        StorageEvent event = getProject(project.getId()).isPresent() ?
+                MODIFIED :
+                ADDED;
+        projectListeners.forEach(l -> l.onEvent(project, event));
         projectMap.put(project.getId(), project);
+    }
+
+    @Override
+    public void addProjectListener(EntityListener<Project> listener) {
+        projectListeners.add(listener);
     }
 
     @Override
@@ -143,18 +173,19 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public <T> void modifyMap(String mapId, String key, Consumer<Map<String, T>> action) {
+    public <K, T> void modifyMap(String mapId, K key, Consumer<Map<K, T>> action) {
         otherMaps.putIfAbsent(mapId, new HashMap<>());
         @SuppressWarnings("unchecked")
-        Map<String, T> map = (Map<String, T>) otherMaps.get(mapId);
+        Map<K, T> map = (Map<K, T>) otherMaps.get(mapId);
         action.accept(map);
     }
 
     @Override
-    public <I, O> O readFromMap(String mapId, String key, Function<Map<String, I>, O> function) {
+    public <K, I, O> O readFromMap(String mapId, K key, Function<Map<K, I>, O> function) {
         otherMaps.putIfAbsent(mapId, new HashMap<>());
         @SuppressWarnings("unchecked")
-        Map<String, I> map = (Map<String, I>) otherMaps.get(mapId);
+        Map<K, I> map = (Map<K, I>) otherMaps.get(mapId);
         return function.apply(map);
     }
+
 }

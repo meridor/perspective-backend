@@ -20,4 +20,5 @@ public interface ImagesAware {
 
     void deleteImage(String imageId);
 
+    void addImageListener(EntityListener<Image> listener);
 }

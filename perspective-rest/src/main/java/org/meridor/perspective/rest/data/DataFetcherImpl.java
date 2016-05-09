@@ -36,11 +36,6 @@ public class DataFetcherImpl implements DataFetcher {
     private InstancesAware instancesAware;
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns, Set<Integer> rowNumbers) {
-        throw new UnsupportedOperationException("To be implemented!");
-    }
-
-    @Override
     public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
         List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>(){
@@ -82,7 +77,7 @@ public class DataFetcherImpl implements DataFetcher {
             List<Column> columns,
             Supplier<String> errorMessageSupplier
     ) {
-        return prepareData(rawDataSupplier, Collections.emptyNavigableSet(), columnMapping, columns, errorMessageSupplier);
+        return prepareData(rawDataSupplier, Collections.emptySet(), columnMapping, columns, errorMessageSupplier);
     }
 
     private static <T> List<List<Object>> prepareData(

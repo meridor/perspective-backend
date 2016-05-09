@@ -1,12 +1,13 @@
 package org.meridor.perspective.sql.impl.index;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public interface Index {
+public interface Index extends Serializable {
     
-    void put(Key key, int rowNumber);
+    void put(Key key, String id);
     
-    Set<Integer> get(Key key);
+    Set<String> get(Key key);
     
     int getKeyLength();
     

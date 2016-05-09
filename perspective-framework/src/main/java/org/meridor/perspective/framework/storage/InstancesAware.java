@@ -19,5 +19,6 @@ public interface InstancesAware {
     boolean isInstanceDeleted(String instanceId);
 
     void deleteInstance(String instanceId);
-
+    
+    void addInstanceListener(EntityListener<Instance> listener);
 }

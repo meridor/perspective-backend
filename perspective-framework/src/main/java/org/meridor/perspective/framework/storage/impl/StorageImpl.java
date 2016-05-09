@@ -1,15 +1,12 @@
 package org.meridor.perspective.framework.storage.impl;
 
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.*;
+import com.hazelcast.map.listener.MapListener;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.ProjectsAware;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.framework.storage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,13 +80,13 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         }
     }
 
-    private <T> IMap<String, T> getMap(String name) {
+    private <K, T> IMap<K, T> getMap(String name) {
         return hazelcastInstance.getMap(name);
     }
 
     @Override
-    public <T> void modifyMap(String mapId, String key, Consumer<Map<String, T>> action) {
-        IMap<String, T> map = getMap(mapId);
+    public <K, T> void modifyMap(String mapId, K key, Consumer<Map<K, T>> action) {
+        IMap<K, T> map = getMap(mapId);
         map.lock(key, lockTimeout, TimeUnit.MILLISECONDS);
         try {
             action.accept(map);
@@ -99,8 +96,8 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
     
     @Override
-    public <I, O> O readFromMap(String mapId, String key, Function<Map<String, I>, O> function) {
-        IMap<String, I> map = getMap(mapId);
+    public <K, I, O> O readFromMap(String mapId, K key, Function<Map<K, I>, O> function) {
+        IMap<K, I> map = getMap(mapId);
         map.lock(key, lockTimeout, TimeUnit.MILLISECONDS);
         try {
             return function.apply(map);
@@ -108,7 +105,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             map.unlock(key);
         }
     }
-    
+
     private void modifyProject(String projectId, Consumer<Map<String, Project>> action) {
         modifyMap(projectsById(), projectId, action);
     }
@@ -120,6 +117,12 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public void saveProject(Project project) {
         modifyProject(project.getId(), map -> map.put(project.getId(), project));
+    }
+
+    @Override
+    public void addProjectListener(EntityListener<Project> listener) {
+        MapListener entryListener = new EntryListenerImpl<>(listener);
+        getMap(projectsById()).addEntryListener(entryListener, true);
     }
 
     @Override
@@ -152,6 +155,12 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             Instance deletedInstance = map.remove(instanceId);
             getDeletedInstancesByIdMap().put(deletedInstance.getId(), deletedInstance);
         });
+    }
+
+    @Override
+    public void addInstanceListener(EntityListener<Instance> listener) {
+        MapListener entryListener = new EntryListenerImpl<>(listener);
+        getMap(instancesById()).addEntryListener(entryListener, true);
     }
 
     @Override
@@ -216,6 +225,12 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         });
     }
 
+    @Override
+    public void addImageListener(EntityListener<Image> listener) {
+        MapListener entryListener = new EntryListenerImpl<>(listener);
+        getMap(imagesById()).addEntryListener(entryListener, true);
+    }
+
     private IMap<String, Project> getProjectsByIdMap() {
         return getMap(projectsById());
     }
@@ -240,5 +255,52 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     public void onApplicationEvent(ContextClosedEvent event) {
         LOG.debug("Marking storage as not available because application context is stopping");
         isAvailable = false;
+    }
+    
+    private static class EntryListenerImpl<T> implements EntryListener<String, T> {
+
+        private final EntityListener<T> listener;
+
+        EntryListenerImpl(EntityListener<T> listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void entryAdded(EntryEvent<String, T> event) {
+            T entity = event.getValue();
+            LOG.trace("Added entity {} to map {}", entity, event.getName());
+            listener.onEvent(entity, StorageEvent.ADDED);
+        }
+
+        @Override
+        public void entryEvicted(EntryEvent<String, T> event) {
+            T entity = event.getValue();
+            LOG.trace("Evicted entity {} from map {}", entity, event.getName());
+            listener.onEvent(entity, StorageEvent.EVICTED);
+        }
+
+        @Override
+        public void entryRemoved(EntryEvent<String, T> event) {
+            T entity = event.getValue();
+            LOG.trace("Deleted entry {} from map {}", entity, event.getName());
+            listener.onEvent(entity, StorageEvent.DELETED);
+        }
+
+        @Override
+        public void entryUpdated(EntryEvent<String, T> event) {
+            T entity = event.getValue();
+            LOG.trace("Modified entity {} in map {}", entity, event.getName());
+            listener.onEvent(entity, StorageEvent.MODIFIED);
+        }
+
+        @Override
+        public void mapCleared(MapEvent event) {
+            LOG.trace("Ignoring MapCleared event for map = {}", event.getName());
+        }
+
+        @Override
+        public void mapEvicted(MapEvent event) {
+            LOG.trace("Ignoring MapEvicted event for map = {}", event.getName());
+        }
     }
 }

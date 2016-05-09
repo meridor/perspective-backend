@@ -17,8 +17,8 @@ public interface Storage {
     
     <T> T executeSynchronized(String lockName, long timeout, Supplier<T> action);
 
-    <T> void modifyMap(String mapId, String key, Consumer<Map<String, T>> action);
+    <K, T> void modifyMap(String mapId, K key, Consumer<Map<K, T>> action);
 
-    <I, O> O readFromMap(String mapId, String key, Function<Map<String, I>, O> function);
+    <K, I, O> O readFromMap(String mapId, K key, Function<Map<K, I>, O> function);
 
 }

@@ -13,4 +13,6 @@ public interface ProjectsAware {
 
     void saveProject(Project project);
 
+    void addProjectListener(EntityListener<Project> listener);
+    
 }
