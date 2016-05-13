@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 public interface DataFetcher {
 
-    DataContainer fetch(String tableName, String tableAlias, List<Column> columns);
-    
-    default List<String> columnsToNames(List<Column> columns) {
+    DataContainer fetch(String tableName, String tableAlias, Set<Column> columns);
+
+    default List<String> columnsToNames(Set<Column> columns) {
         return columns.stream()
                 .map(Column::getName)
                 .collect(Collectors.toList());

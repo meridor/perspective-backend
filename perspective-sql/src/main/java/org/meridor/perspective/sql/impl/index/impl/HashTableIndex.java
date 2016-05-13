@@ -16,12 +16,26 @@ public class HashTableIndex implements Index {
 
     @Override
     public void put(Key key, String id) {
-        if (getKeyLength() > 0 && key.length() != getKeyLength()) {
-            throw new IllegalArgumentException(String.format("This index accepts keys with length = %d", keyLength));
-        }
+        checkKeyLength(key);
         String keyValue = key.value();
         index.putIfAbsent(keyValue, new HashSet<>());
         index.get(keyValue).add(id);
+    }
+
+    private void checkKeyLength(Key key) {
+        if (getKeyLength() > 0 && key.length() != getKeyLength()) {
+            throw new IllegalArgumentException(String.format("This index accepts keys with length = %d", keyLength));
+        }
+    }
+
+    @Override
+    public void remove(Key key, String id) {
+        checkKeyLength(key);
+        String keyValue = key.value();
+        index.computeIfPresent(keyValue, (k, ids) -> {
+            ids.remove(id);
+            return ids;
+        });
     }
 
     @Override

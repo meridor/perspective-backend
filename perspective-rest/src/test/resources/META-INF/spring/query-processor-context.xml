@@ -9,7 +9,8 @@
     <context:component-scan base-package="org.meridor.perspective.rest.data;org.meridor.perspective.sql"/>
 
     <bean class="org.meridor.perspective.framework.messaging.TestStorage"/>
-    <bean name="dataFetcher" class="org.meridor.perspective.rest.data.DataFetcherImpl"/>
+    <bean name="dataFetcher"
+          class="org.meridor.perspective.sql.impl.storage.impl.DataFetcherImpl"/>
     <bean name="indexStorage" class="org.meridor.perspective.rest.data.MockIndexStorage"/>
 
 </beans>
