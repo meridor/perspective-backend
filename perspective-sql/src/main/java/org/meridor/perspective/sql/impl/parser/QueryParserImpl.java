@@ -345,7 +345,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
             Optional<DataSource> dataSourceCandidate = processTableReferences(tableReferencesContext);
             //Clearing initially available columns used in from clause checks 
-            // and preparing more precise avilable columns map
+            // and preparing more precise available columns map
             getAvailableColumns().clear();
             Map<String, List<String>> availableColumns = getAvailableColumns(dataSourceCandidate, Collections.emptyMap());
             getAvailableColumns().putAll(availableColumns);

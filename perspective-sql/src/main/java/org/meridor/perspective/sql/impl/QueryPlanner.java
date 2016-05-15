@@ -5,8 +5,8 @@ import org.meridor.perspective.sql.impl.task.Task;
 import java.sql.SQLSyntaxErrorException;
 import java.util.Queue;
 
-public interface QueryScheduler {
+public interface QueryPlanner {
     
-    Queue<Task> schedule(String sql) throws SQLSyntaxErrorException;
+    Queue<Task> plan(String sql) throws SQLSyntaxErrorException;
     
 }

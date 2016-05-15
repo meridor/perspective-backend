@@ -23,7 +23,7 @@ import java.util.Queue;
 @Component
 @Lazy
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class QuerySchedulerImpl extends SQLParserBaseListener implements QueryScheduler {
+public class QueryPlannerImpl extends SQLParserBaseListener implements QueryPlanner {
     
     @Autowired
     private ApplicationContext applicationContext;
@@ -34,7 +34,7 @@ public class QuerySchedulerImpl extends SQLParserBaseListener implements QuerySc
     private final Queue<Task> tasksQueue = new LinkedList<>();
 
     @Override
-    public Queue<Task> schedule(String sql) throws SQLSyntaxErrorException {
+    public Queue<Task> plan(String sql) throws SQLSyntaxErrorException {
         QueryParser queryParser = applicationContext.getBean(QueryParser.class);
         queryParser.parse(sql);
         switch (queryParser.getQueryType()) {

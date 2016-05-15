@@ -54,8 +54,8 @@ public class QueryProcessorImpl implements QueryProcessor {
     }
     
     private Queue<Task> parseSQL(String sqlQuery) throws SQLSyntaxErrorException {
-        QueryScheduler queryScheduler = applicationContext.getBean(QueryScheduler.class);
-        return queryScheduler.schedule(sqlQuery);
+        QueryPlanner queryPlanner = applicationContext.getBean(QueryPlanner.class);
+        return queryPlanner.plan(sqlQuery);
     }
     
     private ExecutionResult executeTasks(Iterator<Task> tasks, ExecutionResult previousTaskResult) throws SQLException {
