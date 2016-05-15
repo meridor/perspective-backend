@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.InstanceNetwork;
+import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,8 @@ public class InstanceNetworksTableFetcher extends BaseTableFetcher<InstanceNetwo
     }
 
     @Override
-    protected TableName getTableNameConstant() {
-        return TableName.INSTANCE_NETWORKS;
+    public String getTableName() {
+        return TableName.INSTANCE_NETWORKS.getTableName();
     }
 
     @Override

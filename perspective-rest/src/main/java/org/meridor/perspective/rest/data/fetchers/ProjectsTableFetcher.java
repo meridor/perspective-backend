@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
+import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +21,8 @@ public class ProjectsTableFetcher extends BaseTableFetcher<Project> {
     }
 
     @Override
-    protected TableName getTableNameConstant() {
-        return TableName.PROJECTS;
+    public String getTableName() {
+        return TableName.PROJECTS.getTableName();
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.ExtendedNetworkSubnet;
+import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,8 @@ public class NetworkSubnetsTableFetcher extends BaseTableFetcher<ExtendedNetwork
     }
 
     @Override
-    protected TableName getTableNameConstant() {
-        return TableName.NETWORK_SUBNETS;
+    public String getTableName() {
+        return TableName.NETWORK_SUBNETS.getTableName();
     }
 
     @Override

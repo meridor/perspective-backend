@@ -1,6 +1,5 @@
-package org.meridor.perspective.rest.data.fetchers;
+package org.meridor.perspective.sql.impl.storage.impl;
 
-import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.sql.impl.storage.ObjectMapper;
 import org.meridor.perspective.sql.impl.storage.TableFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
@@ -26,8 +25,6 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
     private ObjectMapper<T> objectMapper;
 
     protected abstract Class<T> getBeanClass();
-
-    protected abstract TableName getTableNameConstant();
 
     protected abstract Collection<T> getRawData();
 
@@ -55,9 +52,7 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
     }
 
     @Override
-    public String getTableName() {
-        return getTableNameConstant().name().toLowerCase();
-    }
+    public abstract String getTableName();
 
     private List<List<Object>> prepareData(Set<Column> columns) {
         String tableName = getTableName();
