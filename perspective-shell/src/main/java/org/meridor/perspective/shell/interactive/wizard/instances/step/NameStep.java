@@ -12,7 +12,7 @@ import static org.meridor.perspective.shell.common.repository.impl.TextUtils.get
 public class NameStep extends FreeInputStep {
     
     @Required
-    @SupportedSymbols("a-zA-Z0-9-_$")
+    @SupportedSymbols
     private String name;
     
     @Override

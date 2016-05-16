@@ -54,6 +54,11 @@ public class AddCommands extends BaseCommands {
                     .withNetwork(network)
                     .withKeypair(keypair)
                     .withOptions(options);
+            
+            if ( (count == null) && (range == null) ) {
+                count = 1;
+            }
+            
             addInstancesQuery = (count != null) ?
                     addInstancesQuery.withCount(count) :
                     addInstancesQuery.withRange(range);
