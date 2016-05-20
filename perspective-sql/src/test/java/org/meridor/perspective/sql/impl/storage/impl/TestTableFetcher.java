@@ -6,13 +6,17 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class TestTableFetcher implements TableFetcher {
     @Override
-    public List<List<Object>> fetch(Set<Column> columns) {
+    public List<List<Object>> fetch(List<Column> columns) {
         return Collections.singletonList(Collections.singletonList("value"));
+    }
+
+    @Override
+    public List<List<Object>> fetch(List<String> ids, List<Column> columns) {
+        return fetch(columns);
     }
 
     @Override

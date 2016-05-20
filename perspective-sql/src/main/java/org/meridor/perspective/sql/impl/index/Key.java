@@ -1,6 +1,8 @@
 package org.meridor.perspective.sql.impl.index;
 
-public interface Key {
+import java.io.Serializable;
+
+public interface Key extends Serializable {
     
     String value();
     

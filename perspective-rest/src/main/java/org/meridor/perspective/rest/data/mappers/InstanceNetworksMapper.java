@@ -24,4 +24,9 @@ public class InstanceNetworksMapper extends BaseObjectMapper<InstanceNetwork> {
     public Class<InstanceNetwork> getInputClass() {
         return InstanceNetwork.class;
     }
+
+    @Override
+    public String getId(InstanceNetwork network) {
+        return network.getInstanceId() + network.getNetworkId();
+    }
 }

@@ -31,7 +31,7 @@ public class DataFetcherImplTest {
         DataContainer data = dataFetcher.fetch(
                 "existing",
                 TABLE_ALIAS,
-                Collections.singleton(new Column(COLUMN_NAME, String.class, null))
+                Collections.singletonList(new Column(COLUMN_NAME, String.class, null))
         );
         Map<String, List<String>> columnsMap = data.getColumnsMap();
         assertThat(columnsMap.keySet(), hasSize(1));
@@ -45,7 +45,7 @@ public class DataFetcherImplTest {
         dataFetcher.fetch(
                 "missing",
                 "anything",
-                Collections.emptySet()
+                Collections.emptyList()
         );
     }
 

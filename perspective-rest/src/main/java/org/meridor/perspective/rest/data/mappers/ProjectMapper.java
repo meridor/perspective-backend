@@ -27,4 +27,9 @@ public class ProjectMapper extends BaseObjectMapper<Project> {
     public Class<Project> getInputClass() {
         return Project.class;
     }
+
+    @Override
+    public String getId(Project project) {
+        return project.getId();
+    }
 }

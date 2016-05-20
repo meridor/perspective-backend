@@ -3,11 +3,12 @@ package org.meridor.perspective.sql.impl.index.impl;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Key;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class HashTableIndex implements Index {
     
-    private final Map<String, Set<String>> index = new HashMap<>();
+    private final Map<String, Set<Serializable>> index = new HashMap<>();
     private final int keyLength;
 
     public HashTableIndex(int keyLength) {
@@ -15,7 +16,7 @@ public class HashTableIndex implements Index {
     }
 
     @Override
-    public void put(Key key, String id) {
+    public void put(Key key, Serializable id) {
         checkKeyLength(key);
         String keyValue = key.value();
         index.putIfAbsent(keyValue, new HashSet<>());
@@ -29,7 +30,7 @@ public class HashTableIndex implements Index {
     }
 
     @Override
-    public void remove(Key key, String id) {
+    public void delete(Key key, Serializable id) {
         checkKeyLength(key);
         String keyValue = key.value();
         index.computeIfPresent(keyValue, (k, ids) -> {
@@ -39,7 +40,7 @@ public class HashTableIndex implements Index {
     }
 
     @Override
-    public Set<String> get(Key key) {
+    public Set<Serializable> get(Key key) {
         String keyValue = key.value();
         return index.containsKey(keyValue) ?
                 index.get(keyValue) :

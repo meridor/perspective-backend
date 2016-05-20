@@ -197,7 +197,7 @@ public class DataFetcherTest {
     private void checkAssertions(TableName tableName, LinkedHashMap<String, Object> expectedValues) {
         Set<String> columnNames = expectedValues.keySet();
         String tableNameString = tableName.getTableName();
-        Set<Column> columns = new LinkedHashSet<>();
+        List<Column> columns = new ArrayList<>();
         tablesAware.getColumns(tableNameString).stream()
                 .filter(c -> columnNames.contains(c.getName()))
                 .forEach(columns::add);

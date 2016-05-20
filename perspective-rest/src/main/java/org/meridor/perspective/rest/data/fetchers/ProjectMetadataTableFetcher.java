@@ -2,34 +2,24 @@ package org.meridor.perspective.rest.data.fetchers;
 
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
-import org.meridor.perspective.rest.data.beans.EntityMetadata;
+import org.meridor.perspective.rest.data.beans.ProjectMetadata;
+import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class ProjectMetadataTableFetcher extends BaseTableFetcher<EntityMetadata> {
+public class ProjectMetadataTableFetcher extends BaseTableFetcher<ProjectMetadata> {
 
     @Autowired
     private ProjectsAware projectsAware;
 
     @Override
-    protected Class<EntityMetadata> getBeanClass() {
-        return EntityMetadata.class;
-    }
-
-    @Override
-    protected Map<String, String> getColumnRemappingRules() {
-        return new HashMap<String, String>() {
-            {
-                put("id", "project_id");
-            }
-        };
+    protected Class<ProjectMetadata> getBeanClass() {
+        return ProjectMetadata.class;
     }
 
     @Override
@@ -38,12 +28,9 @@ public class ProjectMetadataTableFetcher extends BaseTableFetcher<EntityMetadata
     }
 
     @Override
-    protected Collection<EntityMetadata> getRawData() {
+    protected Collection<ProjectMetadata> getRawData() {
         return projectsAware.getProjects().stream()
-                .flatMap(p ->
-                        p.getMetadata().keySet().stream()
-                                .map(k -> new EntityMetadata(p.getId(), k.toString().toLowerCase(), p.getMetadata().get(k)))
-                )
+                .flatMap(ProjectConverters::projectToMetadata)
                 .collect(Collectors.toList());
     }
 }

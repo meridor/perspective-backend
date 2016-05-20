@@ -1,6 +1,6 @@
 package org.meridor.perspective.rest.data.beans;
 
-public class EntityMetadata {
+public abstract class EntityMetadata {
     private final String entityId;
     private final String key;
     private final String value;
@@ -11,7 +11,7 @@ public class EntityMetadata {
         this.value = value;
     }
 
-    public String getEntityId() {
+    public String getId() {
         return entityId;
     }
 

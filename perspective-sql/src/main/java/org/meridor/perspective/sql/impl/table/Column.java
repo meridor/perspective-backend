@@ -1,11 +1,17 @@
 package org.meridor.perspective.sql.impl.table;
 
+import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class Column {
 
     public static final String ANY = "*";
     private final String name;
     private final Class<?> type;
     private final Object defaultValue;
+    private final Set<IndexSignature> indexes = new HashSet<>();
 
     public Column(String name, Class<?> type, Object defaultValue) {
         this.name = name;
@@ -23,6 +29,10 @@ public class Column {
 
     public Object getDefaultValue() {
         return defaultValue;
+    }
+
+    public Set<IndexSignature> getIndexes() {
+        return indexes;
     }
 
     @Override

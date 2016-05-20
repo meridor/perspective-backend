@@ -30,4 +30,9 @@ public class ExtendedNetworkSubnetMapper extends BaseObjectMapper<ExtendedNetwor
     public Class<ExtendedNetworkSubnet> getInputClass() {
         return ExtendedNetworkSubnet.class;
     }
+
+    @Override
+    public String getId(ExtendedNetworkSubnet subnet) {
+        return subnet.getProjectId() + subnet.getNetworkId() + subnet.getId();
+    }
 }

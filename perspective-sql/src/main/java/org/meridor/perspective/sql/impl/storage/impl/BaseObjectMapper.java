@@ -4,9 +4,10 @@ package org.meridor.perspective.sql.impl.storage.impl;
 import org.meridor.perspective.sql.impl.storage.ObjectMapper;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 public abstract class BaseObjectMapper<T> implements ObjectMapper<T> {
@@ -27,8 +28,8 @@ public abstract class BaseObjectMapper<T> implements ObjectMapper<T> {
     }
 
     @Override
-    public Set<String> getAvailableColumnNames() {
-        return getColumnMapping().keySet();
+    public List<String> getAvailableColumnNames() {
+        return new ArrayList<>(getColumnMapping().keySet());
     }
 
 }

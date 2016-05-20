@@ -9,6 +9,7 @@ public interface IndexStorage {
     
     Optional<Index> get(IndexSignature indexSignature);
     
+    //This does not overwrite index if exists 
     void put(IndexSignature indexSignature, Index index);
     
 }

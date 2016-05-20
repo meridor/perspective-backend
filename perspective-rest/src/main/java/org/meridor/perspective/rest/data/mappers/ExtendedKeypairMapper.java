@@ -26,4 +26,9 @@ public class ExtendedKeypairMapper extends BaseObjectMapper<ExtendedKeypair> {
     public Class<ExtendedKeypair> getInputClass() {
         return ExtendedKeypair.class;
     }
+
+    @Override
+    public String getId(ExtendedKeypair keypair) {
+        return keypair.getProjectId() + keypair.getName();
+    }
 }

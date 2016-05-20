@@ -31,4 +31,9 @@ public class ExtendedFlavorMapper extends BaseObjectMapper<ExtendedFlavor> {
     public Class<ExtendedFlavor> getInputClass() {
         return ExtendedFlavor.class;
     }
+
+    @Override
+    public String getId(ExtendedFlavor flavor) {
+        return flavor.getProjectId() + flavor.getId();
+    }
 }

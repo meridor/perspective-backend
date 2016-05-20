@@ -14,7 +14,6 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,7 +34,7 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, Set<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
         LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
         List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
@@ -49,7 +48,7 @@ public class DataFetcherImpl implements DataFetcher {
         return dataContainer;
     }
 
-    private List<List<Object>> fetchData(String tableName, Set<Column> columns) {
+    private List<List<Object>> fetchData(String tableName, List<Column> columns) {
         if (!tableFetchers.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName));
         }

@@ -36,4 +36,9 @@ public class InstanceMapper extends BaseObjectMapper<Instance> {
     public Class<Instance> getInputClass() {
         return Instance.class;
     }
+
+    @Override
+    public String getId(Instance instance) {
+        return instance.getId();
+    }
 }

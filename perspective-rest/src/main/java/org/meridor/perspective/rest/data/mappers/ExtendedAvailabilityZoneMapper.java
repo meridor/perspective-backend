@@ -24,4 +24,9 @@ public class ExtendedAvailabilityZoneMapper extends BaseObjectMapper<ExtendedAva
     public Class<ExtendedAvailabilityZone> getInputClass() {
         return ExtendedAvailabilityZone.class;
     }
+
+    @Override
+    public String getId(ExtendedAvailabilityZone availabilityZone) {
+        return availabilityZone.getProjectId() + availabilityZone.getName();
+    }
 }

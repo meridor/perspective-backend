@@ -24,4 +24,9 @@ public class ProjectImageMapper extends BaseObjectMapper<ProjectImage> {
     public Class<ProjectImage> getInputClass() {
         return ProjectImage.class;
     }
+
+    @Override
+    public String getId(ProjectImage projectImage) {
+        return projectImage.getProjectId() + projectImage.getImageId();
+    }
 }

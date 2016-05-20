@@ -49,10 +49,11 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveImage(Image image) {
-        StorageEvent event = imageExists(image.getId()) ?
+        String imageId = image.getId();
+        StorageEvent event = imageExists(imageId) ?
                 MODIFIED :
                 ADDED;
-        imageListeners.forEach(l -> l.onEvent(image, event));
+        imageListeners.forEach(l -> l.onEvent(image, imageMap.get(imageId), event));
         imageMap.put(image.getId(), image);
     }
 
@@ -64,7 +65,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     public void deleteImage(String imageId) {
         Image image = getImage(imageId).get();
-        imageListeners.forEach(l -> l.onEvent(image, DELETED));
+        imageListeners.forEach(l -> l.onEvent(image, null, DELETED));
         imageMap.remove(imageId);
     }
 
@@ -90,10 +91,11 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveInstance(Instance instance) {
-        StorageEvent event = instanceExists(instance.getId()) ?
+        String instanceId = instance.getId();
+        StorageEvent event = instanceExists(instanceId) ?
                 MODIFIED :
                 ADDED;
-        instanceListeners.forEach(l -> l.onEvent(instance, event));
+        instanceListeners.forEach(l -> l.onEvent(instance, instanceMap.get(instanceId), event));
         instanceMap.put(instance.getId(), instance);
     }
 
@@ -105,7 +107,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     public void deleteInstance(String instanceId) {
         Instance instance = getInstance(instanceId).get();
-        instanceListeners.forEach(l -> l.onEvent(instance, DELETED));
+        instanceListeners.forEach(l -> l.onEvent(instance, null, DELETED));
         instanceMap.remove(instanceId);
     }
 
@@ -129,7 +131,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
         StorageEvent event = getProject(project.getId()).isPresent() ?
                 MODIFIED :
                 ADDED;
-        projectListeners.forEach(l -> l.onEvent(project, event));
+        projectListeners.forEach(l -> l.onEvent(project, null, event));
         projectMap.put(project.getId(), project);
     }
 

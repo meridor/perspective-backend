@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.ExtendedAvailabilityZone;
+import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class AvailabilityZonesTableFetcher extends BaseTableFetcher<ExtendedAvai
     @Override
     protected Collection<ExtendedAvailabilityZone> getRawData() {
         return projectsAware.getProjects().stream()
-                .flatMap(p -> p.getAvailabilityZones().stream().map(k -> new ExtendedAvailabilityZone(p.getId(), k)))
+                .flatMap(ProjectConverters::projectToAvailabilityZones)
                 .collect(Collectors.toList());
     }
 }

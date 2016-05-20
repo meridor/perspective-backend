@@ -269,28 +269,29 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         public void entryAdded(EntryEvent<String, T> event) {
             T entity = event.getValue();
             LOG.trace("Added entity {} to map {}", entity, event.getName());
-            listener.onEvent(entity, StorageEvent.ADDED);
+            listener.onEvent(entity, null, StorageEvent.ADDED);
         }
 
         @Override
         public void entryEvicted(EntryEvent<String, T> event) {
             T entity = event.getValue();
             LOG.trace("Evicted entity {} from map {}", entity, event.getName());
-            listener.onEvent(entity, StorageEvent.EVICTED);
+            listener.onEvent(entity, null, StorageEvent.EVICTED);
         }
 
         @Override
         public void entryRemoved(EntryEvent<String, T> event) {
             T entity = event.getValue();
             LOG.trace("Deleted entry {} from map {}", entity, event.getName());
-            listener.onEvent(entity, StorageEvent.DELETED);
+            listener.onEvent(entity, null, StorageEvent.DELETED);
         }
 
         @Override
         public void entryUpdated(EntryEvent<String, T> event) {
             T entity = event.getValue();
+            T oldEntity = event.getOldValue();
             LOG.trace("Modified entity {} in map {}", entity, event.getName());
-            listener.onEvent(entity, StorageEvent.MODIFIED);
+            listener.onEvent(entity, oldEntity, StorageEvent.MODIFIED);
         }
 
         @Override

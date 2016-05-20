@@ -31,4 +31,9 @@ public class ImageMapper extends BaseObjectMapper<Image> {
     public Class<Image> getInputClass() {
         return Image.class;
     }
+
+    @Override
+    public String getId(Image image) {
+        return image.getId();
+    }
 }

@@ -13,5 +13,7 @@
           class="org.meridor.perspective.sql.impl.storage.impl.DataFetcherImpl"/>
     <bean class="org.meridor.perspective.sql.impl.table.TablesAwareImpl"/>
     <bean name="indexStorage" class="org.meridor.perspective.rest.data.MockIndexStorage"/>
+    <bean class="org.meridor.perspective.sql.impl.storage.impl.ObjectMapperAwareImpl"/>
+    <bean class="org.meridor.perspective.sql.impl.index.impl.IndexerImpl"/>
 
 </beans>

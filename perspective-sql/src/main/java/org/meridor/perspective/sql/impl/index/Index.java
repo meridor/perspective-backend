@@ -5,11 +5,11 @@ import java.util.Set;
 
 public interface Index extends Serializable {
 
-    Set<String> get(Key key);
+    Set<Serializable> get(Key key);
 
-    void put(Key key, String id);
+    void put(Key key, Serializable id);
 
-    void remove(Key key, String id);
+    void delete(Key key, Serializable id);
     
     int getKeyLength();
     

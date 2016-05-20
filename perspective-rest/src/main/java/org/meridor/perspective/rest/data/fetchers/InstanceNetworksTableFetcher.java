@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.InstanceNetwork;
+import org.meridor.perspective.rest.data.converters.InstanceConverters;
 import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,10 +30,7 @@ public class InstanceNetworksTableFetcher extends BaseTableFetcher<InstanceNetwo
     @Override
     protected Collection<InstanceNetwork> getRawData() {
         return instancesAware.getInstances().stream()
-                .flatMap(i ->
-                        i.getNetworks().stream()
-                                .map(n -> new InstanceNetwork(i.getId(), n.getId()))
-                )
+                .flatMap(InstanceConverters::instanceToNetworks)
                 .collect(Collectors.toList());
     }
 }

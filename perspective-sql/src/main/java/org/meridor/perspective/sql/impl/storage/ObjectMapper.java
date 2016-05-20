@@ -1,7 +1,8 @@
 package org.meridor.perspective.sql.impl.storage;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Function;
 
 public interface ObjectMapper<T> {
 
@@ -14,11 +15,11 @@ public interface ObjectMapper<T> {
     Map<String, Object> map(T input);
 
     /**
-     * Returns a set of available column names
+     * Returns a list of available column names
      *
-     * @return a set of available column names
+     * @return a list of available column names
      */
-    Set<String> getAvailableColumnNames();
+    List<String> getAvailableColumnNames();
 
     /**
      * Returns allowed class for input object
@@ -26,5 +27,11 @@ public interface ObjectMapper<T> {
      * @return allowed class
      */
     Class<T> getInputClass();
+
+    /**
+     * Returns object id
+     * @return object id
+     */
+    String getId(T input);
 
 }

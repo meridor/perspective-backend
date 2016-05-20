@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.ProjectImage;
+import org.meridor.perspective.rest.data.converters.ImageConverters;
 import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,10 +30,7 @@ public class ProjectImagesTableFetcher extends BaseTableFetcher<ProjectImage> {
     @Override
     protected Collection<ProjectImage> getRawData() {
         return imagesAware.getImages().stream()
-                .flatMap(i ->
-                        i.getProjectIds().stream()
-                                .map(p -> new ProjectImage(p, i.getId()))
-                )
+                .flatMap(ImageConverters::imageToProjectImages)
                 .collect(Collectors.toList());
     }
 }

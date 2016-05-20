@@ -27,4 +27,9 @@ public class ExtendedNetworkMapper extends BaseObjectMapper<ExtendedNetwork> {
     public Class<ExtendedNetwork> getInputClass() {
         return ExtendedNetwork.class;
     }
+
+    @Override
+    public String getId(ExtendedNetwork network) {
+        return network.getProjectId() + network.getId();
+    }
 }

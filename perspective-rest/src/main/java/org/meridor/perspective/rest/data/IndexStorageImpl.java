@@ -32,6 +32,6 @@ public class IndexStorageImpl implements IndexStorage {
     @Override
     public void put(IndexSignature indexSignature, Index index) {
         String signatureString = indexSignature.getValue();
-        storage.modifyMap(indexes(), signatureString, map -> map.put(signatureString, index));
+        storage.modifyMap(indexes(), signatureString, map -> map.putIfAbsent(signatureString, index));
     }
 }

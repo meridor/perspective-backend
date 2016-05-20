@@ -28,7 +28,7 @@ public class TablesAwareImpl implements TablesAware {
     @Autowired(required = false)
     private IndexStorage indexStorage;
 
-    private Map<String, Set<Column>> tables = new HashMap<>();
+    private Map<String, List<Column>> tables = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -62,7 +62,7 @@ public class TablesAwareImpl implements TablesAware {
     private BiConsumer<Table, Field> getFieldConsumer() {
         return (table, field) -> {
             String tableName = table.getName();
-            tables.putIfAbsent(tableName, new LinkedHashSet<>());
+            tables.putIfAbsent(tableName, new ArrayList<>());
             try {
                 Object defaultValue = field.get(table);
                 tables.get(tableName).add(new Column(field.getName(), field.getType(), defaultValue));
@@ -114,7 +114,7 @@ public class TablesAwareImpl implements TablesAware {
             return;
         }
         
-        Map<String, Set<String>> indexColumns = new HashMap<>();
+        Map<String, Set<String>> indexColumns = new LinkedHashMap<>();
         indexColumns.put(tableName, new HashSet<>(Arrays.asList(columnNames)));
         indexColumns.put(foreignTableName, new HashSet<>(Arrays.asList(foreignTableColumnNames)));
         addIndexIfValid(indexColumns, keyLength);
@@ -136,6 +136,7 @@ public class TablesAwareImpl implements TablesAware {
         IndexSignature indexSignature = new IndexSignature(indexColumns);
         Index index = new HashTableIndex(keyLength);
         indexStorage.put(indexSignature, index);
+        updateColumns(indexColumns, indexSignature);
     }
     
     private boolean isTablePresent(String tableName) {
@@ -151,11 +152,23 @@ public class TablesAwareImpl implements TablesAware {
         return Optional.empty();
     }
     
+    private void updateColumns(Map<String, Set<String>> indexColumns, IndexSignature indexSignature) {
+        indexColumns.keySet().forEach(tn -> {
+            Set<String> columnNames = indexColumns.get(tn);
+            columnNames.forEach(cn -> {
+                Optional<Column> columnCandidate = getColumn(tn, cn);
+                if (columnCandidate.isPresent()) {
+                    columnCandidate.get().getIndexes().add(indexSignature);
+                }
+            });
+        });
+    }
+    
     @Override
-    public Set<Column> getColumns(String tableName) {
+    public List<Column> getColumns(String tableName) {
         return tables.containsKey(tableName) ? 
                 tables.get(tableName):
-                Collections.emptySet();
+                Collections.emptyList();
     }
 
     @Override
@@ -169,11 +182,11 @@ public class TablesAwareImpl implements TablesAware {
     }
 
     @Override
-    public Optional<Index> getIndex(Map<String, Set<String>> desiredColumns) {
+    public Optional<Index> getIndex(IndexSignature indexSignature) {
         if (indexStorage == null) {
             return Optional.empty();
         }
-        return indexStorage.get(new IndexSignature(desiredColumns));
+        return indexStorage.get(indexSignature);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.meridor.perspective.rest.data.fetchers;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.ExtendedNetworkSubnet;
+import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,12 +30,7 @@ public class NetworkSubnetsTableFetcher extends BaseTableFetcher<ExtendedNetwork
     @Override
     protected Collection<ExtendedNetworkSubnet> getRawData() {
         return projectsAware.getProjects().stream()
-                .flatMap(p ->
-                        p.getNetworks().stream().flatMap(n ->
-                                n.getSubnets().stream()
-                                        .map(s -> new ExtendedNetworkSubnet(p.getId(), n.getId(), s))
-                        )
-                )
+                .flatMap(ProjectConverters::projectToNetworkSubnets)
                 .collect(Collectors.toList());
     }
 }
