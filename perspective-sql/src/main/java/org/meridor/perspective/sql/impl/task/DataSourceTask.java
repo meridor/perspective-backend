@@ -6,6 +6,10 @@ import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.*;
+import org.meridor.perspective.sql.impl.index.Index;
+import org.meridor.perspective.sql.impl.index.Key;
+import org.meridor.perspective.sql.impl.index.Keys;
+import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
@@ -86,16 +90,62 @@ public class DataSourceTask implements Task {
             return childTask.execute(new ExecutionResult()).getData();
         } else if (dataSource.getTableAlias().isPresent()) {
             String tableAlias = dataSource.getTableAlias().get();
-            String tableName = tableAliases.get(tableAlias);
-            return dataFetcher.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
+            return fetch(tableAlias, Collections.emptyList()); //TODO: change it!
         }
         throw new IllegalArgumentException("Datasource should either contain table name or another datasource");
+    }
+    
+    //Here we assume that conditions contains only indexed columns. 
+    //Query planner should guarantee that. 
+    private DataContainer fetch(String tableAlias, List<Map<String, Object>> conditions) {
+        String tableName = tableAliases.get(tableAlias);
+        if (!conditions.isEmpty()) {
+            Set<String> ids = getIdsFromIndex(tableName, conditions);
+            return dataFetcher.fetch(tableName, tableAlias, ids, tablesAware.getColumns(tableName));
+        }
+        return dataFetcher.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
+    }
+    
+    private Set<String> getIdsFromIndex(String tableName, List<Map<String, Object>> conditions) {
+        return conditions.stream()
+                .map(c -> getMatchedIds(tableName, c))
+                .reduce(Collections.emptySet(), this::intersect);
+    }
+    
+    private <T> Set<T> intersect(Set<T> first, Set<T> second) {
+        if (first.isEmpty()) {
+            return second;
+        }
+        first.retainAll(second);
+        return first;
+    }
+    
+    private Set<String> getMatchedIds(String tableName, Map<String, Object> condition) {
+        Set<String> columnNames = condition.keySet();
+        Map<String, Set<String>> desiredColumns = new HashMap<String, Set<String>>(){
+            {
+                put(tableName, columnNames);
+            }
+        };
+        IndexSignature indexSignature = new IndexSignature(desiredColumns);
+        Optional<Index> indexCandidate = tablesAware.getIndex(indexSignature);
+        if (!indexCandidate.isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                    "No index found for columns [%s]. This is probably a bug.", columnNames.stream().collect(Collectors.joining(","))
+            ));
+        }
+        Index index = indexCandidate.get();
+        Object[] values = condition.values().toArray(new Object[condition.values().size()]);
+        Key key = Keys.create(index.getKeyLength(), values);
+        return index.get(key).stream()
+                .map(String.class::cast) //Simple string indexes always contain string ids
+                .collect(Collectors.toSet());
     }
     
     private DataContainer join(DataContainer left, DataContainer right) {
         JoinType joinType = dataSource.getJoinType().get();
         List<String> joinColumns = dataSource.getJoinColumns();
-        Optional<Object> joinCondition = dataSource.getJoinCondition();
+        Optional<Object> joinCondition = dataSource.getCondition();
         boolean isNaturalJoin = dataSource.isNaturalJoin();
         if (isNaturalJoin) {
             List<String> similarColumns = getSimilarColumns(left, right);

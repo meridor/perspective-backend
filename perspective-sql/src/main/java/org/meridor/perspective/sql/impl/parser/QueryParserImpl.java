@@ -530,7 +530,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private void processJoinCondition(DataSource dataSource, SQLParser.Join_conditionContext joinConditionContext) {
         if (joinConditionContext.ON() != null) {
             Object joinCondition = processComplexBooleanExpression(joinConditionContext.complex_boolean_expression());
-            dataSource.setJoinCondition(joinCondition);
+            dataSource.setCondition(joinCondition);
         } else if (joinConditionContext.USING() != null) {
             List<String> joinColumns = joinConditionContext.columns_list().column_name().stream()
                     .map(cn -> processColumnName(cn, false, true).getExpression())

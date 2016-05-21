@@ -17,6 +17,11 @@ public class MockDataFetcher implements DataFetcher {
     private Map<String, List<String>> columnsMap = new LinkedHashMap<>();
 
     @Override
+    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, List<Column> columns) {
+        return fetch(tableName, tableAlias, columns);
+    }
+
+    @Override
     public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
         if (!INSTANCES_TABLE.equals(tableName) && !PROJECTS_TABLE.equals(tableName)) {
             throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", tableName));

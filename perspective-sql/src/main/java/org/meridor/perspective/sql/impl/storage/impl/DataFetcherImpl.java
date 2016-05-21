@@ -11,9 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,8 +32,7 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
-        LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
+    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, List<Column> columns) {
         List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
             {
@@ -43,16 +40,22 @@ public class DataFetcherImpl implements DataFetcher {
             }
         };
         DataContainer dataContainer = new DataContainer(columnsMap);
-        List<List<Object>> rows = fetchData(tableName, columns);
+        List<List<Object>> rows = fetchData(tableName, ids, columns);
         rows.forEach(dataContainer::addRow);
         return dataContainer;
     }
 
-    private List<List<Object>> fetchData(String tableName, List<Column> columns) {
+    @Override
+    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
+        LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
+        return fetch(tableName, tableAlias, Collections.emptySet(), columns);
+    }
+
+    private List<List<Object>> fetchData(String tableName, Set<String> ids, List<Column> columns) {
         if (!tableFetchers.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName));
         }
-        return tableFetchers.get(tableName).fetch(columns);
+        return tableFetchers.get(tableName).fetch(ids, columns);
     }
 
 }

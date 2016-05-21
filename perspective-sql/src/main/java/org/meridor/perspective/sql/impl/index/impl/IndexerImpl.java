@@ -3,6 +3,7 @@ package org.meridor.perspective.sql.impl.index.impl;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Indexer;
 import org.meridor.perspective.sql.impl.index.Key;
+import org.meridor.perspective.sql.impl.index.Keys;
 import org.meridor.perspective.sql.impl.storage.ObjectMapper;
 import org.meridor.perspective.sql.impl.storage.ObjectMapperAware;
 import org.meridor.perspective.sql.impl.table.Column;
@@ -56,7 +57,7 @@ public class IndexerImpl implements Indexer {
                     int keyLength = index.getKeyLength();
                     Serializable id = getId(tableName, bean, objectMapper, desiredColumns);
                     Object[] columnValues = columnsToValues(desiredColumns.get(tableName), columnsMap);
-                    Key key = new KeyImpl(keyLength, columnValues);
+                    Key key = Keys.create(keyLength, columnValues);
                     action.act(index, key, id);
                 }
             });

@@ -127,7 +127,7 @@ public class DataSourceTaskTest {
     public void testInnerJoinByCondition() throws Exception {
         DataSourceTask dataSourceTask = prepareJoinTask(ds -> {
             ds.setJoinType(JoinType.INNER);
-            ds.setJoinCondition(prepareJoinCondition());
+            ds.setCondition(prepareJoinCondition());
             return ds;
         });
         ExecutionResult executionResult = dataSourceTask.execute(new ExecutionResult());
@@ -181,7 +181,7 @@ public class DataSourceTaskTest {
         addLeftJoinRow();
         DataSourceTask dataSourceTask = prepareJoinTask(ds -> {
             ds.setJoinType(JoinType.LEFT);
-            ds.setJoinCondition(prepareJoinCondition());
+            ds.setCondition(prepareJoinCondition());
             return ds;
         });
         ExecutionResult executionResult = dataSourceTask.execute(new ExecutionResult());
@@ -225,7 +225,7 @@ public class DataSourceTaskTest {
         );
         DataSourceTask dataSourceTask = prepareJoinTask(ds -> {
             ds.setJoinType(JoinType.RIGHT);
-            ds.setJoinCondition(prepareJoinCondition());
+            ds.setCondition(prepareJoinCondition());
             return ds;
         });
         ExecutionResult executionResult = dataSourceTask.execute(new ExecutionResult());

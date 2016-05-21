@@ -25,19 +25,14 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
     protected abstract Collection<T> getRawData();
 
     @Override
-    public List<List<Object>> fetch(List<Column> columns) {
-        return prepareData(Collections.emptyList(), columns);
-    }
-
-    @Override
-    public List<List<Object>> fetch(List<String> ids, List<Column> columns) {
+    public List<List<Object>> fetch(Set<String> ids, List<Column> columns) {
         return prepareData(ids, columns);
     }
 
     @Override
     public abstract String getTableName();
 
-    private List<List<Object>> prepareData(List<String> ids, List<Column> columns) {
+    private List<List<Object>> prepareData(Set<String> ids, List<Column> columns) {
         Class<T> beanClass = getBeanClass();
         ObjectMapper<T> objectMapper = objectMapperAware.get(beanClass);
         String tableName = getTableName();
@@ -50,11 +45,10 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
                 }
             });
             Collection<T> rawEntities = getRawData();
-            Set<String> idsSet = new HashSet<>(ids);
             return rawEntities.stream()
                     .filter(re -> {
                         String entityId = objectMapper.getId(re);
-                        return idsSet.isEmpty() || idsSet.contains(entityId);
+                        return ids.isEmpty() || ids.contains(entityId);
                     })
                     .map(re -> {
                         Map<String, Object> rowAsMap = objectMapper.map(re);

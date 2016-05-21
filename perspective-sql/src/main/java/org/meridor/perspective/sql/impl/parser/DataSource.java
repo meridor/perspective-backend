@@ -10,7 +10,7 @@ public class DataSource {
     private Optional<DataSource> dataSource = Optional.empty();
     private boolean isNaturalJoin;
     private Optional<JoinType> joinType = Optional.empty();
-    private Optional<Object> joinCondition = Optional.empty();
+    private Optional<Object> condition = Optional.empty();
     private final List<String> joinColumns = new ArrayList<>();
     private Optional<DataSource> nextDatasource = Optional.empty();
 
@@ -38,12 +38,12 @@ public class DataSource {
         this.joinType = Optional.ofNullable(joinType);
     }
 
-    public Optional<Object> getJoinCondition() {
-        return joinCondition;
+    public Optional<Object> getCondition() {
+        return condition;
     }
 
-    public void setJoinCondition(Object joinCondition) {
-        this.joinCondition = Optional.ofNullable(joinCondition);
+    public void setCondition(Object condition) {
+        this.condition = Optional.ofNullable(condition);
     }
 
     public Optional<DataSource> getNextDataSource() {
