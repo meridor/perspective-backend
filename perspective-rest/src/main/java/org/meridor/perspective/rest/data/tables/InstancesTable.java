@@ -1,11 +1,20 @@
 package org.meridor.perspective.rest.data.tables;
 
 import org.meridor.perspective.sql.impl.table.Table;
+import org.meridor.perspective.sql.impl.table.annotation.ForeignKey;
+import org.meridor.perspective.sql.impl.table.annotation.Index;
 import org.springframework.stereotype.Component;
 
 import static org.meridor.perspective.rest.data.TableName.INSTANCES;
 
 @Component
+@ForeignKey(columns = "cloud_id", table = "clouds", tableColumns = "id")
+@ForeignKey(columns = "cloud_type", table = "clouds", tableColumns = "type")
+@ForeignKey(columns = "project_id", table = "projects", tableColumns = "id")
+@ForeignKey(columns = "image_id", table = "images", tableColumns = "id")
+@ForeignKey(columns = "flavor_id", table = "flavors", tableColumns = "id")
+@Index(columnNames = "name")
+@Index(columnNames = "state")
 public class InstancesTable implements Table {
     
     public String id;
