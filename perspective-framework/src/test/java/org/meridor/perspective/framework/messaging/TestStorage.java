@@ -128,10 +128,11 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
 
     @Override
     public void saveProject(Project project) {
-        StorageEvent event = getProject(project.getId()).isPresent() ?
+        String projectId = project.getId();
+        StorageEvent event = getProject(projectId).isPresent() ?
                 MODIFIED :
                 ADDED;
-        projectListeners.forEach(l -> l.onEvent(project, null, event));
+        projectListeners.forEach(l -> l.onEvent(project, projectMap.get(projectId), event));
         projectMap.put(project.getId(), project);
     }
 

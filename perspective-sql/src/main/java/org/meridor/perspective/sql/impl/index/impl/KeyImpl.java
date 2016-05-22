@@ -20,7 +20,7 @@ public class KeyImpl implements Key {
         return Arrays.asList(parts).stream()
                 .map(
                         p -> {
-                            String str = p.toString();
+                            String str = String.valueOf(p);
                             return length > 0 && str.length() >= length ?
                                     str.substring(0, length - 1) :
                                     str;
