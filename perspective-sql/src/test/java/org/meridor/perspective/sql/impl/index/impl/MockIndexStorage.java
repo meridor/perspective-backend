@@ -1,4 +1,4 @@
-package org.meridor.perspective.rest.data;
+package org.meridor.perspective.sql.impl.index.impl;
 
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;

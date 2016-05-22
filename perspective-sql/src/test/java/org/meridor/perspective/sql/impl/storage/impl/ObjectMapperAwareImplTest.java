@@ -23,11 +23,12 @@ public class ObjectMapperAwareImplTest {
     
     @Test
     public void testGetExistingObjectMapper() {
-        ObjectMapper<Long> testObjectMapper = objectMapperAware.get(Long.class);
-        final long VALUE = 42L;
-        Map<String, Object> mappedLong = testObjectMapper.map(VALUE);
-        assertThat(mappedLong.keySet(), contains(TestObjectMapper.COLUMN_NAME));
-        assertThat(mappedLong.get(TestObjectMapper.COLUMN_NAME), equalTo(VALUE));
+        ObjectMapper<TestObject> testObjectMapper = objectMapperAware.get(TestObject.class);
+        final String VALUE = "test";
+        final TestObject OBJECT = new TestObject(VALUE);
+        Map<String, Object> mappedValues = testObjectMapper.map(OBJECT);
+        assertThat(mappedValues.keySet(), contains(TestObjectMapper.COLUMN_NAME));
+        assertThat(mappedValues.get(TestObjectMapper.COLUMN_NAME), equalTo(VALUE));
     }
     
     @Test(expected = IllegalArgumentException.class)

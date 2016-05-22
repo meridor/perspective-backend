@@ -7,22 +7,22 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class TestObjectMapper extends BaseObjectMapper<Long> {
+public class TestObjectMapper extends BaseObjectMapper<TestObject> {
     
-    public static final String COLUMN_NAME = "value";
+    public static final String COLUMN_NAME = "str";
     
     @Override
-    protected Map<String, Function<Long, Object>> getColumnMapping() {
-        return Collections.singletonMap(COLUMN_NAME, l -> l);
+    protected Map<String, Function<TestObject, Object>> getColumnMapping() {
+        return Collections.singletonMap(COLUMN_NAME, TestObject::getStr);
     }
 
     @Override
-    public Class<Long> getInputClass() {
-        return Long.class;
+    public Class<TestObject> getInputClass() {
+        return TestObject.class;
     }
 
     @Override
-    public String getId(Long val) {
-        return val.toString();
+    public String getId(TestObject val) {
+        return val.getStr();
     }
 }

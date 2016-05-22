@@ -38,7 +38,7 @@ public class IndexerImpl implements Indexer {
 
     @Override
     public void delete(String tableName, Object bean) {
-        LOG.trace("Deleting {} to \"{}\" table indexes", bean, tableName);
+        LOG.trace("Deleting {} from \"{}\" table indexes", bean, tableName);
         forEachIndex(tableName, bean, Index::delete);
     }
     
