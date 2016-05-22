@@ -55,7 +55,7 @@ public class IndexerImpl implements Indexer {
                     Map<String, Set<String>> desiredColumns = is.getDesiredColumns();
                     Index index = indexCandidate.get();
                     int keyLength = index.getKeyLength();
-                    Serializable id = getId(tableName, bean, objectMapper, desiredColumns);
+                    String id = objectMapper.getId(bean);
                     Object[] columnValues = columnsToValues(desiredColumns.get(tableName), columnsMap);
                     Key key = Keys.create(keyLength, columnValues);
                     action.act(index, key, id);
@@ -70,35 +70,8 @@ public class IndexerImpl implements Indexer {
                 .collect(Collectors.toList())
                 .toArray(new Object[columnNames.size()]);
     }
-    
-    private Serializable getId(String tableName, Object bean, ObjectMapper<Object> objectMapper, Map<String, Set<String>> desiredColumns) {
-        Set<String> tablesExceptCurrent = desiredColumns.keySet().stream()
-                .filter(tableName::equals).collect(Collectors.toSet());
-        boolean isForeignKey = !tablesExceptCurrent.isEmpty();
 
-        String beanId = objectMapper.getId(bean);
-
-        if (isForeignKey) {
-            final ArrayList<String> ids = new ArrayList<>();
-            ids.add(beanId);
-            tablesExceptCurrent.forEach(tn -> {
-                Map<String, Set<String>> tableDesiredColumns = Collections.singletonMap(
-                        tn,
-                        desiredColumns.get(tn)
-                );
-                IndexSignature indexSignature = new IndexSignature(tableDesiredColumns);
-                Optional<Index> tableIndexCandidate = tablesAware.getIndex(indexSignature);
-                if (tableIndexCandidate.isPresent()) {
-                    //TODO: need to get indexes on each table and use their ids to create lists
-                }
-            });
-            return ids;
-        } else {
-            return beanId;
-        }
-    }
-    
     private interface Action {
-        void act(Index index, Key key, Serializable id);
+        void act(Index index, Key key, String id);
     }
 }

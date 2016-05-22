@@ -26,15 +26,27 @@ public class DataContainer {
     }
     
     public DataContainer(Map<String, List<String>> columnsMap) {
-        if (columnsMap == null) {
-            throw new IllegalArgumentException("Columns map can't be null");
-        }
-        this.columnsMap.putAll(columnsMap);
+        updateColumnsMap(columnsMap);
     }
+    
     public DataContainer(DataContainer another, Function<List<DataRow>, List<DataRow>> processor) {
         this(another.getColumnsMap());
         processor.apply(another.getRows()).stream()
                 .forEach(this::addRow);
+    }
+    
+    public DataContainer(DataContainer left, DataContainer right) {
+        updateColumnsMap(left.getColumnsMap());
+        left.getRows().forEach(this::addRow);
+        updateColumnsMap(right.getColumnsMap());
+        right.getRows().forEach(this::addRow);
+    }
+    
+    private void updateColumnsMap(Map<String, List<String>> columnsMap) {
+        if (columnsMap == null) {
+            throw new IllegalArgumentException("Columns map can't be null");
+        }
+        this.columnsMap.putAll(columnsMap);
     }
     
     public void addRow(List<Object> values) {

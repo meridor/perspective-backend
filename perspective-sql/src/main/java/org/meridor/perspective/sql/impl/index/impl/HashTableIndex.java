@@ -3,12 +3,11 @@ package org.meridor.perspective.sql.impl.index.impl;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Key;
 
-import java.io.Serializable;
 import java.util.*;
 
 public class HashTableIndex implements Index {
     
-    private final Map<String, Set<Serializable>> index = new HashMap<>();
+    private final Map<Key, Set<String>> index = new HashMap<>();
     private final int keyLength;
 
     public HashTableIndex(int keyLength) {
@@ -16,11 +15,10 @@ public class HashTableIndex implements Index {
     }
 
     @Override
-    public void put(Key key, Serializable id) {
+    public void put(Key key, String id) {
         checkKeyLength(key);
-        String keyValue = key.value();
-        index.putIfAbsent(keyValue, new HashSet<>());
-        index.get(keyValue).add(id);
+        index.putIfAbsent(key, new LinkedHashSet<>());
+        index.get(key).add(id);
     }
 
     private void checkKeyLength(Key key) {
@@ -30,20 +28,23 @@ public class HashTableIndex implements Index {
     }
 
     @Override
-    public void delete(Key key, Serializable id) {
+    public void delete(Key key, String id) {
         checkKeyLength(key);
-        String keyValue = key.value();
-        index.computeIfPresent(keyValue, (k, ids) -> {
+        index.computeIfPresent(key, (k, ids) -> {
             ids.remove(id);
             return ids;
         });
     }
 
     @Override
-    public Set<Serializable> get(Key key) {
-        String keyValue = key.value();
-        return index.containsKey(keyValue) ?
-                index.get(keyValue) :
+    public Set<Key> getKeys() {
+        return index.keySet();
+    }
+
+    @Override
+    public Set<String> get(Key key) {
+        return index.containsKey(key) ?
+                index.get(key) :
                 Collections.emptySet();
     }
 

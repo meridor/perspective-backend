@@ -109,10 +109,10 @@ public class DataSourceTask implements Task {
     private Set<String> getIdsFromIndex(String tableName, List<Map<String, Object>> conditions) {
         return conditions.stream()
                 .map(c -> getMatchedIds(tableName, c))
-                .reduce(Collections.emptySet(), this::intersect);
+                .reduce(Collections.emptySet(), DataSourceTask::intersect);
     }
     
-    private <T> Set<T> intersect(Set<T> first, Set<T> second) {
+    private static <T> Set<T> intersect(Set<T> first, Set<T> second) {
         if (first.isEmpty()) {
             return second;
         }
@@ -122,24 +122,26 @@ public class DataSourceTask implements Task {
     
     private Set<String> getMatchedIds(String tableName, Map<String, Object> condition) {
         Set<String> columnNames = condition.keySet();
-        Map<String, Set<String>> desiredColumns = new HashMap<String, Set<String>>(){
-            {
-                put(tableName, columnNames);
-            }
-        };
+        Map<String, Set<String>> desiredColumns = Collections.singletonMap(tableName, columnNames);
+        Index index = getIndex(desiredColumns);
+        Key key = conditionToKey(index.getKeyLength(), condition);
+        return index.get(key);
+    }
+    
+    private static Key conditionToKey(int keyLength, Map<String, Object> condition) {
+        Object[] values = condition.values().toArray(new Object[condition.values().size()]);
+        return Keys.create(keyLength, values);
+    } 
+    
+    private Index getIndex(Map<String, Set<String>> desiredColumns){
         IndexSignature indexSignature = new IndexSignature(desiredColumns);
         Optional<Index> indexCandidate = tablesAware.getIndex(indexSignature);
         if (!indexCandidate.isPresent()) {
             throw new IllegalArgumentException(String.format(
-                    "No index found for columns [%s]. This is probably a bug.", columnNames.stream().collect(Collectors.joining(","))
+                    "No index found for columns: [%s]. This is probably a bug.", desiredColumns
             ));
         }
-        Index index = indexCandidate.get();
-        Object[] values = condition.values().toArray(new Object[condition.values().size()]);
-        Key key = Keys.create(index.getKeyLength(), values);
-        return index.get(key).stream()
-                .map(String.class::cast) //Simple string indexes always contain string ids
-                .collect(Collectors.toSet());
+        return indexCandidate.get();
     }
     
     private DataContainer join(DataContainer left, DataContainer right) {
@@ -154,6 +156,40 @@ public class DataSourceTask implements Task {
         return !joinColumns.isEmpty() ?
                 joinByColumns(left, joinType, right, joinColumns) :
                 joinByCondition(left, joinType, right, joinCondition);
+    }
+    
+    //TODO: use this somewhere!
+    private DataContainer foreignKeyJoin(
+            String leftTableAlias,
+            Set<String> leftColumns,
+            Map<String, Object> leftCondition,
+            String rightTableAlias,
+            Set<String> rightColumns,
+            Map<String, Object> rightCondition,
+            JoinType joinType
+    ) {
+        String leftTable = tableAliases.get(leftTableAlias);
+        Index leftIndex = getIndex(Collections.singletonMap(leftTable, leftColumns));
+        String rightTable = tableAliases.get(rightTableAlias);
+        Index rightIndex = getIndex(Collections.singletonMap(rightTable, rightColumns));
+        Set<Key> leftKeys = leftCondition.isEmpty() ?
+                leftIndex.getKeys() :
+                Collections.singleton(conditionToKey(leftIndex.getKeyLength(), leftCondition));
+        
+        Set<Key> rightKeys = rightCondition.isEmpty() ?
+                rightIndex.getKeys() :
+                Collections.singleton(conditionToKey(rightIndex.getKeyLength(), rightCondition));
+        
+        Set<Key> matchingKeys = intersect(leftKeys, rightKeys);
+        return matchingKeys.stream()
+                .map(mk -> {
+                    Set<String> leftMatchedIds = leftIndex.get(mk);
+                    Set<String> rightMatchedIds = rightIndex.get(mk);
+                    DataContainer leftResults = dataFetcher.fetch(leftTable, leftTableAlias, leftMatchedIds, tablesAware.getColumns(leftTable));
+                    DataContainer rightResults = dataFetcher.fetch(rightTable, rightTableAlias, rightMatchedIds, tablesAware.getColumns(rightTable));
+                    return crossJoin(leftResults, rightResults, Optional.empty(), joinType);
+                })
+                .reduce(DataContainer.empty(), DataContainer::new);
     }
     
     private List<String> getSimilarColumns(DataContainer left, DataContainer right) {
@@ -219,7 +255,6 @@ public class DataSourceTask implements Task {
         return crossJoin(left, right, joinCondition, JoinType.INNER);
     }
     
-    //We add a row with nulls to cross product, then relax join condition with is null clauses
     private DataContainer outerJoin(DataContainer left, JoinType joinType, DataContainer right, Object joinCondition) {
         return crossJoin(left, right, Optional.ofNullable(joinCondition), joinType);
     }
