@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.parser;
 
+import org.meridor.perspective.sql.impl.expression.BooleanExpression;
 import org.meridor.perspective.sql.impl.expression.OrderExpression;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public interface SelectQueryAware {
      * Returns where expression to apply after all joins
      * @return boolean where expression or empty
      */
-    Optional<Object> getWhereExpression();
+    Optional<BooleanExpression> getWhereExpression();
 
     /**
      * Returns a list of expressions to group by
@@ -48,7 +49,7 @@ public interface SelectQueryAware {
      * Return a having expression to apply after grouping
      * @return boolean having expression or empty
      */
-    Optional<Object> getHavingExpression();
+    Optional<BooleanExpression> getHavingExpression();
 
     /**
      * Returns a list of expressions for order by clause

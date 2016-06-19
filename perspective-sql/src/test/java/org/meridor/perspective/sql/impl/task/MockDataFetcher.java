@@ -10,20 +10,13 @@ import java.util.*;
 @Component
 public class MockDataFetcher implements DataFetcher {
 
-    public static final String INSTANCES_TABLE = "instances";
-    public static final String PROJECTS_TABLE = "projects";
-
     private Map<String, List<List<Object>>> dataMap = new LinkedHashMap<>();
     private Map<String, List<String>> columnsMap = new LinkedHashMap<>();
 
     @Override
     public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, List<Column> columns) {
-        return fetch(tableName, tableAlias, columns);
-    }
-
-    @Override
-    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
-        if (!INSTANCES_TABLE.equals(tableName) && !PROJECTS_TABLE.equals(tableName)) {
+        //By convention data for mock data fetcher ID column should be the first
+        if (!dataMap.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", tableName));
         }
         List<String> columnNames = columnsMap.getOrDefault(tableName, Collections.emptyList());
@@ -33,10 +26,18 @@ public class MockDataFetcher implements DataFetcher {
             }
         };
         DataContainer dataContainer = new DataContainer(columnsMap);
-        if (dataMap.containsKey(tableName)) {
-            dataMap.get(tableName).forEach(dataContainer::addRow);
-        }
+        dataMap.get(tableName).forEach(dr -> {
+            String id = String.valueOf(dr.get(0));
+            if (ids == null || ids.contains(id)){
+                dataContainer.addRow(dr);
+            }
+        });
         return dataContainer;
+    }
+
+    @Override
+    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
+        return fetch(tableName, tableAlias, null, columns);
     }
     
     public void setTableData(String tableName, List<String> columns, List<List<Object>> data) {

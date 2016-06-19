@@ -62,7 +62,7 @@ public class IndexerImpl implements Indexer {
                     int keyLength = index.getKeyLength();
                     String id = objectMapper.getId(bean);
                     Object[] columnValues = columnsToValues(desiredColumns.get(tableName), columnsMap);
-                    Key key = Keys.create(keyLength, columnValues);
+                    Key key = Keys.key(keyLength, columnValues);
                     action.act(index, key, id);
                 }
             });

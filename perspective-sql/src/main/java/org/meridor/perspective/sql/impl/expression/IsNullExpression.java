@@ -5,33 +5,28 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class UnaryBooleanExpression implements BooleanExpression {
+public class IsNullExpression implements BooleanExpression {
     
-    private final BooleanExpression value;
-    
-    private final UnaryBooleanOperator unaryBooleanOperator;
+    private final Object value;
 
-    public UnaryBooleanExpression(BooleanExpression value, UnaryBooleanOperator unaryBooleanOperator) {
+    public IsNullExpression(Object value) {
         this.value = value;
-        this.unaryBooleanOperator = unaryBooleanOperator;
     }
 
-    public BooleanExpression getValue() {
+    public Object getValue() {
         return value;
-    }
-
-    public UnaryBooleanOperator getUnaryBooleanOperator() {
-        return unaryBooleanOperator;
     }
 
     @Override
     public Set<String> getTableAliases() {
-        return value.getTableAliases();
+        if (value instanceof BooleanExpression) {
+            return ((BooleanExpression) value).getTableAliases();
+        }
+        return Collections.emptySet();
     }
 
     @Override
     public Map<String, Set<Object>> getFixedValueConditions(String tableAlias) {
-        //TODO: !(expr) optimization will be implemented later...
         return Collections.emptyMap();
     }
 

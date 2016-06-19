@@ -12,6 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -163,10 +165,16 @@ public class ExpressionEvaluatorImplTest {
     
     @Test
     public void testEvaluateInExpression() {
-        assertThat(bool(2, Arrays.asList("1", "2", "3"), EMPTY_ROW), is(true));
-        assertThat(bool(STRING_COLUMN_VALUE, Arrays.asList("stuff", column(STRING_COLUMN_NAME, TABLE_NAME)), ROW_WITH_VALUES), is(true));
-        assertThat(bool("3", Collections.emptyList(), EMPTY_ROW), is(false));
-        assertThat(bool(null, Collections.emptyList(), EMPTY_ROW), is(false));
+        assertThat(bool(2, Stream.of("1", "2", "3").collect(Collectors.toSet()), EMPTY_ROW), is(true));
+        assertThat(bool(STRING_COLUMN_VALUE, Stream.of("stuff", column(STRING_COLUMN_NAME, TABLE_NAME)).collect(Collectors.toSet()), ROW_WITH_VALUES), is(true));
+        assertThat(bool("3", Collections.emptySet(), EMPTY_ROW), is(false));
+        assertThat(bool(null, Collections.emptySet(), EMPTY_ROW), is(false));
+    }
+    
+    @Test
+    public void testEvaluateIsNullExpression() {
+        assertThat(isNull(new Null(), EMPTY_ROW), is(true));
+        assertThat(isNull(2, EMPTY_ROW), is(false));
     }
     
     @Test
@@ -239,12 +247,16 @@ public class ExpressionEvaluatorImplTest {
         return bool(left, binaryBooleanOperator, right, EMPTY_ROW);
     }
 
-    private boolean bool(Object value, UnaryBooleanOperator unaryBooleanOperator) {
+    private boolean bool(BooleanExpression value, UnaryBooleanOperator unaryBooleanOperator) {
         return expressionEvaluator.evaluateAs(new UnaryBooleanExpression(value, unaryBooleanOperator), EMPTY_ROW, Boolean.class);
     }
 
-    private boolean bool(Object value, List<Object> candidates, DataRow dataRow) {
+    private boolean bool(Object value, Set<Object> candidates, DataRow dataRow) {
         return expressionEvaluator.evaluateAs(new InExpression(value, candidates), dataRow, Boolean.class);
+    }
+    
+    private boolean isNull(Object value, DataRow dataRow) {
+        return expressionEvaluator.evaluateAs(new IsNullExpression(value), dataRow, Boolean.class);
     }
 
     private <T extends Comparable<? super T>> T arithmetic(Object left, BinaryArithmeticOperator binaryArithmeticOperator, Object right, DataRow dataRow, Class<T> cls) {
@@ -283,16 +295,19 @@ public class ExpressionEvaluatorImplTest {
     
     @Test
     public void testGetColumnNames() {
+        ColumnExpression columnExpression = new ColumnExpression("id", "mock");
+        BinaryArithmeticExpression binaryArithmeticExpression = new BinaryArithmeticExpression(columnExpression, BinaryArithmeticOperator.PLUS, 1);
+        UnaryArithmeticExpression unaryArithmeticExpression = new UnaryArithmeticExpression(binaryArithmeticExpression, UnaryArithmeticOperator.MINUS);
         FunctionExpression functionExpression = new FunctionExpression("abs", new ArrayList<Object>() {
             {
-                add(new ColumnExpression("id", "mock"));
+                add(unaryArithmeticExpression);
             }
         });
-        Map<String, List<String>> columns = expressionEvaluator.getColumnNames(functionExpression);
+        Map<String, Set<String>> columns = expressionEvaluator.getColumnNames(functionExpression);
         assertThat(columns.keySet(), hasSize(1));
         assertThat(columns.keySet(), contains("mock"));
         assertThat(columns.get("mock"), hasSize(1));
-        assertThat(columns.get("mock").get(0), equalTo("id"));
+        assertThat(columns.get("mock"), contains("id"));
     }
 
 }

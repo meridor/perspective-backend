@@ -1,6 +1,8 @@
 package org.meridor.perspective.sql.impl.expression;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FunctionExpression {
     
@@ -19,5 +21,14 @@ public class FunctionExpression {
 
     public List<Object> getArgs() {
         return args;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s(%s)",
+                functionName,
+                Stream.of(args).map(String::valueOf).collect(Collectors.joining(", "))
+        );
     }
 }

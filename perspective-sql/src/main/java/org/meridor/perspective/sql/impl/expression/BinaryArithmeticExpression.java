@@ -25,4 +25,9 @@ public class BinaryArithmeticExpression {
     public Object getRight() {
         return right;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", left, binaryArithmeticOperator.getText(), right);
+    }
 }

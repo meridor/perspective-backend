@@ -3,7 +3,9 @@ package org.meridor.perspective.sql.impl.expression;
 import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.function.Function;
+import org.meridor.perspective.sql.impl.function.FunctionName;
 import org.meridor.perspective.sql.impl.function.FunctionsAware;
+import org.meridor.perspective.sql.impl.table.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.*;
 
@@ -25,38 +29,55 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     private FunctionsAware functionsAware;
 
     @Override
-    public Map<String, List<String>> getColumnNames(Object expression) {
-        if (expression instanceof ColumnExpression) {
-            ColumnExpression columnExpression = (ColumnExpression) expression;
-            String tableName = columnExpression.getTableAlias();
+    public Map<String, Set<String>> getColumnNames(Object expression) {
+        if (isColumnExpression(expression)) {
+            ColumnExpression columnExpression = asColumnExpression(expression);
+            String tableAlias = columnExpression.getTableAlias();
             String columnName = columnExpression.getColumnName();
-            return Collections.singletonMap(tableName, Collections.singletonList(columnName));
+            return Collections.singletonMap(tableAlias, Collections.singleton(columnName));
         } else if (expression instanceof FunctionExpression) {
-            final Map<String, List<String>> ret = new HashMap<>();
+            final Map<String, Set<String>> ret = new HashMap<>();
             FunctionExpression functionExpression = (FunctionExpression) expression;
             functionExpression.getArgs().stream()
             .map(this::getColumnNames)
             .forEach(m -> m.keySet().forEach(k -> {
-                if (ret.containsKey(k)) {
-                    ret.get(k).addAll(m.get(k));
-                } else {
-                    ret.put(k, m.get(k));
-                }
+                ret.putIfAbsent(k, new LinkedHashSet<>());
+                ret.get(k).addAll(m.get(k));
             }));
             return ret;
+        } else if (expression instanceof UnaryArithmeticExpression) {
+            return getColumnNames(((UnaryArithmeticExpression) expression).getValue());
+        } else if (expression instanceof BinaryArithmeticExpression) {
+            BinaryArithmeticExpression binaryArithmeticExpression = (BinaryArithmeticExpression) expression;
+            Map<String, Set<String>> leftColumnNames = getColumnNames(binaryArithmeticExpression.getLeft());
+            Map<String, Set<String>> rightColumnNames = getColumnNames(binaryArithmeticExpression.getRight());
+            return mergeColumnNames(leftColumnNames, rightColumnNames);
         }
         return Collections.emptyMap();
     }
-
+    
+    private static Map<String, Set<String>> mergeColumnNames(Map<String, Set<String>> left, Map<String, Set<String>> right) {
+        return Stream.of(left, right)
+                .map(Map::entrySet)
+                .flatMap(Set::stream)
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> {
+                    Set<String> both = new HashSet<>(a);
+                    both.addAll(b);
+                    return both;
+                }));
+    }
+    
     @Override
     public <T extends Comparable<? super T>> T evaluate(Object expression, DataRow dataRow) {
         Assert.notNull(expression, "Expression can't be null");
         if (expression instanceof Null) {
             return null;
-        } else if (expression instanceof ColumnExpression) {
+        } else if (isColumnExpression(expression)) {
             return evaluateColumnExpression((ColumnExpression) expression, dataRow);
         } else if (expression instanceof FunctionExpression) {
             return evaluateFunctionExpression((FunctionExpression) expression, dataRow);
+        } else if (expression instanceof IsNullExpression) {
+            return cast(evaluateIsNullExpression((IsNullExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof InExpression) {
             return cast(evaluateInExpression((InExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof SimpleBooleanExpression) {
@@ -127,12 +148,12 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         if (inExpression == null) {
             return false;
         }
-        List<Object> candidates = inExpression.getCandidates();
-        List<String> candidatesAsConstants = candidates.stream()
+        Set<Object> candidates = inExpression.getCandidates();
+        Set<String> candidatesAsConstants = candidates.stream()
                 .filter(c -> c != null)
                 .map(c -> (isConstant(c.getClass())) ? c : evaluate(c, dataRow))
                 .map(String::valueOf)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         if (candidates.isEmpty()) {
             return false;
         }
@@ -146,7 +167,12 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         }
         return candidatesAsConstants.contains(String.valueOf(value));
     }
-    
+
+    private Object evaluateIsNullExpression(IsNullExpression expression, DataRow dataRow) {
+        FunctionExpression isNullExpression = new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(expression.getValue(), DataType.NULL));
+        return evaluateFunctionExpression(isNullExpression, dataRow);
+    }
+
     private boolean evaluateSimpleBooleanExpression(SimpleBooleanExpression simpleBooleanExpression, DataRow dataRow) {
         if (simpleBooleanExpression == null) {
             return false;

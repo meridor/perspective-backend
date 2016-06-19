@@ -4,14 +4,21 @@ import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Key;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HashTableIndex implements Index {
     
     private final Map<Key, Set<String>> index = new HashMap<>();
+    private final IndexSignature signature;
     private final int keyLength;
 
-    public HashTableIndex(int keyLength) {
+    public HashTableIndex(IndexSignature signature, int keyLength) {
+        this.signature = signature;
         this.keyLength = keyLength;
+    }
+    
+    public HashTableIndex(IndexSignature signature) {
+        this(signature, 0);
     }
 
     @Override
@@ -37,14 +44,26 @@ public class HashTableIndex implements Index {
     }
 
     @Override
+    public IndexSignature getSignature() {
+        return signature;
+    }
+
+    @Override
     public Set<Key> getKeys() {
         return index.keySet();
     }
 
     @Override
+    public Set<String> getIds() {
+        return index.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public Set<String> get(Key key) {
         return index.containsKey(key) ?
-                index.get(key) :
+                new LinkedHashSet<>(index.get(key)) :
                 Collections.emptySet();
     }
 

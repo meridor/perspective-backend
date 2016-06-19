@@ -41,7 +41,7 @@ public class IndexerImplTest {
         assertThat(getIndex().isPresent(), is(true));
         indexer.add(TABLE_NAME, BEAN);
         Index index = getIndex().get();
-        Key key = Keys.create(index.getKeyLength(), BEAN.getStr());
+        Key key = Keys.key(index.getKeyLength(), BEAN.getStr());
         Set<String> ids = index.get(key);
         assertThat(ids, contains(ID));
         indexer.delete(TABLE_NAME, BEAN);

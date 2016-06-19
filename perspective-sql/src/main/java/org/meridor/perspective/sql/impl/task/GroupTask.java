@@ -81,5 +81,11 @@ public class GroupTask implements Task {
         });
         return groupData(newData, remainingExpressions);
     }
-    
+
+    @Override
+    public String toString() {
+        return "GroupTask{" +
+                "expressions=" + expressions +
+                '}';
+    }
 }

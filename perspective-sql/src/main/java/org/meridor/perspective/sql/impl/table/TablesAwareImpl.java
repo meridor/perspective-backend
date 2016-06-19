@@ -134,7 +134,7 @@ public class TablesAwareImpl implements TablesAware {
             }
         }
         IndexSignature indexSignature = new IndexSignature(indexColumns);
-        Index index = new HashTableIndex(keyLength);
+        Index index = new HashTableIndex(indexSignature, keyLength);
         indexStorage.put(indexSignature, index);
         updateColumns(indexColumns, indexSignature);
     }
@@ -179,6 +179,14 @@ public class TablesAwareImpl implements TablesAware {
         return tables.get(tableName).stream()
                 .filter(c -> c.getName().equals(columnName))
                 .findFirst();
+    }
+
+    @Override
+    public Set<IndexSignature> getIndexSignatures() {
+        if (indexStorage == null) {
+            return Collections.emptySet();
+        }
+        return indexStorage.getSignatures();
     }
 
     @Override

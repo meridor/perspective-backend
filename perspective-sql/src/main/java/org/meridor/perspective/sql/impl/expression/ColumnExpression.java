@@ -37,4 +37,15 @@ public class ColumnExpression {
         return Column.ANY.equals(getColumnName());
     }
 
+    @Override
+    public String toString() {
+        if (useAnyTable()) {
+            return useAnyColumn() ? "*" : getColumnName();
+        }
+        return String.format(
+                "%s.%s",
+                getTableAlias(),
+                useAnyColumn() ? "*" : getColumnName()
+        );
+    }
 }

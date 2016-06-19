@@ -18,4 +18,9 @@ public class UnaryArithmeticExpression {
     public UnaryArithmeticOperator getUnaryArithmeticOperator() {
         return unaryArithmeticOperator;
     }
+
+    @Override
+    public String toString() {
+        return unaryArithmeticOperator.getText() + value;
+    }
 }

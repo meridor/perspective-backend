@@ -3,21 +3,22 @@ package org.meridor.perspective.sql.impl.index.impl;
 import org.meridor.perspective.sql.impl.index.Key;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class KeyImpl implements Key {
     
     private final int length;
     
-    private final String value;
+    private final List<Object> values;
 
-    public KeyImpl(int length, Object...parts) {
+    public KeyImpl(int length, Object... values) {
         this.length = length;
-        this.value = createValue(parts);
+        this.values = Arrays.asList(values);
     }
     
-    private String createValue(Object...parts) {
-        return Arrays.asList(parts).stream()
+    private String toString(Object... values) {
+        return Arrays.asList(values).stream()
                 .map(
                         p -> {
                             String str = String.valueOf(p);
@@ -29,10 +30,15 @@ public class KeyImpl implements Key {
                 .collect(Collectors.joining());
 
     }
-    
+
     @Override
-    public String value() {
-        return value;
+    public List<Object> getValues() {
+        return values;
+    }
+
+    @Override
+    public String toString() {
+        return toString(values);
     }
 
     @Override
@@ -42,11 +48,11 @@ public class KeyImpl implements Key {
 
     @Override
     public int hashCode() {
-        return value.hashCode();
+        return toString().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Key && value.equals(((Key) obj).value());
+        return obj instanceof Key && toString().equals(((Key) obj).toString());
     }
 }

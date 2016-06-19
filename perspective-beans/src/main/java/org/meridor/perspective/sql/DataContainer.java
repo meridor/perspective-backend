@@ -35,13 +35,6 @@ public class DataContainer {
                 .forEach(this::addRow);
     }
     
-    public DataContainer(DataContainer left, DataContainer right) {
-        updateColumnsMap(left.getColumnsMap());
-        left.getRows().forEach(this::addRow);
-        updateColumnsMap(right.getColumnsMap());
-        right.getRows().forEach(this::addRow);
-    }
-    
     private void updateColumnsMap(Map<String, List<String>> columnsMap) {
         if (columnsMap == null) {
             throw new IllegalArgumentException("Columns map can't be null");

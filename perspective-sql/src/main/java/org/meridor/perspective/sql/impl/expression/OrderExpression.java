@@ -21,4 +21,12 @@ public class OrderExpression {
     public OrderDirection getOrderDirection() {
         return orderDirection;
     }
+
+    @Override
+    public String toString() {
+        return "OrderExpression{" +
+                "expression=" + expression +
+                ", orderDirection=" + orderDirection +
+                '}';
+    }
 }

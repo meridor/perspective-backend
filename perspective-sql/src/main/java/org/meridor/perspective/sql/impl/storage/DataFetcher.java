@@ -13,10 +13,4 @@ public interface DataFetcher {
     
     DataContainer fetch(String tableName, String tableAlias, List<Column> columns);
 
-    default List<String> columnsToNames(List<Column> columns) {
-        return columns.stream()
-                .map(Column::getName)
-                .collect(Collectors.toList());
-    }
-
 }

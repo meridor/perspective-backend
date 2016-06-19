@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 import static org.meridor.perspective.framework.storage.impl.StorageKey.indexes;
@@ -18,6 +19,11 @@ public class IndexStorageImpl implements IndexStorage {
     
     @Autowired
     private Storage storage;
+
+    @Override
+    public Set<IndexSignature> getSignatures() {
+        return storage.getMapKeys(indexes());
+    }
 
     @Override
     public Optional<Index> get(IndexSignature indexSignature) {

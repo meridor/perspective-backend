@@ -48,7 +48,7 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
             return rawEntities.stream()
                     .filter(re -> {
                         String entityId = objectMapper.getId(re);
-                        return ids.isEmpty() || ids.contains(entityId);
+                        return ids == null || ids.contains(entityId);
                     })
                     .map(re -> {
                         Map<String, Object> rowAsMap = objectMapper.map(re);

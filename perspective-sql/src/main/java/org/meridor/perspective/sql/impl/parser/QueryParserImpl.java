@@ -65,26 +65,26 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     @Autowired
     private TablesAware tablesAware;
 
-    private Optional<SQLParser.Select_clauseContext> selectClauseContext = Optional.empty();
-    private Optional<SQLParser.From_clauseContext> fromClauseContext = Optional.empty();
-    private Optional<SQLParser.Where_clauseContext> whereClauseContext = Optional.empty();
-    private Optional<SQLParser.Having_clauseContext> havingClauseContext = Optional.empty();
-    private Optional<SQLParser.Group_clauseContext> groupByClauseContext = Optional.empty();
-    private Optional<SQLParser.Order_clauseContext> orderByClauseContext = Optional.empty();
+    private SQLParser.Select_clauseContext selectClauseContext;
+    private SQLParser.From_clauseContext fromClauseContext;
+    private SQLParser.Where_clauseContext whereClauseContext;
+    private SQLParser.Having_clauseContext havingClauseContext;
+    private SQLParser.Group_clauseContext groupByClauseContext;
+    private SQLParser.Order_clauseContext orderByClauseContext;
     
     private QueryType queryType = QueryType.UNKNOWN;
     private Set<String> errors = new LinkedHashSet<>();
     private Map<String, Object> selectionMap = new LinkedHashMap<>();
     private Map<String, String> tableAliases = new HashMap<>();
-    private Optional<DataSource> dataSource = Optional.empty();
+    private DataSource dataSource;
     //Column name -> aliases map of columns available after all joins
     private Map<String, List<String>> availableColumns = new HashMap<>();
-    private Optional<Object> whereExpression = Optional.empty();
+    private BooleanExpression whereExpression;
     private final List<Object> groupByExpressions = new ArrayList<>();
     private final List<OrderExpression> orderByExpressions = new ArrayList<>();
-    private Optional<Object> havingExpression = Optional.empty();
-    private Optional<Integer> limitCount = Optional.empty();
-    private Optional<Integer> limitOffset = Optional.empty();
+    private BooleanExpression havingExpression;
+    private Integer limitCount;
+    private Integer limitOffset;
 
     @Override
     public void parse(String sql) throws SQLSyntaxErrorException {
@@ -130,17 +130,17 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     @Override
     public void exitSelect_clause(SQLParser.Select_clauseContext ctx) {
         this.queryType = QueryType.SELECT;
-        selectClauseContext = Optional.of(ctx);
+        selectClauseContext = ctx;
     }
 
     @Override
     public void exitFrom_clause(SQLParser.From_clauseContext ctx) {
-        fromClauseContext = Optional.of(ctx);
+        fromClauseContext = ctx;
     }
 
     @Override
     public void exitWhere_clause(SQLParser.Where_clauseContext ctx) {
-        whereClauseContext = Optional.of(ctx);
+        whereClauseContext = ctx;
     }
 
     @Override
@@ -154,18 +154,21 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void processWhereClause() {
+        Optional<SQLParser.Where_clauseContext> whereClauseContext = Optional.ofNullable(this.whereClauseContext);
         if (whereClauseContext.isPresent()) {
-            this.whereExpression = Optional.ofNullable(processComplexBooleanExpression(whereClauseContext.get().complex_boolean_expression()));
+            this.whereExpression = processComplexBooleanExpression(whereClauseContext.get().complex_boolean_expression());
         }
     }
 
     private void processGroupByClause() {
+        Optional<SQLParser.Group_clauseContext> groupByClauseContext = Optional.ofNullable(this.groupByClauseContext);
         if (groupByClauseContext.isPresent()) {
             foreachExpression(groupByClauseContext.get().expressions().expression(), p -> this.groupByExpressions.add(p.getExpression()));
         }
     }
 
     private void processOrderByClause() {
+        Optional<SQLParser.Order_clauseContext> orderByClauseContext =  Optional.ofNullable(this.orderByClauseContext);
         if (orderByClauseContext.isPresent()) {
             orderByClauseContext.get().order_expressions().order_expression().forEach(oe -> {
                 Object expression = processExpression(oe.expression()).getExpression();
@@ -176,14 +179,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private void processHavingClause() {
+        Optional<SQLParser.Having_clauseContext> havingClauseContext = Optional.ofNullable(this.havingClauseContext);
         if (havingClauseContext.isPresent()) {
-            this.havingExpression = Optional.ofNullable(processComplexBooleanExpression(havingClauseContext.get().complex_boolean_expression()));
+            this.havingExpression = processComplexBooleanExpression(havingClauseContext.get().complex_boolean_expression());
         }
     }
     
-    private Object processComplexBooleanExpression(SQLParser.Complex_boolean_expressionContext complexBooleanExpression) {
+    private BooleanExpression processComplexBooleanExpression(SQLParser.Complex_boolean_expressionContext complexBooleanExpression) {
         if (complexBooleanExpression.unary_boolean_operator() != null && complexBooleanExpression.complex_boolean_expression(0) != null) {
-            Object expression = processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
+            BooleanExpression expression = processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
             UnaryBooleanOperator unaryBooleanOperator = processUnaryBooleanOperator(complexBooleanExpression.unary_boolean_operator());
             return new UnaryBooleanExpression(expression, unaryBooleanOperator);
         } else if (
@@ -244,7 +248,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         throw new ParseException(String.format("Unknown binary boolean operator: \'%s\'", binaryBooleanOperator.getText()));
     }
     
-    private Object processSimpleBooleanExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+    private BooleanExpression processSimpleBooleanExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
         if (simpleBooleanExpression.relational_operator() != null) {
             return processRelationalBooleanExpression(simpleBooleanExpression);
         } else if (simpleBooleanExpression.BETWEEN() != null) {
@@ -272,7 +276,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         return new SimpleBooleanExpression(left, booleanRelation, right);
     }
     
-    private Object processBetweenExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+    private BooleanExpression processBetweenExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
         Object value = getExpression(simpleBooleanExpression, 0);
         Object left = getExpression(simpleBooleanExpression, 1);
         Object right = getExpression(simpleBooleanExpression, 2);
@@ -286,15 +290,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 betweenExpression;
     }
     
-    private Object processIsExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+    private BooleanExpression processIsExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
         Object value = getExpression(simpleBooleanExpression, 0);
-        FunctionExpression isNullExpression = new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(value, DataType.NULL));
+        IsNullExpression isNullExpression = new IsNullExpression(value);
         return (simpleBooleanExpression.NOT() != null) ?
                 new UnaryBooleanExpression(isNullExpression, UnaryBooleanOperator.NOT) :
                 isNullExpression;
     }
     
-    private Object processLikeExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+    private BooleanExpression processLikeExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
         Object value = getExpression(simpleBooleanExpression, 0);
         Object pattern = getExpression(simpleBooleanExpression, 1);
         SimpleBooleanExpression likeExpression = new SimpleBooleanExpression(value, LIKE, pattern);
@@ -303,7 +307,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 likeExpression;
     }
     
-    private Object processRegexpExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+    private BooleanExpression processRegexpExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
         Object value = getExpression(simpleBooleanExpression, 0);
         Object pattern = getExpression(simpleBooleanExpression, 1);
         SimpleBooleanExpression regexpExpression = new SimpleBooleanExpression(value, REGEXP, pattern);
@@ -312,10 +316,10 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 regexpExpression;
     }
     
-    private Object processInExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
-        List<Object> processedExpressions = simpleBooleanExpression.expression().stream()
+    private BooleanExpression processInExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
+        Set<Object> processedExpressions = simpleBooleanExpression.expression().stream()
                 .map(e -> processExpression(e).getExpression())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         Object value = processedExpressions.remove(0);
         InExpression inExpression = new InExpression(value, processedExpressions);
         return (simpleBooleanExpression.NOT() != null) ?
@@ -341,6 +345,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void processFromClause() {
+        Optional<SQLParser.From_clauseContext> fromClauseContext = Optional.ofNullable(this.fromClauseContext);
         if (fromClauseContext.isPresent()) {
             SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
             Optional<DataSource> dataSourceCandidate = processTableReferences(tableReferencesContext);
@@ -349,7 +354,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             getAvailableColumns().clear();
             Map<String, List<String>> availableColumns = getAvailableColumns(dataSourceCandidate, Collections.emptyMap());
             getAvailableColumns().putAll(availableColumns);
-            this.dataSource = dataSourceCandidate;
+            if (dataSourceCandidate.isPresent()) {
+                this.dataSource = dataSourceCandidate.get();
+            }
         }
     }
 
@@ -372,7 +379,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             DataSource previousDataSource = previousDataSourceCandidate.get();
             DataSource previousCompoundDataSource = new DataSource(previousDataSource);
             previousCompoundDataSource.setJoinType(JoinType.INNER);
-            currentCompoundDataSource.setNextDatasource(previousDataSource);
+            currentCompoundDataSource.setRightDatasource(previousDataSource);
         }
         return chainDataSources(Optional.of(currentCompoundDataSource), remainingDataSources);
     }
@@ -383,7 +390,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         }
         DataSource currentDataSource = currentDataSourceCandidate.get();
         Optional<String> tableAliasCandidate = currentDataSource.getTableAlias();
-        Optional<DataSource> dataSourceCandidate = currentDataSource.getDataSource();
+        Optional<DataSource> dataSourceCandidate = currentDataSource.getLeftDataSource();
         final Map<String, List<String>> currentlyAvailableColumns = new HashMap<>();
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
@@ -399,14 +406,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (currentDataSource.getJoinType().isPresent()) {
             Map<String, List<String>> previouslyAvailableColumns = new HashMap<>(availableColumns);
             return getAvailableColumns(
-                    currentDataSource.getNextDataSource(),
+                    currentDataSource.getRightDataSource(),
                     mergeAvailableColumns(
                             previouslyAvailableColumns,
                             currentlyAvailableColumns
                     )
             );
         } else {
-            return getAvailableColumns(currentDataSource.getNextDataSource(), currentlyAvailableColumns);
+            return getAvailableColumns(currentDataSource.getRightDataSource(), currentlyAvailableColumns);
         }
     }
     
@@ -473,13 +480,13 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     private DataSource appendJoinClauses(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, DataSource firstDataSource, Optional<DataSource> previousDataSourceCandidate, List<SQLParser.Join_clauseContext> remainingJoinClauseContexts) {
         if (remainingJoinClauseContexts.isEmpty()) {
-            firstDataSource.setNextDatasource(previousDataSourceCandidate.get());
+            firstDataSource.setRightDatasource(previousDataSourceCandidate.get());
             return firstDataSource;
         }
         SQLParser.Join_clauseContext currentJoinClauseContext = remainingJoinClauseContexts.remove(remainingJoinClauseContexts.size() - 1);
         DataSource currentDataSource = processJoinClause(tableAtoms, currentJoinClauseContext);
         if (previousDataSourceCandidate.isPresent()) {
-            currentDataSource.setNextDatasource(previousDataSourceCandidate.get());
+            currentDataSource.setRightDatasource(previousDataSourceCandidate.get());
         }
         return appendJoinClauses(tableAtoms, firstDataSource, Optional.of(currentDataSource), remainingJoinClauseContexts);
     }
@@ -529,7 +536,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     private void processJoinCondition(DataSource dataSource, SQLParser.Join_conditionContext joinConditionContext) {
         if (joinConditionContext.ON() != null) {
-            Object joinCondition = processComplexBooleanExpression(joinConditionContext.complex_boolean_expression());
+            BooleanExpression joinCondition = processComplexBooleanExpression(joinConditionContext.complex_boolean_expression());
             dataSource.setCondition(joinCondition);
         } else if (joinConditionContext.USING() != null) {
             List<String> joinColumns = joinConditionContext.columns_list().column_name().stream()
@@ -537,7 +544,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     .filter(e -> e instanceof ColumnExpression)
                     .map(e -> ((ColumnExpression) e).getColumnName())
                     .collect(Collectors.toList());
-            dataSource.getJoinColumns().addAll(joinColumns);
+            dataSource.getColumns().addAll(joinColumns);
         } else {
             throw new ParseException(String.format("Unsupported join condition type: \'%s\'", joinConditionContext.getText()));
         }
@@ -572,8 +579,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void processSelectClause() {
-        if (this.selectClauseContext.isPresent()) {
-            this.selectClauseContext.get().select_expression().aliased_expression().stream().forEach(ae -> {
+        Optional<SQLParser.Select_clauseContext> selectClauseContext = Optional.ofNullable(this.selectClauseContext);
+        if (selectClauseContext.isPresent()) {
+            selectClauseContext.get().select_expression().aliased_expression().stream().forEach(ae -> {
                 AliasExpressionPair pair = processAliasedExpression(ae);
                 selectionMap.put(pair.getAlias(), pair.getExpression());
             });
@@ -669,13 +677,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 errors.add(String.format("Selecting %s.* is not allowed in this context", tableAlias));
                 return emptyPair();
             }
-            return new AliasExpressionPair(String.format("%s.*", tableAlias), new ColumnExpression(ANY, tableAlias));
+            ColumnExpression columnExpression = new ColumnExpression(ANY, tableAlias);
+            return new AliasExpressionPair(columnExpression.toString(), columnExpression);
         }
         if (!getAvailableColumns().containsKey(columnName) || !getAvailableColumns().get(columnName).contains(tableAlias)) {
             errors.add(String.format("Column \"%s.%s\" is not available for selection", tableAlias, columnName));
             return emptyPair();
         }
-        return new AliasExpressionPair(String.format("%s.%s", tableAlias, columnName), new ColumnExpression(columnName, tableAlias));
+        ColumnExpression columnExpression = new ColumnExpression(columnName, tableAlias);
+        return new AliasExpressionPair(columnExpression.toString(), columnExpression);
     }
     
     private AliasExpressionPair processStandaloneColumnName(String columnName, boolean selectAllColumns, boolean allowMultipleColumns, boolean isUsingClause) {
@@ -684,7 +694,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 errors.add("Selecting * is not allowed in this context");
                 return emptyPair();
             }
-            return new AliasExpressionPair("*", new ColumnExpression());
+            ColumnExpression columnExpression = new ColumnExpression();
+            return new AliasExpressionPair(columnExpression.toString(), columnExpression);
         }
         if (!getAvailableColumns().containsKey(columnName)) {
             errors.add(String.format("Column \"%s\" is not available for selection", columnName));
@@ -694,8 +705,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
             return emptyPair();
         }
-//        String tableAlias = getAvailableColumns().get(columnName).get(0);
-        return new AliasExpressionPair(columnName, new ColumnExpression(columnName));
+        ColumnExpression columnExpression = new ColumnExpression(columnName);
+        return new AliasExpressionPair(columnExpression.toString(), columnExpression);
     }
     
     private Optional<String> getTableAlias(SQLParser.Column_nameContext columnName) {
@@ -714,16 +725,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private AliasExpressionPair processFunctionCall(SQLParser.Function_callContext functionCall) {
         String functionName = functionCall.ID().getText();
         List<Object> argExpressions = new ArrayList<>();
-        List<String> argDefaultAliases = new ArrayList<>();
         if (functionCall.expressions() != null) {
             foreachExpression(functionCall.expressions().expression(), p -> {
-                argDefaultAliases.add(p.getAlias());
                 argExpressions.add(p.getExpression());
             });
         }
-        String joinedArgs = argDefaultAliases.stream().collect(Collectors.joining(", "));
-        String defaultAlias = String.format("%s(%s)", functionName, joinedArgs);
-        return pair(defaultAlias, new FunctionExpression(functionName, argExpressions));
+
+        FunctionExpression functionExpression = new FunctionExpression(functionName, argExpressions);
+        return pair(functionExpression.toString(), functionExpression);
     }
 
     private AliasExpressionPair processUnaryArithmeticExpression(
@@ -732,9 +741,10 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     ) {
         UnaryArithmeticOperator unaryArithmeticOperator = determineUnaryArithmeticOperator(unaryArithmeticOperatorContext);
         AliasExpressionPair expression = processExpression(expressionContext);
+        UnaryArithmeticExpression unaryArithmeticExpression = new UnaryArithmeticExpression(expression.getExpression(), unaryArithmeticOperator);
         return new AliasExpressionPair(
-                unaryArithmeticOperator.getText() + expression.getAlias(),
-                new UnaryArithmeticExpression(expression.getExpression(), unaryArithmeticOperator)
+                unaryArithmeticExpression.toString(),
+                unaryArithmeticExpression
         );
     }
 
@@ -757,9 +767,10 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         BinaryArithmeticOperator binaryArithmeticOperator = determineBinaryArithmeticOperator(binaryArithmeticOperatorContext);
         AliasExpressionPair leftExpression = processExpression(leftExpressionContext);
         AliasExpressionPair rightExpression = processExpression(rightExpressionContext);
+        BinaryArithmeticExpression binaryArithmeticExpression = new BinaryArithmeticExpression(leftExpression.getExpression(), binaryArithmeticOperator, rightExpression.getExpression());
         return new AliasExpressionPair(
-                String.format("%s %s %s", leftExpression.getAlias(), binaryArithmeticOperator.getText(), rightExpression.getAlias()),
-                new BinaryArithmeticExpression(leftExpression.getExpression(), binaryArithmeticOperator, rightExpression.getExpression())
+                binaryArithmeticExpression.toString(),
+                binaryArithmeticExpression
         );
     }
 
@@ -790,17 +801,17 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     @Override
     public void exitHaving_clause(SQLParser.Having_clauseContext ctx) {
-        havingClauseContext = Optional.of(ctx);
+        havingClauseContext = ctx;
     }
 
     @Override
     public void exitGroup_clause(SQLParser.Group_clauseContext ctx) {
-        groupByClauseContext = Optional.of(ctx);
+        groupByClauseContext = ctx;
     }
 
     @Override
     public void exitOrder_clause(SQLParser.Order_clauseContext ctx) {
-        orderByClauseContext = Optional.of(ctx);
+        orderByClauseContext = ctx;
     }
 
     @Override
@@ -810,14 +821,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             if (limitOffset < 0) {
                 errors.add(String.format("Limit offset count should be less than or equal to zero but %d was given", limitOffset));
             } else {
-                this.limitOffset = Optional.of(limitOffset);
+                this.limitOffset = limitOffset;
             }
         }
         Integer limitCount = Integer.valueOf(ctx.row_count().INT().getText());
         if (limitCount < 0) {
             errors.add(String.format("Limit count should be less than or equal to zero but %d was given", limitCount));
         } else {
-            this.limitCount = Optional.of(limitCount);
+            this.limitCount = limitCount;
         }
     }
 
@@ -828,7 +839,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     @Override
     public Optional<DataSource> getDataSource() {
-        return dataSource;
+        return Optional.ofNullable(dataSource);
     }
 
     @Override
@@ -842,8 +853,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     @Override
-    public Optional<Object> getWhereExpression() {
-        return whereExpression;
+    public Optional<BooleanExpression> getWhereExpression() {
+        return Optional.ofNullable(whereExpression);
     }
 
     @Override
@@ -857,17 +868,17 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     @Override
-    public Optional<Object> getHavingExpression() {
-        return havingExpression;
+    public Optional<BooleanExpression> getHavingExpression() {
+        return Optional.ofNullable(havingExpression);
     }
 
     @Override
     public Optional<Integer> getLimitCount() {
-        return limitCount;
+        return Optional.ofNullable(limitCount);
     }
 
     @Override
     public Optional<Integer> getLimitOffset() {
-        return limitOffset;
+        return Optional.ofNullable(limitOffset);
     }
 }

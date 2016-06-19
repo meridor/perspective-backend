@@ -88,4 +88,11 @@ public class SelectTask implements Task {
         return ret;
     }
 
+    @Override
+    public String toString() {
+        return "SelectTask{" +
+                "selectionMap=" + selectionMap +
+                ", selectAll=" + selectAll +
+                '}';
+    }
 }

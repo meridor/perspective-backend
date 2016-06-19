@@ -10,6 +10,8 @@ import java.util.Set;
 
 public interface TablesAware {
 
+    Set<IndexSignature> getIndexSignatures();
+    
     Optional<Index> getIndex(IndexSignature indexSignature);
     
     Set<String> getTables();

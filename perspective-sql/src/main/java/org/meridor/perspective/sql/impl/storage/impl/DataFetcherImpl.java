@@ -11,8 +11,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 
 @Component
 public class DataFetcherImpl implements DataFetcher {
@@ -48,7 +53,7 @@ public class DataFetcherImpl implements DataFetcher {
     @Override
     public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
         LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
-        return fetch(tableName, tableAlias, Collections.emptySet(), columns);
+        return fetch(tableName, tableAlias, null, columns);
     }
 
     private List<List<Object>> fetchData(String tableName, Set<String> ids, List<Column> columns) {
