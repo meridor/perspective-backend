@@ -3,7 +3,6 @@ package org.meridor.perspective.sql.impl;
 import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.ExecutionResult;
-import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
@@ -34,7 +33,7 @@ import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.
 @Component
 @Lazy
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class QueryPlannerImpl extends SQLParserBaseListener implements QueryPlanner {
+public class QueryPlannerImpl implements QueryPlanner {
     
     @Autowired
     private ApplicationContext applicationContext;
@@ -73,7 +72,7 @@ public class QueryPlannerImpl extends SQLParserBaseListener implements QueryPlan
         if (optimizedQuery.containsKey(DATASOURCE)) {
             tasksQueue.add(optimizedQuery.get(DATASOURCE));
         } else {
-            tasksQueue.add(createDummyFetchTask());
+            tasksQueue.add(new DummyFetchTask());
         }
         
         if (optimizedQuery.containsKey(WHERE)) {
@@ -351,20 +350,7 @@ public class QueryPlannerImpl extends SQLParserBaseListener implements QueryPlan
         );
         return dataSourceTask;
     }
-    
-    private Task createDummyFetchTask() {
-        return pr -> new ExecutionResult(){
-            {
-                setCount(1);
-                setData(new DataContainer(Collections.singletonMap("", Collections.singletonList(""))){
-                    {
-                        addRow(Collections.singletonList(""));
-                    }
-                });
-            }
-        };
-    }
-    
+
     private LimitTask createLimitTask(Optional<Integer> limitOffset, Integer limitCount) {
         return limitOffset.isPresent() ?
                 new LimitTask(limitOffset.get(), limitCount) :

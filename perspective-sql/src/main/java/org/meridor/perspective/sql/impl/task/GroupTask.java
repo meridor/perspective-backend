@@ -82,6 +82,10 @@ public class GroupTask implements Task {
         return groupData(newData, remainingExpressions);
     }
 
+    public List<Object> getExpressions() {
+        return new ArrayList<>(expressions);
+    }
+
     @Override
     public String toString() {
         return "GroupTask{" +

@@ -38,6 +38,17 @@ public class ColumnExpression {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ColumnExpression that = (ColumnExpression) o;
+
+        return columnName.equals(that.columnName) && tableAlias.equals(that.tableAlias);
+
+    }
+
+    @Override
     public String toString() {
         if (useAnyTable()) {
             return useAnyColumn() ? "*" : getColumnName();

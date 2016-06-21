@@ -2,7 +2,7 @@ package org.meridor.perspective.sql.impl.task.strategy;
 
 import java.util.*;
 
-public abstract class StrategyTestUtils {
+abstract class StrategyTestUtils {
 
     static final String TABLE_NAME = "mock";
     static final String TABLE_ALIAS = "m";

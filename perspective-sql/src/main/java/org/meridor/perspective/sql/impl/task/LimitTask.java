@@ -42,6 +42,14 @@ public class LimitTask implements Task {
         };
     }
 
+    public int getOffset() {
+        return offset;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
     @Override
     public String toString() {
         return "LimitTask{" +

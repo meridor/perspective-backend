@@ -75,6 +75,10 @@ public class OrderTask implements Task {
                 comparator.reversed();
     }
 
+    public List<OrderExpression> getExpressions() {
+        return new ArrayList<>(expressions);
+    }
+
     @Override
     public String toString() {
         return "OrderTask{" +

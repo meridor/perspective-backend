@@ -10,6 +10,7 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective">
         <context:exclude-filter expression="org\.meridor\.perspective\.sql\.impl\.storage\.impl\.DataFetcherImpl" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.sql\.impl\.parser\.QueryParserImpl" type="regex" />
     </context:component-scan>
 
 </beans>

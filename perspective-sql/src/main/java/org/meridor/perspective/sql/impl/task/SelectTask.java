@@ -88,6 +88,14 @@ public class SelectTask implements Task {
         return ret;
     }
 
+    public Map<String, Object> getSelectionMap() {
+        return new LinkedHashMap<>(selectionMap);
+    }
+
+    public boolean isSelectAll() {
+        return selectAll;
+    }
+
     @Override
     public String toString() {
         return "SelectTask{" +
