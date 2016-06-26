@@ -91,6 +91,26 @@ public class DataSource {
         this.type = type;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DataSource that = (DataSource) o;
+
+        if (isNaturalJoin != that.isNaturalJoin) return false;
+        if (tableAlias != null ? !tableAlias.equals(that.tableAlias) : that.tableAlias != null)
+            return false;
+        if (leftDataSource != null ? !leftDataSource.equals(that.leftDataSource) : that.leftDataSource != null)
+            return false;
+        if (joinType != that.joinType) return false;
+        if (condition != null ? !condition.equals(that.condition) : that.condition != null)
+            return false;
+        if (!columns.equals(that.columns)) return false;
+        return rightDatasource != null ? rightDatasource.equals(that.rightDatasource) : that.rightDatasource == null && type == that.type;
+
+    }
+
     public enum DataSourceType {
         PARENT,
         INDEX_FETCH,

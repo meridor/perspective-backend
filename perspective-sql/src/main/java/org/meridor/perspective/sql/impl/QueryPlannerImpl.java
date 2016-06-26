@@ -166,12 +166,12 @@ public class QueryPlannerImpl implements QueryPlanner {
             DataSource originalDataSource,
             List<BooleanExpression> originalWhereConditions,
             Map<String, Object> selectionMap,
-            Map<String, String> tableAliases) {
+            Map<String, String> tableAliases
+    ) {
                     
             /*
                  1) Перенос фиксиров значений в join
                  2) Склеивание OR выражений по одной колонке: where name = '1' or name = '2'
-                 3) Возвращать пустой ответ для выражений (можно не делать): where name = '1' and name = '2'
                 4) Выбор индексов и создание задач по ним
              */
 

@@ -51,6 +51,10 @@ public class DataSourceTask implements Task {
         }
     }
 
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
     private DataContainer processDataSource(DataSource dataSource, Map<String, String> tableAliases) {
         if (dataSource.getType() != PARENT) {
             throw new IllegalArgumentException("Data source task accepts only parent data sources");

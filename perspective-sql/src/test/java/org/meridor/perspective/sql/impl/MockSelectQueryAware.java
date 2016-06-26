@@ -5,7 +5,6 @@ import org.meridor.perspective.sql.impl.expression.OrderExpression;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.SelectQueryAware;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 
 public class MockSelectQueryAware implements SelectQueryAware {
