@@ -23,7 +23,7 @@ public class IndexSignature {
     }
 
     public Map<String, Set<String>> getDesiredColumns() {
-        return desiredColumns;
+        return new HashMap<>(desiredColumns);
     }
     
     public String getValue() {

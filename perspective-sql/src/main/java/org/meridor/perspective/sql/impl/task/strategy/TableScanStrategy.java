@@ -2,6 +2,7 @@ package org.meridor.perspective.sql.impl.task.strategy;
 
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.impl.parser.DataSource;
+import org.meridor.perspective.sql.impl.parser.DataSourceUtils;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +25,13 @@ public class TableScanStrategy extends ScanStrategy {
     }
 
     private DataContainer fetchData(DataSource dataSource, Map<String, String> tableAliases) {
-        checkLeftDataSource(dataSource, false);
+        DataSourceUtils.checkLeftDataSource(dataSource, false);
         String tableAlias = dataSource.getTableAlias().get();
         String tableName = tableAliases.get(tableAlias);
         DataContainer leftData = dataFetcher.fetch(tableName, tableAlias, tablesAware.getColumns(tableName));
         if (dataSource.getRightDataSource().isPresent()) {
             DataSource rightDataSource = dataSource.getRightDataSource().get();
-            checkRightDataSource(rightDataSource, false);
+            DataSourceUtils.checkRightDataSource(rightDataSource, false);
             DataContainer rightData = fetchData(rightDataSource, tableAliases);
             return join(leftData, rightDataSource, rightData);
         }

@@ -31,8 +31,12 @@ public class Column {
         return defaultValue;
     }
 
+    public void addIndex(IndexSignature indexSignature) {
+        indexes.add(indexSignature);
+    }
+    
     public Set<IndexSignature> getIndexes() {
-        return indexes;
+        return new HashSet<>(indexes);
     }
 
     @Override

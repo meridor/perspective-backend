@@ -1,7 +1,6 @@
 package org.meridor.perspective.rest.data;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.Image;
@@ -29,7 +28,6 @@ import static org.junit.Assert.assertThat;
  */
 @ContextConfiguration(locations = "/META-INF/spring/query-processor-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@Ignore("will be fixed with correct QueryPlanner implementation")
 public class QueryProcessorTest {
 
     @Autowired
@@ -97,9 +95,18 @@ public class QueryProcessorTest {
 
     @Test
     public void testSelectAsterisk() {
+        doAsteriskTest("select * from instances");
+    }
+    
+    @Test
+    public void testSelectTableAsterisk() {
+        doAsteriskTest("select i.* from instances i");
+    }
+
+    private void doAsteriskTest(String sqlText) {
         Query query = new Query() {
             {
-                setSql("select * from instances");
+                setSql(sqlText);
             }
         };
         List<QueryResult> queryResults = queryProcessor.process(query);
@@ -114,7 +121,7 @@ public class QueryProcessorTest {
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("name"), equalTo("test-instance"));
     }
-
+    
     @Test
     public void testSelectQueryWithPlaceholders() {
         Query query = new Query() {
@@ -143,14 +150,27 @@ public class QueryProcessorTest {
     }
     
     @Test
+    public void testImplicitInnerJoinWithCondition() {
+        doInnerJoinWithConditionAssertions(
+                "select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
+                "from instances as i, projects as p, flavors as f " +
+                "where i.project_id = p.id and i.flavor_id = f.id and i.project_id = f.project_id"
+        );
+    }
+    
+    @Test
     public void testInnerJoinWithCondition() {
+        doInnerJoinWithConditionAssertions("select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
+                "from instances as i inner join projects as p " +
+                "on (i.project_id = p.id) inner join flavors as f " +
+                "on i.flavor_id = f.id and i.project_id = f.project_id"
+        );
+    }
+    
+    private void doInnerJoinWithConditionAssertions(String sqlText) {
         Query query = new Query(){
             {
-                setSql("select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
-                        "from instances as i inner join projects as p " +
-                        "on (i.project_id = p.id) inner join flavors as f " +
-                        "on i.flavor_id = f.id and i.project_id = f.project_id"
-                );
+                setSql(sqlText);
             }
         };
         List<QueryResult> queryResults = queryProcessor.process(query);

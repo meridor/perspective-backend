@@ -23,10 +23,19 @@ public class DataSource {
     
     public DataSource(DataSource leftDataSource) {
         this.leftDataSource = leftDataSource;
+        this.type = DataSourceType.PARENT;
     }
     
+    public DataSource() {
+        this.type = DataSourceType.PARENT;
+    }
+
     public Optional<String> getTableAlias() {
         return Optional.ofNullable(tableAlias);
+    }
+    
+    public void setLeftDataSource(DataSource leftDataSource) {
+        this.leftDataSource = leftDataSource;
     }
 
     public Optional<DataSource> getLeftDataSource() {

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
 
 @Component
 public abstract class ScanStrategy implements DataSourceStrategy {
@@ -72,26 +73,7 @@ public abstract class ScanStrategy implements DataSourceStrategy {
         }
         return new ArrayList<>(tableAliases).get(0);
     }
-
-    private Optional<BooleanExpression> columnsToCondition(Optional<BooleanExpression> joinCondition, String leftTableAlias, List<String> columnNames, String rightTableAlias) {
-        if (columnNames.size() == 0) {
-            return joinCondition;
-        }
-        return Optional.of(
-                columnNames.stream()
-                        .map(cn -> new SimpleBooleanExpression(
-                                new ColumnExpression(cn, leftTableAlias),
-                                EQUAL,
-                                new ColumnExpression(cn, rightTableAlias)
-                        ))
-                        .reduce(
-                                BinaryBooleanExpression.alwaysTrue(),
-                                (f, s) -> new BinaryBooleanExpression(f, AND, s),
-                                (f, s) -> new BinaryBooleanExpression(f, AND, s)
-                        )
-        );
-    }
-
+    
     //A naive implementation filtering cross join by condition
     private DataContainer innerJoin(DataContainer left, DataContainer right, Optional<BooleanExpression> joinCondition) {
         return crossJoin(left, right, joinCondition, JoinType.INNER);
@@ -189,34 +171,6 @@ public abstract class ScanStrategy implements DataSourceStrategy {
                 putAll(right.getColumnsMap());
             }
         });
-    }
-
-    void checkLeftDataSource(DataSource dataSource) {
-        checkLeftDataSource(dataSource, true);
-    }
-    
-    void checkLeftDataSource(DataSource dataSource, boolean conditionRequired) {
-        if (!dataSource.getTableAlias().isPresent()) {
-            throw new IllegalArgumentException("Scan strategy datasource should contain table alias");
-        }
-        Optional<BooleanExpression> conditionCandidate = dataSource.getCondition();
-        if (
-                conditionRequired &&
-                ( !conditionCandidate.isPresent() || !(conditionCandidate.get() instanceof IndexBooleanExpression) )
-        ) {
-            throw new IllegalArgumentException("Scan strategy datasource should have condition of IndexBooleanExpression type");
-        }
-    }
-
-    void checkRightDataSource(DataSource dataSource) {
-        checkRightDataSource(dataSource, true);
-    }
-    
-    void checkRightDataSource(DataSource dataSource, boolean conditionRequired) {
-        checkLeftDataSource(dataSource, conditionRequired);
-        if (dataSource.getRightDataSource().isPresent()) {
-            throw new IllegalArgumentException("Scan strategy can only join two tables");
-        }
     }
 
 }

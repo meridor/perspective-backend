@@ -10,9 +10,7 @@ import org.meridor.perspective.sql.SQLParser;
 import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.CaseInsensitiveInputStream;
 import org.meridor.perspective.sql.impl.expression.*;
-import org.meridor.perspective.sql.impl.function.FunctionName;
 import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.DataType;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -374,16 +372,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return previousDataSourceCandidate;
         }
         DataSource currentDataSource = remainingDataSources.remove(remainingDataSources.size() - 1); //Removing from the tail
-        DataSource currentCompoundDataSource = new DataSource(currentDataSource);
+        DataSource currentDataSourceTail = DataSourceUtils.getTail(currentDataSource);
         if (previousDataSourceCandidate.isPresent()) {
             DataSource previousDataSource = previousDataSourceCandidate.get();
-            DataSource previousCompoundDataSource = new DataSource(previousDataSource);
-            previousCompoundDataSource.setJoinType(JoinType.INNER);
-            currentCompoundDataSource.setRightDatasource(previousDataSource);
+            previousDataSource.setJoinType(JoinType.INNER);
+            currentDataSourceTail.setRightDatasource(previousDataSource);
         }
-        return chainDataSources(Optional.of(currentCompoundDataSource), remainingDataSources);
+        return chainDataSources(Optional.of(currentDataSource), remainingDataSources);
     }
-    
+
     private Map<String, List<String>> getAvailableColumns(Optional<DataSource> currentDataSourceCandidate, Map<String, List<String>> availableColumns) {
         if (!currentDataSourceCandidate.isPresent()) {
             return availableColumns;

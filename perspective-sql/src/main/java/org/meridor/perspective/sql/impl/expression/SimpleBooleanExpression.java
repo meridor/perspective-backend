@@ -51,15 +51,19 @@ public class SimpleBooleanExpression implements BooleanExpression {
     public Map<String, Set<Object>> getFixedValueConditions(String tableAlias) {
         Map<String, Set<Object>> ret = new HashMap<>();
         if (isColumnExpression(left) && isConstant(right)) {
-            String leftTableAlias = asColumnExpression(right).getTableAlias();
+            ColumnExpression leftColumnExpression = asColumnExpression(left);
+            String leftTableAlias = leftColumnExpression.getTableAlias();
+            String leftColumnName = leftColumnExpression.getColumnName();
             if (leftTableAlias.equals(tableAlias)) {
-                ret.put(leftTableAlias, Collections.singleton(right));
+                ret.put(leftColumnName, Collections.singleton(right));
             }
         }
         if (isConstant(left) && isColumnExpression(right)) {
-            String rightTableAlias = asColumnExpression(right).getTableAlias();
+            ColumnExpression rightColumnExpression = asColumnExpression(right);
+            String rightTableAlias = rightColumnExpression.getTableAlias();
+            String rightColumnName = rightColumnExpression.getColumnName();
             if (rightTableAlias.equals(tableAlias)) {
-                ret.put(rightTableAlias, Collections.singleton(left));
+                ret.put(rightColumnName, Collections.singleton(left));
             }
         }
         return ret;
@@ -83,12 +87,12 @@ public class SimpleBooleanExpression implements BooleanExpression {
     public Optional<BooleanExpression> getRestOfExpression() {
         return (
                 isConstant(left) && isConstant(right) ||
-                isNotOptimizableExpression(left) ||
-                isNotOptimizableExpression(right)
+                canNotOptimizeExpression(left) ||
+                canNotOptimizeExpression(right)
         ) ? Optional.of(this) : Optional.empty();
     }
     
-    private boolean isNotOptimizableExpression(Object value) {
+    private boolean canNotOptimizeExpression(Object value) {
         return !isConstant(value) && !isColumnExpression(value);
     }
 }

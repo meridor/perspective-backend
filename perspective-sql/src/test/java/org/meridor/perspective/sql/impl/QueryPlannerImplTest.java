@@ -1,6 +1,5 @@
 package org.meridor.perspective.sql.impl;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.impl.expression.*;
@@ -29,7 +28,6 @@ import static org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils.*
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@Ignore
 public class QueryPlannerImplTest {
 
     private static final String STUB_SQL = "stub";
@@ -172,36 +170,34 @@ public class QueryPlannerImplTest {
     @Test
     public void testTableScanStrategySimpleFetch() throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES);
-        DataSource parentDataSource = new DataSource(leftDataSource);
-        parentDataSource.setType(PARENT);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
                 getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES));
-                setDataSource(parentDataSource);
+                setDataSource(leftDataSource);
                 //No where clause is present
+                getTableAliases().put(INSTANCES, INSTANCES);
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
-        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, 2);
-        assertThat(dataSourceTask.getDataSource(), equalTo(parentDataSource));
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
+        DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
+        assertThat(optimizedLeftDataSource, equalTo(leftDataSource));
     }
 
     @Test
     public void testIndexScanStrategySimpleFetch() throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
-        DataSource parentDataSource = new DataSource(leftDataSource);
-        parentDataSource.setType(PARENT);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES));
-                setDataSource(parentDataSource);
+                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES_ALIAS));
+                setDataSource(leftDataSource);
                 BooleanExpression whereCondition = new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE);
                 setWhereExpression(whereCondition); //Where clause columns are from index but select map contains not indexed columns
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
-        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, 2);
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
         DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
         assertThat(optimizedLeftDataSource.getType(), equalTo(INDEX_SCAN));
         assertThat(optimizedLeftDataSource.getCondition().isPresent(), is(true));
@@ -221,29 +217,30 @@ public class QueryPlannerImplTest {
         rightDataSource.setJoinType(INNER);
         BooleanExpression joinCondition = new SimpleBooleanExpression(new ColumnExpression(PROJECT_ID, INSTANCES_ALIAS), EQUAL, new ColumnExpression(ID, PROJECTS_ALIAS));
         rightDataSource.setCondition(joinCondition);
-        DataSource parentDataSource = new DataSource(leftDataSource);
-        parentDataSource.setType(PARENT);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES));
-                getSelectionMap().put(PROJECT_ID, new ColumnExpression(ID, PROJECTS));
-                setDataSource(parentDataSource);
+                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES_ALIAS));
+                getSelectionMap().put(PROJECT_ID, new ColumnExpression(ID, PROJECTS_ALIAS));
+                setDataSource(leftDataSource);
                 BooleanExpression whereCondition = new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE);
                 setWhereExpression(whereCondition);
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
+                getTableAliases().put(PROJECTS_ALIAS, PROJECTS);
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
-        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, 2);
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
         DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
-        assertThat(optimizedLeftDataSource.getTableAlias(), equalTo(INSTANCES_ALIAS));
+        assertThat(optimizedLeftDataSource.getTableAlias().isPresent(), is(true));
+        assertThat(optimizedLeftDataSource.getTableAlias().get(), equalTo(INSTANCES_ALIAS));
         assertThat(optimizedLeftDataSource.getType(), equalTo(INDEX_SCAN));
         assertThat(optimizedLeftDataSource.getCondition().isPresent(), is(true));
         assertThat(optimizedLeftDataSource.getColumns(), contains(PROJECT_ID));
         
         assertThat(dataSourceTask.getDataSource().getRightDataSource().isPresent(), is(true));
         DataSource optimizedRightDataSource = dataSourceTask.getDataSource().getRightDataSource().get();
-        assertThat(optimizedRightDataSource.getTableAlias(), equalTo(PROJECTS_ALIAS));
+        assertThat(optimizedRightDataSource.getTableAlias().isPresent(), is(true));
+        assertThat(optimizedRightDataSource.getTableAlias().get(), equalTo(PROJECTS_ALIAS));
         assertThat(optimizedRightDataSource.getType(), equalTo(INDEX_SCAN));
         assertThat(optimizedRightDataSource.getColumns(), contains(ID));
 
@@ -258,30 +255,36 @@ public class QueryPlannerImplTest {
     @Test
     public void testIndexFetchStrategySimpleFetch() throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
-        DataSource parentDataSource = new DataSource(leftDataSource);
-        parentDataSource.setType(PARENT);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES));
+                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES_ALIAS));
                 setDataSource(leftDataSource);
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES); //All select map columns are from index
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
-        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, 2);
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
         DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
         assertThat(optimizedLeftDataSource.getType(), equalTo(INDEX_FETCH));
         assertThat(optimizedLeftDataSource.getColumns(), contains(NAME));
     }
     
-    private DataSourceTask doCommonTaskAssertions(List<Task> tasks, int size) {
-        assertThat(tasks, hasSize(size));
+    private DataSourceTask doCommonTaskAssertions(List<Task> tasks, List<Class<?>> taskClasses) {
+        assertThat(tasks, hasSize(taskClasses.size()));
         Task firstTask = tasks.get(0);
-        assertThat(firstTask, is(instanceOf(DataSourceTask.class)));
-        assertThat(tasks.get(1), is(instanceOf(SelectTask.class)));
+        int counter = 0;
+        for (Class<?> taskClass : taskClasses) {
+            assertThat(tasks.get(counter), is(instanceOf(taskClass)));
+            counter++;
+        }
         return (DataSourceTask) firstTask;
     }
-    
+
+    private DataSourceTask doCommonTaskAssertions(List<Task> tasks) {
+        return doCommonTaskAssertions(tasks, Arrays.asList(DataSourceTask.class, SelectTask.class));
+    }
+
+
     private DataSource doOptimizedLeftDataSourceAssertions(DataSourceTask dataSourceTask) {
         DataSource optimizedDataSource = dataSourceTask.getDataSource();
         assertThat(optimizedDataSource.getType(), equalTo(PARENT));
@@ -292,12 +295,10 @@ public class QueryPlannerImplTest {
     @Test
     public void testOptimizeMultipleOrConditions() throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
-        DataSource parentDataSource = new DataSource(leftDataSource);
-        parentDataSource.setType(PARENT);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES));
-                setDataSource(parentDataSource);
+                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES_ALIAS));
+                setDataSource(leftDataSource);
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
                 BooleanExpression whereCondition = new BinaryBooleanExpression(
                         new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE),
@@ -308,10 +309,11 @@ public class QueryPlannerImplTest {
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
-        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, 2);
-        DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
-        assertThat(optimizedLeftDataSource.getCondition().isPresent(), is(true));
-        BooleanExpression optimizedLeftCondition = optimizedLeftDataSource.getCondition().get();
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, Arrays.asList(DataSourceTask.class, FilterTask.class, SelectTask.class));
+        doOptimizedLeftDataSourceAssertions(dataSourceTask);
+        FilterTask filterTask = (FilterTask) tasks.get(1);
+        assertThat(filterTask.getCondition().isPresent(), is(true));
+        BooleanExpression optimizedLeftCondition = filterTask.getCondition().get();
         assertThat(optimizedLeftCondition.getTableAliases(), contains(INSTANCES_ALIAS));
         Map<String, Set<Object>> fixedValueCondition = optimizedLeftCondition.getFixedValueConditions(INSTANCES_ALIAS);
         assertThat(fixedValueCondition.keySet(), contains(NAME));

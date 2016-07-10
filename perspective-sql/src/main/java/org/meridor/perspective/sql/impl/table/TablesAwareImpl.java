@@ -158,7 +158,7 @@ public class TablesAwareImpl implements TablesAware {
             columnNames.forEach(cn -> {
                 Optional<Column> columnCandidate = getColumn(tn, cn);
                 if (columnCandidate.isPresent()) {
-                    columnCandidate.get().getIndexes().add(indexSignature);
+                    columnCandidate.get().addIndex(indexSignature);
                 }
             });
         });

@@ -1,9 +1,7 @@
 package org.meridor.perspective.sql.impl.task.strategy;
 
 import org.meridor.perspective.sql.impl.table.Table;
-import org.springframework.stereotype.Component;
 
-@Component
 public class TestProjectsTable implements Table {
     
     public String id;

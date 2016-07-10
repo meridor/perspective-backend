@@ -7,6 +7,7 @@ import org.meridor.perspective.sql.impl.index.Key;
 import org.meridor.perspective.sql.impl.index.Keys;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
+import org.meridor.perspective.sql.impl.parser.DataSourceUtils;
 import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
+import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.*;
 import static org.meridor.perspective.sql.impl.parser.JoinType.*;
 
 @Component
@@ -70,7 +72,7 @@ public class IndexScanStrategy extends ScanStrategy {
         Map<IndexSignature, Map<String, Set<Object>>> conditions = splitConditionByIndexes(tableName, tableAlias, condition);
         return conditions.keySet().stream()
                 .map(is -> getMatchedIndexIds(is, conditions.get(is)))
-                .reduce(Collections.emptySet(), IndexScanStrategy::intersect);
+                .reduce(Collections.emptySet(), DataSourceUtils::intersect);
     }
 
     private Map<IndexSignature, Map<String, Set<Object>>> splitConditionByIndexes(String tableName, String tableAlias, IndexBooleanExpression condition) {
@@ -101,22 +103,7 @@ public class IndexScanStrategy extends ScanStrategy {
         }
         return ret;
     }
-    
-    private static <T> Set<T> intersect(Set<T> first, Set<T> second) {
-        if (first.isEmpty()) {
-            return new LinkedHashSet<>(second);
-        }
-        Set<T> copyOfFirst = new LinkedHashSet<>(first);
-        copyOfFirst.retainAll(second);
-        return copyOfFirst;
-    }
-    
-    private static <T> Set<T> difference(Set<T> first, Set<T> second) {
-        Set<T> copyOfFirst = new LinkedHashSet<>(first);
-        copyOfFirst.removeAll(second);
-        return copyOfFirst;
-    }
-    
+
     private Set<String> getMatchedIndexIds(IndexSignature indexSignature, Map<String, Set<Object>> condition) {
         Index index = getIndex(indexSignature);
         Set<Key> keys = conditionToKeys(index.getKeyLength(), condition);
@@ -199,7 +186,7 @@ public class IndexScanStrategy extends ScanStrategy {
         DataContainer dataContainer = new DataContainer(resultingColumnsMap);
         
         //Always adding inner join results
-        Set<Key> innerJoinForeignKeys = intersect(leftForeignKeys, rightForeignKeys);
+        Set<Key> innerJoinForeignKeys = DataSourceUtils.intersect(leftForeignKeys, rightForeignKeys);
         Set<String> matchedIds = new HashSet<>();
         innerJoinForeignKeys.stream()
                 .flatMap(mk -> {
@@ -276,7 +263,7 @@ public class IndexScanStrategy extends ScanStrategy {
     private Set<String> getMatchedForeignKeyIds(String tableName, String tableAlias, Key matchingForeignKey, Index index, Optional<IndexBooleanExpression> supplementaryConditionCandidate) {
         Set<String> matchedForeignKeyIds = index.get(matchingForeignKey);
         return supplementaryConditionCandidate.isPresent() ?
-                intersect(
+                DataSourceUtils.intersect(
                         matchedForeignKeyIds,
                         getIdsFromIndex(tableName, tableAlias, supplementaryConditionCandidate.get())
                 ) :

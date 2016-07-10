@@ -2,9 +2,11 @@ package org.meridor.perspective.sql.impl.task;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
+import org.meridor.perspective.sql.impl.expression.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,10 +50,12 @@ public class FilterTaskTest {
     @Test
     public void testExecute() throws Exception {
         FilterTask filterTask = applicationContext.getBean(FilterTask.class);
-        filterTask.setCondition(dr -> 
-                String.valueOf(dr.get(FIRST_COLUMN)).contains("t") &&
-                Integer.valueOf(dr.get(SECOND_COLUMN).toString()) <= 2
+        BooleanExpression condition = new BinaryBooleanExpression(
+                new SimpleBooleanExpression(new ColumnExpression(FIRST_COLUMN), BooleanRelation.EQUAL, "two"),
+                BinaryBooleanOperator.AND,
+                new SimpleBooleanExpression(new ColumnExpression(SECOND_COLUMN), BooleanRelation.LESS_THAN_EQUAL, 2)
         );
+        filterTask.setCondition(condition);
         ExecutionResult output = filterTask.execute(getInput());
         assertThat(output.getCount(), equalTo(1));
         assertThat(output.getData().getRows().size(), equalTo(1));

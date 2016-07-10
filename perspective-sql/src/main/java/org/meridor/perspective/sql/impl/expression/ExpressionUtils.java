@@ -4,7 +4,11 @@ import org.meridor.perspective.sql.impl.table.Column;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
+import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
 
 public final class ExpressionUtils {
 
@@ -93,6 +97,25 @@ public final class ExpressionUtils {
         return columns.stream()
                 .map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+    public static Optional<BooleanExpression> columnsToCondition(Optional<BooleanExpression> joinCondition, String leftTableAlias, List<String> columnNames, String rightTableAlias) {
+        if (columnNames.size() == 0) {
+            return joinCondition;
+        }
+        return Optional.of(
+                columnNames.stream()
+                        .map(cn -> new SimpleBooleanExpression(
+                                new ColumnExpression(cn, leftTableAlias),
+                                EQUAL,
+                                new ColumnExpression(cn, rightTableAlias)
+                        ))
+                        .reduce(
+                                BinaryBooleanExpression.alwaysTrue(),
+                                (f, s) -> new BinaryBooleanExpression(f, AND, s),
+                                (f, s) -> new BinaryBooleanExpression(f, AND, s)
+                        )
+        );
     }
 
 
