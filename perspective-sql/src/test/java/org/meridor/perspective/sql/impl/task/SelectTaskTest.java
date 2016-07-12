@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SelectTaskTest {
 
+    private static final String TABLE_ALIAS = "m";
     private static final String TABLE_NAME = "mock";
     private static final String FIRST_COLUMN = "str";
     private static final String SECOND_COLUMN = "num";
@@ -31,7 +32,7 @@ public class SelectTaskTest {
     private static final String FIRST_ALIAS = "first";
     private static final String SECOND_ALIAS = "second";
     private static final String THIRD_ALIAS = "third";
-
+    
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -46,7 +47,8 @@ public class SelectTaskTest {
         };
         SelectTask selectTask = applicationContext.getBean(
                 SelectTask.class,
-                selectionMap
+                selectionMap,
+                Collections.singletonMap(TABLE_ALIAS, TABLE_NAME)
         );
         ExecutionResult inputData = getInput();
         ExecutionResult executionResult = selectTask.execute(inputData);
@@ -77,7 +79,8 @@ public class SelectTaskTest {
         };
         SelectTask selectTask = applicationContext.getBean(
                 SelectTask.class,
-                selectionMap
+                selectionMap,
+                Collections.singletonMap(TABLE_ALIAS, TABLE_NAME)
         );
         ExecutionResult inputData = getInput();
         ExecutionResult executionResult = selectTask.execute(inputData);
@@ -88,14 +91,31 @@ public class SelectTaskTest {
     public void testSelectAllFromOneTable() throws Exception {
         Map<String, Object> selectionMap = new HashMap<String, Object>() {
             {
+                //We select mock.*
                 put("*", new ColumnExpression(Column.ANY, TABLE_NAME));
             }
         };
+        testSelectAllFromTable(selectionMap, Collections.singletonMap(TABLE_NAME, TABLE_NAME), TABLE_NAME);
+    }
+
+    @Test
+    public void testSelectAllFromOneAliasedTable() throws Exception {
+        Map<String, Object> selectionMap = new HashMap<String, Object>() {
+            {
+                //We select m.*
+                put("*", new ColumnExpression(Column.ANY, TABLE_ALIAS));
+            }
+        };
+        testSelectAllFromTable(selectionMap, Collections.singletonMap(TABLE_ALIAS, TABLE_NAME), TABLE_ALIAS);
+    }
+    
+    private void testSelectAllFromTable(Map<String, Object> selectionMap, Map<String, String> tableAliases, String tableAlias) throws Exception {
         SelectTask selectTask = applicationContext.getBean(
                 SelectTask.class,
-                selectionMap
+                selectionMap,
+                tableAliases
         );
-        ExecutionResult inputData = getInput();
+        ExecutionResult inputData = getInput(tableAlias);
         ExecutionResult executionResult = selectTask.execute(inputData);
 
         assertThat(executionResult.getCount(), equalTo(2));
@@ -116,13 +136,17 @@ public class SelectTaskTest {
         assertThat(secondRow.get(THIRD_COLUMN), equalTo(777));
         assertThat(secondRow.get(FOURTH_COLUMN), equalTo(222L));
     }
-
+    
     private static ExecutionResult getInput() {
+        return getInput(TABLE_NAME);
+    }
+    
+    private static ExecutionResult getInput(String tableAlias) {
         ExecutionResult input = new ExecutionResult();
         input.setCount(2);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
             {
-                put(TABLE_NAME, Arrays.asList(FIRST_COLUMN, SECOND_COLUMN, THIRD_COLUMN, FOURTH_COLUMN));
+                put(tableAlias, Arrays.asList(FIRST_COLUMN, SECOND_COLUMN, THIRD_COLUMN, FOURTH_COLUMN));
             }
         };
         DataContainer dataContainer = new DataContainer(columnsMap);

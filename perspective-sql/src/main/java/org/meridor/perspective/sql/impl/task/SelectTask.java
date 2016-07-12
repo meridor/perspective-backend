@@ -29,11 +29,13 @@ public class SelectTask implements Task {
     private TablesAware tablesAware;
 
     private Map<String, Object> selectionMap;
+    private final Map<String, String> tableAliases;
 
     private boolean selectAll;
 
-    public SelectTask(Map<String, Object> selectionMap) {
+    public SelectTask(Map<String, Object> selectionMap, Map<String, String> tableAliases) {
         this.selectionMap = selectionMap;
+        this.tableAliases = tableAliases;
     }
 
     @PostConstruct
@@ -76,9 +78,10 @@ public class SelectTask implements Task {
                     this.selectAll = true;
                     return;
                 } else if (columnExpression.useAnyColumn()) {
-                    String tableName = columnExpression.getTableAlias();
+                    String tableAlias = columnExpression.getTableAlias();
+                    String tableName = tableAliases.get(tableAlias);
                     tablesAware.getColumns(tableName).forEach(c ->
-                            ret.put(c.getName(), new ColumnExpression(c.getName(), alias))
+                            ret.put(c.getName(), new ColumnExpression(c.getName(), tableAlias))
                     );
                     return;
                 }

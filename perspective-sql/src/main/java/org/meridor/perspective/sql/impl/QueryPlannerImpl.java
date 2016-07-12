@@ -101,7 +101,7 @@ public class QueryPlannerImpl implements QueryPlanner {
             tasksQueue.add(orderTask);
         }
 
-        SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap());
+        SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap(), selectQueryAware.getTableAliases());
         tasksQueue.add(selectTask);
 
         if (selectQueryAware.getLimitCount().isPresent()) {
@@ -285,15 +285,16 @@ public class QueryPlannerImpl implements QueryPlanner {
 
         
         //Not used fixed values conditions should be moved to where clause, e.g. index fetch strategy does not support conditions
-        tableAliases.keySet().forEach(tableAlias -> {
+        Set<String> fixedValuesTableAliases = new HashSet<>(fixedValuesConditions.keySet());
+        fixedValuesTableAliases.forEach(tableAlias -> {
             Optional<BooleanExpression> booleanExpressionCandidate = fixedValuesToBooleanExpression(tableAlias, fixedValuesConditions.remove(tableAlias));
             if (booleanExpressionCandidate.isPresent()) {
                 restOfExpressions.add(booleanExpressionCandidate.get());
             }
         });
         
-        Assert.isTrue(fixedValuesConditions.isEmpty());
-        Assert.isTrue(columnRelations.isEmpty());
+        Assert.isTrue(fixedValuesConditions.isEmpty(), "All fixed values conditions should be used");
+        Assert.isTrue(columnRelations.isEmpty(), "All column relations should be used");
         
         Optional<BooleanExpression> optimizedWhereCondition = restOfExpressions.isEmpty() ?
                 Optional.empty() :

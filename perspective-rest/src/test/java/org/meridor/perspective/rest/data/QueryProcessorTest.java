@@ -100,6 +100,11 @@ public class QueryProcessorTest {
     
     @Test
     public void testSelectTableAsterisk() {
+        doAsteriskTest("select instances.* from instances");
+    }
+    
+    @Test
+    public void testSelectTableAliasAsterisk() {
         doAsteriskTest("select i.* from instances i");
     }
 
