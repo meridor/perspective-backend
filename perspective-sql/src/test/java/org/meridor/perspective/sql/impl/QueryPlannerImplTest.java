@@ -74,7 +74,7 @@ public class QueryPlannerImplTest {
     @Test
     public void testSelectExpression() throws Exception {
         Map<String, Object> selectionMap = Collections.singletonMap(INSTANCES_ALIAS, "one");
-        testSelect(selectionMap, selectionMap, false);
+        testSelect(selectionMap, selectionMap, Collections.singletonMap(INSTANCES_ALIAS, INSTANCES), false);
     }
     
     @Test
@@ -87,19 +87,20 @@ public class QueryPlannerImplTest {
                 put(PROJECT_ID, new ColumnExpression(PROJECT_ID, INSTANCES));
             }
         };
-        testSelect(selectionMap, effectiveSelectionMap, false);
+        testSelect(selectionMap, effectiveSelectionMap, Collections.singletonMap(INSTANCES, INSTANCES), false);
     }
     
     @Test
     public void testSelectAll() throws Exception {
-        Map<String, Object> selectionMap = Collections.singletonMap("any_alias", new ColumnExpression());
-        testSelect(selectionMap, Collections.emptyMap(), true);
+        Map<String, Object> selectionMap = Collections.singletonMap(ANY, new ColumnExpression());
+        testSelect(selectionMap, Collections.emptyMap(), Collections.singletonMap(INSTANCES_ALIAS, INSTANCES), true);
     }
     
-    private void testSelect(Map<String, Object> selectionMap, Map<String, Object> effectiveSelectionMap, boolean isSelectAll) throws Exception {
+    private void testSelect(Map<String, Object> selectionMap, Map<String, Object> effectiveSelectionMap, Map<String, String> tableAliases, boolean isSelectAll) throws Exception {
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
                 getSelectionMap().putAll(selectionMap);
+                getTableAliases().putAll(tableAliases);
             }
         });
         Queue<Task> tasks = plan();

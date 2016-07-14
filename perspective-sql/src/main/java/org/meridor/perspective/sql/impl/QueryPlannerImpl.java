@@ -506,7 +506,12 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
 
         private static Consumer<BooleanExpression> getColumnRelationsConsumer(ColumnRelations columnRelations) {
-            return be -> columnRelations.add(be.getColumnRelations());
+            return be -> {
+                Map<String, Set<String>> cr = be.getColumnRelations();
+                if (!cr.isEmpty()) {
+                    columnRelations.add(cr);
+                }
+            };
         }
 
         private static Consumer<BooleanExpression> getRestOfExpressionsConsumer(List<BooleanExpression> restOfExpressions) {

@@ -121,7 +121,7 @@ public final class ExpressionUtils {
     }
 
     public static BooleanExpression columnRelationsToExpression(Map<String, Set<String>> columnRelations) {
-        Assert.isTrue(columnRelations.size() == 2, "Column relations should contain two tables");
+        Assert.isTrue(columnRelations.size() == 2, String.format("Column relations should contain 2 tables but contains %d", columnRelations.size()));
         List<String> tableAliases = new ArrayList<>(columnRelations.keySet());
         String leftTableAlias = tableAliases.get(0);
         List<String> leftColumns = new ArrayList<>(columnRelations.get(leftTableAlias));
