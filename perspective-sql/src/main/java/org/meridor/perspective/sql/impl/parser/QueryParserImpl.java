@@ -391,7 +391,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         final Map<String, List<String>> currentlyAvailableColumns = new HashMap<>();
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
-            String tableName = getTableAliases().get(tableAlias);
+            String tableName = tableAliases.get(tableAlias);
             List<String> columnNames = tablesAware
                     .getColumns(tableName).stream()
                     .map(Column::getName)
@@ -561,8 +561,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         String alias = aliasClauseContextCandidate.isPresent() ?
                 aliasClauseContextCandidate.get().alias().ID().getText() :
                 tableName;
-        if (!getTableAliases().containsKey(alias)) {
-            getTableAliases().put(alias, tableName);
+        if (!tableAliases.containsKey(alias)) {
+            tableAliases.put(alias, tableName);
         } else {
             errors.add(String.format("Duplicate alias \"%s\"", alias));
         }
@@ -665,7 +665,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private AliasExpressionPair processAliasedColumnName(String tableAlias, String columnName, boolean selectAllColumns, boolean allowMultipleColumns) {
-        if (!getTableAliases().containsKey(tableAlias)) {
+        if (!tableAliases.containsKey(tableAlias)) {
             errors.add(String.format("Table or alias \"%s\" does not exist", tableAlias));
             return emptyPair();
         }
@@ -841,7 +841,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     @Override
     public Map<String, String> getTableAliases() {
-        return tableAliases;
+        return Collections.unmodifiableMap(tableAliases);
     }
 
     @Override

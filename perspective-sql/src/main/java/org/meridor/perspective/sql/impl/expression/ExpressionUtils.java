@@ -1,11 +1,13 @@
 package org.meridor.perspective.sql.impl.expression;
 
+import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.impl.table.Column;
+import org.springframework.util.Assert;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
@@ -118,6 +120,37 @@ public final class ExpressionUtils {
         );
     }
 
+    public static BooleanExpression columnRelationsToExpression(Map<String, Set<String>> columnRelations) {
+        Assert.isTrue(columnRelations.size() == 2, "Column relations should contain two tables");
+        List<String> tableAliases = new ArrayList<>(columnRelations.keySet());
+        String leftTableAlias = tableAliases.get(0);
+        List<String> leftColumns = new ArrayList<>(columnRelations.get(leftTableAlias));
+        String rightTableAlias = tableAliases.get(1);
+        List<String> rightColumns = new ArrayList<>(columnRelations.get(rightTableAlias));
+        Assert.isTrue(
+                leftColumns.size() == rightColumns.size(),
+                String.format(
+                        "Column relations should have equal number of columns" +
+                                " for each table alias but \"%s\" contains" +
+                                " %d columns and \"%s\" has %d columns",
+                        leftTableAlias,
+                        leftColumns.size(),
+                        rightTableAlias,
+                        rightColumns.size()
+                )
+        );
+        final int NUM_COLUMNS = leftColumns.size();
+
+        return IntStream
+                .rangeClosed(0, NUM_COLUMNS - 1)
+                .mapToObj(index -> (BooleanExpression) new SimpleBooleanExpression(
+                        new ColumnExpression(leftColumns.get(index), leftTableAlias),
+                        BooleanRelation.EQUAL,
+                        new ColumnExpression(rightColumns.get(index), rightTableAlias)
+                ))
+                .reduce((l, r) -> new BinaryBooleanExpression(l, BinaryBooleanOperator.AND, r)).get();
+    }
+    
 
     private ExpressionUtils() {}
     

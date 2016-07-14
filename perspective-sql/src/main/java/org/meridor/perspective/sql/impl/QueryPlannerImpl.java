@@ -19,10 +19,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -53,7 +53,7 @@ public class QueryPlannerImpl implements QueryPlanner {
     private final Queue<Task> tasksQueue = new LinkedList<>();
 
     @Override
-    public Queue<Task> plan(String sql) throws SQLSyntaxErrorException {
+    public Queue<Task> plan(String sql) throws SQLException {
         QueryParser queryParser = applicationContext.getBean(QueryParser.class);
         queryParser.parse(sql);
         switch (queryParser.getQueryType()) {
@@ -71,44 +71,49 @@ public class QueryPlannerImpl implements QueryPlanner {
         return tasksQueue;
     }
 
-    private void processSelectQuery(SelectQueryAware selectQueryAware) {
+    private void processSelectQuery(SelectQueryAware selectQueryAware) throws SQLException {
+        try {
+            
+            Map<OptimizedTask, Task> optimizedQuery = optimizeSelectQuery(selectQueryAware);
 
-        Map<OptimizedTask, Task> optimizedQuery = optimizeSelectQuery(selectQueryAware);
+            if (optimizedQuery.containsKey(DATASOURCE)) {
+                tasksQueue.add(optimizedQuery.get(DATASOURCE));
+            } else {
+                tasksQueue.add(new DummyFetchTask());
+            }
 
-        if (optimizedQuery.containsKey(DATASOURCE)) {
-            tasksQueue.add(optimizedQuery.get(DATASOURCE));
-        } else {
-            tasksQueue.add(new DummyFetchTask());
-        }
-        
-        if (optimizedQuery.containsKey(WHERE)) {
-            tasksQueue.add(optimizedQuery.get(WHERE));
-        }
+            if (optimizedQuery.containsKey(WHERE)) {
+                tasksQueue.add(optimizedQuery.get(WHERE));
+            }
 
-        if (!selectQueryAware.getGroupByExpressions().isEmpty()) {
-            GroupTask groupTask = applicationContext.getBean(GroupTask.class);
-            selectQueryAware.getGroupByExpressions().forEach(groupTask::addExpression);
-            tasksQueue.add(groupTask);
-        }
+            if (!selectQueryAware.getGroupByExpressions().isEmpty()) {
+                GroupTask groupTask = applicationContext.getBean(GroupTask.class);
+                selectQueryAware.getGroupByExpressions().forEach(groupTask::addExpression);
+                tasksQueue.add(groupTask);
+            }
 
-        if (optimizedQuery.containsKey(HAVING)) {
-            tasksQueue.add(optimizedQuery.get(HAVING));
-        }
+            if (optimizedQuery.containsKey(HAVING)) {
+                tasksQueue.add(optimizedQuery.get(HAVING));
+            }
 
-        if (!selectQueryAware.getOrderByExpressions().isEmpty()) {
-            OrderTask orderTask = applicationContext.getBean(OrderTask.class);
-            selectQueryAware.getOrderByExpressions().forEach(orderTask::addExpression);
-            tasksQueue.add(orderTask);
-        }
+            if (!selectQueryAware.getOrderByExpressions().isEmpty()) {
+                OrderTask orderTask = applicationContext.getBean(OrderTask.class);
+                selectQueryAware.getOrderByExpressions().forEach(orderTask::addExpression);
+                tasksQueue.add(orderTask);
+            }
 
-        SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap(), selectQueryAware.getTableAliases());
-        tasksQueue.add(selectTask);
+            SelectTask selectTask = applicationContext.getBean(SelectTask.class, selectQueryAware.getSelectionMap(), selectQueryAware.getTableAliases());
+            tasksQueue.add(selectTask);
 
-        if (selectQueryAware.getLimitCount().isPresent()) {
-            tasksQueue.add(createLimitTask(
-                    selectQueryAware.getLimitOffset(),
-                    selectQueryAware.getLimitCount().get()
-            ));
+            if (selectQueryAware.getLimitCount().isPresent()) {
+                tasksQueue.add(createLimitTask(
+                        selectQueryAware.getLimitOffset(),
+                        selectQueryAware.getLimitCount().get()
+                ));
+            }
+            
+        } catch (Exception e) {
+            throw new SQLException(e);
         }
     }
     
@@ -175,35 +180,32 @@ public class QueryPlannerImpl implements QueryPlanner {
             Map<String, String> tableAliases
     ) {
 
+        OptimizationContext optimizationContext = analyzeOriginalData(originalDataSource, originalWhereConditions, tableAliases);
+
+        DataSource optimizedDataSource = createOptimizedDataSource(originalDataSource, optimizationContext, selectionMap, tableAliases);
+
+        Optional<BooleanExpression> optimizedWhereCondition = createOptimizedWhereCondition(optimizationContext);
+
+        return new Pair<>(optimizedDataSource, optimizedWhereCondition);
+    }
+
+    private OptimizationContext analyzeOriginalData(DataSource originalDataSource, List<BooleanExpression> originalWhereConditions, Map<String, String> tableAliases) {
         //Assumption: original data source is a chain of data sources 
         // corresponding to a chain of joins in SQL request. This probably will
         // need to be reconsidered while implementing sub-queries.
-                    
-        final Map<String, Map<String, Set<Object>>> fixedValuesConditions = new HashMap<>();
-        final ColumnRelations columnRelations = new ColumnRelations();
-        final List<BooleanExpression> restOfExpressions = new ArrayList<>();
+        
+        OptimizationContext optimizationContext = new OptimizationContext();
+        originalWhereConditions.forEach(optimizationContext::addExpression);
 
-        //------------------------
-        // This section analyses all where conditions present in datasource and where clause
-        
-        //Analysing where conditions
-        originalWhereConditions.forEach(wc -> {
-            getFixedValuesConsumer(fixedValuesConditions).accept(wc);
-            getColumnRelationsConsumer(columnRelations).accept(wc);
-            getRestOfExpressionsConsumer(restOfExpressions).accept(wc);
-        });
-        
         //Analyzing data sources
         iterateDataSource(originalDataSource, (pds, ds) -> {
             if (pds.isPresent()) {
                 replaceNaturalJoin(ds, pds.get(), tableAliases);
             }
-            
+
             if (ds.getCondition().isPresent()) {
                 BooleanExpression booleanExpression = ds.getCondition().get();
-                getFixedValuesConsumer(fixedValuesConditions).accept(booleanExpression);
-                getColumnRelationsConsumer(columnRelations).accept(booleanExpression);
-                getRestOfExpressionsConsumer(restOfExpressions).accept(booleanExpression);
+                optimizationContext.addExpression(booleanExpression);
             }
 
             String tableAlias = ds.getTableAlias().get();
@@ -211,24 +213,41 @@ public class QueryPlannerImpl implements QueryPlanner {
                 String previousTableAlias = pds.get().getTableAlias().get();
                 Optional<BooleanExpression> columnsBooleanExpression = columnsToCondition(Optional.empty(), previousTableAlias, ds.getColumns(), tableAlias);
                 if (columnsBooleanExpression.isPresent()) {
-                    getColumnRelationsConsumer(columnRelations).accept(columnsBooleanExpression.get());
+                    optimizationContext.addExpression(columnsBooleanExpression.get());
                 }
             }
         });
+        
+        return optimizationContext;
+    }
+    
+    private DataSource replaceNaturalJoin(DataSource dataSource, DataSource previousDataSource, Map<String, String> tableAliases) {
+        if (!dataSource.isNaturalJoin()) {
+            return dataSource;
+        }
+        checkLeftDataSource(dataSource, false);
+        checkLeftDataSource(previousDataSource, false);
+        Set<String> similarColumns = getSimilarColumns(previousDataSource, dataSource, tableAliases);
+        dataSource.setNaturalJoin(false);
+        dataSource.getColumns().clear();
+        dataSource.getColumns().addAll(similarColumns);
+        return dataSource;
+    }
+    
+    private DataSource createOptimizedDataSource(DataSource originalDataSource, OptimizationContext optimizationContext, Map<String, Object> selectionMap, Map<String, String> tableAliases) {
 
-        // Deciding which columns should be selected
-        final Map<String, Set<String>> columnNamesToSelect = getColumnNamesToSelect(selectionMap, tableAliases, fixedValuesConditions, columnRelations, restOfExpressions);
+        final Map<String, Set<String>> columnNamesToSelect = getColumnNamesToSelect(selectionMap, tableAliases, optimizationContext);
 
-        //-----------------------
-        // This section will create optimized data source
         final DataSource optimizedDataSource = new DataSource();
+        
         final AtomicBoolean firstIndexScanDataSourceAdded = new AtomicBoolean();
+        
         iterateDataSource(originalDataSource, (pds, ds) -> {
 
             DataSource optimizedChildDataSource = ds.copy();
-            
+
             String tableAlias = ds.getTableAlias().get();
-            
+
             if (isSuitableForIndexFetch(ds, tableAliases, columnNamesToSelect)) {
                 optimizedChildDataSource.setType(INDEX_FETCH);
                 Set<String> tableColumnNamesToSelect = columnNamesToSelect.get(tableAlias);
@@ -237,9 +256,13 @@ public class QueryPlannerImpl implements QueryPlanner {
                 addToDataSource(optimizedDataSource, optimizedChildDataSource);
             } else {
 
-                Set<String> indexScanColumns = getIndexedRelationColumns(tableAlias, tableAliases, columnRelations);
-                Optional<IndexBooleanExpression> indexScanBooleanExpressionCandidate = getIndexScanBooleanExpression(tableAlias, tableAliases, fixedValuesConditions);
+                ColumnRelations columnRelations = optimizationContext.getColumnRelations();
                 
+                Set<String> indexScanColumns = getIndexedRelationColumns(tableAlias, tableAliases, columnRelations);
+                Map<String, Map<String, Set<Object>>> fixedValuesConditions = optimizationContext.getFixedValuesConditions();
+                
+                Optional<IndexBooleanExpression> indexScanBooleanExpressionCandidate = getIndexScanBooleanExpression(tableAlias, tableAliases, fixedValuesConditions);
+
                 if (!indexScanColumns.isEmpty()) {
                     //Index foreign key join
                     ds.setType(INDEX_SCAN);
@@ -249,13 +272,13 @@ public class QueryPlannerImpl implements QueryPlanner {
                     if (indexScanBooleanExpressionCandidate.isPresent()) {
                         ds.setCondition(indexScanBooleanExpressionCandidate.get());
                     }
-                    
+
                     DataSource tailDataSource = getTail(optimizedDataSource);
                     if (
                             tailDataSource.getType() == INDEX_SCAN &&
-                            ds.getJoinType().isPresent() &&
-                            firstIndexScanDataSourceAdded.get()
-                    ) {
+                                    ds.getJoinType().isPresent() &&
+                                    firstIndexScanDataSourceAdded.get()
+                            ) {
                         tailDataSource.setRightDatasource(optimizedChildDataSource);
                         firstIndexScanDataSourceAdded.set(false);
                     } else {
@@ -280,11 +303,19 @@ public class QueryPlannerImpl implements QueryPlanner {
                     addToDataSource(optimizedDataSource, optimizedChildDataSource);
                 }
             }
-            
-        });
 
+        });
+        return optimizedDataSource;
+    } 
+    
+    private Optional<BooleanExpression> createOptimizedWhereCondition(OptimizationContext optimizationContext) {
         
         //Not used fixed values conditions should be moved to where clause, e.g. index fetch strategy does not support conditions
+
+        Map<String, Map<String, Set<Object>>> fixedValuesConditions = optimizationContext.getFixedValuesConditions();
+        ColumnRelations columnRelations = optimizationContext.getColumnRelations();
+        List<BooleanExpression> restOfExpressions = optimizationContext.getRestOfExpressions();
+
         Set<String> fixedValuesTableAliases = new HashSet<>(fixedValuesConditions.keySet());
         fixedValuesTableAliases.forEach(tableAlias -> {
             Optional<BooleanExpression> booleanExpressionCandidate = fixedValuesToBooleanExpression(tableAlias, fixedValuesConditions.remove(tableAlias));
@@ -292,33 +323,25 @@ public class QueryPlannerImpl implements QueryPlanner {
                 restOfExpressions.add(booleanExpressionCandidate.get());
             }
         });
-        
+
+        //Not used column relations should be moved to where clause
+        Optional<BooleanExpression> columnRelationsAsBooleanExpression = columnRelations.getAllAsBooleanExpression();
+        if (columnRelationsAsBooleanExpression.isPresent()) {
+            restOfExpressions.add(columnRelationsAsBooleanExpression.get());
+        }
+        columnRelations.clear();
+
         Assert.isTrue(fixedValuesConditions.isEmpty(), "All fixed values conditions should be used");
         Assert.isTrue(columnRelations.isEmpty(), "All column relations should be used");
-        
-        Optional<BooleanExpression> optimizedWhereCondition = restOfExpressions.isEmpty() ?
+
+        return restOfExpressions.isEmpty() ?
                 Optional.empty() :
                 Optional.of(
                         restOfExpressions.stream()
-                          .reduce(alwaysTrue(), (l, r) -> new BinaryBooleanExpression(l, AND, r))
+                                .reduce(alwaysTrue(), (l, r) -> new BinaryBooleanExpression(l, AND, r))
                 );
-        
-        return new Pair<>(optimizedDataSource, optimizedWhereCondition);
     }
-
-    private DataSource replaceNaturalJoin(DataSource dataSource, DataSource previousDataSource, Map<String, String> tableAliases) {
-        if (!dataSource.isNaturalJoin()) {
-            return dataSource;
-        }
-        checkLeftDataSource(dataSource, false);
-        checkLeftDataSource(previousDataSource, false);
-        Set<String> similarColumns = getSimilarColumns(previousDataSource, dataSource, tableAliases);
-        dataSource.setNaturalJoin(false);
-        dataSource.getColumns().clear();
-        dataSource.getColumns().addAll(similarColumns);
-        return dataSource;
-    }
-
+    
     private Set<String> getSimilarColumns(DataSource left, DataSource right, Map<String, String> tableAliases) {
         String leftTableName = tableAliases.get(left.getTableAlias().get());
         String rightTableName = tableAliases.get(right.getTableAlias().get());
@@ -391,41 +414,24 @@ public class QueryPlannerImpl implements QueryPlanner {
         return Collections.emptySet();
     }
     
-    private static Consumer<BooleanExpression> getFixedValuesConsumer(Map<String, Map<String, Set<Object>>> fixedValuesConditions) {
-        return be -> be.getTableAliases().forEach(ta -> fixedValuesConditions.put(ta, be.getFixedValueConditions(ta)));
-    }
-    
-    private static Consumer<BooleanExpression> getColumnRelationsConsumer(ColumnRelations columnRelations) {
-        return be -> columnRelations.add(be.getColumnRelations());
-    }
-
-    private static Consumer<BooleanExpression> getRestOfExpressionsConsumer(List<BooleanExpression> restOfExpressions) {
-        return be -> {
-            Optional<BooleanExpression> restOfExpressionCandidate = be.getRestOfExpression();
-            if (restOfExpressionCandidate.isPresent()) {
-                restOfExpressions.add(restOfExpressionCandidate.get());
-            }
-        };
-    }
     
     private Map<String, Set<String>> getColumnNamesToSelect(
             Map<String, Object> selectionMap,
             Map<String, String> tableAliases,
-            Map<String, Map<String, Set<Object>>> fixedValuesConditions,
-            ColumnRelations columnRelations,
-            List<BooleanExpression> restOfExpressions
+            OptimizationContext optimizationContext
     ) {
         final Map<String, Set<String>> columnNamesToSelect = new HashMap<>();
         tableAliases.keySet().forEach(tableAlias -> {
             columnNamesToSelect.putIfAbsent(tableAlias, new HashSet<>());
             columnNamesToSelect.get(tableAlias).addAll(getColumnNamesToSelect(tableAlias, selectionMap));
-            columnNamesToSelect.get(tableAlias).addAll(columnRelations.getColumnNames(tableAlias));
-            columnNamesToSelect.get(tableAlias).addAll(getRestOfExpressionsColumnNamesToSelect(tableAlias, restOfExpressions));
+            columnNamesToSelect.get(tableAlias).addAll(optimizationContext.getColumnRelations().getColumnNames(tableAlias));
+            columnNamesToSelect.get(tableAlias).addAll(getRestOfExpressionsColumnNamesToSelect(tableAlias, optimizationContext.getRestOfExpressions()));
+            Map<String, Map<String, Set<Object>>> fixedValuesConditions = optimizationContext.getFixedValuesConditions();
             if (fixedValuesConditions.containsKey(tableAlias)) {
                 columnNamesToSelect.get(tableAlias).addAll(fixedValuesConditions.get(tableAlias).keySet());
             }
         });
-        return columnNamesToSelect;
+        return Collections.unmodifiableMap(columnNamesToSelect);
     }
     
     private Set<String> getColumnNamesToSelect(String tableAlias, Map<String, Object> selectionMap) {
@@ -445,47 +451,15 @@ public class QueryPlannerImpl implements QueryPlanner {
             return Optional.empty();
         }
         
-        return Optional.of(fixedValueConditions.keySet().stream()
+        return fixedValueConditions.keySet().stream()
                 .map(columnName -> {
                     Set<Object> values = fixedValueConditions.get(columnName);
+                    Assert.isTrue(!values.isEmpty(), "Column values can't be empty on this stage");
                     return values.stream()
-                            .map(v -> new SimpleBooleanExpression(new ColumnExpression(columnName, tableAlias), BooleanRelation.EQUAL, v))
-                            .reduce(
-                                    alwaysTrue(),
-                                    (l, r) -> new BinaryBooleanExpression(l, OR, r),
-                                    (l, r) -> new BinaryBooleanExpression(l, OR, r)
-                            );
+                            .map(v -> (BooleanExpression) new SimpleBooleanExpression(new ColumnExpression(columnName, tableAlias), BooleanRelation.EQUAL, v))
+                            .reduce((l, r) -> new BinaryBooleanExpression(l, OR, r)).get();
                 })
-                .reduce(alwaysTrue(), (l, r) -> new BinaryBooleanExpression(l, AND, r)));
-    }
-    
-    private static Optional<BooleanExpression> intersectConditions(Optional<BooleanExpression> left, Optional<BooleanExpression> right) {
-        if (!left.isPresent()) {
-            return right;
-        }
-        if (!right.isPresent()) {
-            return left;
-        }
-        return Optional.of(new BinaryBooleanExpression(left.get(), BinaryBooleanOperator.AND, right.get()));
-    }
-    
-    private static void iterateDataSource(DataSource dataSource, BiConsumer<Optional<DataSource>, DataSource> dataSourceConsumer) {
-        iterateDataSource(Optional.empty(), Optional.ofNullable(dataSource), dataSourceConsumer);
-    }
-    
-    private static void iterateDataSource(
-            Optional<DataSource> previousDataSourceCandidate,
-            Optional<DataSource> dataSourceCandidate,
-            BiConsumer<Optional<DataSource>, DataSource> dataSourceConsumer
-    ) {
-        if (!dataSourceCandidate.isPresent()) {
-            return;
-        }
-        DataSource dataSource = dataSourceCandidate.get();
-        dataSourceConsumer.accept(previousDataSourceCandidate, dataSource);
-        Assert.isTrue(dataSource.getTableAlias().isPresent(), "Original query should have table alias");
-        Assert.isTrue(!dataSource.getLeftDataSource().isPresent(), "Original data source should not contain nested data sources");
-        iterateDataSource(dataSourceCandidate, dataSource.getRightDataSource(), dataSourceConsumer);
+                .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
     }
 
     private Task createFilterTask(BooleanExpression booleanExpression) {
@@ -516,9 +490,52 @@ public class QueryPlannerImpl implements QueryPlanner {
         
     }
     
+    private static class OptimizationContext {
+        private final Map<String, Map<String, Set<Object>>> fixedValuesConditions = new HashMap<>();
+        private final ColumnRelations columnRelations = new ColumnRelations();
+        private final List<BooleanExpression> restOfExpressions = new ArrayList<>();
+
+        void addExpression(BooleanExpression booleanExpression) {
+            getFixedValuesConsumer(fixedValuesConditions).accept(booleanExpression);
+            getColumnRelationsConsumer(columnRelations).accept(booleanExpression);
+            getRestOfExpressionsConsumer(restOfExpressions).accept(booleanExpression);
+        }
+
+        private static Consumer<BooleanExpression> getFixedValuesConsumer(Map<String, Map<String, Set<Object>>> fixedValuesConditions) {
+            return be -> be.getTableAliases().forEach(ta -> fixedValuesConditions.put(ta, be.getFixedValueConditions(ta)));
+        }
+
+        private static Consumer<BooleanExpression> getColumnRelationsConsumer(ColumnRelations columnRelations) {
+            return be -> columnRelations.add(be.getColumnRelations());
+        }
+
+        private static Consumer<BooleanExpression> getRestOfExpressionsConsumer(List<BooleanExpression> restOfExpressions) {
+            return be -> {
+                Optional<BooleanExpression> restOfExpressionCandidate = be.getRestOfExpression();
+                if (restOfExpressionCandidate.isPresent()) {
+                    restOfExpressions.add(restOfExpressionCandidate.get());
+                }
+            };
+        }
+
+        //Here we intentionally return fields by reference 
+        Map<String, Map<String, Set<Object>>> getFixedValuesConditions() {
+            return fixedValuesConditions;
+        }
+
+        ColumnRelations getColumnRelations() {
+            return columnRelations;
+        }
+
+        List<BooleanExpression> getRestOfExpressions() {
+            return restOfExpressions;
+        }
+    }
+    
     private static class ColumnRelations {
 
         private final Map<String, Set<String>> columnRelationsColumns = new HashMap<>();
+        private final List<Map<String, Set<String>>> rawColumnRelations = new ArrayList<>();
         private final Map<String, Map<String, Set<String>>> allColumnRelations = new HashMap<>();
         
         Set<String> getColumnNames(String tableAlias){
@@ -528,13 +545,33 @@ public class QueryPlannerImpl implements QueryPlanner {
         Map<String, Set<String>> getRelations(String tableAlias) {
             return allColumnRelations.getOrDefault(tableAlias, Collections.emptyMap());
         }
+        
+        Optional<BooleanExpression> getAllAsBooleanExpression() {
+            return rawColumnRelations.stream()
+                    .map(ExpressionUtils::columnRelationsToExpression)
+                    .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
+        }
 
         Set<String> removeRelations(String tableAlias) {
             allColumnRelations.remove(tableAlias);
-            return columnRelationsColumns.remove(tableAlias);
+            ArrayList<Map<String, Set<String>>> copyOfRawColumnRelations = new ArrayList<>(rawColumnRelations);
+            Set<String> ret = columnRelationsColumns.remove(tableAlias);
+            copyOfRawColumnRelations.forEach(rcr -> {
+                Set<String> tableAliases = rcr.keySet();
+                if (tableAliases.size() == 1 && tableAliases.contains(tableAlias)) {
+                    rawColumnRelations.remove(rcr);
+                }
+            });
+            return ret;
+        }
+        
+        void clear() {
+            allColumnRelations.clear();
+            columnRelationsColumns.clear();
         }
 
         void add(Map<String, Set<String>> data){
+            rawColumnRelations.add(data);
             data.keySet().forEach(tableAlias -> {
                 allColumnRelations.put(tableAlias, data);
                 columnRelationsColumns.putIfAbsent(tableAlias, new HashSet<>());

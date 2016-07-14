@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
 
-import static org.meridor.perspective.sql.DataContainer.*;
+import static org.meridor.perspective.sql.DataContainer.empty;
 import static org.meridor.perspective.sql.QueryStatus.*;
 
 @Component
@@ -28,15 +28,13 @@ public class QueryProcessorImpl implements QueryProcessor {
             for (String sqlQuery : sqlQueries) {
                 try {
                     Queue<Task> tasks = parseSQL(sqlQuery);
-                    try {
-                        ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
-                        queryResults.add(getQueryResult(SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
-                    } catch (SQLException e) {
-                        String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-                        queryResults.add(getQueryResult(EVALUATION_ERROR, 0, empty(), message));
-                    }
+                    ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
+                    queryResults.add(getQueryResult(SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
                 } catch (SQLSyntaxErrorException e) {
                     queryResults.add(getQueryResult(SYNTAX_ERROR, 0, empty(), e.getMessage()));
+                } catch (SQLException e) {
+                    String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                    queryResults.add(getQueryResult(EVALUATION_ERROR, 0, empty(), message));
                 }
             }
             return queryResults;
@@ -53,7 +51,7 @@ public class QueryProcessorImpl implements QueryProcessor {
         return placeholderConfigurer.getQueries();
     }
     
-    private Queue<Task> parseSQL(String sqlQuery) throws SQLSyntaxErrorException {
+    private Queue<Task> parseSQL(String sqlQuery) throws SQLException {
         QueryPlanner queryPlanner = applicationContext.getBean(QueryPlanner.class);
         return queryPlanner.plan(sqlQuery);
     }

@@ -14,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.PostConstruct;
-import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.hamcrest.Matchers.*;
@@ -163,7 +163,7 @@ public class QueryPlannerImplTest {
         assertThat(limitTask.getOffset(), equalTo(20));
     }
     
-    private Queue<Task> plan() throws SQLSyntaxErrorException {
+    private Queue<Task> plan() throws SQLException {
         return queryPlanner.plan(STUB_SQL);
     }
 
