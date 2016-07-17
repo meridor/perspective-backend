@@ -11,10 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
@@ -37,7 +34,7 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, List<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
         List<String> columnNames = columnsToNames(columns);
         Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
             {
@@ -51,12 +48,12 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, Collection<Column> columns) {
         LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
         return fetch(tableName, tableAlias, null, columns);
     }
 
-    private List<List<Object>> fetchData(String tableName, Set<String> ids, List<Column> columns) {
+    private List<List<Object>> fetchData(String tableName, Set<String> ids, Collection<Column> columns) {
         if (!tableFetchers.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName));
         }

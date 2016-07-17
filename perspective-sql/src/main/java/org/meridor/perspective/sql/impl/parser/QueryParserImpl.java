@@ -10,7 +10,6 @@ import org.meridor.perspective.sql.SQLParser;
 import org.meridor.perspective.sql.SQLParserBaseListener;
 import org.meridor.perspective.sql.impl.CaseInsensitiveInputStream;
 import org.meridor.perspective.sql.impl.expression.*;
-import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -25,6 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.*;
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.emptyPair;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.pair;
 import static org.meridor.perspective.sql.impl.table.Column.ANY;
@@ -392,10 +392,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
             String tableName = tableAliases.get(tableAlias);
-            List<String> columnNames = tablesAware
-                    .getColumns(tableName).stream()
-                    .map(Column::getName)
-                    .collect(Collectors.toList());
+            List<String> columnNames = columnsToNames(tablesAware.getColumns(tableName));
             currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));
         } else if (dataSourceCandidate.isPresent()) {
             currentlyAvailableColumns.putAll(getAvailableColumns(dataSourceCandidate, Collections.emptyMap()));

@@ -14,7 +14,7 @@ public class MockDataFetcher implements DataFetcher {
     private Map<String, List<String>> columnsMap = new LinkedHashMap<>();
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, List<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
         //By convention data for mock data fetcher ID column should be the first
         if (!dataMap.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", tableName));
@@ -36,7 +36,7 @@ public class MockDataFetcher implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, List<Column> columns) {
+    public DataContainer fetch(String tableName, String tableAlias, Collection<Column> columns) {
         return fetch(tableName, tableAlias, null, columns);
     }
     

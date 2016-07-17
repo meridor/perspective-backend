@@ -9,7 +9,6 @@ import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.sql.*;
-import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,10 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 
 /**
  * Contains end-to-end SQL engine tests. Real tables from rest module are needed
@@ -118,8 +117,7 @@ public class QueryProcessorTest {
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
-        List<String> columnNamesList = tablesAware.getColumns("instances").stream()
-                .map(Column::getName).collect(Collectors.toList());
+        List<String> columnNamesList = columnsToNames(tablesAware.getColumns("instances"));
         String[] columnNames = columnNamesList.toArray(new String[columnNamesList.size()]);
         assertThat(queryResult.getData().getColumnNames(), contains(columnNames));
         List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();

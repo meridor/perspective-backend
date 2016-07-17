@@ -95,7 +95,7 @@ public final class ExpressionUtils {
         return ColumnExpression.class.cast(value);
     }
 
-    public static List<String> columnsToNames(List<Column> columns) {
+    public static List<String> columnsToNames(Collection<Column> columns) {
         return columns.stream()
                 .map(Column::getName)
                 .collect(Collectors.toList());
@@ -105,19 +105,13 @@ public final class ExpressionUtils {
         if (columnNames.size() == 0) {
             return joinCondition;
         }
-        return Optional.of(
-                columnNames.stream()
-                        .map(cn -> new SimpleBooleanExpression(
+        return columnNames.stream()
+                        .map(cn -> (BooleanExpression) new SimpleBooleanExpression(
                                 new ColumnExpression(cn, leftTableAlias),
                                 EQUAL,
                                 new ColumnExpression(cn, rightTableAlias)
                         ))
-                        .reduce(
-                                BinaryBooleanExpression.alwaysTrue(),
-                                (f, s) -> new BinaryBooleanExpression(f, AND, s),
-                                (f, s) -> new BinaryBooleanExpression(f, AND, s)
-                        )
-        );
+                        .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
     }
 
     public static BooleanExpression columnRelationsToExpression(Map<String, Set<String>> columnRelations) {

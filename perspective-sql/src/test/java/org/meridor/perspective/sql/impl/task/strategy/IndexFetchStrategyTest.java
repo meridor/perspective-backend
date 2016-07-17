@@ -14,6 +14,7 @@ import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -26,6 +27,7 @@ import static org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils.*
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext
 public class IndexFetchStrategyTest {
     
     @Autowired

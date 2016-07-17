@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -46,7 +46,7 @@ public class IndexerImpl implements Indexer {
         if (bean == null) {
             return;
         }
-        List<Column> columns = tablesAware.getColumns(tableName);
+        Collection<Column> columns = tablesAware.getColumns(tableName);
         columns.forEach(c -> {
             Set<IndexSignature> indexes = c.getIndexes();
             indexes.forEach(is -> {

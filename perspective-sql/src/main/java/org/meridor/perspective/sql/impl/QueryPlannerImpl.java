@@ -27,7 +27,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.sql.impl.QueryPlannerImpl.OptimizedTask.*;
-import static org.meridor.perspective.sql.impl.expression.BinaryBooleanExpression.alwaysTrue;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.OR;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
@@ -248,7 +247,7 @@ public class QueryPlannerImpl implements QueryPlanner {
 
             String tableAlias = ds.getTableAlias().get();
 
-            if (isSuitableForIndexFetch(ds, tableAliases, columnNamesToSelect)) {
+            if (isSuitableForIndexFetch(optimizedChildDataSource, tableAliases, columnNamesToSelect)) {
                 optimizedChildDataSource.setType(INDEX_FETCH);
                 Set<String> tableColumnNamesToSelect = columnNamesToSelect.get(tableAlias);
                 optimizedChildDataSource.getColumns().clear();
@@ -265,20 +264,21 @@ public class QueryPlannerImpl implements QueryPlanner {
 
                 if (!indexScanColumns.isEmpty()) {
                     //Index foreign key join
-                    ds.setType(INDEX_SCAN);
-                    ds.getColumns().clear();
-                    ds.getColumns().addAll(indexScanColumns);
-                    ds.setRightDatasource(null);
-                    if (indexScanBooleanExpressionCandidate.isPresent()) {
-                        ds.setCondition(indexScanBooleanExpressionCandidate.get());
-                    }
+                    optimizedChildDataSource.setType(INDEX_SCAN);
+                    optimizedChildDataSource.getColumns().clear();
+                    optimizedChildDataSource.getColumns().addAll(indexScanColumns);
+                    optimizedChildDataSource.setRightDatasource(null);
+                    optimizedChildDataSource.setCondition(
+                            indexScanBooleanExpressionCandidate.isPresent() ?
+                            indexScanBooleanExpressionCandidate.get() : null
+                    );
 
                     DataSource tailDataSource = getTail(optimizedDataSource);
                     if (
                             tailDataSource.getType() == INDEX_SCAN &&
-                                    ds.getJoinType().isPresent() &&
-                                    firstIndexScanDataSourceAdded.get()
-                            ) {
+                            optimizedChildDataSource.getJoinType().isPresent() &&
+                            firstIndexScanDataSourceAdded.get()
+                    ) {
                         tailDataSource.setRightDatasource(optimizedChildDataSource);
                         firstIndexScanDataSourceAdded.set(false);
                     } else {
@@ -287,17 +287,17 @@ public class QueryPlannerImpl implements QueryPlanner {
                     }
                 } else if (indexScanBooleanExpressionCandidate.isPresent()) {
                     //Simple index scan
-                    ds.setType(INDEX_SCAN);
-                    ds.setCondition(indexScanBooleanExpressionCandidate.get());
+                    optimizedChildDataSource.setType(INDEX_SCAN);
+                    optimizedChildDataSource.setCondition(indexScanBooleanExpressionCandidate.get());
                     addToDataSource(optimizedDataSource, optimizedChildDataSource);
                 } else {
                     //Add table scan data source
-                    if (ds.getJoinType().isPresent()) {
-                        Optional<BooleanExpression> joinCondition = ds.getCondition();
+                    if (optimizedChildDataSource.getJoinType().isPresent()) {
+                        Optional<BooleanExpression> joinCondition = optimizedChildDataSource.getCondition();
                         Optional<BooleanExpression> booleanExpressionCandidate = fixedValuesToBooleanExpression(tableAlias, fixedValuesConditions.remove(tableAlias));
                         Optional<BooleanExpression> updatedJoinCondition = intersectConditions(joinCondition, booleanExpressionCandidate);
                         if (updatedJoinCondition.isPresent()) {
-                            ds.setCondition(updatedJoinCondition.get());
+                            optimizedChildDataSource.setCondition(updatedJoinCondition.get());
                         }
                     }
                     addToDataSource(optimizedDataSource, optimizedChildDataSource);
@@ -334,12 +334,8 @@ public class QueryPlannerImpl implements QueryPlanner {
         Assert.isTrue(fixedValuesConditions.isEmpty(), "All fixed values conditions should be used");
         Assert.isTrue(columnRelations.isEmpty(), "All column relations should be used");
 
-        return restOfExpressions.isEmpty() ?
-                Optional.empty() :
-                Optional.of(
-                        restOfExpressions.stream()
-                                .reduce(alwaysTrue(), (l, r) -> new BinaryBooleanExpression(l, AND, r))
-                );
+        return restOfExpressions.stream()
+                .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
     }
     
     private Set<String> getSimilarColumns(DataSource left, DataSource right, Map<String, String> tableAliases) {
@@ -383,6 +379,9 @@ public class QueryPlannerImpl implements QueryPlanner {
                         matchingFixedValuesConditions.put(columnName, tableFixedValuesConditions.remove(columnName));
                     }
                 }
+            }
+            if (fixedValuesConditions.get(tableAlias).isEmpty()) {
+                fixedValuesConditions.remove(tableAlias);
             }
             if (!matchingFixedValuesConditions.isEmpty()) {
                 return Optional.of(new IndexBooleanExpression(tableAlias, matchingFixedValuesConditions));
@@ -502,7 +501,12 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
 
         private static Consumer<BooleanExpression> getFixedValuesConsumer(Map<String, Map<String, Set<Object>>> fixedValuesConditions) {
-            return be -> be.getTableAliases().forEach(ta -> fixedValuesConditions.put(ta, be.getFixedValueConditions(ta)));
+            return be -> be.getTableAliases().forEach(ta -> {
+                Map<String, Set<Object>> fvc = be.getFixedValueConditions(ta);
+                if (!fvc.isEmpty()) {
+                    fixedValuesConditions.put(ta, fvc);
+                }
+            });
         }
 
         private static Consumer<BooleanExpression> getColumnRelationsConsumer(ColumnRelations columnRelations) {
@@ -542,6 +546,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         private final Map<String, Set<String>> columnRelationsColumns = new HashMap<>();
         private final List<Map<String, Set<String>>> rawColumnRelations = new ArrayList<>();
         private final Map<String, Map<String, Set<String>>> allColumnRelations = new HashMap<>();
+        private final Set<String> removedTableAliases = new HashSet<>();
         
         Set<String> getColumnNames(String tableAlias){
             return columnRelationsColumns.getOrDefault(tableAlias, Collections.emptySet());
@@ -552,21 +557,25 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
         
         Optional<BooleanExpression> getAllAsBooleanExpression() {
+            removeInvalidRawColumnRelations();
             return rawColumnRelations.stream()
                     .map(ExpressionUtils::columnRelationsToExpression)
                     .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
         }
-
-        Set<String> removeRelations(String tableAlias) {
-            allColumnRelations.remove(tableAlias);
+        
+        private void removeInvalidRawColumnRelations() {
             ArrayList<Map<String, Set<String>>> copyOfRawColumnRelations = new ArrayList<>(rawColumnRelations);
-            Set<String> ret = columnRelationsColumns.remove(tableAlias);
             copyOfRawColumnRelations.forEach(rcr -> {
-                Set<String> tableAliases = rcr.keySet();
-                if (tableAliases.size() == 1 && tableAliases.contains(tableAlias)) {
+                if (removedTableAliases.containsAll(rcr.keySet())) {
                     rawColumnRelations.remove(rcr);
                 }
             });
+        }
+
+        Set<String> removeRelations(String tableAlias) {
+            allColumnRelations.remove(tableAlias);
+            Set<String> ret = columnRelationsColumns.remove(tableAlias);
+            removedTableAliases.add(tableAlias);
             return ret;
         }
         

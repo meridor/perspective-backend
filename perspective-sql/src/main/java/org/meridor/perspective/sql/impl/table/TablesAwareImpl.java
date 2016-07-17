@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @Component
+@Lazy
 public class TablesAwareImpl implements TablesAware {
     
     private static final Logger LOG = LoggerFactory.getLogger(TablesAwareImpl.class);
@@ -28,8 +30,8 @@ public class TablesAwareImpl implements TablesAware {
     @Autowired(required = false)
     private IndexStorage indexStorage;
 
-    private Map<String, List<Column>> tables = new HashMap<>();
-
+    private Map<String, Set<Column>> tables = new HashMap<>();
+    
     @PostConstruct
     public void init() {
         forEachTable(Arrays.asList(
@@ -62,7 +64,7 @@ public class TablesAwareImpl implements TablesAware {
     private BiConsumer<Table, Field> getFieldConsumer() {
         return (table, field) -> {
             String tableName = table.getName();
-            tables.putIfAbsent(tableName, new ArrayList<>());
+            tables.putIfAbsent(tableName, new LinkedHashSet<>());
             try {
                 Object defaultValue = field.get(table);
                 tables.get(tableName).add(new Column(field.getName(), field.getType(), defaultValue));
@@ -165,10 +167,10 @@ public class TablesAwareImpl implements TablesAware {
     }
     
     @Override
-    public List<Column> getColumns(String tableName) {
+    public Set<Column> getColumns(String tableName) {
         return tables.containsKey(tableName) ? 
                 tables.get(tableName):
-                Collections.emptyList();
+                Collections.emptySet();
     }
 
     @Override

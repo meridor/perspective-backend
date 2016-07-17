@@ -25,14 +25,14 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
     protected abstract Collection<T> getRawData();
 
     @Override
-    public List<List<Object>> fetch(Set<String> ids, List<Column> columns) {
+    public List<List<Object>> fetch(Set<String> ids, Collection<Column> columns) {
         return prepareData(ids, columns);
     }
 
     @Override
     public abstract String getTableName();
 
-    private List<List<Object>> prepareData(Set<String> ids, List<Column> columns) {
+    private List<List<Object>> prepareData(Set<String> ids, Collection<Column> columns) {
         Class<T> beanClass = getBeanClass();
         ObjectMapper<T> objectMapper = objectMapperAware.get(beanClass);
         String tableName = getTableName();

@@ -4,6 +4,7 @@ import org.meridor.perspective.sql.impl.storage.TableFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +13,7 @@ import java.util.Set;
 public class TestTableFetcher implements TableFetcher {
 
     @Override
-    public List<List<Object>> fetch(Set<String> ids, List<Column> columns) {
+    public List<List<Object>> fetch(Set<String> ids, Collection<Column> columns) {
         return Collections.singletonList(Collections.singletonList("value"));
     }
 

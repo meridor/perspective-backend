@@ -174,8 +174,8 @@ public class IndexScanStrategy extends ScanStrategy {
         Optional<IndexBooleanExpression> leftSupplementaryConditionCandidate = getSupplementaryCondition(leftTableAlias, leftColumns, leftCondition);
         Optional<IndexBooleanExpression> rightSupplementaryConditionCandidate = getSupplementaryCondition(rightTableAlias, rightColumns, rightCondition);
 
-        List<Column> leftTableColumns = tablesAware.getColumns(leftTable); //These are all table columns
-        List<Column> rightTableColumns = tablesAware.getColumns(rightTable);
+        Collection<Column> leftTableColumns = tablesAware.getColumns(leftTable); //These are all table columns
+        Collection<Column> rightTableColumns = tablesAware.getColumns(rightTable);
 
         Map<String, List<String>> resultingColumnsMap = new LinkedHashMap<String, List<String>>() {
             {
