@@ -31,8 +31,8 @@ public class IsNullExpression implements BooleanExpression {
     }
 
     @Override
-    public Map<String, Set<String>> getColumnRelations() {
-        return Collections.emptyMap();
+    public Optional<ColumnRelation> getColumnRelations() {
+        return Optional.empty();
     }
 
     @Override

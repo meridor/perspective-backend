@@ -80,17 +80,33 @@ public class BinaryBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Map<String, Set<String>> getColumnRelations() {
-        Map<String, Set<String>> ret = new HashMap<>();
+    public Optional<ColumnRelation> getColumnRelations() {
+        List<ColumnRelation> relations = new ArrayList<>();
         Optional<BooleanExpression> leftAsBooleanExpression = asBooleanExpression(left);
         Optional<BooleanExpression> rightAsBooleanExpression = asBooleanExpression(right);
         if (leftAsBooleanExpression.isPresent()) {
-            ret.putAll(leftAsBooleanExpression.get().getColumnRelations());
+            Optional<ColumnRelation> leftColumnRelation = leftAsBooleanExpression.get().getColumnRelations();
+            if (leftColumnRelation.isPresent()) {
+                relations.add(leftColumnRelation.get());
+            }
         }
         if (rightAsBooleanExpression.isPresent()) {
-            ret.putAll(rightAsBooleanExpression.get().getColumnRelations());
+            Optional<ColumnRelation> rightColumnRelation = rightAsBooleanExpression.get().getColumnRelations();
+            if (rightColumnRelation.isPresent()) {
+                relations.add(rightColumnRelation.get());
+            }
         }
-        return ret;
+        if (relations.isEmpty()) {
+            return Optional.empty();
+        } else if (relations.size() == 2) {
+            ColumnRelation firstColumnRelation = relations.get(0);
+            ColumnRelation secondColumnRelation = relations.get(1);
+            secondColumnRelation.setJoinOperator(getBinaryBooleanOperator());
+            firstColumnRelation.setNextRelation(secondColumnRelation);
+            return Optional.of(firstColumnRelation);
+        } else {
+            return Optional.of(relations.get(0));
+        }
     }
 
     @Override

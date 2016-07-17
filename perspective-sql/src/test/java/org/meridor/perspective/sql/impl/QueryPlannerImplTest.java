@@ -208,7 +208,7 @@ public class QueryPlannerImplTest {
         BooleanExpression optimizedCondition = optimizedLeftDataSource.getCondition().get();
         assertThat(optimizedCondition, is(instanceOf(IndexBooleanExpression.class)));
         assertThat(optimizedCondition.getTableAliases(), contains(INSTANCES_ALIAS));
-        assertThat(optimizedCondition.getColumnRelations().keySet(), is(empty()));
+        assertThat(optimizedCondition.getColumnRelations().isPresent(), is(false));
         assertThat(optimizedCondition.getRestOfExpression().isPresent(), is(false));
         assertThat(optimizedCondition.getFixedValueConditions(INSTANCES_ALIAS), equalTo(Collections.singletonMap(NAME, Collections.singleton(VALUE))));
     }
@@ -251,7 +251,7 @@ public class QueryPlannerImplTest {
         BooleanExpression optimizedLeftCondition = optimizedLeftDataSource.getCondition().get();
         assertThat(optimizedLeftCondition, is(instanceOf(IndexBooleanExpression.class)));
         assertThat(optimizedLeftCondition.getTableAliases(), contains(INSTANCES_ALIAS));
-        assertThat(optimizedLeftCondition.getColumnRelations().keySet(), is(empty()));
+        assertThat(optimizedLeftCondition.getColumnRelations().isPresent(), is(false));
         assertThat(optimizedLeftCondition.getRestOfExpression().isPresent(), is(false));
         assertThat(optimizedLeftCondition.getFixedValueConditions(INSTANCES_ALIAS), equalTo(Collections.singletonMap(NAME, Collections.singleton(VALUE))));
     }

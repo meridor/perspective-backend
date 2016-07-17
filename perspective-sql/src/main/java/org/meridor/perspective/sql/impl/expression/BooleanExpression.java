@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl.expression;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +20,7 @@ public interface BooleanExpression {
     /**
      * Returns conditions like table1.column1 = table2.column2 
      */
-    Map<String, Set<String>> getColumnRelations();
+    Optional<ColumnRelation> getColumnRelations();
 
     /**
      * Returns the rest of expression that can't be classified 

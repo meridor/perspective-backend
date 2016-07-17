@@ -70,17 +70,20 @@ public class SimpleBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Map<String, Set<String>> getColumnRelations() {
-        Map<String, Set<String>> ret = new HashMap<>();
+    public Optional<ColumnRelation> getColumnRelations() {
         if (isColumnExpression(left) && isColumnExpression(right)) {
             String leftTableAlias = asColumnExpression(left).getTableAlias();
             String leftColumnName = asColumnExpression(left).getColumnName();
-            ret.put(leftTableAlias, Collections.singleton(leftColumnName));
             String rightTableAlias = asColumnExpression(right).getTableAlias();
             String rightColumnName = asColumnExpression(right).getColumnName();
-            ret.put(rightTableAlias, Collections.singleton(rightColumnName));
+            return Optional.of(new ColumnRelation(
+                    leftTableAlias,
+                    Collections.singletonList(leftColumnName),
+                    rightTableAlias,
+                    Collections.singletonList(rightColumnName)
+            ));
         }
-        return ret;
+        return Optional.empty();
     }
 
     @Override

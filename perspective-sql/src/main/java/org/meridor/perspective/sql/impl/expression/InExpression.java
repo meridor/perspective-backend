@@ -1,9 +1,6 @@
 package org.meridor.perspective.sql.impl.expression;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,8 +59,8 @@ public class InExpression implements BooleanExpression {
     }
 
     @Override
-    public Map<String, Set<String>> getColumnRelations() {
-        return Collections.emptyMap();
+    public Optional<ColumnRelation> getColumnRelations() {
+        return Optional.empty();
     }
 
     @Override

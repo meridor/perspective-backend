@@ -18,7 +18,7 @@ public final class DataSourceUtils {
             return getTail(dataSource.getRightDataSource().get());
         }
         if (dataSource.getLeftDataSource().isPresent()) {
-            return dataSource.getLeftDataSource().get();
+            return getTail(dataSource.getLeftDataSource().get());
         }
         return dataSource;
     }
