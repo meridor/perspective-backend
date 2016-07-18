@@ -301,6 +301,9 @@ public class QueryPlannerImpl implements QueryPlanner {
                     optimizedChildDataSource.setRightDatasource(null);
                     if (optimizedChildDataSource.getJoinType().isPresent()) {
                         Optional<BooleanExpression> joinCondition = optimizedChildDataSource.getCondition();
+                        if (joinCondition.isPresent()) {
+                            columnRelations.removeRelations(joinCondition.get());
+                        }
                         Optional<BooleanExpression> booleanExpressionCandidate = fixedValuesToBooleanExpression(tableAlias, fixedValuesConditions.remove(tableAlias));
                         Optional<BooleanExpression> updatedJoinCondition = intersectConditions(joinCondition, booleanExpressionCandidate);
                         if (updatedJoinCondition.isPresent()) {
@@ -596,15 +599,23 @@ public class QueryPlannerImpl implements QueryPlanner {
             return ret;
         }
         
+        void removeRelations(BooleanExpression booleanExpression) {
+            if (booleanExpression == null || !booleanExpression.getColumnRelations().isPresent()) {
+                return;
+            }
+            booleanExpression.getColumnRelations().get().toMap().keySet()
+                    .forEach(this::removeRelations);
+        }
+        
         void clear() {
             allColumnRelations.clear();
             columnRelationsColumns.clear();
             rawColumnRelations.clear();
         }
 
-        void add(ColumnRelation data){
-            rawColumnRelations.add(data);
-            Map<String, Set<String>> columnRelationsMap = data.toMap();
+        void add(ColumnRelation columnRelation){
+            rawColumnRelations.add(columnRelation);
+            Map<String, Set<String>> columnRelationsMap = columnRelation.toMap();
             columnRelationsMap.keySet().forEach(tableAlias -> {
                 allColumnRelations.put(tableAlias, columnRelationsMap);
                 columnRelationsColumns.putIfAbsent(tableAlias, new HashSet<>());
