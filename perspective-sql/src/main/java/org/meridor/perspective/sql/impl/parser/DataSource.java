@@ -126,4 +126,18 @@ public class DataSource {
         INDEX_SCAN,
         TABLE_SCAN,
     }
+
+    @Override
+    public String toString() {
+        return "DataSource{" +
+                "tableAlias='" + String.valueOf(tableAlias) + '\'' +
+                ", leftDataSource=" + String.valueOf(leftDataSource) +
+                ", isNaturalJoin=" + isNaturalJoin +
+                ", joinType=" + String.valueOf(joinType) +
+                ", condition=" + String.valueOf(condition) +
+                ", columns=" + columns +
+                ", rightDatasource=" + String.valueOf(rightDatasource) +
+                ", type=" + String.valueOf(type) +
+                '}';
+    }
 }

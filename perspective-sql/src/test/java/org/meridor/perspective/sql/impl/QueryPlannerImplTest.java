@@ -167,7 +167,7 @@ public class QueryPlannerImplTest {
     }
     
     private Queue<Task> plan() throws SQLException {
-        return queryPlanner.plan(STUB_SQL);
+        return queryPlanner.plan(STUB_SQL).getTasks();
     }
 
     @Test

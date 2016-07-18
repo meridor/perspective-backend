@@ -104,6 +104,7 @@ public class SelectTask implements Task {
         return "SelectTask{" +
                 "selectionMap=" + selectionMap +
                 ", selectAll=" + selectAll +
+                ", tableAliases=" + tableAliases +
                 '}';
     }
 }

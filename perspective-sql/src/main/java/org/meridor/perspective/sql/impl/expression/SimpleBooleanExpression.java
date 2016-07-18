@@ -4,6 +4,7 @@ import org.meridor.perspective.beans.BooleanRelation;
 
 import java.util.*;
 
+import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.*;
 
 public class SimpleBooleanExpression implements BooleanExpression {
@@ -50,20 +51,23 @@ public class SimpleBooleanExpression implements BooleanExpression {
     @Override
     public Map<String, Set<Object>> getFixedValueConditions(String tableAlias) {
         Map<String, Set<Object>> ret = new HashMap<>();
-        if (isColumnExpression(left) && isConstant(right)) {
-            ColumnExpression leftColumnExpression = asColumnExpression(left);
-            String leftTableAlias = leftColumnExpression.getTableAlias();
-            String leftColumnName = leftColumnExpression.getColumnName();
-            if (leftTableAlias.equals(tableAlias)) {
-                ret.put(leftColumnName, Collections.singleton(right));
+        //Current we support only equal conditions but should also support >, < and so on
+        if (booleanRelation == EQUAL) {
+            if (isColumnExpression(left) && isConstant(right)) {
+                ColumnExpression leftColumnExpression = asColumnExpression(left);
+                String leftTableAlias = leftColumnExpression.getTableAlias();
+                String leftColumnName = leftColumnExpression.getColumnName();
+                if (leftTableAlias.equals(tableAlias)) {
+                    ret.put(leftColumnName, Collections.singleton(right));
+                }
             }
-        }
-        if (isConstant(left) && isColumnExpression(right)) {
-            ColumnExpression rightColumnExpression = asColumnExpression(right);
-            String rightTableAlias = rightColumnExpression.getTableAlias();
-            String rightColumnName = rightColumnExpression.getColumnName();
-            if (rightTableAlias.equals(tableAlias)) {
-                ret.put(rightColumnName, Collections.singleton(left));
+            if (isConstant(left) && isColumnExpression(right)) {
+                ColumnExpression rightColumnExpression = asColumnExpression(right);
+                String rightTableAlias = rightColumnExpression.getTableAlias();
+                String rightColumnName = rightColumnExpression.getColumnName();
+                if (rightTableAlias.equals(tableAlias)) {
+                    ret.put(rightColumnName, Collections.singleton(left));
+                }
             }
         }
         return ret;
@@ -96,6 +100,8 @@ public class SimpleBooleanExpression implements BooleanExpression {
     }
     
     private boolean canNotOptimizeExpression(Object value) {
-        return !isConstant(value) && !isColumnExpression(value);
+        return 
+                (booleanRelation != EQUAL) || 
+                ( !isConstant(value) && !isColumnExpression(value) );
     }
 }

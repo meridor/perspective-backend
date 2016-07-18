@@ -1,6 +1,7 @@
 package org.meridor.perspective.sql.impl;
 
 import org.meridor.perspective.sql.*;
+import org.meridor.perspective.sql.impl.parser.QueryType;
 import org.meridor.perspective.sql.impl.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -13,6 +14,7 @@ import java.util.*;
 
 import static org.meridor.perspective.sql.DataContainer.empty;
 import static org.meridor.perspective.sql.QueryStatus.*;
+import static org.meridor.perspective.sql.impl.parser.QueryType.EXPLAIN;
 
 @Component
 public class QueryProcessorImpl implements QueryProcessor {
@@ -27,8 +29,12 @@ public class QueryProcessorImpl implements QueryProcessor {
             List<QueryResult> queryResults = new ArrayList<>();
             for (String sqlQuery : sqlQueries) {
                 try {
-                    Queue<Task> tasks = parseSQL(sqlQuery);
-                    ExecutionResult executionResult = executeTasks(tasks.iterator(), null);
+                    QueryPlan queryPlan = parseSQL(sqlQuery);
+                    Queue<Task> tasks = queryPlan.getTasks();
+                    QueryType queryType = queryPlan.getQueryType();
+                    ExecutionResult executionResult = (queryType != EXPLAIN) ?
+                            executeTasks(tasks.iterator(), null) :
+                            createExplainExecutionResult(tasks);
                     queryResults.add(getQueryResult(SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
                 } catch (SQLSyntaxErrorException e) {
                     queryResults.add(getQueryResult(SYNTAX_ERROR, 0, empty(), e.getMessage()));
@@ -51,7 +57,7 @@ public class QueryProcessorImpl implements QueryProcessor {
         return placeholderConfigurer.getQueries();
     }
     
-    private Queue<Task> parseSQL(String sqlQuery) throws SQLException {
+    private QueryPlan parseSQL(String sqlQuery) throws SQLException {
         QueryPlanner queryPlanner = applicationContext.getBean(QueryPlanner.class);
         return queryPlanner.plan(sqlQuery);
     }
@@ -71,6 +77,16 @@ public class QueryProcessorImpl implements QueryProcessor {
         queryResult.setData(dataContainer.toData());
         queryResult.setMessage(message);
         return queryResult;
+    }
+    
+    private static ExecutionResult createExplainExecutionResult(Queue<Task> tasks) {
+        ExecutionResult executionResult = new ExecutionResult();
+        executionResult.setCount(tasks.size());
+        DataContainer data = new DataContainer(Collections.singletonList("task"));
+        tasks.stream().map(Object::toString)
+                .forEach(s -> data.addRow(Collections.singletonList(s)));
+        executionResult.setData(data);
+        return executionResult;
     }
     
 }

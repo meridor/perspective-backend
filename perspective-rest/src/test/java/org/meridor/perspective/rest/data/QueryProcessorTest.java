@@ -75,6 +75,23 @@ public class QueryProcessorTest {
     }
     
     @Test
+    public void testExplainSimpleQuery() {
+        Query query = new Query() {
+            {
+                setSql("explain select * from flavors where ram > 1024");
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getCount(), is(greaterThan(0)));
+        Data data = queryResult.getData();
+        assertThat(data.getColumnNames(), contains("task"));
+        assertThat(data.getRows().size(), is(greaterThan(0)));
+    }
+    
+    @Test
     public void testSelectVersion() {
         Query query = new Query() {
             {

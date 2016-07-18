@@ -2,6 +2,10 @@
 lexer grammar SQLLexer;
 
 // Query keywords
+EXPLAIN
+   : 'explain'
+   ;
+   
 SELECT
    : 'select'
    ;

@@ -63,4 +63,11 @@ public class DataSourceTask implements Task {
         return dataSourceStrategy.process(dataSource, tableAliases);
     }
 
+    @Override
+    public String toString() {
+        return "DataSourceTask{" +
+                "dataSource=" + dataSource +
+                ", tableAliases=" + tableAliases +
+                '}';
+    }
 }

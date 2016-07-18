@@ -34,5 +34,9 @@ public class ShowTablesTask implements Task {
             }
         };
     }
-    
+
+    @Override
+    public String toString() {
+        return "ShowTablesTask{}";
+    }
 }

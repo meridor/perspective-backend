@@ -54,4 +54,11 @@ public class FilterTask implements Task {
     public Optional<BooleanExpression> getCondition() {
         return Optional.ofNullable(condition);
     }
+
+    @Override
+    public String toString() {
+        return "FilterTask{" +
+                "condition=" + condition +
+                '}';
+    }
 }

@@ -4,10 +4,7 @@ import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
-import org.meridor.perspective.sql.impl.parser.DataSource;
-import org.meridor.perspective.sql.impl.parser.Pair;
-import org.meridor.perspective.sql.impl.parser.QueryParser;
-import org.meridor.perspective.sql.impl.parser.SelectQueryAware;
+import org.meridor.perspective.sql.impl.parser.*;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.meridor.perspective.sql.impl.task.*;
@@ -51,10 +48,12 @@ public class QueryPlannerImpl implements QueryPlanner {
     private final Queue<Task> tasksQueue = new LinkedList<>();
 
     @Override
-    public Queue<Task> plan(String sql) throws SQLException {
+    public QueryPlan plan(String sql) throws SQLException {
         QueryParser queryParser = applicationContext.getBean(QueryParser.class);
         queryParser.parse(sql);
-        switch (queryParser.getQueryType()) {
+        QueryType queryType = queryParser.getQueryType();
+        switch (queryType) {
+            case EXPLAIN:
             case SELECT: {
                 SelectQueryAware selectQueryAware = queryParser.getSelectQueryAware();
                 processSelectQuery(selectQueryAware);
@@ -66,7 +65,7 @@ public class QueryPlannerImpl implements QueryPlanner {
             }
             case UNKNOWN: throw new SQLSyntaxErrorException("Unknown query type");
         }
-        return tasksQueue;
+        return new QueryPlanImpl(tasksQueue, queryType);
     }
 
     private void processSelectQuery(SelectQueryAware selectQueryAware) throws SQLException {

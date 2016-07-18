@@ -21,4 +21,9 @@ public class DummyFetchTask implements Task {
         };
         
     }
+
+    @Override
+    public String toString() {
+        return "DummyFetchTask{}";
+    }
 }

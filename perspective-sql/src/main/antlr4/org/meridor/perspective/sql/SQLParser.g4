@@ -7,6 +7,7 @@ options
 query
    : select_query
    | show_tables_query //TODO: migrate this to SELECT tables(); query
+   | explain_query
    ;
 
 //Entities
@@ -23,6 +24,11 @@ column_name
    | ( alias DOT )? ( ID | MULTIPLY )
    ;
    
+
+// Explain query
+explain_query
+   : EXPLAIN select_query
+   ;
    
 // Select query
 select_query
