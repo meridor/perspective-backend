@@ -30,7 +30,6 @@
         <aspectj.version>1.8.8</aspectj.version>
         <yatomata.version>1.7</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
-        <jclouds.version>1.9.2</jclouds.version>
         <jersey.version>2.21</jersey.version>
     </properties>
 
