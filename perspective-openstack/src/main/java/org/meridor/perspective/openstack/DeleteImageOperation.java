@@ -1,18 +1,16 @@
 package org.meridor.perspective.openstack;
 
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
+import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.OperationType.DELETE_IMAGE;
@@ -27,15 +25,16 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Image> supplier) {
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             Image image = supplier.get();
             String region = image.getMetadata().get(MetadataKey.REGION);
-            ImageApi imageApi = novaApi.getImageApi(region);
+            api.useRegion(region);
             String imageId = image.getRealId();
-            imageApi.delete(imageId);
+            api.compute().images().delete(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to delete image", e);
             return false;
         }

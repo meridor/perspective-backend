@@ -1,8 +1,5 @@
 package org.meridor.perspective.openstack;
 
-import com.google.common.collect.FluentIterable;
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.beans.MetadataKey;
@@ -12,18 +9,21 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.model.identity.v2.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
+import static org.meridor.perspective.openstack.OpenstackApiProvider.getRegions;
 
 @Component
 public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
@@ -41,13 +41,14 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
+            api.identity().listTokenEndpoints().stream().map(Endpoint::getRegion).collect(Collectors.toList());
             Integer overallImagesCount = 0;
-            for (String region : novaApi.getConfiguredRegions()) {
+            for (String region : getRegions(api)) {
                 Set<Image> images = new HashSet<>();
                 try {
-                    ImageApi imageApi = novaApi.getImageApi(region);
-                    FluentIterable<org.jclouds.openstack.nova.v2_0.domain.Image> imagesList = imageApi.listInDetail().concat();
+                    List<? extends org.openstack4j.model.image.Image> imagesList = api.images().listAll();
                     imagesList.forEach(img -> images.add(createOrModifyImage(img, cloud, region)));
                     Integer regionImagesCount = images.size();
                     overallImagesCount += regionImagesCount;
@@ -60,7 +61,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
             LOG.info("Fetched {} images overall for cloud = {}", overallImagesCount, cloud.getName());
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to fetch images for cloud = " + cloud.getName(), e);
             return false;
         }
@@ -71,7 +72,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return new OperationType[]{LIST_IMAGES};
     }
 
-    private Image createOrModifyImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, Cloud cloud, String region) {
+    private Image createOrModifyImage(org.openstack4j.model.image.Image openstackImage, Cloud cloud, String region) {
         String imageId = idGenerator.getImageId(cloud, openstackImage.getId());
         String projectId = idGenerator.getProjectId(cloud, region);
         Optional<Image> imageCandidate = imagesAware.getImage(imageId);
@@ -83,7 +84,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         }
     }
     
-    private Image createImage(org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String imageId, String projectId) {
+    private Image createImage(org.openstack4j.model.image.Image openstackImage, String imageId, String projectId) {
         Image image = new Image();
         image.setId(imageId);
         image.setRealId(openstackImage.getId());
@@ -92,20 +93,20 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return image;
     } 
     
-    private Image updateImage(Image image, org.jclouds.openstack.nova.v2_0.domain.Image openstackImage, String region, String projectId) {
+    private Image updateImage(Image image, org.openstack4j.model.image.Image openstackImage, String region, String projectId) {
         HashSet<String> projectIds = new HashSet<>(image.getProjectIds());
         projectIds.add(projectId);
         image.setProjectIds(new ArrayList<>(projectIds));
         image.setName(openstackImage.getName());
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime created = ZonedDateTime.ofInstant(
-                openstackImage.getCreated().toInstant(),
+                openstackImage.getCreatedAt().toInstant(),
                 ZoneId.systemDefault()
         );
         image.setCreated(created);
         image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(
-                openstackImage.getUpdated().toInstant(),
+                openstackImage.getUpdatedAt().toInstant(),
                 ZoneId.systemDefault()
         );
         image.setTimestamp(timestamp);
@@ -115,15 +116,16 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return image;
     }
     
-    private static ImageState stateFromStatus(org.jclouds.openstack.nova.v2_0.domain.Image.Status status) {
+    private static ImageState stateFromStatus(org.openstack4j.model.image.Image.Status status) {
         switch (status) {
             case SAVING:
                 return ImageState.SAVING;
+            case QUEUED:
+            case PENDING_DELETE:
             case DELETED:
                 return ImageState.DELETING;
             case UNRECOGNIZED:
-            case UNKNOWN:
-            case ERROR:
+            case KILLED:
                 return ImageState.ERROR;
             default:
             case ACTIVE:

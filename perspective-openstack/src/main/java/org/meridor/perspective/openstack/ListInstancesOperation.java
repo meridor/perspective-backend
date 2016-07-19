@@ -1,13 +1,5 @@
 package org.meridor.perspective.openstack;
 
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Multimap;
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.domain.Address;
-import org.jclouds.openstack.nova.v2_0.domain.Console;
-import org.jclouds.openstack.nova.v2_0.domain.Server;
-import org.jclouds.openstack.nova.v2_0.extensions.ConsolesApi;
-import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
@@ -16,14 +8,16 @@ import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.model.compute.Address;
+import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.VNCConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -31,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
+import static org.meridor.perspective.openstack.OpenstackApiProvider.getRegions;
 
 @Component
 public class ListInstancesOperation implements SupplyingOperation<Set<Instance>> {
@@ -56,18 +51,17 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             Integer overallInstancesCount = 0;
-            for (String region : novaApi.getConfiguredRegions()) {
+            for (String region : getRegions(api)) {
                 Set<Instance> instances = new HashSet<>();
                 try {
-                    ServerApi serverApi = novaApi.getServerApi(region);
-                    com.google.common.base.Optional<ConsolesApi> consolesApiCandidate = novaApi.getConsolesApi(region);
-                    FluentIterable<Server> servers = serverApi.listInDetail().concat();
+                    List<? extends org.openstack4j.model.compute.Server> servers = api.compute().servers().listAll(true);
                     servers.forEach(s -> {
                         Instance instance = createInstance(cloud, region, s);
-                        if (!consoleType.equals(OFF) && consolesApiCandidate.isPresent()) {
-                            addConsoleUrl(instance, consolesApiCandidate.get());
+                        if (!consoleType.equals(OFF)) {
+                            addConsoleUrl(instance, api);
                         }
                         instances.add(instance);
                     });
@@ -82,7 +76,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
             LOG.info("Fetched {} instances overall for cloud = {}", overallInstancesCount, cloud.getName());
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to fetch instances for cloud = " + cloud.getName(), e);
             return false;
         }
@@ -136,10 +130,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 instance.setFlavor(matchingFlavors.get(0));
             }
 
-            Multimap<String, Address> networkAddressMap = server.getAddresses();
+            Map<String, List<? extends Address>> addresses = server.getAddresses().getAddresses();
             List<Network> networks = new ArrayList<>();
-            networkAddressMap.keySet().stream().forEach(networkName -> {
-                List<String> ipAddresses = networkAddressMap.get(networkName).stream()
+            addresses.keySet().forEach(networkName -> {
+                List<String> ipAddresses = addresses.get(networkName).stream()
                         .map(Address::getAddr).collect(Collectors.toList());
                 instance.setAddresses(ipAddresses);
                 Optional<Network> networkCandidate = project.getNetworks().stream()
@@ -161,11 +155,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
     
-    private void addConsoleUrl(Instance instance, ConsolesApi consolesApi) {
+    private void addConsoleUrl(Instance instance, OSClient.OSClientV2 api) {
         try {
-            Console console = consolesApi.getConsole(instance.getRealId(), Console.Type.fromValue(consoleType));
-            URI url = console.getUrl();
-            instance.getMetadata().put(MetadataKey.CONSOLE_URL, url.toString());
+            VNCConsole console = api.compute().servers().getVNCConsole(instance.getRealId(), VNCConsole.Type.value(consoleType));
+            instance.getMetadata().put(MetadataKey.CONSOLE_URL, console.getURL());
         } catch (Exception e) {
             LOG.trace("Failed to fetch console information for instance {} ({})", instance.getName(), instance.getId());
         }
@@ -194,7 +187,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 return InstanceState.REBOOTING;
             case HARD_REBOOT:
                 return InstanceState.HARD_REBOOTING;
-            case SOFT_DELETED:
             case DELETED:
                 return InstanceState.DELETING;
             case UNRECOGNIZED:
@@ -203,9 +195,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 return InstanceState.ERROR;
             case MIGRATING:
                 return InstanceState.MIGRATING;
-            case RESCUE:
-            case SHELVED:
-            case SHELVED_OFFLOADED:
+            case STOPPED:
             case SHUTOFF:
                 return InstanceState.SHUTOFF;
             default:

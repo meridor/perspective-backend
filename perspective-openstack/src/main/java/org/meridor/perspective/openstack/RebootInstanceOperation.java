@@ -1,8 +1,5 @@
 package org.meridor.perspective.openstack;
 
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.domain.RebootType;
-import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.Project;
@@ -10,12 +7,13 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.model.compute.RebootType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.OperationType.REBOOT_INSTANCE;
@@ -33,18 +31,19 @@ public class RebootInstanceOperation implements ConsumingOperation<Instance> {
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             Instance instance = supplier.get();
             String region = instance.getMetadata().get(MetadataKey.REGION);
             if (region == null) {
                 Project project = projectsAware.getProject(instance.getProjectId()).get();
                 region = project.getMetadata().get(MetadataKey.REGION);
             }
-            ServerApi serverApi = novaApi.getServerApi(region);
-            serverApi.reboot(instance.getRealId(), getRebootType());
+            api.useRegion(region);
+            api.compute().servers().reboot(instance.getRealId(), getRebootType());
             LOG.debug(getSuccessMessage(), instance.getName(), instance.getId());
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error(getErrorMessage(), e);
             return false;
         }

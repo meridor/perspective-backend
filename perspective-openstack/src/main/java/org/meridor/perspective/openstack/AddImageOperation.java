@@ -1,7 +1,5 @@
 package org.meridor.perspective.openstack;
 
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
@@ -12,6 +10,7 @@ import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
+import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,8 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             if (image.getProjectIds().isEmpty()) {
                 throw new IllegalStateException("Image should contain projectId");
             }
@@ -52,14 +52,13 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
                 throw new IllegalArgumentException(String.format("Failed to add image: project with ID = %s does not exist", projectId));
             }
             String region = projectCandidate.get().getMetadata().get(MetadataKey.REGION);
-            ServerApi serverApi = novaApi.getServerApi(region);
             String instanceId = image.getInstanceId();
             Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
             if (!instanceCandidate.isPresent()) {
                 throw new IllegalArgumentException(String.format("Failed to add image: instance with ID = %s does not exist", image.getInstanceId()));
             }
             String instanceRealId = instanceCandidate.get().getRealId();
-            String realId = serverApi.createImageFromServer(image.getName(), instanceRealId);
+            String realId = api.compute().servers().createSnapshot(instanceRealId, image.getName());
             image.getMetadata().put(MetadataKey.REGION, region);
             image.setRealId(realId);
             String imageId = idGenerator.getImageId(cloud, realId);

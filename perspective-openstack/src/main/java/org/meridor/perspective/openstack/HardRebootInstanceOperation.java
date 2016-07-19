@@ -1,7 +1,7 @@
 package org.meridor.perspective.openstack;
 
-import org.jclouds.openstack.nova.v2_0.domain.RebootType;
 import org.meridor.perspective.config.OperationType;
+import org.openstack4j.model.compute.RebootType;
 import org.springframework.stereotype.Component;
 
 @Component

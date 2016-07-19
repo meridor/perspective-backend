@@ -1,54 +1,46 @@
 package org.meridor.perspective.openstack;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.inject.Module;
-import org.jclouds.ContextBuilder;
-import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
-import org.jclouds.openstack.neutron.v2.NeutronApi;
-import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.meridor.perspective.config.Cloud;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.core.transport.Config;
+import org.openstack4j.model.identity.v2.Endpoint;
+import org.openstack4j.openstack.OSFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
-import java.util.Properties;
-
-import static org.jclouds.Constants.*;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class OpenstackApiProvider {
 
     //TODO: probably implement API pooling
 
-    private static final Iterable<Module> LOGGING_MODULES = ImmutableSet.of(new SLF4JLoggingModule());
-
-    public NovaApi getNovaApi(Cloud cloud) {
-        
-        return ContextBuilder.newBuilder("openstack-nova")
+    private static final String DELIMITER = ":";
+    
+    public OSClient.OSClientV2 getApi(Cloud cloud) {
+        String[] identity = cloud.getIdentity().split(DELIMITER);
+        Assert.isTrue(identity.length == 2, "Identity should be in format project:username");
+        String projectName = identity[0];
+        String userName = identity[1];
+        return OSFactory.builderV2()
+                .withConfig(getConnectionSettings())
                 .endpoint(cloud.getEndpoint())
-                .credentials(cloud.getIdentity(), cloud.getCredential())
-                .modules(LOGGING_MODULES)
-                .overrides(getConnectionSettings())
-                .buildApi(NovaApi.class);
+                .credentials(userName, cloud.getCredential())
+                .tenantName(projectName)
+                .authenticate();
     }
 
-    public NeutronApi getNeutronApi(Cloud cloud) {
-        return ContextBuilder.newBuilder("openstack-neutron")
-                .endpoint(cloud.getEndpoint())
-                .credentials(cloud.getIdentity(), cloud.getCredential())
-                .modules(LOGGING_MODULES)
-                .overrides(getConnectionSettings())
-                .buildApi(NeutronApi.class);
+    public static Set<String> getRegions(OSClient.OSClientV2 api) {
+        return api.identity().listTokenEndpoints().stream()
+                .map(Endpoint::getRegion)
+                .collect(Collectors.toSet());
     }
     
-    private static Properties getConnectionSettings() {
-        return new Properties(){
-            {
-                setProperty(PROPERTY_CONNECTION_TIMEOUT, "10000");
-                setProperty(PROPERTY_SO_TIMEOUT, "10000");
-                setProperty(PROPERTY_REQUEST_TIMEOUT, "30000");
-                setProperty(PROPERTY_MAX_RETRIES, "2");
-            }
-        };
-
+    private static Config getConnectionSettings() {
+        return Config.newConfig()
+                .withConnectionTimeout(10000)
+                .withReadTimeout(30000);
     }
 
 }

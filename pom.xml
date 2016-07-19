@@ -29,6 +29,7 @@
         <hazelcast.version>3.6.2</hazelcast.version>
         <aspectj.version>1.8.8</aspectj.version>
         <yatomata.version>1.7</yatomata.version>
+        <openstack4j.version>3.0.0</openstack4j.version>
         <jclouds.version>1.9.2</jclouds.version>
         <jersey.version>2.21</jersey.version>
     </properties>
@@ -116,14 +117,6 @@
                 <version>${spring.version}</version>
                 <scope>test</scope>
             </dependency>
-
-            <!-- JClouds -->
-            <dependency>
-                <groupId>org.apache.jclouds.driver</groupId>
-                <artifactId>jclouds-slf4j</artifactId>
-                <version>${jclouds.version}</version>
-            </dependency>
-            
 
             <!-- Misc -->
             <dependency>

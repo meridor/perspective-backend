@@ -1,22 +1,21 @@
 package org.meridor.perspective.openstack;
 
-import org.jclouds.openstack.nova.v2_0.NovaApi;
-import org.jclouds.openstack.nova.v2_0.domain.Network;
-import org.jclouds.openstack.nova.v2_0.domain.ServerCreated;
-import org.jclouds.openstack.nova.v2_0.features.ServerApi;
-import org.jclouds.openstack.nova.v2_0.options.CreateServerOptions;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
+import org.openstack4j.api.Builders;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.model.compute.Server;
+import org.openstack4j.model.compute.ServerCreate;
+import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -43,13 +42,10 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         Instance instance = supplier.get();
         String projectId = instance.getProjectId();
         Project project = projectsAware.getProject(projectId).get();
-        try (NovaApi novaApi = apiProvider.getNovaApi(cloud)) {
+        try {
+            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             String region = project.getMetadata().get(MetadataKey.REGION);
-            ServerApi serverApi = novaApi.getServerApi(region);
-            String instanceName = instance.getName();
-            String flavorId = instance.getFlavor().getId();
-            String imageId = instance.getImage().getRealId();
-            ServerCreated createdServer = serverApi.create(instanceName, imageId, flavorId, getServerOptions(instance));
+            Server createdServer = api.compute().servers().boot(getServerConfig(instance));
             String realId = createdServer.getId();
             instance.getMetadata().put(MetadataKey.REGION, region);
             instance.setRealId(realId);
@@ -57,32 +53,36 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
             instance.setId(instanceId);
             LOG.debug("Added instance {} ({})", instance.getName(), instance.getId());
             return instance;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Failed to add instance " + instance.getName(), e);
             return null;
         }
     }
     
-    private static CreateServerOptions getServerOptions(Instance instance) {
-        CreateServerOptions serverOptions = new CreateServerOptions();
+    private static ServerCreate getServerConfig(Instance instance) {
+        ServerCreateBuilder builder = Builders.server()
+                .name(instance.getName())
+                .flavor(instance.getFlavor().getId())
+                .image(instance.getImage().getRealId());
+        
         Optional<Keypair> keypairCandidate = Optional.ofNullable(instance.getKeypair());
         if (keypairCandidate.isPresent()) {
-            serverOptions.keyPairName(keypairCandidate.get().getName());
+            builder = builder.keypairName(keypairCandidate.get().getName());
         }
 
         if (!instance.getNetworks().isEmpty()) {
-            List<Network> networks = instance.getNetworks().stream()
-                    .map(n -> Network.builder().networkUuid(n.getId()).build())
+            List<String> networks = instance.getNetworks().stream()
+                    .map(org.meridor.perspective.beans.Network::getId)
                     .collect(Collectors.toList());
-            serverOptions.novaNetworks(networks);
+            builder = builder.networks(networks);
         }
 
         Optional<AvailabilityZone> availabilityZoneCandidate = Optional.ofNullable(instance.getAvailabilityZone());
         if (availabilityZoneCandidate.isPresent()) {
-            serverOptions.availabilityZone(availabilityZoneCandidate.get().getName());
+            builder = builder.availabilityZone(availabilityZoneCandidate.get().getName());
         }
         
-        return serverOptions;
+        return builder.build();
     }
 
     @Override
