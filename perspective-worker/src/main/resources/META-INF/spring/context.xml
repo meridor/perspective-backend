@@ -52,6 +52,11 @@
                         </property>
                     </bean>
                 </property>
+                <property name="properties">
+                    <props>
+                        <prop key="hazelcast.logging.type">slf4j</prop>
+                    </props>
+                </property>
             </bean>
         </constructor-arg>
     </bean>
