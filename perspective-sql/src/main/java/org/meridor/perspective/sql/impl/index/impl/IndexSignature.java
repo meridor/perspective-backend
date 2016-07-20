@@ -1,12 +1,13 @@
 package org.meridor.perspective.sql.impl.index.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class IndexSignature {
+public class IndexSignature implements Serializable {
     
     private final Map<String, Set<String>> desiredColumns;
 
