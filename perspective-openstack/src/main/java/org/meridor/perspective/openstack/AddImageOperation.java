@@ -42,7 +42,6 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             if (image.getProjectIds().isEmpty()) {
                 throw new IllegalStateException("Image should contain projectId");
             }
@@ -58,6 +57,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
                 throw new IllegalArgumentException(String.format("Failed to add image: instance with ID = %s does not exist", image.getInstanceId()));
             }
             String instanceRealId = instanceCandidate.get().getRealId();
+            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
             String realId = api.compute().servers().createSnapshot(instanceRealId, image.getName());
             image.getMetadata().put(MetadataKey.REGION, region);
             image.setRealId(realId);

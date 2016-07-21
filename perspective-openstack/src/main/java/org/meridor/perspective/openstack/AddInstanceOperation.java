@@ -43,8 +43,8 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         String projectId = instance.getProjectId();
         Project project = projectsAware.getProject(projectId).get();
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             String region = project.getMetadata().get(MetadataKey.REGION);
+            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
             Server createdServer = api.compute().servers().boot(getServerConfig(instance));
             String realId = createdServer.getId();
             instance.getMetadata().put(MetadataKey.REGION, region);

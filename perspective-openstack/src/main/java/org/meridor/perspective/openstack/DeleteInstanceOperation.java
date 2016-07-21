@@ -29,9 +29,9 @@ public class DeleteInstanceOperation implements ConsumingOperation<Instance> {
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             Instance instance = supplier.get();
             String region = instance.getMetadata().get(MetadataKey.REGION);
+            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
             if (region == null) {
                 Project project = projectsAware.getProject(instance.getProjectId()).get();
                 region = project.getMetadata().get(MetadataKey.REGION);

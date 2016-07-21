@@ -21,11 +21,11 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
-import static org.meridor.perspective.openstack.OpenstackApiProvider.getRegions;
 
 @Component
 public class ListInstancesOperation implements SupplyingOperation<Set<Instance>> {
@@ -52,12 +52,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
-            Integer overallInstancesCount = 0;
-            for (String region : getRegions(api)) {
+            final AtomicInteger overallInstancesCount = new AtomicInteger();
+            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 Set<Instance> instances = new HashSet<>();
                 try {
-                    List<? extends org.openstack4j.model.compute.Server> servers = api.compute().servers().listAll(true);
+                    List<? extends org.openstack4j.model.compute.Server> servers = api.compute().servers().list(true);
                     servers.forEach(s -> {
                         Instance instance = createInstance(cloud, region, s);
                         if (!consoleType.equals(OFF)) {
@@ -66,13 +65,13 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                         instances.add(instance);
                     });
                     Integer regionInstancesCount = instances.size();
-                    overallInstancesCount += regionInstancesCount;
+                    overallInstancesCount.getAndUpdate(c -> c + regionInstancesCount);
                     LOG.debug("Fetched {} instances for cloud = {}, region = {}", regionInstancesCount, cloud.getName(), region);
                     consumer.accept(instances);
                 } catch (Exception e) {
                     LOG.error(String.format("Failed to fetch instances for cloud = %s, region = %s", cloud.getName(), region), e);
                 }
-            }
+            });
 
             LOG.info("Fetched {} instances overall for cloud = {}", overallInstancesCount, cloud.getName());
             return true;
@@ -123,9 +122,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         if (projectCandidate.isPresent()) {
             instance.setProjectId(projectId);
             Project project = projectCandidate.get();
-            List<Flavor> matchingFlavors = project.getFlavors().stream()
+            List<Flavor> matchingFlavors = (server.getFlavor() != null) ?
+                    project.getFlavors().stream()
                     .filter(f -> f.getId().equals(server.getFlavor().getId()))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()) :
+                    Collections.emptyList();
             if (!matchingFlavors.isEmpty()) {
                 instance.setFlavor(matchingFlavors.get(0));
             }
@@ -146,16 +147,18 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             instance.setNetworks(networks);
         }
         
-        String imageId = idGenerator.getImageId(cloud, server.getImage().getId());
-        Optional<Image> imageCandidate = images.getImage(imageId);
-        if (imageCandidate.isPresent()) {
-            instance.setImage(imageCandidate.get());
+        if (server.getImage() != null) {
+            String imageId = idGenerator.getImageId(cloud, server.getImage().getId());
+            Optional<Image> imageCandidate = images.getImage(imageId);
+            if (imageCandidate.isPresent()) {
+                instance.setImage(imageCandidate.get());
+            }
         }
         
         return instance;
     }
     
-    private void addConsoleUrl(Instance instance, OSClient.OSClientV2 api) {
+    private void addConsoleUrl(Instance instance, OSClient.OSClientV3 api) {
         try {
             VNCConsole console = api.compute().servers().getVNCConsole(instance.getRealId(), VNCConsole.Type.value(consoleType));
             instance.getMetadata().put(MetadataKey.CONSOLE_URL, console.getURL());

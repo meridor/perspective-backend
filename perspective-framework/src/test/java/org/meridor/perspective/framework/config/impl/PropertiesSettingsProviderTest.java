@@ -5,8 +5,7 @@ import org.meridor.perspective.framework.config.SettingsProvider;
 
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -33,10 +32,9 @@ public class PropertiesSettingsProviderTest {
 
     @Test
     public void testGetList() throws Exception {
-        assertThat(settingsProvider.getList(MISSING_KEY).isPresent(), is(false));
-        assertThat(settingsProvider.getList(EXISTING_KEY).isPresent(), is(true));
-        assertThat(settingsProvider.getList(EXISTING_KEY).get(), hasSize(3));
-        assertThat(settingsProvider.getList(EXISTING_KEY).get().get(1), equalTo("2"));
+        assertThat(settingsProvider.getList(MISSING_KEY), is(empty()));
+        assertThat(settingsProvider.getList(EXISTING_KEY), hasSize(3));
+        assertThat(settingsProvider.getList(EXISTING_KEY).get(1), equalTo("2"));
     }
 
     @Test

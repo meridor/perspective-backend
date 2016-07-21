@@ -9,8 +9,6 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
-import org.openstack4j.api.OSClient;
-import org.openstack4j.model.identity.v2.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +17,10 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
-import static org.meridor.perspective.openstack.OpenstackApiProvider.getRegions;
 
 @Component
 public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
@@ -42,22 +39,20 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
-            api.identity().listTokenEndpoints().stream().map(Endpoint::getRegion).collect(Collectors.toList());
-            Integer overallImagesCount = 0;
-            for (String region : getRegions(api)) {
+            final AtomicInteger overallImagesCount = new AtomicInteger();
+            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 Set<Image> images = new HashSet<>();
                 try {
                     List<? extends org.openstack4j.model.image.Image> imagesList = api.images().listAll();
                     imagesList.forEach(img -> images.add(createOrModifyImage(img, cloud, region)));
                     Integer regionImagesCount = images.size();
-                    overallImagesCount += regionImagesCount;
+                    overallImagesCount.getAndUpdate(c -> c + regionImagesCount);
                     LOG.debug("Fetched {} images for cloud = {}, region = {}", regionImagesCount, cloud.getName(), region);
                     consumer.accept(images);
                 } catch (Exception e) {
                     LOG.error(String.format("Failed to fetch images for cloud = %s, region = %s", cloud.getName(), region), e);
                 }
-            }
+            });
 
             LOG.info("Fetched {} images overall for cloud = {}", overallImagesCount, cloud.getName());
             return true;

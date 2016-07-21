@@ -26,9 +26,9 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
     @Override
     public boolean perform(Cloud cloud, Supplier<Image> supplier) {
         try {
-            OSClient.OSClientV2 api = apiProvider.getApi(cloud);
             Image image = supplier.get();
             String region = image.getMetadata().get(MetadataKey.REGION);
+            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
             api.useRegion(region);
             String imageId = image.getRealId();
             api.compute().images().delete(imageId);

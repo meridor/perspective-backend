@@ -7,7 +7,7 @@ public interface SettingsProvider {
     
     Optional<String> get(String settingName);
     
-    Optional<List<String>> getList(String settingName);
+    List<String> getList(String settingName);
 
     <T> Optional<T> getAs(String settingName, Class<T> cls);
     
