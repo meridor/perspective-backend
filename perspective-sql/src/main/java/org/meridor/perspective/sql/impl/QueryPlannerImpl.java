@@ -274,7 +274,8 @@ public class QueryPlannerImpl implements QueryPlanner {
                     optimizedChildDataSource.setRightDatasource(null);
                     optimizedChildDataSource.setCondition(
                             indexScanBooleanExpressionCandidate.isPresent() ?
-                            indexScanBooleanExpressionCandidate.get() : null
+                                indexScanBooleanExpressionCandidate.get() :
+                                IndexBooleanExpression.empty()
                     );
 
                     if (

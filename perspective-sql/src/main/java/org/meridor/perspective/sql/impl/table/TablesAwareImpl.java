@@ -34,16 +34,14 @@ public class TablesAwareImpl implements TablesAware {
     
     @PostConstruct
     public void init() {
-        forEachTable(Arrays.asList(
-                getFieldsConsumer(),
-                getIndexesConsumer()
-        ));
+        forEachTable(getFieldsConsumer());
+        forEachTable(getIndexesConsumer());
     }
 
 
-    private void forEachTable(List<Consumer<Table>> consumers) {
-        applicationContext.getBeansOfType(Table.class).values().stream()
-                .forEach(t -> consumers.forEach(c -> c.accept(t)));
+    private void forEachTable(Consumer<Table> consumer) {
+        applicationContext.getBeansOfType(Table.class).values()
+                .forEach(consumer);
     }
     
     private static void forEachField(Table table, List<BiConsumer<Table, Field>> consumers) {
@@ -93,10 +91,7 @@ public class TablesAwareImpl implements TablesAware {
     private void processIndexAnnotation(String tableName, org.meridor.perspective.sql.impl.table.annotation.Index indexAnnotation) {
         String[] columnNames = indexAnnotation.columnNames();
         int keyLength = indexAnnotation.length();
-
-        Map<String, Set<String>> indexColumns = new HashMap<>();
-        indexColumns.put(tableName, new HashSet<>(Arrays.asList(columnNames)));
-        addIndexIfValid(indexColumns, keyLength);
+        addIndexIfValid(tableName, new LinkedHashSet<>(Arrays.asList(columnNames)),  keyLength);
     }
 
     private void processForeignKeyAnnotation(String tableName, ForeignKey foreignKeyAnnotation) {
@@ -116,29 +111,27 @@ public class TablesAwareImpl implements TablesAware {
             return;
         }
         
-        Map<String, Set<String>> indexColumns = new LinkedHashMap<>();
-        indexColumns.put(tableName, new HashSet<>(Arrays.asList(columnNames)));
-        indexColumns.put(foreignTableName, new HashSet<>(Arrays.asList(foreignTableColumnNames)));
-        addIndexIfValid(indexColumns, keyLength);
+        addIndexIfValid(tableName, new LinkedHashSet<>(Arrays.asList(columnNames)), keyLength);
+        addIndexIfValid(foreignTableName, new LinkedHashSet<>(Arrays.asList(foreignTableColumnNames)), keyLength);
     }
     
-    private void addIndexIfValid(Map<String, Set<String>> indexColumns, int keyLength) {
-        for (String tableName : indexColumns.keySet()) {
-            if (!isTablePresent(tableName)) {
-                LOG.error("Not creating index {}: table {} does not exist", indexColumns, tableName);
-                return;
-            }
-            Set<String> columnNames = indexColumns.get(tableName);
-            Optional<String> invalidColumnCandidate = areColumnsPresent(tableName, columnNames);
-            if (invalidColumnCandidate.isPresent()) {
-                LOG.error("Not creating index {}: table {} column {} does not exist", indexColumns, tableName, invalidColumnCandidate.get());
-                return;
-            }
+    private void addIndexIfValid(String tableName, Set<String> columnNames, int keyLength) {
+        Map<String, Set<String>> indexColumns = Collections.singletonMap(tableName, columnNames);
+        if (!isTablePresent(tableName)) {
+            LOG.error("Not creating index {}: table {} does not exist", indexColumns, tableName);
+            return;
+        }
+        Optional<String> invalidColumnCandidate = areColumnsPresent(tableName, columnNames);
+        if (invalidColumnCandidate.isPresent()) {
+            LOG.error("Not creating index {}: table {} column {} does not exist", indexColumns, tableName, invalidColumnCandidate.get());
+            return;
         }
         IndexSignature indexSignature = new IndexSignature(indexColumns);
         Index index = new HashTableIndex(indexSignature, keyLength);
-        indexStorage.put(indexSignature, index);
-        updateColumns(indexColumns, indexSignature);
+        if (!indexStorage.get(indexSignature).isPresent()) {
+            indexStorage.put(indexSignature, index);
+            updateColumns(indexColumns, indexSignature);
+        }
     }
     
     private boolean isTablePresent(String tableName) {
