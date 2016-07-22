@@ -6,6 +6,7 @@ import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.*;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.*;
+import org.meridor.perspective.sql.*;
 import org.springframework.stereotype.Repository;
 
 import java.time.format.DateTimeFormatter;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
 @Repository
-public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware {
+public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository {
 
     public static final String ONE = "one";
     public static final String TWO = "two";
@@ -240,5 +241,27 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     @Override
     public Map<String, String> getFilters(boolean all) {
         return getSettingsMap();
+    }
+
+    @Override
+    public QueryResult query(Query query) {
+        return new QueryResult(){
+            {
+                setCount(1);
+                setStatus(QueryStatus.SUCCESS);
+                Data data = new Data(){
+                    {
+                        setColumnNames(Collections.singletonList("test"));
+                        Row row = new Row(){
+                            {
+                                getValues().add("test-data");
+                            }
+                        };
+                        getRows().add(row);
+                    }
+                };
+                setData(data);
+            }
+        };
     }
 }

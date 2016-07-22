@@ -11,7 +11,6 @@
         <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\..*" type="regex" />
     </context:component-scan>
     
-    <bean class="org.meridor.perspective.shell.common.repository.impl.QueryRepositoryImpl"/>
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
     <bean class="org.springframework.shell.CommandLine">
         <constructor-arg index="0">

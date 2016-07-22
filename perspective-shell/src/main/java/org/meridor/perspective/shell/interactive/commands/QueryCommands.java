@@ -22,15 +22,26 @@ public class QueryCommands extends BaseCommands {
     public void select(
             @CliOption(key = "", mandatory = true, help = "Query body") String sql
     ) {
+        executeQuery("select " + sql);
+    }
+    
+    @CliCommand(value = "explain", help = "Execute EXPLAIN query")
+    public void explain(
+            @CliOption(key = "", mandatory = true, help = "Query body") String sql
+    ) {
+        executeQuery("explain " + sql);
+    }
+    
+    private void executeQuery(String sql) {
         Query query = new Query();
-        query.setSql("select " + sql);
+        query.setSql(sql);
         QueryResult result = queryRepository.query(query);
         switch (result.getStatus()) {
             case SUCCESS: {
                 pageData(result);
                 break;
             }
-            case SYNTAX_ERROR: 
+            case SYNTAX_ERROR:
             case MISSING_PARAMETERS:
             case EVALUATION_ERROR: {
                 error(String.format("Error: %s", result.getMessage()));

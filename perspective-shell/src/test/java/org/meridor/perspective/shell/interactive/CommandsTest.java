@@ -42,6 +42,8 @@ public class CommandsTest {
                 { "delete images test-image" },
                 { "reboot test-instance" },
                 { "reboot test-instance --hard" },
+                { "select 1 + 1" },
+                { "explain select 1 + 1" },
         });
     }
 
