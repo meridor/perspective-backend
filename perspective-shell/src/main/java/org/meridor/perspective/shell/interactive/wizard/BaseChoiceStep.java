@@ -103,7 +103,7 @@ public abstract class BaseChoiceStep extends AbstractStep {
                 return Optional.of(true);
             }
         }
-        if (choicesMap.size() == 1) {
+        if (answerRequired() && choicesMap.size() == 1) {
             Integer singleKey = choicesMap.keySet().toArray(new Integer[choicesMap.keySet().size()])[0];
             String singleAnswer = choicesMap.get(singleKey);
             logger.ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
