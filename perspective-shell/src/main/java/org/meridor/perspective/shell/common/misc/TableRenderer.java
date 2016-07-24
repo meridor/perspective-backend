@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static org.meridor.perspective.shell.common.validator.Setting.SHOW_BOTTOM_TABLE_HEADER;
+
 @Component
 public class TableRenderer {
     
@@ -51,7 +53,7 @@ public class TableRenderer {
     }
     
     private boolean showBottomHeader() {
-        return settingsAware.hasSetting(Setting.SHOW_BOTTOM_TABLE_HEADER);
+        return settingsAware.hasSetting(SHOW_BOTTOM_TABLE_HEADER) && settingsAware.getSettingAs(SHOW_BOTTOM_TABLE_HEADER, Boolean.class);
     }
     
 }

@@ -1,6 +1,8 @@
 package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.shell.common.repository.QueryRepository;
+import org.meridor.perspective.shell.common.repository.SettingsAware;
+import org.meridor.perspective.shell.common.validator.Setting;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
@@ -12,11 +14,16 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.shell.common.validator.Setting.SHOW_QUERY_STATS;
+
 @Component
 public class QueryCommands extends BaseCommands {
 
     @Autowired
     private QueryRepository queryRepository;
+    
+    @Autowired
+    private SettingsAware settingsAware;
     
     @CliCommand(value = "select", help = "Execute SELECT query")
     public void select(
@@ -35,9 +42,15 @@ public class QueryCommands extends BaseCommands {
     private void executeQuery(String sql) {
         Query query = new Query();
         query.setSql(sql);
+        long queryStart = System.currentTimeMillis();
         QueryResult result = queryRepository.query(query);
         switch (result.getStatus()) {
             case SUCCESS: {
+                if (showQueryStats()) {
+                    long queryFinish = System.currentTimeMillis();
+                    double seconds = (double) (queryFinish - queryStart) / 1000;
+                    ok(String.format("Fetched %d rows in %.2f seconds.", result.getCount(), seconds));
+                }
                 pageData(result);
                 break;
             }
@@ -64,4 +77,9 @@ public class QueryCommands extends BaseCommands {
         tableOrNothing(columns, rows);
     }
     
+    private boolean showQueryStats() {
+        return 
+                settingsAware.hasSetting(SHOW_QUERY_STATS) &&
+                settingsAware.getSettingAs(SHOW_QUERY_STATS, Boolean.class);
+    }
 }
