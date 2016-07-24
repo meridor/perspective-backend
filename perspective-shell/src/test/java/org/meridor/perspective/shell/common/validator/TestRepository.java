@@ -195,6 +195,8 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
             return cls.cast(200);
         } else if (String.class.isAssignableFrom(cls)) {
             return cls.cast(ONE);
+        } else if (Boolean.class.isAssignableFrom(cls)) {
+            return cls.cast(true);
         }
         throw new UnsupportedOperationException();
     }
