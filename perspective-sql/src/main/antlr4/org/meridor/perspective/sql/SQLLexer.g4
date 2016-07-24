@@ -22,14 +22,6 @@ WHERE
    : 'where'
    ;
    
-SHOW
-   : 'show'
-   ;
-   
-TABLES
-   : 'tables'
-   ;
-
 // Boolean operators
 AND
    : 'and' | '&&'

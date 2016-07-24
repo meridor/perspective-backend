@@ -6,6 +6,8 @@ import java.util.Optional;
 public enum FunctionName {
     
     ABS,
+    COLUMNS,
+    TABLES,
     TYPEOF,
     VERSION;
 

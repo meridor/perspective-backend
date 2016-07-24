@@ -6,7 +6,6 @@ options
 
 query
    : select_query
-   | show_tables_query //TODO: migrate this to SELECT tables(); query
    | explain_query
    ;
 

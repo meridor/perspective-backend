@@ -62,7 +62,7 @@ public class QueryProcessorTest {
     public void testShowTables() {
         Query query = new Query() {
             {
-                setSql("show tables");
+                setSql("select tables()");
             }
         };
         List<QueryResult> queryResults = queryProcessor.process(query);
@@ -72,6 +72,25 @@ public class QueryProcessorTest {
         assertThat(queryResult.getData().getColumnNames(), contains("table_name"));
         assertThat(queryResult.getCount(), is(greaterThan(0)));
         assertThat(queryResult.getData().getRows().size(), is(greaterThan(0)));
+    }
+    
+    @Test
+    public void testShowColumns() {
+        Query query = new Query() {
+            {
+                setSql("select columns('project_images')");
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("column_name", "type", "default_value"));
+        assertThat(queryResult.getCount(), equalTo(2));
+        List<Row> rows = queryResult.getData().getRows();
+        assertThat(rows, hasSize(2));
+        assertThat(rows.get(0).getValues(), contains("project_id", "string", "null"));
+        assertThat(rows.get(1).getValues(), contains("image_id", "string", "null"));
     }
     
     @Test

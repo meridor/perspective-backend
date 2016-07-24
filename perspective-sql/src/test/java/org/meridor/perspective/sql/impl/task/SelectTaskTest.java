@@ -14,8 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.*;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.sql.impl.table.Column.ANY_COLUMN;
 
@@ -70,6 +69,25 @@ public class SelectTaskTest {
         assertThat(secondRow.get(THIRD_ALIAS), equalTo(42));
     }
 
+    @Test
+    public void testSelectAggregatedData() throws Exception {
+        Map<String, Object> selectionMap = new HashMap<String, Object>(){
+            {
+                put(FIRST_ALIAS, new FunctionExpression("tables", Collections.emptyList()));
+            }
+        };
+        SelectTask selectTask = applicationContext.getBean(
+                SelectTask.class,
+                selectionMap,
+                Collections.emptyMap()
+        );
+        ExecutionResult inputData = new DummyFetchTask().execute(new ExecutionResult());
+        ExecutionResult executionResult = selectTask.execute(inputData);
+        assertThat(executionResult.getCount(), is(greaterThan(0)));
+        assertThat(executionResult.getData().getColumnNames(), contains("table_name"));
+        assertThat(executionResult.getData().getRows().size(), is(greaterThan(0)));
+    }
+    
     @Test
     public void testSelectAll() throws Exception {
         Map<String, Object> selectionMap = new HashMap<String, Object>() {

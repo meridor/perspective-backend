@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class DataContainer {
+public class DataContainer implements Comparable<DataContainer> {
     
     private static final String ANY = "any";
     
@@ -84,4 +84,11 @@ public class DataContainer {
         return dataContainer;
     }
 
+    @Override
+    public int compareTo(DataContainer o) {
+        if (o.getColumnsMap().equals(getColumnsMap())) {
+            return 0;
+        }
+        return -1;
+    }
 }

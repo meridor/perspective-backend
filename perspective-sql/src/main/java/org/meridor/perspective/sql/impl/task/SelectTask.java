@@ -58,8 +58,9 @@ public class SelectTask implements Task {
                     .forEach(newData::addRow);
             return new ExecutionResult(){
                 {
-                    setData(newData);
-                    setCount(newData.getRows().size());
+                    DataContainer effectiveData = extractSingletonDataContainerIfNeeded(newData);
+                    setData(effectiveData);
+                    setCount(effectiveData.getRows().size());
                 }
             };
         } catch (Exception e) {
@@ -67,6 +68,16 @@ public class SelectTask implements Task {
         }
     }
 
+    private DataContainer extractSingletonDataContainerIfNeeded(DataContainer dataContainer) {
+        if (dataContainer.getColumnNames().size() == 1 && dataContainer.getRows().size() == 1) {
+            Object singletonValue = dataContainer.getRows().get(0).getValues().get(0);
+            if (singletonValue instanceof DataContainer) {
+                return (DataContainer) singletonValue;
+            }
+        }
+        return dataContainer;
+    }
+    
     //Here we convert ColumnExpression(*) expressions to a list of ColumnExpression(columnName) 
     private Map<String, Object> processSelectionMap(Map<String, Object> selectionMap) {
         Map<String, Object> ret = new LinkedHashMap<>();

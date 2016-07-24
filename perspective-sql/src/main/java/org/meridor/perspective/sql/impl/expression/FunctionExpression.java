@@ -35,7 +35,18 @@ public class FunctionExpression {
         return String.format(
                 "%s(%s)",
                 functionName,
-                args.stream().map(String::valueOf).collect(Collectors.joining(", "))
+                args.stream().map(FunctionExpression::beautifyArg).collect(Collectors.joining(", "))
         );
+    }
+    
+    private static String beautifyArg(Object arg) {
+        String argString = String.valueOf(arg);
+        if (
+                (arg != null) &&
+                ( ExpressionUtils.isString(arg.getClass()) || ExpressionUtils.isDate(arg.getClass()) )
+        ) {
+            return String.format("'%s'", argString);
+        }
+        return argString;
     }
 }
