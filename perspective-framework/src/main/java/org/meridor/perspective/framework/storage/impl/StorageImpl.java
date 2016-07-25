@@ -1,8 +1,10 @@
 package org.meridor.perspective.framework.storage.impl;
 
 
-import com.hazelcast.core.*;
-import com.hazelcast.map.listener.MapListener;
+import com.hazelcast.core.EntryEvent;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
+import com.hazelcast.map.listener.*;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
@@ -264,7 +266,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         isAvailable = false;
     }
     
-    private static class EntryListenerImpl<T> implements EntryListener<String, T> {
+    private static class EntryListenerImpl<T> implements 
+            EntryAddedListener<String, T>,
+            EntryUpdatedListener<String, T>,
+            EntryEvictedListener<String, T>,
+            EntryRemovedListener<String, T> {
 
         private final EntityListener<T> listener;
 
@@ -288,9 +294,9 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
         @Override
         public void entryRemoved(EntryEvent<String, T> event) {
-            T entity = event.getValue();
-            LOG.trace("Deleted entry {} from map {}", entity, event.getName());
-            listener.onEvent(entity, null, StorageEvent.DELETED);
+            T oldEntity = event.getOldValue();
+            LOG.trace("Deleted entry {} from map {}", oldEntity, event.getName());
+            listener.onEvent(null, oldEntity, StorageEvent.DELETED);
         }
 
         @Override
@@ -301,14 +307,5 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             listener.onEvent(entity, oldEntity, StorageEvent.MODIFIED);
         }
 
-        @Override
-        public void mapCleared(MapEvent event) {
-            LOG.trace("Ignoring MapCleared event for map = {}", event.getName());
-        }
-
-        @Override
-        public void mapEvicted(MapEvent event) {
-            LOG.trace("Ignoring MapEvicted event for map = {}", event.getName());
-        }
     }
 }
