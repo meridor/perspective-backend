@@ -1,7 +1,5 @@
 package org.meridor.perspective.sql.impl.table;
 
-import org.meridor.perspective.sql.impl.index.Index;
-import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.table.annotation.ForeignKey;
@@ -65,9 +63,9 @@ public class TablesAwareImpl implements TablesAware {
             tables.putIfAbsent(tableName, new LinkedHashSet<>());
             try {
                 Object defaultValue = field.get(table);
-                tables.get(tableName).add(new Column(field.getName(), field.getType(), defaultValue));
+                tables.get(tableName).add(new Column(field.getName(), field.getType(), defaultValue, table));
             } catch (IllegalAccessException e) {
-                tables.get(tableName).add(new Column(field.getName(), field.getType(), null));
+                tables.get(tableName).add(new Column(field.getName(), field.getType(), null, table));
             }
         };
     }
@@ -130,7 +128,6 @@ public class TablesAwareImpl implements TablesAware {
         if (!indexStorage.get(indexSignature).isPresent()) {
             LOG.info("Creating index {}", indexColumns);
             indexStorage.create(indexSignature, keyLength);
-            updateColumns(indexColumns, indexSignature);
         }
     }
     
@@ -146,19 +143,7 @@ public class TablesAwareImpl implements TablesAware {
         }
         return Optional.empty();
     }
-    
-    private void updateColumns(Map<String, Set<String>> indexColumns, IndexSignature indexSignature) {
-        indexColumns.keySet().forEach(tn -> {
-            Set<String> columnNames = indexColumns.get(tn);
-            columnNames.forEach(cn -> {
-                Optional<Column> columnCandidate = getColumn(tn, cn);
-                if (columnCandidate.isPresent()) {
-                    columnCandidate.get().addIndex(indexSignature);
-                }
-            });
-        });
-    }
-    
+
     @Override
     public Set<Column> getColumns(String tableName) {
         return tables.containsKey(tableName) ? 

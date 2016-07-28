@@ -2,8 +2,10 @@ package org.meridor.perspective.sql.impl.table;
 
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Column {
 
@@ -12,12 +14,14 @@ public class Column {
     private final String name;
     private final Class<?> type;
     private final Object defaultValue;
+    private final Table table;
     private final Set<IndexSignature> indexes = new HashSet<>();
 
-    public Column(String name, Class<?> type, Object defaultValue) {
+    public Column(String name, Class<?> type, Object defaultValue, Table table) {
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
+        this.table = table;
     }
 
     public String getName() {
@@ -32,12 +36,17 @@ public class Column {
         return defaultValue;
     }
 
-    public void addIndex(IndexSignature indexSignature) {
-        indexes.add(indexSignature);
+    public Table getTable() {
+        return table;
     }
-    
-    public Set<IndexSignature> getIndexes() {
-        return new HashSet<>(indexes);
+
+    public Set<IndexSignature> getIndexes(Set<IndexSignature> allSignatures) {
+        return allSignatures.stream()
+                .filter(s -> s.getDesiredColumns()
+                        .getOrDefault(getTable().getName(), Collections.emptySet())
+                        .contains(getName())
+                )
+                .collect(Collectors.toSet());
     }
 
     @Override

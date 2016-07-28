@@ -3,6 +3,7 @@ package org.meridor.perspective.sql.impl.storage.impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.DataContainer;
+import org.meridor.perspective.sql.impl.expression.MockTable;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class DataFetcherImplTest {
         DataContainer data = dataFetcher.fetch(
                 "existing",
                 TABLE_ALIAS,
-                Collections.singletonList(new Column(COLUMN_NAME, String.class, null))
+                Collections.singletonList(new Column(COLUMN_NAME, String.class, null, new MockTable()))
         );
         Map<String, List<String>> columnsMap = data.getColumnsMap();
         assertThat(columnsMap.keySet(), hasSize(1));

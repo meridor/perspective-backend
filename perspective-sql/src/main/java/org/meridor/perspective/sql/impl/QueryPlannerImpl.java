@@ -399,7 +399,7 @@ public class QueryPlannerImpl implements QueryPlanner {
                 Optional<Column> columnCandidate = tablesAware.getColumn(tableName, columnName);
                 Assert.isTrue(columnCandidate.isPresent(), String.format("Column %s should be present in table %s", columnName, tableName));
                 Column column = columnCandidate.get();
-                for (IndexSignature indexSignature : column.getIndexes()) {
+                for (IndexSignature indexSignature : column.getIndexes(indexStorage.getSignatures())) {
                     Set<String> allIndexColumns = indexSignature.getDesiredColumns().get(tableName);
                     allIndexColumns.removeAll(tableFixedValuesConditions.keySet());
                     if (allIndexColumns.isEmpty()) {
@@ -429,7 +429,7 @@ public class QueryPlannerImpl implements QueryPlanner {
                     Optional<Column> columnCandidate = tablesAware.getColumn(relationTableName, columnName);
                     Assert.isTrue(columnCandidate.isPresent(), String.format("Column %s should be present in table %s", columnName, relationTableName));
                     Column column = columnCandidate.get();
-                    if (column.getIndexes().isEmpty()) {
+                    if (column.getIndexes(indexStorage.getSignatures()).isEmpty()) {
                         return Collections.emptySet();
                     }
                 }

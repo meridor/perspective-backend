@@ -56,7 +56,7 @@ public class IndexerImpl implements Indexer {
         Collection<Column> columns = tablesAware.getColumns(tableName);
         
         columns.forEach(c -> {
-            Set<IndexSignature> indexes = c.getIndexes();
+            Set<IndexSignature> indexes = c.getIndexes(indexStorage.getSignatures());
             indexes.forEach(is -> {
                 if (indexStorage.getSignatures().contains(is)) {
                     indexStorage.update(is, index -> {
