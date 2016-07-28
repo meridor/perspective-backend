@@ -26,20 +26,10 @@ public class IndexSignature implements Serializable {
     public Map<String, Set<String>> getDesiredColumns() {
         return new HashMap<>(desiredColumns);
     }
-    
-    public String getValue() {
-        return desiredColumns.keySet().stream()
-                .map(tn -> 
-                        tn + desiredColumns.get(tn).stream()
-                                .sorted()
-                                .collect(Collectors.joining())
-                )
-                .collect(Collectors.joining());
-    }
-    
+
     @Override
     public int hashCode() {
-        return getValue().hashCode();
+        return desiredColumns.hashCode();
     }
 
     @Override

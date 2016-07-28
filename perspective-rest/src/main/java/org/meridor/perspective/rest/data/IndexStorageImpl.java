@@ -28,20 +28,18 @@ public class IndexStorageImpl implements IndexStorage {
 
     @Override
     public Optional<Index> get(IndexSignature indexSignature) {
-        String signatureString = indexSignature.getValue();
-        return readIndex(signatureString, map -> Optional.ofNullable(map.get(signatureString)));
+        return readIndex(indexSignature, map -> Optional.ofNullable(map.get(indexSignature)));
     }
 
-    private <T> T readIndex(String indexSignature, Function<Map<String, Index>, T> function) {
+    private <T> T readIndex(IndexSignature indexSignature, Function<Map<IndexSignature, Index>, T> function) {
         return storage.readFromMap(indexes(), indexSignature, function);
     }
     
     @Override
     public void update(IndexSignature indexSignature, UnaryOperator<Index> action) {
-        String signatureString = indexSignature.getValue();
-        storage.<String, Index>modifyMap(indexes(), signatureString, map -> map.put(
-                signatureString,
-                action.apply(map.get(signatureString))
+        storage.<IndexSignature, Index>modifyMap(indexes(), indexSignature, map -> map.put(
+                indexSignature,
+                action.apply(map.get(indexSignature))
         ));
     }
 }

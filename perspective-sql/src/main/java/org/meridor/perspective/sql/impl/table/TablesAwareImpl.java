@@ -128,6 +128,7 @@ public class TablesAwareImpl implements TablesAware {
         }
         IndexSignature indexSignature = new IndexSignature(indexColumns);
         if (!indexStorage.get(indexSignature).isPresent()) {
+            LOG.info("Creating index {}", indexColumns);
             indexStorage.create(indexSignature, keyLength);
             updateColumns(indexColumns, indexSignature);
         }

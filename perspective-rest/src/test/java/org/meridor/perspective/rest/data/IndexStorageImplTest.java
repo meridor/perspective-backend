@@ -12,6 +12,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
@@ -36,6 +37,8 @@ public class IndexStorageImplTest {
         IndexSignature indexSignature = new IndexSignature(TABLE_NAME, Collections.singleton(COLUMN_NAME));
         indexStorage.create(indexSignature, KEY_LENGTH);
         assertThat(indexStorage.get(indexSignature).isPresent(), is(true));
+        assertThat(indexStorage.getSignatures(), hasSize(1));
+        assertThat(new ArrayList<>(indexStorage.getSignatures()).get(0), equalTo(indexSignature));
         Index indexBeforeModification = indexStorage.get(indexSignature).get();
         assertThat(indexBeforeModification.getKeys(), is(empty()));
         indexStorage.update(indexSignature, index -> {
