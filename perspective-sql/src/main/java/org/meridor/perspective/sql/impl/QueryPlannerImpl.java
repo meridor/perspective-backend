@@ -5,6 +5,7 @@ import org.meridor.perspective.sql.impl.expression.*;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.*;
+import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.meridor.perspective.sql.impl.task.*;
@@ -30,6 +31,7 @@ import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.column
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.*;
 import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.*;
+import static org.meridor.perspective.sql.impl.table.Column.ANY_TABLE;
 
 @Component
 @Lazy
@@ -44,6 +46,9 @@ public class QueryPlannerImpl implements QueryPlanner {
     
     @Autowired
     private TablesAware tablesAware;
+    
+    @Autowired
+    private IndexStorage indexStorage;
     
     private final Queue<Task> tasksQueue = new LinkedList<>();
 
@@ -372,10 +377,13 @@ public class QueryPlannerImpl implements QueryPlanner {
                 !ds.getRightDataSource().isPresent(); 
         if (simpleChecksPassed) {
             String tableAlias = ds.getTableAlias().get();
-            Set<String> tableColumnNamesToSelect = columnNamesToSelect.get(tableAlias);
+            Set<String> tableColumnNamesToSelect = new HashSet<>(columnNamesToSelect.get(tableAlias));
+            if (columnNamesToSelect.containsKey(ANY_TABLE)) {
+                tableColumnNamesToSelect.addAll(columnNamesToSelect.get(ANY_TABLE));
+            }
             String tableName = tableAliases.get(tableAlias);
             IndexSignature indexSignature = new IndexSignature(Collections.singletonMap(tableName, tableColumnNamesToSelect));
-            Optional<Index> indexCandidate = tablesAware.getIndex(indexSignature);
+            Optional<Index> indexCandidate = indexStorage.get(indexSignature);
             return indexCandidate.isPresent();
         }
         return false;
@@ -440,7 +448,9 @@ public class QueryPlannerImpl implements QueryPlanner {
             OptimizationContext optimizationContext
     ) {
         final Map<String, Set<String>> columnNamesToSelect = new HashMap<>();
-        tableAliases.keySet().forEach(tableAlias -> {
+        Set<String> allTableAliases = new HashSet<>(tableAliases.keySet());
+        allTableAliases.add(ANY_TABLE);
+        allTableAliases.forEach(tableAlias -> {
             columnNamesToSelect.putIfAbsent(tableAlias, new HashSet<>());
             columnNamesToSelect.get(tableAlias).addAll(getColumnNamesToSelect(tableAlias, selectionMap));
             columnNamesToSelect.get(tableAlias).addAll(optimizationContext.getColumnRelations().getColumnNames(tableAlias));
@@ -455,7 +465,12 @@ public class QueryPlannerImpl implements QueryPlanner {
     
     private Set<String> getColumnNamesToSelect(String tableAlias, Map<String, Object> selectionMap) {
         return selectionMap.values().stream()
-                .flatMap(v -> expressionEvaluator.getColumnNames(v).getOrDefault(tableAlias, Collections.emptySet()).stream())
+                .flatMap(v -> {
+                    Map<String, Set<String>> entryColumnNames = expressionEvaluator.getColumnNames(v);
+                    return entryColumnNames.containsKey(tableAlias) ?
+                            entryColumnNames.getOrDefault(tableAlias, Collections.emptySet()).stream() :
+                            entryColumnNames.getOrDefault(ANY_TABLE, Collections.emptySet()).stream();
+                })
                 .collect(Collectors.toSet());
     }
 

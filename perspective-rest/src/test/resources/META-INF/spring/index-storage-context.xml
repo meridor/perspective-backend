@@ -3,19 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
-            
-             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring.xsd">
+            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring.xsd">
 
-    <bean id="configurationProperties"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreResourceNotFound" value="true"/>
-        <property name="ignoreUnresolvablePlaceholders" value="true"/>
-    </bean>
-
+    <bean class="org.meridor.perspective.rest.data.IndexStorageImpl"/>
     <bean class="org.meridor.perspective.framework.storage.impl.StorageImpl"/>
-    
-    <!-- Hazelcast server -->
+
     <hz:hazelcast id="hazelcastInstance">
         <hz:config>
             <hz:group name="test" password="test"/>

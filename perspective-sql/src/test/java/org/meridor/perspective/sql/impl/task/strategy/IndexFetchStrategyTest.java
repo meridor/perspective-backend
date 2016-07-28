@@ -57,7 +57,7 @@ public class IndexFetchStrategyTest {
             Key key = Keys.key(0, cv);
             index.put(key, ANY_ID);
         });
-        indexStorage.put(INDEX_SIGNATURE, index);
+        indexStorage.update(INDEX_SIGNATURE, any -> index);
     }
     
     @Test

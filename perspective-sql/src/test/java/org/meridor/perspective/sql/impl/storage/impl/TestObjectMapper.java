@@ -9,7 +9,7 @@ import java.util.function.Function;
 @Component
 public class TestObjectMapper extends BaseObjectMapper<TestObject> {
     
-    public static final String COLUMN_NAME = "str";
+    static final String COLUMN_NAME = "str";
     
     @Override
     protected Map<String, Function<TestObject, Object>> getColumnMapping() {

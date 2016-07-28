@@ -6,6 +6,7 @@ import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Indexer;
 import org.meridor.perspective.sql.impl.index.Key;
 import org.meridor.perspective.sql.impl.index.Keys;
+import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.storage.impl.TestObject;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class IndexerImplTest {
     private static final TestObject BEAN = new TestObject(ID);
     
     @Autowired
-    private TablesAware tablesAware;
+    private IndexStorage indexStorage;
     
     @Autowired
     private Indexer indexer;
@@ -40,16 +41,18 @@ public class IndexerImplTest {
     public void testAddThenDelete() {
         assertThat(getIndex().isPresent(), is(true));
         indexer.add(TABLE_NAME, BEAN);
-        Index index = getIndex().get();
-        Key key = Keys.key(index.getKeyLength(), BEAN.getStr());
-        Set<String> ids = index.get(key);
+        Index indexWithAddedBean = getIndex().get();
+        Key key = Keys.key(indexWithAddedBean.getKeyLength(), BEAN.getStr());
+        Set<String> ids = indexWithAddedBean.get(key);
         assertThat(ids, contains(ID));
         indexer.delete(TABLE_NAME, BEAN);
-        assertThat(index.get(key), is(empty()));
+
+        Index indexWithDeletedBean = getIndex().get();
+        assertThat(indexWithDeletedBean.get(key), is(empty()));
     }
 
     private Optional<Index> getIndex() {
-        return tablesAware.getIndex(INDEX_SIGNATURE);
+        return indexStorage.get(INDEX_SIGNATURE);
     }
     
 }

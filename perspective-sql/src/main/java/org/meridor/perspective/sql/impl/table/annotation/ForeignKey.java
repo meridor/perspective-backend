@@ -22,7 +22,10 @@ public @interface ForeignKey {
      * Columns of the foreign table
      */
     String[] tableColumns();
-    
+
+    /**
+     * Key length
+     */
     int length() default 0;
     
 }

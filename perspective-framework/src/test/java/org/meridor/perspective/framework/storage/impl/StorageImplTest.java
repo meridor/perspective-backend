@@ -10,6 +10,7 @@ import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -19,6 +20,7 @@ import static org.meridor.perspective.framework.storage.StorageEvent.*;
 
 @ContextConfiguration(locations = "/META-INF/spring/real-storage-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext
 public class StorageImplTest {
     
     @Autowired

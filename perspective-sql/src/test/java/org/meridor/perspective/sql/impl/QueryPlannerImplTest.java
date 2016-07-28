@@ -8,6 +8,8 @@ import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
+import org.meridor.perspective.sql.impl.table.Column;
+import org.meridor.perspective.sql.impl.table.Table;
 import org.meridor.perspective.sql.impl.task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -24,7 +26,8 @@ import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.OR;
 import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.*;
 import static org.meridor.perspective.sql.impl.parser.JoinType.INNER;
-import static org.meridor.perspective.sql.impl.table.Column.ANY;
+import static org.meridor.perspective.sql.impl.table.Column.ANY_COLUMN;
+import static org.meridor.perspective.sql.impl.table.Column.ANY_TABLE;
 import static org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils.*;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
@@ -49,13 +52,13 @@ public class QueryPlannerImplTest {
     @PostConstruct
     public void init() {
         Index instancesNameIndex = createInstancesNameIndex();
-        indexStorage.put(instancesNameIndex.getSignature(), instancesNameIndex);
+        indexStorage.update(instancesNameIndex.getSignature(), any -> instancesNameIndex);
         
         Index instancesProjectIdIndex = createInstancesProjectIdIndex();
-        indexStorage.put(instancesProjectIdIndex.getSignature(), instancesProjectIdIndex);
+        indexStorage.update(instancesProjectIdIndex.getSignature(), any -> instancesProjectIdIndex);
         
         Index projectsIdIndex = createProjectsIdIndex();
-        indexStorage.put(projectsIdIndex.getSignature(), projectsIdIndex);
+        indexStorage.update(projectsIdIndex.getSignature(), any -> projectsIdIndex);
     }
     
     private Index createInstancesNameIndex() {
@@ -81,7 +84,7 @@ public class QueryPlannerImplTest {
     
     @Test
     public void testSelectAllFromTable() throws Exception {
-        Map<String, Object> selectionMap = Collections.singletonMap(INSTANCES, new ColumnExpression(ANY, INSTANCES));
+        Map<String, Object> selectionMap = Collections.singletonMap(INSTANCES, new ColumnExpression(ANY_COLUMN, INSTANCES));
         Map<String, Object> effectiveSelectionMap = new LinkedHashMap<String, Object>(){
             {
                 put(ID, new ColumnExpression(ID, INSTANCES));
@@ -94,7 +97,7 @@ public class QueryPlannerImplTest {
     
     @Test
     public void testSelectAll() throws Exception {
-        Map<String, Object> selectionMap = Collections.singletonMap(ANY, new ColumnExpression());
+        Map<String, Object> selectionMap = Collections.singletonMap(ANY_TABLE, new ColumnExpression());
         testSelect(selectionMap, Collections.emptyMap(), Collections.singletonMap(INSTANCES_ALIAS, INSTANCES), true);
     }
     
@@ -258,10 +261,19 @@ public class QueryPlannerImplTest {
     
     @Test
     public void testIndexFetchStrategySimpleFetch() throws Exception {
+        testIndexFetchStrategySimpleFetch(new ColumnExpression(NAME, INSTANCES_ALIAS));
+    }
+    
+    @Test
+    public void testIndexFetchStrategySimpleFetchNotAliasedColumn() throws Exception {
+        testIndexFetchStrategySimpleFetch(new ColumnExpression(NAME));
+    }
+    
+    private void testIndexFetchStrategySimpleFetch(ColumnExpression columnExpression) throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES_ALIAS));
+                getSelectionMap().put(NAME, columnExpression);
                 setDataSource(leftDataSource);
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES); //All select map columns are from index
             }
@@ -271,7 +283,7 @@ public class QueryPlannerImplTest {
         DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
         assertThat(optimizedLeftDataSource.getType(), equalTo(INDEX_FETCH));
         assertThat(optimizedLeftDataSource.getColumns(), contains(NAME));
-    }
+    }    
     
     private DataSourceTask doCommonTaskAssertions(List<Task> tasks, List<Class<?>> taskClasses) {
         assertThat(tasks, hasSize(taskClasses.size()));
@@ -287,7 +299,6 @@ public class QueryPlannerImplTest {
     private DataSourceTask doCommonTaskAssertions(List<Task> tasks) {
         return doCommonTaskAssertions(tasks, Arrays.asList(DataSourceTask.class, SelectTask.class));
     }
-
 
     private DataSource doOptimizedLeftDataSourceAssertions(DataSourceTask dataSourceTask) {
         DataSource optimizedDataSource = dataSourceTask.getDataSource();

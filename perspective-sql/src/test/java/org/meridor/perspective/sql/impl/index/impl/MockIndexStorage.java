@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Component
 public class MockIndexStorage implements IndexStorage {
@@ -21,12 +22,24 @@ public class MockIndexStorage implements IndexStorage {
 
     @Override
     public Optional<Index> get(IndexSignature indexSignature) {
-        return Optional.ofNullable(indexes.get(indexSignature));
+        //This emulates storage like Hazelcast returning read-only copies of objects
+        Index index = indexes.get(indexSignature);
+        return index != null ?
+                Optional.of(cloneIndex(index)) :
+                Optional.empty();
     }
 
+    private static Index cloneIndex(Index index) {
+        HashTableIndex ret = new HashTableIndex(index.getSignature(), index.getKeyLength());
+        index.getKeys().forEach(
+                key -> index.get(key).forEach(id -> ret.put(key, id))
+        );
+        return ret;
+    }
+    
     @Override
-    public void put(IndexSignature indexSignature, Index index) {
-        indexes.put(indexSignature, index);
+    public void update(IndexSignature indexSignature, UnaryOperator<Index> action) {
+        indexes.put(indexSignature, action.apply(indexes.get(indexSignature)));
     }
 
 

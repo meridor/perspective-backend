@@ -10,6 +10,7 @@ import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.DataSourceUtils;
 import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.meridor.perspective.sql.impl.storage.DataFetcher;
+import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.table.Column;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class IndexScanStrategy extends ScanStrategy {
 
     @Autowired
     private TablesAware tablesAware;
+    
+    @Autowired
+    private IndexStorage indexStorage;
 
     @Override
     public DataContainer process(DataSource dataSource, Map<String, String> tableAliases) {
@@ -79,17 +83,17 @@ public class IndexScanStrategy extends ScanStrategy {
         Map<IndexSignature, Map<String, Set<Object>>> ret = new HashMap<>();
         Map<String, Set<Object>> conditionAsMap = condition.getFixedValueConditions(tableAlias);
         Set<String> conditionColumns = conditionAsMap.keySet();
-        tablesAware.getIndexSignatures().forEach(is -> {
+        indexStorage.getSignatures().forEach(is -> {
             Map<String, Set<String>> desiredColumns = is.getDesiredColumns();
             if (desiredColumns.containsKey(tableName)) {
                 Set<String> indexColumns = desiredColumns.get(tableName);
                 if (conditionColumns.containsAll(indexColumns)) {
                     Map<String, Set<Object>> indexCondition = new HashMap<>();
-                    indexColumns.stream().forEach(
+                    indexColumns.forEach(
                             indexColumn -> {
                                 indexCondition.put(indexColumn, conditionAsMap.get(indexColumn));
                                 conditionAsMap.remove(indexColumn);
-                            } 
+                            }
                     );
                     ret.put(is, indexCondition);
                 }
@@ -144,7 +148,7 @@ public class IndexScanStrategy extends ScanStrategy {
     }
 
     private Index getIndex(IndexSignature indexSignature){
-        Optional<Index> indexCandidate = tablesAware.getIndex(indexSignature);
+        Optional<Index> indexCandidate = indexStorage.get(indexSignature);
         if (!indexCandidate.isPresent()) {
             throw new IllegalArgumentException(String.format(
                     "No index found for columns: [%s]. This is probably a bug.", indexSignature.getDesiredColumns()

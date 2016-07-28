@@ -4,6 +4,7 @@ import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Indexer;
 import org.meridor.perspective.sql.impl.index.Key;
 import org.meridor.perspective.sql.impl.index.Keys;
+import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.storage.ObjectMapper;
 import org.meridor.perspective.sql.impl.storage.ObjectMapperAware;
 import org.meridor.perspective.sql.impl.table.Column;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +26,9 @@ public class IndexerImpl implements Indexer {
     
     @Autowired
     private TablesAware tablesAware;
+    
+    @Autowired
+    private IndexStorage indexStorage;
     
     @Autowired
     private ObjectMapperAware objectMapperAware;
@@ -46,24 +49,25 @@ public class IndexerImpl implements Indexer {
         if (bean == null) {
             return;
         }
+        
+        @SuppressWarnings("unchecked")
+        ObjectMapper<Object> objectMapper = (ObjectMapper<Object>) objectMapperAware.get(bean.getClass());
+        Map<String, Object> columnsMap = objectMapper.map(bean);
         Collection<Column> columns = tablesAware.getColumns(tableName);
+        
         columns.forEach(c -> {
             Set<IndexSignature> indexes = c.getIndexes();
             indexes.forEach(is -> {
-                
-                @SuppressWarnings("unchecked")
-                ObjectMapper<Object> objectMapper = (ObjectMapper<Object>) objectMapperAware.get(bean.getClass());
-                Map<String, Object> columnsMap = objectMapper.map(bean);
-                
-                Optional<Index> indexCandidate = tablesAware.getIndex(is);
-                if (indexCandidate.isPresent()) {
-                    Map<String, Set<String>> desiredColumns = is.getDesiredColumns();
-                    Index index = indexCandidate.get();
-                    int keyLength = index.getKeyLength();
-                    String id = objectMapper.getId(bean);
-                    Object[] columnValues = columnsToValues(desiredColumns.get(tableName), columnsMap);
-                    Key key = Keys.key(keyLength, columnValues);
-                    action.act(index, key, id);
+                if (indexStorage.getSignatures().contains(is)) {
+                    indexStorage.update(is, index -> {
+                        Map<String, Set<String>> desiredColumns = is.getDesiredColumns();
+                        int keyLength = index.getKeyLength();
+                        String id = objectMapper.getId(bean);
+                        Object[] columnValues = columnsToValues(desiredColumns.get(tableName), columnsMap);
+                        Key key = Keys.key(keyLength, columnValues);
+                        action.apply(index, key, id);
+                        return index;
+                    });
                 }
             });
         });
@@ -77,6 +81,6 @@ public class IndexerImpl implements Indexer {
     }
 
     private interface Action {
-        void act(Index index, Key key, String id);
+        void apply(Index index, Key key, String id);
     }
 }

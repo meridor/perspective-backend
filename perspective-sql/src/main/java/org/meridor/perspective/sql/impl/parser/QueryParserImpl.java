@@ -27,7 +27,7 @@ import static org.meridor.perspective.beans.BooleanRelation.*;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.emptyPair;
 import static org.meridor.perspective.sql.impl.parser.AliasExpressionPair.pair;
-import static org.meridor.perspective.sql.impl.table.Column.ANY;
+import static org.meridor.perspective.sql.impl.table.Column.ANY_COLUMN;
 
 @Component
 @Lazy
@@ -677,7 +677,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                 errors.add(String.format("Selecting %s.* is not allowed in this context", tableAlias));
                 return emptyPair();
             }
-            ColumnExpression columnExpression = new ColumnExpression(ANY, tableAlias);
+            ColumnExpression columnExpression = new ColumnExpression(ANY_COLUMN, tableAlias);
             return new AliasExpressionPair(columnExpression.toString(), columnExpression);
         }
         if (!getAvailableColumns().containsKey(columnName) || !getAvailableColumns().get(columnName).contains(tableAlias)) {

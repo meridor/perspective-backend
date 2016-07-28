@@ -1,6 +1,9 @@
 package org.meridor.perspective.sql.impl.expression;
 
 import org.meridor.perspective.sql.impl.table.Column;
+import org.meridor.perspective.sql.impl.table.Table;
+
+import static org.meridor.perspective.sql.impl.table.Column.*;
 
 public class ColumnExpression {
     
@@ -9,7 +12,7 @@ public class ColumnExpression {
     private final String tableAlias;
 
     public ColumnExpression() {
-        this(Column.ANY, Column.ANY);
+        this(ANY_COLUMN, ANY_TABLE);
     }
 
     public ColumnExpression(String columnName, String tableAlias) {
@@ -18,7 +21,7 @@ public class ColumnExpression {
     }
     
     public ColumnExpression(String columnName) {
-        this(columnName, Column.ANY);
+        this(columnName, ANY_TABLE);
     }
     
     public String getColumnName() {
@@ -30,11 +33,11 @@ public class ColumnExpression {
     }
     
     public boolean useAnyTable() {
-        return Column.ANY.equals(getTableAlias());
+        return ANY_TABLE.equals(getTableAlias());
     }
 
     public boolean useAnyColumn() {
-        return Column.ANY.equals(getColumnName());
+        return ANY_COLUMN.equals(getColumnName());
     }
 
     @Override

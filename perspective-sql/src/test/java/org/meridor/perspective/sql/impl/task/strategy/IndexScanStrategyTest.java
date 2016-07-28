@@ -72,9 +72,9 @@ public class IndexScanStrategyTest {
     public void init() {
         dataFetcher.setTableData(INSTANCES, INSTANCES_COLUMNS, INSTANCES_DATA);
         dataFetcher.setTableData(PROJECTS, PROJECTS_COLUMNS, PROJECTS_DATA);
-        indexStorage.put(INSTANCES_NAME_INDEX.getSignature(), INSTANCES_NAME_INDEX);
-        indexStorage.put(INSTANCES_PROJECT_ID_INDEX.getSignature(), INSTANCES_PROJECT_ID_INDEX);
-        indexStorage.put(PROJECTS_ID_INDEX.getSignature(), PROJECTS_ID_INDEX);
+        indexStorage.update(INSTANCES_NAME_INDEX.getSignature(), any -> INSTANCES_NAME_INDEX);
+        indexStorage.update(INSTANCES_PROJECT_ID_INDEX.getSignature(), any -> INSTANCES_PROJECT_ID_INDEX);
+        indexStorage.update(PROJECTS_ID_INDEX.getSignature(), any -> PROJECTS_ID_INDEX);
     }
     
     @Test

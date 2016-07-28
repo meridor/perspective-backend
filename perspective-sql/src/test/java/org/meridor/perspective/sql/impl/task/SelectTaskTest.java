@@ -18,6 +18,7 @@ import java.util.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.sql.impl.table.Column.ANY_COLUMN;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -92,7 +93,7 @@ public class SelectTaskTest {
         Map<String, Object> selectionMap = new HashMap<String, Object>() {
             {
                 //We select mock.*
-                put("*", new ColumnExpression(Column.ANY, TABLE_NAME));
+                put("*", new ColumnExpression(ANY_COLUMN, TABLE_NAME));
             }
         };
         testSelectAllFromTable(selectionMap, Collections.singletonMap(TABLE_NAME, TABLE_NAME), TABLE_NAME);
@@ -103,7 +104,7 @@ public class SelectTaskTest {
         Map<String, Object> selectionMap = new HashMap<String, Object>() {
             {
                 //We select m.*
-                put("*", new ColumnExpression(Column.ANY, TABLE_ALIAS));
+                put("*", new ColumnExpression(ANY_COLUMN, TABLE_ALIAS));
             }
         };
         testSelectAllFromTable(selectionMap, Collections.singletonMap(TABLE_ALIAS, TABLE_NAME), TABLE_ALIAS);

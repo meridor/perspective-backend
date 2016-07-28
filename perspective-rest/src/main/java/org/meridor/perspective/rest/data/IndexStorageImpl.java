@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static org.meridor.perspective.framework.storage.impl.StorageKey.indexes;
 
@@ -34,10 +35,13 @@ public class IndexStorageImpl implements IndexStorage {
     private <T> T readIndex(String indexSignature, Function<Map<String, Index>, T> function) {
         return storage.readFromMap(indexes(), indexSignature, function);
     }
-
+    
     @Override
-    public void put(IndexSignature indexSignature, Index index) {
+    public void update(IndexSignature indexSignature, UnaryOperator<Index> action) {
         String signatureString = indexSignature.getValue();
-        storage.modifyMap(indexes(), signatureString, map -> map.putIfAbsent(signatureString, index));
+        storage.<String, Index>modifyMap(indexes(), signatureString, map -> map.put(
+                signatureString,
+                action.apply(map.get(signatureString))
+        ));
     }
 }

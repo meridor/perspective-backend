@@ -40,4 +40,12 @@ public class IndexBooleanExpression implements BooleanExpression {
     public Optional<BooleanExpression> getRestOfExpression() {
         return Optional.empty();
     }
+
+    @Override
+    public String toString() {
+        return "IndexBooleanExpression{" +
+                "tableAlias='" + tableAlias + '\'' +
+                ", fixedValueConditions=" + fixedValueConditions +
+                '}';
+    }
 }

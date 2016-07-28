@@ -7,7 +7,8 @@ import java.util.Set;
 
 public class Column {
 
-    public static final String ANY = "*";
+    public static final String ANY_COLUMN = "*";
+    public static final String ANY_TABLE = ANY_COLUMN;
     private final String name;
     private final Class<?> type;
     private final Object defaultValue;

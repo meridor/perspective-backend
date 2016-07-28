@@ -4,6 +4,7 @@ import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
+import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,9 @@ public class IndexFetchStrategy implements DataSourceStrategy {
     
     @Autowired
     private TablesAware tablesAware;
+    
+    @Autowired
+    private IndexStorage indexStorage;
     
     @Override
     public DataContainer process(DataSource dataSource, Map<String, String> tableAliases) {
@@ -31,14 +35,13 @@ public class IndexFetchStrategy implements DataSourceStrategy {
         String tableAlias = dataSource.getTableAlias().get();
         String tableName = tableAliases.get(tableAlias);
         IndexSignature indexSignature = new IndexSignature(tableName, new LinkedHashSet<>(columnNames));
-        Optional<Index> indexCandidate = tablesAware.getIndex(indexSignature);
+        Optional<Index> indexCandidate = indexStorage.get(indexSignature);
         if (!indexCandidate.isPresent()) {
             throw new IllegalStateException(String.format("Index for table \"%s\" and column names \"%s\" was not found", tableName, columnNames));
         }
         Index index = indexCandidate.get();
         DataContainer result = new DataContainer(Collections.singletonMap(tableAlias, columnNames));
-        index.getKeys().stream()
-                .forEach(k -> result.addRow(k.getValues()));
+        index.getKeys().forEach(k -> result.addRow(k.getValues()));
         return result;
     }
     
