@@ -285,7 +285,7 @@ public class IndexScanStrategy extends ScanStrategy {
     }
     
     private Index getIndex(String tableName, List<String> columns) {
-        IndexSignature indexSignature = new IndexSignature(Collections.singletonMap(tableName, new LinkedHashSet<>(columns)));
+        IndexSignature indexSignature = new IndexSignature(tableName, new HashSet<>(columns));
         return getIndex(indexSignature);
     }
     

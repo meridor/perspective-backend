@@ -1,7 +1,6 @@
 package org.meridor.perspective.sql.impl.storage;
 
 import org.meridor.perspective.sql.impl.index.Index;
-import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 
 import java.util.Optional;
@@ -16,8 +15,6 @@ public interface IndexStorage {
     
     void update(IndexSignature indexSignature, UnaryOperator<Index> action);
 
-    default void create(IndexSignature indexSignature, int keyLength) {
-        update(indexSignature, any -> new HashTableIndex(indexSignature, keyLength));
-    }
+    void create(IndexSignature indexSignature, int keyLength);
     
 }

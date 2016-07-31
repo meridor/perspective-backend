@@ -42,5 +42,8 @@ public class MockIndexStorage implements IndexStorage {
         indexes.put(indexSignature, action.apply(indexes.get(indexSignature)));
     }
 
-
+    @Override
+    public void create(IndexSignature indexSignature, int keyLength) {
+        update(indexSignature, any -> new HashTableIndex(indexSignature, keyLength));
+    }
 }

@@ -18,7 +18,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
@@ -42,7 +45,7 @@ public class IndexFetchStrategyTest {
             add("two");
         }
     };
-    private static final IndexSignature INDEX_SIGNATURE = new IndexSignature(Collections.singletonMap(TABLE_NAME, COLUMNS));
+    private static final IndexSignature INDEX_SIGNATURE = new IndexSignature(TABLE_NAME, COLUMNS);
     private static final List<Object[]> COLUMN_VALUES = new ArrayList<Object[]>(){
         {
             add(new Object[]{"11", "12"});

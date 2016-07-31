@@ -26,7 +26,7 @@ public class IndexerImplTest {
     
     private static final String TABLE_NAME = "mock";
     private static final IndexSignature INDEX_SIGNATURE = new IndexSignature(
-            Collections.singletonMap("mock", Collections.singleton("str"))
+            "mock", Collections.singleton("str")
     );
     private static final String ID = "id";
     private static final TestObject BEAN = new TestObject(ID);

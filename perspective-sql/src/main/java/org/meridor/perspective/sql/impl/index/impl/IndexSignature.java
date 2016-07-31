@@ -1,32 +1,24 @@
 package org.meridor.perspective.sql.impl.index.impl;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class IndexSignature implements Serializable {
     
     private final Map<String, Set<String>> desiredColumns;
 
     public IndexSignature(String tableName, Set<String> columnNames) {
-        this(new HashMap<String, Set<String>>(){
+        this.desiredColumns = new TreeMap<String, Set<String>>(){
             {
-                put(tableName, new LinkedHashSet<>(columnNames));
+                put(tableName, new TreeSet<>(columnNames));
             }
-        });
-    }
-    
-    public IndexSignature(Map<String, Set<String>> desiredColumns) {
-        this.desiredColumns = desiredColumns;
+        };
     }
 
     public Map<String, Set<String>> getDesiredColumns() {
         return new HashMap<>(desiredColumns);
     }
-
+    
     @Override
     public int hashCode() {
         return desiredColumns.hashCode();

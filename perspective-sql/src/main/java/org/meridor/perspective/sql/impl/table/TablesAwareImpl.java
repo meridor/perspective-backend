@@ -3,6 +3,7 @@ package org.meridor.perspective.sql.impl.table;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.table.annotation.ForeignKey;
+import org.meridor.perspective.sql.impl.table.annotation.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,18 +76,19 @@ public class TablesAwareImpl implements TablesAware {
             if (indexStorage != null) {
                 String tableName = table.getName();
                 Class<? extends Table> tableClass = table.getClass();
-                org.meridor.perspective.sql.impl.table.annotation.Index[] indexAnnotations = tableClass.getAnnotationsByType(org.meridor.perspective.sql.impl.table.annotation.Index.class);
+                Index[] indexAnnotations = tableClass.getAnnotationsByType(Index.class);
                 ForeignKey[] foreignKeyAnnotations = tableClass.getAnnotationsByType(ForeignKey.class);
                 if (indexAnnotations.length > 0) {
                     Arrays.stream(indexAnnotations).forEach(ia -> processIndexAnnotation(tableName, ia));
-                } else if (foreignKeyAnnotations.length > 0) {
+                }
+                if (foreignKeyAnnotations.length > 0) {
                     Arrays.stream(foreignKeyAnnotations).forEach(fka -> processForeignKeyAnnotation(tableName, fka));
                 }
             }
         };
     }
 
-    private void processIndexAnnotation(String tableName, org.meridor.perspective.sql.impl.table.annotation.Index indexAnnotation) {
+    private void processIndexAnnotation(String tableName, Index indexAnnotation) {
         String[] columnNames = indexAnnotation.columnNames();
         int keyLength = indexAnnotation.length();
         addIndexIfValid(tableName, new LinkedHashSet<>(Arrays.asList(columnNames)),  keyLength);
@@ -114,7 +116,8 @@ public class TablesAwareImpl implements TablesAware {
     }
     
     private void addIndexIfValid(String tableName, Set<String> columnNames, int keyLength) {
-        Map<String, Set<String>> indexColumns = Collections.singletonMap(tableName, columnNames);
+        IndexSignature indexSignature = new IndexSignature(tableName, columnNames);
+        Map<String, Set<String>> indexColumns = indexSignature.getDesiredColumns();
         if (!isTablePresent(tableName)) {
             LOG.error("Not creating index {}: table {} does not exist", indexColumns, tableName);
             return;
@@ -124,11 +127,8 @@ public class TablesAwareImpl implements TablesAware {
             LOG.error("Not creating index {}: table {} column {} does not exist", indexColumns, tableName, invalidColumnCandidate.get());
             return;
         }
-        IndexSignature indexSignature = new IndexSignature(indexColumns);
-        if (!indexStorage.get(indexSignature).isPresent()) {
-            LOG.info("Creating index {}", indexColumns);
-            indexStorage.create(indexSignature, keyLength);
-        }
+        LOG.info("Creating index {}", indexColumns);
+        indexStorage.create(indexSignature, keyLength);
     }
     
     private boolean isTablePresent(String tableName) {

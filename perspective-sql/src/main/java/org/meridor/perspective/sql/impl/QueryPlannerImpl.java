@@ -382,7 +382,7 @@ public class QueryPlannerImpl implements QueryPlanner {
                 tableColumnNamesToSelect.addAll(columnNamesToSelect.get(ANY_TABLE));
             }
             String tableName = tableAliases.get(tableAlias);
-            IndexSignature indexSignature = new IndexSignature(Collections.singletonMap(tableName, tableColumnNamesToSelect));
+            IndexSignature indexSignature = new IndexSignature(tableName, tableColumnNamesToSelect);
             Optional<Index> indexCandidate = indexStorage.get(indexSignature);
             return indexCandidate.isPresent();
         }
@@ -419,10 +419,10 @@ public class QueryPlannerImpl implements QueryPlanner {
     }
 
     private Set<String> getIndexedRelationColumns(String tableAlias, Map<String, String> tableAliases, ColumnRelationsStorage columnRelations) {
+        //TODO: this one returns columns corresponding to different joins
         Map<String, Set<String>> allColumnRelations = columnRelations.getRelations(tableAlias);
         boolean hasColumnRelations = !allColumnRelations.isEmpty();
         if (hasColumnRelations) {
-
             for (String relationTableAlias : allColumnRelations.keySet()) {
                 String relationTableName = tableAliases.get(relationTableAlias);
                 for (String columnName : allColumnRelations.get(relationTableAlias)) {
