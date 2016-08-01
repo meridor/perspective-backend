@@ -43,10 +43,14 @@ public class ColumnRelation {
         return joinOperator;
     }
 
-    public List<String> getTableAliases() {
-        return Arrays.asList(leftTableAlias, rightTableAlias);
+    public String getLeftTableAlias() {
+        return leftTableAlias;
     }
-    
+
+    public String getRightTableAlias() {
+        return rightTableAlias;
+    }
+
     public Map<String, Set<String>> toMap() {
         Map<String, Set<String>> ret = new HashMap<String, Set<String>>(){
             {

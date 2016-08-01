@@ -9,7 +9,6 @@ import org.springframework.util.Assert;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 
 public final class DataSourceUtils {
 
@@ -98,25 +97,34 @@ public final class DataSourceUtils {
         return Optional.of(new BinaryBooleanExpression(left.get(), BinaryBooleanOperator.AND, right.get()));
     }
 
-    public static void iterateDataSource(DataSource dataSource, BiConsumer<Optional<DataSource>, DataSource> dataSourceConsumer) {
-        iterateDataSource(Optional.empty(), Optional.ofNullable(dataSource), dataSourceConsumer);
+    public static void iterateDataSource(DataSource dataSource, DataSourceAction action) {
+        iterateDataSource(Optional.empty(), Optional.ofNullable(dataSource), dataSource.getRightDataSource(), action);
     }
 
     private static void iterateDataSource(
             Optional<DataSource> previousDataSourceCandidate,
             Optional<DataSource> dataSourceCandidate,
-            BiConsumer<Optional<DataSource>, DataSource> dataSourceConsumer
+            Optional<DataSource> nextSourceCandidate,
+            DataSourceAction action
     ) {
         if (!dataSourceCandidate.isPresent()) {
             return;
         }
         DataSource dataSource = dataSourceCandidate.get();
-        dataSourceConsumer.accept(previousDataSourceCandidate, dataSource);
+        action.apply(previousDataSourceCandidate, dataSource, nextSourceCandidate);
         Assert.isTrue(dataSource.getTableAlias().isPresent(), "Original query should have table alias");
         Assert.isTrue(!dataSource.getLeftDataSource().isPresent(), "Original data source should not contain nested data sources");
-        iterateDataSource(dataSourceCandidate, dataSource.getRightDataSource(), dataSourceConsumer);
+        Optional<DataSource> rightDataSourceCandidate = dataSource.getRightDataSource();
+        Optional<DataSource> afterRightDataSourceCandidate = rightDataSourceCandidate.isPresent() ?
+                rightDataSourceCandidate.get().getRightDataSource() :
+                Optional.empty();
+        iterateDataSource(dataSourceCandidate, rightDataSourceCandidate, afterRightDataSourceCandidate, action);
     }
 
+    public interface DataSourceAction {
+        void apply(Optional<DataSource> previousDataSourceCandidate, DataSource dataSource, Optional<DataSource> nextDataSourceCandidate);
+    }
+    
     private DataSourceUtils() {
 
     }
