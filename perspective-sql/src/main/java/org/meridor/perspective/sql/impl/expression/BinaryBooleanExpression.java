@@ -80,32 +80,46 @@ public class BinaryBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Optional<ColumnRelation> getColumnRelations() {
-        List<ColumnRelation> relations = new ArrayList<>();
+    public List<ColumnRelation> getColumnRelations() {
         Optional<BooleanExpression> leftAsBooleanExpression = asBooleanExpression(left);
         Optional<BooleanExpression> rightAsBooleanExpression = asBooleanExpression(right);
-        if (leftAsBooleanExpression.isPresent()) {
-            Optional<ColumnRelation> leftColumnRelation = leftAsBooleanExpression.get().getColumnRelations();
-            if (leftColumnRelation.isPresent()) {
-                relations.add(leftColumnRelation.get());
-            }
-        }
-        if (rightAsBooleanExpression.isPresent()) {
-            Optional<ColumnRelation> rightColumnRelation = rightAsBooleanExpression.get().getColumnRelations();
-            if (rightColumnRelation.isPresent()) {
-                relations.add(rightColumnRelation.get());
-            }
-        }
-        if (relations.isEmpty()) {
-            return Optional.empty();
-        } else if (relations.size() == 2) {
-            ColumnRelation firstColumnRelation = relations.get(0);
-            ColumnRelation secondColumnRelation = relations.get(1);
-            secondColumnRelation.setJoinOperator(getBinaryBooleanOperator());
-            firstColumnRelation.setNextRelation(secondColumnRelation);
-            return Optional.of(firstColumnRelation);
+        List<ColumnRelation> leftColumnRelations = 
+                leftAsBooleanExpression.isPresent() ? 
+                        leftAsBooleanExpression.get().getColumnRelations() :
+                        Collections.emptyList();
+        List<ColumnRelation> rightColumnRelations = 
+                rightAsBooleanExpression.isPresent() ? 
+                        rightAsBooleanExpression.get().getColumnRelations() :
+                        Collections.emptyList();
+        BinaryBooleanOperator binaryBooleanOperator = getBinaryBooleanOperator();
+        if (leftColumnRelations.isEmpty()) {
+            return rightColumnRelations;
+        } else if (rightColumnRelations.isEmpty()) {
+            return leftColumnRelations;
+        } else if (binaryBooleanOperator == BinaryBooleanOperator.AND) {
+            //Independent column relations
+            return new ArrayList<ColumnRelation>(){
+                {
+                    addAll(leftColumnRelations);
+                    addAll(rightColumnRelations);
+                }
+            };
         } else {
-            return Optional.of(relations.get(0));
+            //A pair of dependent column relations
+            List<ColumnRelation> leftColumnRelationsInit = leftColumnRelations.subList(0, leftColumnRelations.size() - 2);
+            ColumnRelation lastLeftColumnRelation = leftColumnRelations.get(leftColumnRelations.size() - 1);
+            ColumnRelation firstRightColumnRelation = leftColumnRelations.get(0);
+            List<ColumnRelation> rightColumnRelationsTail = rightColumnRelations.subList(1, leftColumnRelations.size() - 1);
+            
+            firstRightColumnRelation.setJoinOperator(binaryBooleanOperator);
+            lastLeftColumnRelation.setNextRelation(firstRightColumnRelation);
+            return new ArrayList<ColumnRelation>(){
+                {
+                    addAll(leftColumnRelationsInit);
+                    add(lastLeftColumnRelation);
+                    addAll(rightColumnRelationsTail);
+                }
+            };
         }
     }
 

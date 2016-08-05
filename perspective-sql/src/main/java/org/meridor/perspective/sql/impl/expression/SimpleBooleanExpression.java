@@ -74,20 +74,20 @@ public class SimpleBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Optional<ColumnRelation> getColumnRelations() {
+    public List<ColumnRelation> getColumnRelations() {
         if (isColumnExpression(left) && isColumnExpression(right)) {
             String leftTableAlias = asColumnExpression(left).getTableAlias();
             String leftColumnName = asColumnExpression(left).getColumnName();
             String rightTableAlias = asColumnExpression(right).getTableAlias();
             String rightColumnName = asColumnExpression(right).getColumnName();
-            return Optional.of(new ColumnRelation(
+            return Collections.singletonList(new ColumnRelation(
                     leftTableAlias,
-                    Collections.singletonList(leftColumnName),
+                    leftColumnName,
                     rightTableAlias,
-                    Collections.singletonList(rightColumnName)
+                    rightColumnName
             ));
         }
-        return Optional.empty();
+        return Collections.emptyList();
     }
 
     @Override

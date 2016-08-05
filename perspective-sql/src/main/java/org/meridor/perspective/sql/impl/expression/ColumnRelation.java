@@ -4,7 +4,6 @@ import org.meridor.perspective.beans.BooleanRelation;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class ColumnRelation {
     
@@ -13,18 +12,18 @@ public class ColumnRelation {
     private BinaryBooleanOperator joinOperator = BinaryBooleanOperator.AND;
     
     private final String leftTableAlias;
-    private final List<String> leftColumns = new ArrayList<>();
+    private final String leftColumn;
     
     private final String rightTableAlias;
-    private final List<String> rightColumns = new ArrayList<>();
+    private final String rightColumn;
 
-    public ColumnRelation(String leftTableAlias, List<String> leftColumns, String rightTableAlias, List<String> rightColumns) {
+    public ColumnRelation(String leftTableAlias, String leftColumn, String rightTableAlias, String rightColumn) {
         Assert.isTrue(leftTableAlias != null);
         Assert.isTrue(rightTableAlias != null);
         this.leftTableAlias = leftTableAlias;
-        this.leftColumns.addAll(leftColumns);
+        this.leftColumn = leftColumn;
         this.rightTableAlias = rightTableAlias;
-        this.rightColumns.addAll(rightColumns);
+        this.rightColumn = rightColumn;
     }
 
     public Optional<ColumnRelation> getNextRelation() {
@@ -51,51 +50,40 @@ public class ColumnRelation {
         return rightTableAlias;
     }
 
+    public String getLeftColumn() {
+        return leftColumn;
+    }
+
+    public String getRightColumn() {
+        return rightColumn;
+    }
+
+    public String getColumnName(String tableAlias) {
+        if (getLeftTableAlias().equals(tableAlias)) {
+            return getLeftColumn();
+        }
+        if (getRightTableAlias().equals(tableAlias)) {
+            return getRightColumn();
+        }
+        throw new IllegalArgumentException(String.format("Table alias %s not found in column relation %s", tableAlias, this));
+    }
+    
     public Map<String, Set<String>> toMap() {
-        Map<String, Set<String>> ret = new HashMap<String, Set<String>>(){
+        return new HashMap<String, Set<String>>(){
             {
-                put(leftTableAlias, new LinkedHashSet<>(leftColumns));
-                put(rightTableAlias, new LinkedHashSet<>(rightColumns));
+                put(leftTableAlias, new LinkedHashSet<>(Collections.singletonList(leftColumn)));
+                put(rightTableAlias, new LinkedHashSet<>(Collections.singletonList(rightColumn)));
             }
         };
-
-        Optional<ColumnRelation> nextRelationCandidate = getNextRelation();
-        if (nextRelationCandidate.isPresent()) {
-            Map<String, Set<String>> nextRelationMap = nextRelationCandidate.get().toMap();
-            nextRelationMap.keySet().forEach(ta -> {
-                Set<String> columns = nextRelationMap.get(ta);
-                ret.putIfAbsent(ta, new LinkedHashSet<>());
-                ret.get(ta).addAll(columns);
-            });
-        }
-        
-        return ret;
     }
     
     public BooleanExpression toBooleanExpression() {
-        Assert.isTrue(
-                leftColumns.size() == rightColumns.size(),
-                String.format(
-                        "Column relations should have equal number of columns" +
-                                " for each table alias but \"%s\" contains" +
-                                " %d columns and \"%s\" has %d columns",
-                        leftTableAlias,
-                        leftColumns.size(),
-                        rightTableAlias,
-                        rightColumns.size()
-                )
-        );
-        final int NUM_COLUMNS = leftColumns.size();
-        Assert.isTrue(NUM_COLUMNS >= 1, "Column relations should contain at least one column for each table");
-
-        BooleanExpression currentBooleanExpression = IntStream
-                .rangeClosed(0, NUM_COLUMNS - 1)
-                .mapToObj(index -> (BooleanExpression) new SimpleBooleanExpression(
-                        new ColumnExpression(leftColumns.get(index), leftTableAlias),
+        BooleanExpression currentBooleanExpression = 
+                new SimpleBooleanExpression(
+                        new ColumnExpression(leftColumn, leftTableAlias),
                         BooleanRelation.EQUAL,
-                        new ColumnExpression(rightColumns.get(index), rightTableAlias)
-                ))
-                .reduce((l, r) -> new BinaryBooleanExpression(l, BinaryBooleanOperator.AND, r)).get();
+                        new ColumnExpression(rightColumn, rightTableAlias)
+                );
 
         Optional<ColumnRelation> nextRelationCandidate = getNextRelation();
         if (nextRelationCandidate.isPresent()) {
@@ -103,5 +91,23 @@ public class ColumnRelation {
             return new BinaryBooleanExpression(currentBooleanExpression, getJoinOperator(), nextRelationBooleanExpression);
         }
         return currentBooleanExpression;
+    }
+    
+    //Returns a chain of column relations as list
+    public List<ColumnRelation> toList() {
+        List<ColumnRelation> ret = new ArrayList<>();
+        ret.add(this);
+        if (getNextRelation().isPresent()) {
+            ret.addAll(getNextRelation().get().toList());
+        }
+        return ret;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ColumnRelation{%s.%s = %s.%s}",
+                leftTableAlias, leftColumn, rightTableAlias, rightColumn
+        );
     }
 }

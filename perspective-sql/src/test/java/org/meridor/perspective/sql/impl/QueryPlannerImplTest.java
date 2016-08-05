@@ -8,8 +8,6 @@ import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
-import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.Table;
 import org.meridor.perspective.sql.impl.task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -210,8 +208,8 @@ public class QueryPlannerImplTest {
         
         BooleanExpression optimizedCondition = optimizedLeftDataSource.getCondition().get();
         assertThat(optimizedCondition, is(instanceOf(IndexBooleanExpression.class)));
-        assertThat(optimizedCondition.getTableAliases(), contains(INSTANCES_ALIAS));
-        assertThat(optimizedCondition.getColumnRelations().isPresent(), is(false));
+//        assertThat(optimizedCondition.getTableAliases(), contains(INSTANCES_ALIAS));
+        assertThat(optimizedCondition.getColumnRelations(), is(empty()));
         assertThat(optimizedCondition.getRestOfExpression().isPresent(), is(false));
         assertThat(optimizedCondition.getFixedValueConditions(INSTANCES_ALIAS), equalTo(Collections.singletonMap(NAME, Collections.singleton(VALUE))));
     }
@@ -242,21 +240,34 @@ public class QueryPlannerImplTest {
         assertThat(optimizedLeftDataSource.getTableAlias().get(), equalTo(INSTANCES_ALIAS));
         assertThat(optimizedLeftDataSource.getType(), equalTo(INDEX_SCAN));
         assertThat(optimizedLeftDataSource.getCondition().isPresent(), is(true));
-        assertThat(optimizedLeftDataSource.getColumns(), contains(PROJECT_ID));
+        assertThat(optimizedLeftDataSource.getColumns(), is(empty()));
         
         assertThat(optimizedLeftDataSource.getRightDataSource().isPresent(), is(true));
         DataSource optimizedRightDataSource = optimizedLeftDataSource.getRightDataSource().get();
         assertThat(optimizedRightDataSource.getTableAlias().isPresent(), is(true));
         assertThat(optimizedRightDataSource.getTableAlias().get(), equalTo(PROJECTS_ALIAS));
         assertThat(optimizedRightDataSource.getType(), equalTo(INDEX_SCAN));
-        assertThat(optimizedRightDataSource.getColumns(), contains(ID));
+        assertThat(optimizedRightDataSource.getCondition().isPresent(), is(true));
+        assertThat(optimizedRightDataSource.getColumns(), is(empty()));
 
         BooleanExpression optimizedLeftCondition = optimizedLeftDataSource.getCondition().get();
         assertThat(optimizedLeftCondition, is(instanceOf(IndexBooleanExpression.class)));
-        assertThat(optimizedLeftCondition.getTableAliases(), contains(INSTANCES_ALIAS));
-        assertThat(optimizedLeftCondition.getColumnRelations().isPresent(), is(false));
+//        assertThat(optimizedLeftCondition.getTableAliases(), contains(INSTANCES_ALIAS));
+        assertThat(optimizedLeftCondition.getColumnRelations(), is(empty()));
         assertThat(optimizedLeftCondition.getRestOfExpression().isPresent(), is(false));
         assertThat(optimizedLeftCondition.getFixedValueConditions(INSTANCES_ALIAS), equalTo(Collections.singletonMap(NAME, Collections.singleton(VALUE))));
+        
+        BooleanExpression optimizedRightCondition = optimizedRightDataSource.getCondition().get();
+        assertThat(optimizedRightCondition, is(instanceOf(IndexBooleanExpression.class)));
+        assertThat(optimizedRightCondition.getColumnRelations(), hasSize(1));
+        assertThat(optimizedRightCondition.getRestOfExpression().isPresent(), is(false));
+
+        ColumnRelation columnRelation = optimizedRightCondition.getColumnRelations().get(0);
+        assertThat(columnRelation.getLeftTableAlias(), equalTo(INSTANCES_ALIAS));
+        assertThat(columnRelation.getLeftColumn(), equalTo(PROJECT_ID));
+        assertThat(columnRelation.getRightTableAlias(), equalTo(PROJECTS_ALIAS));
+        assertThat(columnRelation.getRightColumn(), equalTo(ID));
+
     }
     
     @Test

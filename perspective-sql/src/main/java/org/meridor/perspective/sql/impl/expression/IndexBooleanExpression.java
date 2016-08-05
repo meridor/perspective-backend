@@ -8,22 +8,15 @@ import java.util.*;
  */
 public class IndexBooleanExpression implements BooleanExpression {
 
-    private final String tableAlias;
-    
     private final Map<String, Set<Object>> fixedValueConditions = new HashMap<>();
+    
+    private final List<ColumnRelation> columnRelations = new ArrayList<>();
 
-    public IndexBooleanExpression(String tableAlias, Map<String, Set<Object>> fixedValueConditions) {
-        this.tableAlias = tableAlias;
+    public IndexBooleanExpression(Map<String, Set<Object>> fixedValueConditions) {
         this.fixedValueConditions.putAll(fixedValueConditions);
     }
 
-    public static IndexBooleanExpression empty() {
-        return new IndexBooleanExpression(null, Collections.emptyMap());
-    }
-
-    @Override
-    public Set<String> getTableAliases() {
-        return tableAlias != null ? Collections.singleton(tableAlias) : Collections.emptySet();
+    public IndexBooleanExpression() {
     }
 
     @Override
@@ -32,20 +25,15 @@ public class IndexBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Optional<ColumnRelation> getColumnRelations() {
-        return Optional.empty();
+    public List<ColumnRelation> getColumnRelations() {
+        return columnRelations;
     }
-
-    @Override
-    public Optional<BooleanExpression> getRestOfExpression() {
-        return Optional.empty();
-    }
-
+    
     @Override
     public String toString() {
         return "IndexBooleanExpression{" +
-                "tableAlias='" + tableAlias + '\'' +
                 ", fixedValueConditions=" + fixedValueConditions +
+                ", columnRelations=" + columnRelations +
                 '}';
     }
 }

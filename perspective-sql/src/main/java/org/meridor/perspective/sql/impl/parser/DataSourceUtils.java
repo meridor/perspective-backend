@@ -72,10 +72,7 @@ public final class DataSourceUtils {
         }
     }
 
-    public static <T> Set<T> intersect(Set<T> first, Set<T> second) {
-        if (first.isEmpty()) {
-            return new LinkedHashSet<>(second);
-        }
+    public static <T> Set<T> intersection(Set<T> first, Set<T> second) {
         Set<T> copyOfFirst = new LinkedHashSet<>(first);
         copyOfFirst.retainAll(second);
         return copyOfFirst;

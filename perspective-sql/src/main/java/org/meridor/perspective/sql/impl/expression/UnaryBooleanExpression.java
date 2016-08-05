@@ -36,11 +36,6 @@ public class UnaryBooleanExpression implements BooleanExpression {
     }
 
     @Override
-    public Optional<ColumnRelation> getColumnRelations() {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<BooleanExpression> getRestOfExpression() {
         return Optional.of(this);
     }

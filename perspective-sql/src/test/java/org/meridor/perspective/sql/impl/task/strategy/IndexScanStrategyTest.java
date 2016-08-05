@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.impl.expression.BinaryBooleanExpression;
+import org.meridor.perspective.sql.impl.expression.ColumnRelation;
 import org.meridor.perspective.sql.impl.expression.IndexBooleanExpression;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
@@ -80,7 +81,6 @@ public class IndexScanStrategyTest {
     @Test
     public void testFetch() {
         IndexBooleanExpression expression = new IndexBooleanExpression(
-                INSTANCES_ALIAS,
                 new HashMap<String, Set<Object>>() {
                     {
                         put(NAME, Collections.singleton("third"));
@@ -145,7 +145,6 @@ public class IndexScanStrategyTest {
     
     private DataSource prepareJoinDataSource(JoinType joinType) {
         IndexBooleanExpression instancesExpression = new IndexBooleanExpression(
-                INSTANCES_ALIAS,
                 new HashMap<String, Set<Object>>() {
                     {
                         put(NAME, Collections.singleton("first"));
@@ -154,11 +153,12 @@ public class IndexScanStrategyTest {
         );
         DataSource instancesDataSource = new DataSource(INSTANCES_ALIAS);
         instancesDataSource.setCondition(instancesExpression);
-        instancesDataSource.getColumns().add(PROJECT_ID);
 
         DataSource projectsDataSource = new DataSource(PROJECTS_ALIAS);
-        projectsDataSource.setCondition(IndexBooleanExpression.empty());
-        projectsDataSource.getColumns().add(ID);
+        IndexBooleanExpression projectsExpression = new IndexBooleanExpression();
+        ColumnRelation columnRelation = new ColumnRelation(INSTANCES_ALIAS, PROJECT_ID, PROJECTS_ALIAS, ID);
+        projectsExpression.getColumnRelations().add(columnRelation);
+        projectsDataSource.setCondition(projectsExpression);
         projectsDataSource.setJoinType(joinType);
         instancesDataSource.setRightDatasource(projectsDataSource);
         return instancesDataSource;
@@ -185,7 +185,7 @@ public class IndexScanStrategyTest {
     @Test(expected = IllegalArgumentException.class)
     public void testMoreThanTwoDataSources() {
         DataSource firstDataSource = new DataSource(TABLE_ALIAS);
-        firstDataSource.setCondition(new IndexBooleanExpression(TABLE_ALIAS, Collections.emptyMap()));
+        firstDataSource.setCondition(new IndexBooleanExpression());
         DataSource secondDataSource = new DataSource(TABLE_ALIAS);
         DataSource thirdDataSource = new DataSource(TABLE_ALIAS);
         secondDataSource.setRightDatasource(thirdDataSource);

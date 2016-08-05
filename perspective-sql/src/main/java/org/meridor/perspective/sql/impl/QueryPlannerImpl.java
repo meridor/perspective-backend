@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.QueryPlannerImpl.OptimizedTask.*;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
@@ -197,7 +198,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         // need to be reconsidered while implementing sub-queries.
         
         OptimizationContext optimizationContext = new OptimizationContext();
-        originalWhereConditions.forEach(optimizationContext::addExpression); //TODO: column relations should be processed one by one!
+        originalWhereConditions.forEach(optimizationContext::addExpression);
 
         //Analyzing data sources
         iterateDataSource(originalDataSource, (pds, ds, nds) -> {
@@ -232,6 +233,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         Set<String> similarColumns = getSimilarColumns(previousDataSource, dataSource, tableAliases);
         dataSource.setNaturalJoin(false);
         dataSource.getColumns().clear();
+        //This will be later replaced by condition and transformed to column relations
         dataSource.getColumns().addAll(similarColumns);
         return dataSource;
     }
@@ -267,32 +269,31 @@ public class QueryPlannerImpl implements QueryPlanner {
                 Optional<String> foreignTableAliasCandidate = firstIndexScanDataSourceAdded.get() ?
                         ( pds.isPresent() ? pds.get().getTableAlias() : Optional.empty() ):
                         ( nds.isPresent() ? nds.get().getTableAlias() : Optional.empty() );
-                Set<String> indexScanColumns = foreignTableAliasCandidate.isPresent() ?
-                        getIndexedRelationColumns(tableAlias, foreignTableAliasCandidate.get(), tableAliases, columnRelations):
-                        Collections.emptySet();
+                List<ColumnRelation> indexedColumnRelations = foreignTableAliasCandidate.isPresent() ?
+                        getIndexedColumnRelations(tableAlias, foreignTableAliasCandidate.get(), tableAliases, columnRelations):
+                        Collections.emptyList();
                 Map<String, Map<String, Set<Object>>> fixedValuesConditions = optimizationContext.getFixedValuesConditions();
                 
                 Optional<IndexBooleanExpression> indexScanBooleanExpressionCandidate = getIndexScanBooleanExpression(tableAlias, tableAliases, fixedValuesConditions);
                 DataSource tailDataSource = getTail(optimizedDataSource);
 
-                if (!indexScanColumns.isEmpty()) {
+                if (!indexedColumnRelations.isEmpty()) {
                     //Index foreign key join
                     firstTableScanDataSourceAdded.set(false);
                     optimizedChildDataSource.setType(INDEX_SCAN);
                     optimizedChildDataSource.getColumns().clear();
-                    optimizedChildDataSource.getColumns().addAll(indexScanColumns);
+                    IndexBooleanExpression indexBooleanExpression = indexScanBooleanExpressionCandidate.isPresent() ?
+                            indexScanBooleanExpressionCandidate.get() :
+                            new IndexBooleanExpression();
                     optimizedChildDataSource.setRightDatasource(null);
-                    optimizedChildDataSource.setCondition(
-                            indexScanBooleanExpressionCandidate.isPresent() ?
-                                indexScanBooleanExpressionCandidate.get() :
-                                IndexBooleanExpression.empty()
-                    );
+                    optimizedChildDataSource.setCondition(indexBooleanExpression);
 
                     if (
                             tailDataSource.getType() == INDEX_SCAN &&
                             optimizedChildDataSource.getJoinType().isPresent() &&
                             firstIndexScanDataSourceAdded.get()
                     ) {
+                        indexBooleanExpression.getColumnRelations().addAll(indexedColumnRelations); //Column relations go to the second datasource in pair
                         tailDataSource.setRightDatasource(optimizedChildDataSource);
                         firstIndexScanDataSourceAdded.set(false);
                     } else {
@@ -373,7 +374,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         String rightTableName = tableAliases.get(right.getTableAlias().get());
         Set<String> leftColumnNames = new HashSet<>(columnsToNames(tablesAware.getColumns(leftTableName)));
         Set<String> rightColumnNames = new HashSet<>(columnsToNames(tablesAware.getColumns(rightTableName)));
-        return intersect(leftColumnNames, rightColumnNames);
+        return intersection(leftColumnNames, rightColumnNames);
     }
     
     private boolean isSuitableForIndexFetch(DataSource ds, Map<String, String> tableAliases, Map<String, Set<String>> columnNamesToSelect) {
@@ -417,30 +418,37 @@ public class QueryPlannerImpl implements QueryPlanner {
                 fixedValuesConditions.remove(tableAlias);
             }
             if (!matchingFixedValuesConditions.isEmpty()) {
-                return Optional.of(new IndexBooleanExpression(tableAlias, matchingFixedValuesConditions));
+                return Optional.of(new IndexBooleanExpression(matchingFixedValuesConditions));
             }
         }
         return Optional.empty();
     }
 
-    private Set<String> getIndexedRelationColumns(String tableAlias, String foreignTableAlias, Map<String, String> tableAliases, ColumnRelationsStorage columnRelations) {
-        Set<String> relationColumns = columnRelations.getRelations(tableAlias, foreignTableAlias);
-        boolean hasColumnRelations = !relationColumns.isEmpty();
+    //Currently we require that all columns from relation should be present in indexes.
+    //Later this can be relaxed e.g. for inner joins.
+    private List<ColumnRelation> getIndexedColumnRelations(String tableAlias, String foreignTableAlias, Map<String, String> tableAliases, ColumnRelationsStorage columnRelations) {
+        List<ColumnRelation> ret = new ArrayList<>();
+        List<ColumnRelation> matchedRelations = columnRelations.getRelations(tableAlias, foreignTableAlias);
+        boolean hasColumnRelations = !matchedRelations.isEmpty();
         if (hasColumnRelations) {
-            String tableName = tableAliases.get(tableAlias);
-            for (String columnName : relationColumns) {
-                Optional<Column> columnCandidate = tablesAware.getColumn(tableName, columnName);
-                Assert.isTrue(columnCandidate.isPresent(), String.format("Column %s should be present in table %s", columnName, tableName));
-                Column column = columnCandidate.get();
-                if (column.getIndexes(indexStorage.getSignatures()).isEmpty()) {
-                    return Collections.emptySet();
+            matchedRelations.forEach(matchedColumnRelation -> {
+                for (ColumnRelation columnRelation : matchedColumnRelation.toList()) {
+                    String leftTableName = tableAliases.get(columnRelation.getLeftTableAlias());
+                    IndexSignature leftIndexSignature = new IndexSignature(leftTableName, Collections.singleton(columnRelation.getLeftColumn()));
+                    String rightTableName = tableAliases.get(columnRelation.getRightTableAlias());
+                    IndexSignature rightIndexSignature = new IndexSignature(rightTableName, Collections.singleton(columnRelation.getRightColumn()));
+                    if (
+                            !indexStorage.getSignatures().contains(leftIndexSignature) ||
+                            !indexStorage.getSignatures().contains(rightIndexSignature)
+                    ) {
+                        return;
+                    }
                 }
-            }
-            //Currently we require that all columns should be present in indexes.
-            //Later this can be relaxed e.g. for inner joins.
-            return columnRelations.removeRelations(tableAlias, foreignTableAlias);
+                ret.add(matchedColumnRelation);
+                columnRelations.removeRelation(tableAlias, foreignTableAlias, matchedColumnRelation);
+            });
         }
-        return Collections.emptySet();
+        return ret;
     }
     
     
@@ -547,12 +555,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
 
         private static Consumer<BooleanExpression> getColumnRelationsConsumer(ColumnRelationsStorage columnRelations) {
-            return be -> {
-                Optional<ColumnRelation> cr = be.getColumnRelations();
-                if (cr.isPresent()) {
-                    columnRelations.add(cr.get());
-                }
-            };
+            return be -> columnRelations.addAll(be.getColumnRelations());
         }
 
         private static Consumer<BooleanExpression> getRestOfExpressionsConsumer(List<BooleanExpression> restOfExpressions) {
@@ -580,30 +583,42 @@ public class QueryPlannerImpl implements QueryPlanner {
     
     private static class ColumnRelationsStorage {
 
-        private final Map<String, ColumnRelation> rawColumnRelations = new HashMap<>();
+        private final Map<String, List<ColumnRelation>> rawColumnRelations = new HashMap<>();
 
         Set<String> getColumnNames(String tableAlias){
-            return rawColumnRelations.values().stream()
-                    .map(rcr -> rcr.toMap().getOrDefault(tableAlias, Collections.emptySet()))
+            return getAllColumnRelationsStream()
+                    .map(rcr -> columnRelationToColumns(rcr, tableAlias))
                     .reduce(new HashSet<>(), (l, r) -> {
                         l.addAll(r);
                         return l;
                     });
         }
         
-        Set<String> getRelations(String tableAlias, String foreignTableAlias) {
-            Optional<ColumnRelation> columnRelationCandidate = getColumnRelation(tableAlias, foreignTableAlias);
-            return columnRelationToColumns(columnRelationCandidate, tableAlias);
+        private Stream<ColumnRelation> getAllColumnRelationsStream() {
+            return rawColumnRelations.values().stream()
+                    .flatMap(Collection::stream);
         }
         
-        private static Set<String> columnRelationToColumns(Optional<ColumnRelation> columnRelationCandidate, String tableAlias) {
-            return columnRelationCandidate.isPresent() ?
-                    new LinkedHashSet<>(columnRelationCandidate.get().toMap().get(tableAlias)) :
-                    Collections.emptySet();
+        List<ColumnRelation> getRelations(String tableAlias, String foreignTableAlias) {
+            return new ArrayList<>(rawColumnRelations.get(getKey(tableAlias, foreignTableAlias)));
         }
-        
-        private Optional<ColumnRelation> getColumnRelation(String tableAlias, String foreignTableAlias) {
-            return Optional.ofNullable(rawColumnRelations.get(getKey(tableAlias, foreignTableAlias)));
+
+        private static Set<String> columnRelationToColumns(ColumnRelation columnRelation, String tableAlias) {
+            return new LinkedHashSet<String>(){
+                        {
+                            if (!ANY_TABLE.equals(tableAlias)) {
+                                columnRelation.toList()
+                                    .forEach(cr -> {
+                                        if (
+                                                cr.getLeftTableAlias().equals(tableAlias) ||
+                                                cr.getRightTableAlias().equals(tableAlias)
+                                        ) {
+                                            add(cr.getColumnName(tableAlias));
+                                        }
+                                    });
+                            }
+                        }
+                    };
         }
 
         private static String getKey(String tableAlias, String foreignTableAlias) {
@@ -615,36 +630,35 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
         
         Optional<BooleanExpression> getAllAsBooleanExpression() {
-            return rawColumnRelations.values().stream()
+            return getAllColumnRelationsStream()
                     .map(ColumnRelation::toBooleanExpression)
                     .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
         }
 
-        Set<String> removeRelations(String tableAlias, String foreignTableAlias) {
-            Optional<ColumnRelation> columnRelationCandidate = getColumnRelation(tableAlias, foreignTableAlias);
-            if (columnRelationCandidate.isPresent()) {
-                Set<String> columns = columnRelationToColumns(columnRelationCandidate, tableAlias);
-                rawColumnRelations.remove(getKey(tableAlias, foreignTableAlias));
-                return columns;
-            }
-            return Collections.emptySet();
+        void removeRelation(String tableAlias, String foreignTableAlias, ColumnRelation columnRelation) {
+            rawColumnRelations.get(getKey(tableAlias, foreignTableAlias)).remove(columnRelation);
         }
         
         void removeRelations(BooleanExpression booleanExpression) {
-            if (booleanExpression == null || !booleanExpression.getColumnRelations().isPresent()) {
+            if (booleanExpression == null || booleanExpression.getColumnRelations().isEmpty()) {
                 return;
             }
-            ColumnRelation columnRelation = booleanExpression.getColumnRelations().get();
-            removeRelations(columnRelation.getLeftTableAlias(), columnRelation.getRightTableAlias());
+            booleanExpression.getColumnRelations().forEach(cr -> {
+                removeRelation(cr.getLeftTableAlias(), cr.getRightTableAlias(), cr);
+                removeRelation(cr.getRightTableAlias(), cr.getLeftTableAlias(), cr);
+            });
         }
         
         void clear() {
             rawColumnRelations.clear();
         }
 
-        void add(ColumnRelation columnRelation){
-            getKeys(columnRelation.getLeftTableAlias(), columnRelation.getRightTableAlias())
-                    .forEach(k -> rawColumnRelations.put(k, columnRelation));
+        void addAll(Collection<ColumnRelation> columnRelations) {
+            columnRelations.forEach(cr -> getKeys(cr.getLeftTableAlias(), cr.getRightTableAlias())
+                    .forEach(k -> {
+                        rawColumnRelations.putIfAbsent(k, new ArrayList<>());
+                        rawColumnRelations.get(k).add(cr);
+                    }));
         }
         
         boolean isEmpty(){

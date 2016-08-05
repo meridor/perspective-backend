@@ -18,7 +18,7 @@ public class KeyImpl implements Key {
     }
     
     private String toString(Object... values) {
-        return Arrays.asList(values).stream()
+        return Arrays.stream(values)
                 .map(
                         p -> {
                             String str = String.valueOf(p);
@@ -53,6 +53,6 @@ public class KeyImpl implements Key {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Key && toString().equals(((Key) obj).toString());
+        return obj instanceof Key && toString().equals(obj.toString());
     }
 }
