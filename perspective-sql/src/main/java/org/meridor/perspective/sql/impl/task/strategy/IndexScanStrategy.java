@@ -66,9 +66,7 @@ public class IndexScanStrategy extends ScanStrategy {
     private DataContainer fetch(String tableAlias, IndexBooleanExpression condition, Map<String, String> tableAliases) {
         String tableName = tableAliases.get(tableAlias);
         Set<String> ids = getIdsFromIndex(tableName, tableAlias, condition);
-        return ids.isEmpty() ?
-                DataContainer.empty() :
-                fetchByIds(tableName, tableAlias, ids);
+        return fetchByIds(tableName, tableAlias, ids);
     }
     
     private DataContainer fetchByIds(String tableName, String tableAlias, Set<String> ids) {
@@ -130,9 +128,6 @@ public class IndexScanStrategy extends ScanStrategy {
 
     //Based on http://stackoverflow.com/questions/714108/cartesian-product-of-arbitrary-sets-in-java 
     private static Set<Set<Object>> setsCrossProduct(List<Set<Object>> sets) {
-        if (sets.size() < 2) {
-            return new HashSet<>(sets);
-        }
         return setsCrossProductImpl(0, sets);
     }
 

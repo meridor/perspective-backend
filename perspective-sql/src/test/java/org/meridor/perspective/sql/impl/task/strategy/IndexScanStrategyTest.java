@@ -48,7 +48,7 @@ public class IndexScanStrategyTest {
             put(key("second"), "2");
             put(key("third"), "3");
             put(key("third"), "4");
-            put(key("firth"), "2");
+            put(key("fifth"), "5");
         }
     };
     private static final Index INSTANCES_PROJECT_ID_INDEX = new HashTableIndex(new IndexSignature(INSTANCES, Collections.singleton(PROJECT_ID))){
@@ -83,7 +83,7 @@ public class IndexScanStrategyTest {
         IndexBooleanExpression expression = new IndexBooleanExpression(
                 new HashMap<String, Set<Object>>() {
                     {
-                        put(NAME, Collections.singleton("third"));
+                        put(NAME, new LinkedHashSet<>(Arrays.asList("third", "fifth")));
                         put(PROJECT_ID, Collections.singleton("2"));
                     }
                 }
@@ -94,8 +94,9 @@ public class IndexScanStrategyTest {
         DataSourceStrategy strategy = getStrategy();
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertThat(result.getColumnsMap(),  equalTo(Collections.singletonMap(INSTANCES_ALIAS, INSTANCES_COLUMNS)));
-        assertThat(result.getRows(), hasSize(1));
+        assertThat(result.getRows(), hasSize(2));
         assertThat(result.getRows().get(0).getValues(), contains("3", "third", "2"));
+        assertThat(result.getRows().get(1).getValues(), contains("5", "fifth", "2"));
     }
     
     @Test
