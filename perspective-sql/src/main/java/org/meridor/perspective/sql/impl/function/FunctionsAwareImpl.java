@@ -15,12 +15,11 @@ public class FunctionsAwareImpl implements FunctionsAware {
     @Autowired
     private ApplicationContext applicationContext;
     
-    private Map<FunctionName, Function<?>> functions = new HashMap<>();
+    private final Map<FunctionName, Function<?>> functions = new HashMap<>();
     
     @PostConstruct
     public void init() {
-        applicationContext.getBeansOfType(Function.class).values().stream()
-        .forEach(f -> {
+        applicationContext.getBeansOfType(Function.class).values().forEach(f -> {
             FunctionName functionName = f.getName();
             functions.put(functionName, f);
         });

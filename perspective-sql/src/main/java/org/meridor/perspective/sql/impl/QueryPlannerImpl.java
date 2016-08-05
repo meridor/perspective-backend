@@ -224,9 +224,9 @@ public class QueryPlannerImpl implements QueryPlanner {
         return optimizationContext;
     }
     
-    private DataSource replaceNaturalJoin(DataSource dataSource, DataSource previousDataSource, Map<String, String> tableAliases) {
+    private void replaceNaturalJoin(DataSource dataSource, DataSource previousDataSource, Map<String, String> tableAliases) {
         if (!dataSource.isNaturalJoin()) {
-            return dataSource;
+            return;
         }
         checkLeftDataSource(dataSource, false);
         checkLeftDataSource(previousDataSource, false);
@@ -235,7 +235,6 @@ public class QueryPlannerImpl implements QueryPlanner {
         dataSource.getColumns().clear();
         //This will be later replaced by condition and transformed to column relations
         dataSource.getColumns().addAll(similarColumns);
-        return dataSource;
     }
     
     private DataSource createOptimizedDataSource(DataSource originalDataSource, OptimizationContext optimizationContext, Map<String, Object> selectionMap, Map<String, String> tableAliases) {

@@ -23,11 +23,11 @@ public class PlaceholderConfigurer extends ParametersParserBaseListener {
     }
     
     private final String sqlWithPlaceholders;
-    private Map<String, String> parametersByName = new HashMap<>();
-    private Map<Integer, String> parametersByIndex = new HashMap<>();
+    private final Map<String, String> parametersByName = new HashMap<>();
+    private final Map<Integer, String> parametersByIndex = new HashMap<>();
     private Integer parameterIndex = 1;
     private String currentQuery = "";
-    private List<String> preparedQueries = new ArrayList<>();
+    private final List<String> preparedQueries = new ArrayList<>();
     private Optional<SQLDataException> exception = Optional.empty(); 
 
     public PlaceholderConfigurer(String sqlWithPlaceholders, List<Parameter> parameters) {

@@ -10,8 +10,8 @@ import java.util.*;
 @Component
 public class MockDataFetcher implements DataFetcher {
 
-    private Map<String, List<List<Object>>> dataMap = new LinkedHashMap<>();
-    private Map<String, List<String>> columnsMap = new LinkedHashMap<>();
+    private final Map<String, List<List<Object>>> dataMap = new LinkedHashMap<>();
+    private final Map<String, List<String>> columnsMap = new LinkedHashMap<>();
 
     @Override
     public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {

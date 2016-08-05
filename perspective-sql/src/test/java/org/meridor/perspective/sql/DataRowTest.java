@@ -11,14 +11,14 @@ import static org.junit.Assert.assertThat;
 
 public class DataRowTest {
     
-    public static final String FIRST_TABLE = "first_table";
-    public static final String SECOND_TABLE = "second_table";
-    public static final String FIRST_COLUMN = "first_column";
-    public static final String SECOND_COLUMN = "second_column";
-    public static final String FIRST_COLUMN_VALUE = "first_column_value";
-    public static final String SECOND_COLUMN_VALUE = "second_column_value";
-    public static final String THIRD_COLUMN_VALUE = "third_column_value";
-    public static final String NEW_VALUE = "new_value";
+    private static final String FIRST_TABLE = "first_table";
+    private static final String SECOND_TABLE = "second_table";
+    private static final String FIRST_COLUMN = "first_column";
+    private static final String SECOND_COLUMN = "second_column";
+    private static final String FIRST_COLUMN_VALUE = "first_column_value";
+    private static final String SECOND_COLUMN_VALUE = "second_column_value";
+    private static final String THIRD_COLUMN_VALUE = "third_column_value";
+    private static final String NEW_VALUE = "new_value";
     
     private static final Map<String, List<String>> COLUMNS_MAP = new HashMap<String, List<String>>(){
         {

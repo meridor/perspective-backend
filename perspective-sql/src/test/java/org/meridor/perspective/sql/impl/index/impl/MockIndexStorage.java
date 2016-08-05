@@ -13,7 +13,7 @@ import java.util.function.UnaryOperator;
 @Component
 public class MockIndexStorage implements IndexStorage {
 
-    private Map<IndexSignature, Index> indexes = new HashMap<>();
+    private final Map<IndexSignature, Index> indexes = new HashMap<>();
 
     @Override
     public Set<IndexSignature> getSignatures() {

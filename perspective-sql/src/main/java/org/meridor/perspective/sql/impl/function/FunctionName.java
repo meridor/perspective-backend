@@ -10,7 +10,7 @@ public enum FunctionName {
     VERSION;
 
     public static Optional<FunctionName> fromString(String name) {
-        return Arrays.asList(values()).stream()
+        return Arrays.stream(values())
                 .filter(v -> v.name().equalsIgnoreCase(name)).findFirst();
     }
 }

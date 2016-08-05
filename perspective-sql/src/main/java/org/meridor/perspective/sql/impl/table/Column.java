@@ -15,7 +15,6 @@ public class Column {
     private final Class<?> type;
     private final Object defaultValue;
     private final Table table;
-    private final Set<IndexSignature> indexes = new HashSet<>();
 
     public Column(String name, Class<?> type, Object defaultValue, Table table) {
         this.name = name;

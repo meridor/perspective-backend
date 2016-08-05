@@ -7,7 +7,6 @@ import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.ExecutionResult;
 import org.meridor.perspective.sql.impl.expression.ColumnExpression;
 import org.meridor.perspective.sql.impl.expression.FunctionExpression;
-import org.meridor.perspective.sql.impl.table.Column;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;

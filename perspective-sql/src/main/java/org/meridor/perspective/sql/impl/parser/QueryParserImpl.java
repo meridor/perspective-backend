@@ -71,12 +71,12 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private SQLParser.Order_clauseContext orderByClauseContext;
     
     private QueryType queryType = QueryType.UNKNOWN;
-    private Set<String> errors = new LinkedHashSet<>();
-    private Map<String, Object> selectionMap = new LinkedHashMap<>();
-    private Map<String, String> tableAliases = new HashMap<>();
+    private final Set<String> errors = new LinkedHashSet<>();
+    private final Map<String, Object> selectionMap = new LinkedHashMap<>();
+    private final Map<String, String> tableAliases = new HashMap<>();
     private DataSource dataSource;
     //Column name -> aliases map of columns available after all joins
-    private Map<String, List<String>> availableColumns = new HashMap<>();
+    private final Map<String, List<String>> availableColumns = new HashMap<>();
     private BooleanExpression whereExpression;
     private final List<Object> groupByExpressions = new ArrayList<>();
     private final List<OrderExpression> orderByExpressions = new ArrayList<>();
@@ -581,7 +581,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private void processSelectClause() {
         Optional<SQLParser.Select_clauseContext> selectClauseContext = Optional.ofNullable(this.selectClauseContext);
         if (selectClauseContext.isPresent()) {
-            selectClauseContext.get().select_expression().aliased_expression().stream().forEach(ae -> {
+            selectClauseContext.get().select_expression().aliased_expression().forEach(ae -> {
                 AliasExpressionPair pair = processAliasedExpression(ae);
                 selectionMap.put(pair.getAlias(), pair.getExpression());
             });
@@ -726,9 +726,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         String functionName = functionCall.ID().getText();
         List<Object> argExpressions = new ArrayList<>();
         if (functionCall.expressions() != null) {
-            foreachExpression(functionCall.expressions().expression(), p -> {
-                argExpressions.add(p.getExpression());
-            });
+            foreachExpression(functionCall.expressions().expression(), p -> argExpressions.add(p.getExpression()));
         }
 
         FunctionExpression functionExpression = new FunctionExpression(functionName, argExpressions);

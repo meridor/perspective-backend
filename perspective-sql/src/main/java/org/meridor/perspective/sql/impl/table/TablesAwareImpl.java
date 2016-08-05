@@ -29,7 +29,7 @@ public class TablesAwareImpl implements TablesAware {
     @Autowired(required = false)
     private IndexStorage indexStorage;
 
-    private Map<String, Set<Column>> tables = new HashMap<>();
+    private final Map<String, Set<Column>> tables = new HashMap<>();
     
     @PostConstruct
     public void init() {
@@ -56,7 +56,7 @@ public class TablesAwareImpl implements TablesAware {
                 t,
                 Collections.singletonList(getFieldConsumer())
         );
-    };
+    }
     
     private BiConsumer<Table, Field> getFieldConsumer() {
         return (table, field) -> {

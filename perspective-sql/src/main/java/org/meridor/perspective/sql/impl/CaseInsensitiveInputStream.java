@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.IntStream;
  */
 public class CaseInsensitiveInputStream extends ANTLRInputStream {
 
-    protected char[] lookaheadData;
+    private final char[] lookaheadData;
 
     public CaseInsensitiveInputStream(String input) {
         super(input);

@@ -8,7 +8,6 @@ import org.meridor.perspective.sql.impl.index.Key;
 import org.meridor.perspective.sql.impl.index.Keys;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.storage.impl.TestObject;
-import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

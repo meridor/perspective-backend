@@ -12,7 +12,7 @@ import static org.meridor.perspective.sql.impl.table.DataType.*;
 
 public class TypeOfFunctionTest {
 
-    private TypeOfFunction function = new TypeOfFunction();
+    private final TypeOfFunction function = new TypeOfFunction();
     
     @Test
     public void testValidateInput() throws Exception {

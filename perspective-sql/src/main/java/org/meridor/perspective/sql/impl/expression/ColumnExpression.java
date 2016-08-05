@@ -1,8 +1,5 @@
 package org.meridor.perspective.sql.impl.expression;
 
-import org.meridor.perspective.sql.impl.table.Column;
-import org.meridor.perspective.sql.impl.table.Table;
-
 import static org.meridor.perspective.sql.impl.table.Column.*;
 
 public class ColumnExpression {

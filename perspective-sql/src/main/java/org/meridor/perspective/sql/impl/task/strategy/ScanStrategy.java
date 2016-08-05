@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
-import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.AND;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
 
 @Component
