@@ -32,7 +32,7 @@ public class IndexBooleanExpression implements BooleanExpression {
     @Override
     public String toString() {
         return "IndexBooleanExpression{" +
-                ", fixedValueConditions=" + fixedValueConditions +
+                "fixedValueConditions=" + fixedValueConditions +
                 ", columnRelations=" + columnRelations +
                 '}';
     }

@@ -17,7 +17,7 @@ public abstract class StrategyTestUtils {
     public static final String INSTANCES_ALIAS = "i";
     public static final String ID = "id";
     public static final String NAME = "name";
-    private static final String PROJECT_NAME = "project_name";
+    public static final String PROJECT_NAME = "project_name";
     public static final String PROJECT_ID = "project_id";
     static final List<String> INSTANCES_COLUMNS = Arrays.asList(ID, NAME, PROJECT_ID);
     static final Map<String, List<String>> INSTANCES_COLUMNS_MAP = Collections.singletonMap(INSTANCES_ALIAS, INSTANCES_COLUMNS);

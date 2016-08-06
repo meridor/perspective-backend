@@ -51,6 +51,15 @@ public class IndexScanStrategyTest {
             put(key("fifth"), "5");
         }
     };
+    private static final Index INSTANCES_ID_INDEX = new HashTableIndex(new IndexSignature(INSTANCES, Collections.singleton(ID))){
+        {
+            put(key("1"), "1");
+            put(key("2"), "2");
+            put(key("3"), "3");
+            put(key("4"), "4");
+            put(key("5"), "5");
+        }
+    };
     private static final Index INSTANCES_PROJECT_ID_INDEX = new HashTableIndex(new IndexSignature(INSTANCES, Collections.singleton(PROJECT_ID))){
         {
             put(key("2"), "1");
@@ -73,6 +82,7 @@ public class IndexScanStrategyTest {
     public void init() {
         dataFetcher.setTableData(INSTANCES, INSTANCES_COLUMNS, INSTANCES_DATA);
         dataFetcher.setTableData(PROJECTS, PROJECTS_COLUMNS, PROJECTS_DATA);
+        indexStorage.update(INSTANCES_ID_INDEX.getSignature(), any -> INSTANCES_ID_INDEX);
         indexStorage.update(INSTANCES_NAME_INDEX.getSignature(), any -> INSTANCES_NAME_INDEX);
         indexStorage.update(INSTANCES_PROJECT_ID_INDEX.getSignature(), any -> INSTANCES_PROJECT_ID_INDEX);
         indexStorage.update(PROJECTS_ID_INDEX.getSignature(), any -> PROJECTS_ID_INDEX);
@@ -105,8 +115,9 @@ public class IndexScanStrategyTest {
         DataSourceStrategy strategy = getStrategy();
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
-        assertThat(result.getRows(), hasSize(1));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "2", "second_project"));
+        assertThat(result.getRows(), hasSize(2));
+        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
+        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
     }
     
     @Test
@@ -115,12 +126,13 @@ public class IndexScanStrategyTest {
         DataSourceStrategy strategy = getStrategy();
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
-        assertThat(result.getRows(), hasSize(5));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "2", "second_project"));
-        assertThat(result.getRows().get(1).getValues(), contains("2", "second", "1", null, null));
-        assertThat(result.getRows().get(2).getValues(), contains("3", "third", "2", null, null));
-        assertThat(result.getRows().get(3).getValues(), contains("4", "third", "3", null, null));
-        assertThat(result.getRows().get(4).getValues(), contains("5", "fifth", "2", null, null));
+        assertThat(result.getRows(), hasSize(6));
+        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
+        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
+        assertThat(result.getRows().get(2).getValues(), contains("2", "second", "1", null, null));
+        assertThat(result.getRows().get(3).getValues(), contains("3", "third", "2", null, null));
+        assertThat(result.getRows().get(4).getValues(), contains("4", "third", "3", null, null));
+        assertThat(result.getRows().get(5).getValues(), contains("5", "fifth", "2", null, null));
     }
     
     @Test
@@ -130,8 +142,8 @@ public class IndexScanStrategyTest {
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
         assertThat(result.getRows(), hasSize(3));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "2", "second_project"));
-        assertThat(result.getRows().get(1).getValues(), contains(null, null, null, "1", "first_project"));
+        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
+        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
         assertThat(result.getRows().get(2).getValues(), contains(null, null, null, "3", "third_project"));
     }
     
@@ -158,6 +170,8 @@ public class IndexScanStrategyTest {
         DataSource projectsDataSource = new DataSource(PROJECTS_ALIAS);
         IndexBooleanExpression projectsExpression = new IndexBooleanExpression();
         ColumnRelation columnRelation = new ColumnRelation(INSTANCES_ALIAS, PROJECT_ID, PROJECTS_ALIAS, ID);
+        ColumnRelation nextColumnRelation = new ColumnRelation(INSTANCES_ALIAS, ID, PROJECTS_ALIAS, ID);
+        columnRelation.setNextRelation(nextColumnRelation);
         projectsExpression.getColumnRelations().add(columnRelation);
         projectsDataSource.setCondition(projectsExpression);
         projectsDataSource.setJoinType(joinType);

@@ -9,6 +9,7 @@ import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.task.*;
+import org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -173,13 +174,13 @@ public class QueryPlannerImplTest {
 
     @Test
     public void testTableScanStrategySimpleFetch() throws Exception {
-        DataSource leftDataSource = new DataSource(INSTANCES);
+        DataSource leftDataSource = new DataSource(PROJECTS);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES));
+                getSelectionMap().put(PROJECT_NAME, new ColumnExpression(PROJECT_NAME, PROJECTS));
                 setDataSource(leftDataSource);
                 //No where clause is present
-                getTableAliases().put(INSTANCES, INSTANCES);
+                getTableAliases().put(PROJECTS, PROJECTS);
             }
         });
         List<Task> tasks = new ArrayList<>(plan());
@@ -320,16 +321,16 @@ public class QueryPlannerImplTest {
     
     @Test
     public void testOptimizeMultipleOrConditions() throws Exception {
-        DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
+        DataSource leftDataSource = new DataSource(PROJECTS_ALIAS);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES_ALIAS));
+                getSelectionMap().put(PROJECT_NAME, new ColumnExpression(PROJECT_NAME, PROJECTS_ALIAS));
                 setDataSource(leftDataSource);
-                getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
+                getTableAliases().put(PROJECTS_ALIAS, PROJECTS);
                 BooleanExpression whereCondition = new BinaryBooleanExpression(
-                        new SimpleBooleanExpression(new ColumnExpression(ID, INSTANCES_ALIAS), EQUAL, VALUE),
+                        new SimpleBooleanExpression(new ColumnExpression(PROJECT_NAME, PROJECTS_ALIAS), EQUAL, VALUE),
                         OR,
-                        new SimpleBooleanExpression(new ColumnExpression(ID, INSTANCES_ALIAS), EQUAL, ANOTHER_VALUE)
+                        new SimpleBooleanExpression(new ColumnExpression(PROJECT_NAME, PROJECTS_ALIAS), EQUAL, ANOTHER_VALUE)
                 );
                 setWhereExpression(whereCondition);
             }
@@ -340,9 +341,9 @@ public class QueryPlannerImplTest {
         FilterTask filterTask = (FilterTask) tasks.get(1);
         assertThat(filterTask.getCondition().isPresent(), is(true));
         BooleanExpression optimizedLeftCondition = filterTask.getCondition().get();
-        assertThat(optimizedLeftCondition.getTableAliases(), contains(INSTANCES_ALIAS));
-        Map<String, Set<Object>> fixedValueCondition = optimizedLeftCondition.getFixedValueConditions(INSTANCES_ALIAS);
-        assertThat(fixedValueCondition.keySet(), contains(ID));
-        assertThat(fixedValueCondition.get(ID), containsInAnyOrder(VALUE, ANOTHER_VALUE));
+        assertThat(optimizedLeftCondition.getTableAliases(), contains(PROJECTS_ALIAS));
+        Map<String, Set<Object>> fixedValueCondition = optimizedLeftCondition.getFixedValueConditions(PROJECTS_ALIAS);
+        assertThat(fixedValueCondition.keySet(), contains(PROJECT_NAME));
+        assertThat(fixedValueCondition.get(PROJECT_NAME), containsInAnyOrder(VALUE, ANOTHER_VALUE));
     }
 }
