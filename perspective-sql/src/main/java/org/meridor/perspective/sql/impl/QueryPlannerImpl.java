@@ -599,7 +599,10 @@ public class QueryPlannerImpl implements QueryPlanner {
         }
         
         List<ColumnRelation> getRelations(String tableAlias, String foreignTableAlias) {
-            return new ArrayList<>(rawColumnRelations.get(getKey(tableAlias, foreignTableAlias)));
+            String key = getKey(tableAlias, foreignTableAlias);
+            return rawColumnRelations.containsKey(key) ?
+                    new ArrayList<>(rawColumnRelations.get(key)) :
+                    Collections.emptyList();
         }
 
         private static Set<String> columnRelationToColumns(ColumnRelation columnRelation, String tableAlias) {

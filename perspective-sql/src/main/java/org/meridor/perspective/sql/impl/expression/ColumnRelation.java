@@ -104,6 +104,34 @@ public class ColumnRelation {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ColumnRelation that = (ColumnRelation) o;
+
+        if (nextRelation != null ? !nextRelation.equals(that.nextRelation) : that.nextRelation != null)
+            return false;
+        if (joinOperator != that.joinOperator) return false;
+        if (!leftTableAlias.equals(that.leftTableAlias)) return false;
+        if (!leftColumn.equals(that.leftColumn)) return false;
+        if (!rightTableAlias.equals(that.rightTableAlias)) return false;
+        return rightColumn.equals(that.rightColumn);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nextRelation != null ? nextRelation.hashCode() : 0;
+        result = 31 * result + joinOperator.hashCode();
+        result = 31 * result + leftTableAlias.hashCode();
+        result = 31 * result + leftColumn.hashCode();
+        result = 31 * result + rightTableAlias.hashCode();
+        result = 31 * result + rightColumn.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "ColumnRelation{%s.%s = %s.%s}",
