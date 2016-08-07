@@ -34,7 +34,7 @@ public class ColumnsFunctionTest {
     @Test
     public void testApply() {
         DataContainer data = function.apply(Collections.singletonList(INSTANCES_TABLE));
-        assertThat(data.getColumnNames(), contains("column_name", "type", "default_value"));
+        assertThat(data.getColumnNames(), contains("column_name", "type", "default_value", "indexed"));
         assertThat(data.getRows(), hasSize(tablesAware.getColumns(INSTANCES_TABLE).size()));
     }
     
