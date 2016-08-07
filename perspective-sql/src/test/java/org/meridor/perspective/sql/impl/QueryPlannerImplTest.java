@@ -9,7 +9,6 @@ import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.meridor.perspective.sql.impl.task.*;
-import org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -222,7 +221,7 @@ public class QueryPlannerImplTest {
         rightDataSource.setJoinType(INNER);
         BooleanExpression joinCondition = new SimpleBooleanExpression(new ColumnExpression(PROJECT_ID, INSTANCES_ALIAS), EQUAL, new ColumnExpression(ID, PROJECTS_ALIAS));
         rightDataSource.setCondition(joinCondition);
-        leftDataSource.setRightDatasource(rightDataSource);
+        leftDataSource.setRightDataSource(rightDataSource);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
                 getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES_ALIAS));

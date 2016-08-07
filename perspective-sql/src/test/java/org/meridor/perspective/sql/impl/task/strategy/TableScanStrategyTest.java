@@ -276,7 +276,7 @@ public class TableScanStrategyTest {
     private DataSource prepareJoinDataSource(Function<DataSource, DataSource> secondDataSourceProcessor) {
         DataSource first = new DataSource(INSTANCES_ALIAS);
         DataSource second = secondDataSourceProcessor.apply(new DataSource(PROJECTS_ALIAS));
-        first.setRightDatasource(second);
+        first.setRightDataSource(second);
         return first;
     }
     

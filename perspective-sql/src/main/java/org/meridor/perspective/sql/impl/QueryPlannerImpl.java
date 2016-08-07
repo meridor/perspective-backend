@@ -236,7 +236,7 @@ public class QueryPlannerImpl implements QueryPlanner {
         //This will be later replaced by condition and transformed to column relations
         dataSource.getColumns().addAll(similarColumns);
     }
-    
+
     private DataSource createOptimizedDataSource(DataSource originalDataSource, OptimizationContext optimizationContext, Map<String, Object> selectionMap, Map<String, String> tableAliases) {
 
         final Map<String, Set<String>> columnNamesToSelect = getColumnNamesToSelect(selectionMap, tableAliases, optimizationContext);
@@ -245,7 +245,24 @@ public class QueryPlannerImpl implements QueryPlanner {
         
         //Flags used to group scan data sources with joins by pairs
         final AtomicBoolean firstIndexScanDataSourceAdded = new AtomicBoolean();
-        final AtomicBoolean firstTableScanDataSourceAdded = new AtomicBoolean();
+        
+        /*
+            Here we create optimized data source as a tree:
+            
+            root
+                parent
+                    parent
+                        item1
+                        item2
+                    item3
+                item4
+            
+            An item can be either an index fetch datasource or index scan datasource
+            or an index scan foreign key join or a table scan data source. Such form
+            guarantees that joins are processed in correct order so that data container
+            on each iteration has all columns for table scan condition checking.
+
+         */
         
         iterateDataSource(originalDataSource, (pds, ds, nds) -> {
 
@@ -259,7 +276,6 @@ public class QueryPlannerImpl implements QueryPlanner {
                 optimizedChildDataSource.getColumns().clear();
                 optimizedChildDataSource.getColumns().addAll(tableColumnNamesToSelect);
                 firstIndexScanDataSourceAdded.set(false);
-                firstTableScanDataSourceAdded.set(false);
                 addToDataSource(optimizedDataSource, optimizedChildDataSource);
             } else {
 
@@ -278,13 +294,12 @@ public class QueryPlannerImpl implements QueryPlanner {
 
                 if (!indexedColumnRelations.isEmpty()) {
                     //Index foreign key join
-                    firstTableScanDataSourceAdded.set(false);
                     optimizedChildDataSource.setType(INDEX_SCAN);
                     optimizedChildDataSource.getColumns().clear();
                     IndexBooleanExpression indexBooleanExpression = indexScanBooleanExpressionCandidate.isPresent() ?
                             indexScanBooleanExpressionCandidate.get() :
                             new IndexBooleanExpression();
-                    optimizedChildDataSource.setRightDatasource(null);
+                    optimizedChildDataSource.setRightDataSource(null);
                     optimizedChildDataSource.setCondition(indexBooleanExpression);
 
                     if (
@@ -293,7 +308,7 @@ public class QueryPlannerImpl implements QueryPlanner {
                             firstIndexScanDataSourceAdded.get()
                     ) {
                         indexBooleanExpression.getColumnRelations().addAll(indexedColumnRelations); //Column relations go to the second datasource in pair
-                        tailDataSource.setRightDatasource(optimizedChildDataSource);
+                        tailDataSource.setRightDataSource(optimizedChildDataSource);
                         firstIndexScanDataSourceAdded.set(false);
                     } else {
                         firstIndexScanDataSourceAdded.set(true);
@@ -301,14 +316,13 @@ public class QueryPlannerImpl implements QueryPlanner {
                     }
                 } else if (indexScanBooleanExpressionCandidate.isPresent()) {
                     //Simple index scan
-                    firstTableScanDataSourceAdded.set(false);
                     optimizedChildDataSource.setType(INDEX_SCAN);
                     optimizedChildDataSource.setCondition(indexScanBooleanExpressionCandidate.get());
                     addToDataSource(optimizedDataSource, optimizedChildDataSource);
                 } else {
                     //Add table scan data source either to previous data source or as a separate tree leaf
                     firstIndexScanDataSourceAdded.set(false);
-                    optimizedChildDataSource.setRightDatasource(null);
+                    optimizedChildDataSource.setRightDataSource(null);
                     if (optimizedChildDataSource.getJoinType().isPresent()) {
                         Optional<BooleanExpression> joinCondition = optimizedChildDataSource.getCondition();
                         if (joinCondition.isPresent()) {
@@ -320,17 +334,7 @@ public class QueryPlannerImpl implements QueryPlanner {
                             optimizedChildDataSource.setCondition(updatedJoinCondition.get());
                         }
                     }
-                    if (
-                            tailDataSource.getType() == TABLE_SCAN &&
-                            optimizedChildDataSource.getJoinType().isPresent() &&
-                            firstTableScanDataSourceAdded.get()
-                    ) {
-                        tailDataSource.setRightDatasource(optimizedChildDataSource);
-                        firstTableScanDataSourceAdded.set(false);
-                    } else {
-                        addToDataSource(optimizedDataSource, optimizedChildDataSource);
-                        firstTableScanDataSourceAdded.set(true);
-                    }
+                    addToDataSource(optimizedDataSource, optimizedChildDataSource);
                 }
             }
 

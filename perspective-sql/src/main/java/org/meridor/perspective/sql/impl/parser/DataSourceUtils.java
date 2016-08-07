@@ -31,16 +31,12 @@ public final class DataSourceUtils {
         if (!parent.getLeftDataSource().isPresent()) {
             parent.setLeftDataSource(child);
         } else if (!parent.getRightDataSource().isPresent()) {
-            parent.setRightDatasource(child);
+            parent.setRightDataSource(child);
         } else {
-            DataSource rightDataSource = parent.getRightDataSource().get();
-            if (rightDataSource.getType() == DataSource.DataSourceType.PARENT) {
-                addToDataSource(rightDataSource, child);
-            } else {
-                DataSource newRightDataSource = new DataSource(rightDataSource);
-                parent.setRightDatasource(newRightDataSource);
-                addToDataSource(newRightDataSource, child);
-            }
+            DataSource newLeftDataSource = new DataSource(parent.getLeftDataSource().get());
+            newLeftDataSource.setRightDataSource(parent.getRightDataSource().get());
+            parent.setLeftDataSource(newLeftDataSource);
+            parent.setRightDataSource(child);
         }
     }
 

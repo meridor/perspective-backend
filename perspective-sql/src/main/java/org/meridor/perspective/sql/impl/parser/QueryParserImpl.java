@@ -382,7 +382,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (previousDataSourceCandidate.isPresent()) {
             DataSource previousDataSource = previousDataSourceCandidate.get();
             previousDataSource.setJoinType(JoinType.INNER);
-            currentDataSourceTail.setRightDatasource(previousDataSource);
+            currentDataSourceTail.setRightDataSource(previousDataSource);
         }
         return chainDataSources(Optional.of(currentDataSource), remainingDataSources);
     }
@@ -480,13 +480,13 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     private DataSource appendJoinClauses(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, DataSource firstDataSource, Optional<DataSource> previousDataSourceCandidate, List<SQLParser.Join_clauseContext> remainingJoinClauseContexts) {
         if (remainingJoinClauseContexts.isEmpty()) {
-            firstDataSource.setRightDatasource(previousDataSourceCandidate.get());
+            firstDataSource.setRightDataSource(previousDataSourceCandidate.get());
             return firstDataSource;
         }
         SQLParser.Join_clauseContext currentJoinClauseContext = remainingJoinClauseContexts.remove(remainingJoinClauseContexts.size() - 1);
         DataSource currentDataSource = processJoinClause(tableAtoms, currentJoinClauseContext);
         if (previousDataSourceCandidate.isPresent()) {
-            currentDataSource.setRightDatasource(previousDataSourceCandidate.get());
+            currentDataSource.setRightDataSource(previousDataSourceCandidate.get());
         }
         return appendJoinClauses(tableAtoms, firstDataSource, Optional.of(currentDataSource), remainingJoinClauseContexts);
     }

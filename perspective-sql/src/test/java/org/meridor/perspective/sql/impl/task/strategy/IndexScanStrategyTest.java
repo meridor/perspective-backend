@@ -175,7 +175,7 @@ public class IndexScanStrategyTest {
         projectsExpression.getColumnRelations().add(columnRelation);
         projectsDataSource.setCondition(projectsExpression);
         projectsDataSource.setJoinType(joinType);
-        instancesDataSource.setRightDatasource(projectsDataSource);
+        instancesDataSource.setRightDataSource(projectsDataSource);
         return instancesDataSource;
     }
     
@@ -203,8 +203,8 @@ public class IndexScanStrategyTest {
         firstDataSource.setCondition(new IndexBooleanExpression());
         DataSource secondDataSource = new DataSource(TABLE_ALIAS);
         DataSource thirdDataSource = new DataSource(TABLE_ALIAS);
-        secondDataSource.setRightDatasource(thirdDataSource);
-        firstDataSource.setRightDatasource(secondDataSource);
+        secondDataSource.setRightDataSource(thirdDataSource);
+        firstDataSource.setRightDataSource(secondDataSource);
         DataSourceStrategy strategy = getStrategy();
         strategy.process(firstDataSource, TABLE_ALIASES);
     }

@@ -231,7 +231,7 @@ public class QueryProcessorTest {
         assertThat(rows.get(0).get("n.name"), equalTo("test-subnet"));
         assertThat(rows.get(0).get("id"), equalTo("test-instance"));
     }
-    
+
     @Test
     public void testLeftJoinWithCondition() {
         Query query = new Query();
@@ -248,7 +248,28 @@ public class QueryProcessorTest {
         assertThat(rows.get(0).get("id2"), is(nullValue()));
         
     }
-    
+
+    @Test
+    public void testMultipleJoinsWithTheSameTable() {
+        Query query = new Query() {
+            {
+                setSql("select instances.id, instances.real_id, instances.name," +
+                        " projects.id, projects.name, instances.cloud_id, instances.cloud_type," +
+                        " images.name, flavors.name, instances.addresses, instances.state," +
+                        " instances.last_updated " +
+                        "from instances inner join projects on instances.project_id = projects.id" +
+                        " left join flavors on instances.project_id = flavors.project_id and instances.flavor_id = flavors.id" +
+                        " left join images on instances.image_id = images.id order by instances.name asc"
+                );
+            }
+        };
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getRows(), is(not(empty())));
+    }
+
     @Test
     public void testOrderBy() {
         Query query = new Query();

@@ -99,7 +99,7 @@ public class IndexFetchStrategyTest {
     @Test(expected = IllegalArgumentException.class)
     public void testJoinIsPresent() {
         DataSource dataSource = new DataSource(TABLE_ALIAS);
-        dataSource.setRightDatasource(new DataSource("anything"));
+        dataSource.setRightDataSource(new DataSource("anything"));
         DataSourceStrategy strategy = getStrategy();
         strategy.process(dataSource, TABLE_ALIASES);
     }

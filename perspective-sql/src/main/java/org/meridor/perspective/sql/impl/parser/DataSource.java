@@ -62,7 +62,7 @@ public class DataSource {
         return Optional.ofNullable(rightDatasource);
     }
 
-    public void setRightDatasource(DataSource rightDataSource) {
+    public void setRightDataSource(DataSource rightDataSource) {
         this.rightDatasource = rightDataSource;
     }
 
@@ -87,7 +87,7 @@ public class DataSource {
         dataSource.setJoinType(joinType);
         dataSource.getColumns().addAll(columns);
         if (getRightDataSource().isPresent()) {
-            dataSource.setRightDatasource(getRightDataSource().get().copy());
+            dataSource.setRightDataSource(getRightDataSource().get().copy());
         }
         return dataSource;
     }
