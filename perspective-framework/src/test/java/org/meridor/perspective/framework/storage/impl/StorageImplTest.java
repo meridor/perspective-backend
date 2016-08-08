@@ -33,7 +33,7 @@ public class StorageImplTest {
     private ProjectsAware projectsAware;
     
     @Test
-    public void testInstanceEvents() {
+    public void testInstanceEvents() throws Exception {
         TestEntityListener<Instance> listener = new TestEntityListener<>(); 
         instancesAware.addInstanceListener(listener);
         Instance testInstance = EntityGenerator.getInstance();
@@ -42,13 +42,14 @@ public class StorageImplTest {
         anotherInstance.setName("another");
         instancesAware.saveInstance(anotherInstance);
         instancesAware.deleteInstance(anotherInstance.getId());
+        Thread.sleep(1000);
         assertThat(listener.getEntities(), contains(testInstance, anotherInstance, null));
         assertThat(listener.getPreviousEntities(), contains(null, testInstance, anotherInstance));
         assertThat(listener.getEvents(), contains(ADDED, MODIFIED, DELETED));
     }
     
     @Test
-    public void testImageEvents() {
+    public void testImageEvents() throws Exception {
         TestEntityListener<Image> listener = new TestEntityListener<>(); 
         imagesAware.addImageListener(listener);
         Image testImage = EntityGenerator.getImage();
@@ -57,13 +58,14 @@ public class StorageImplTest {
         anotherImage.setName("another");
         imagesAware.saveImage(anotherImage);
         imagesAware.deleteImage(anotherImage.getId());
+        Thread.sleep(1000);
         assertThat(listener.getEntities(), contains(testImage, anotherImage, null));
         assertThat(listener.getPreviousEntities(), contains(null, testImage, anotherImage));
         assertThat(listener.getEvents(), contains(ADDED, MODIFIED, DELETED));
     }
     
     @Test
-    public void testProjectEvents() {
+    public void testProjectEvents() throws Exception {
         TestEntityListener<Project> listener = new TestEntityListener<>(); 
         projectsAware.addProjectListener(listener);
         Project testProject = EntityGenerator.getProject();
@@ -71,6 +73,7 @@ public class StorageImplTest {
         Project anotherProject = EntityGenerator.getProject();
         anotherProject.setName("another");
         projectsAware.saveProject(anotherProject);
+        Thread.sleep(1000);
         assertThat(listener.getEntities(), contains(testProject, anotherProject));
         assertThat(listener.getPreviousEntities(), contains(null, testProject));
         assertThat(listener.getEvents(), contains(ADDED, MODIFIED));
