@@ -25,12 +25,12 @@ public class OpenstackApiProvider {
 
     private static final String DELIMITER = ":";
     
-    public OSClient.OSClientV3 getApi(Cloud cloud, String region) {
+    public OSClient getApi(Cloud cloud, String region) {
         String[] identity = cloud.getIdentity().split(DELIMITER);
         Assert.isTrue(identity.length == 2, "Identity should be in format project:username");
         String projectName = identity[0];
         String userName = identity[1];
-        OSClient.OSClientV3 api = OSFactory.builderV3()
+        OSClient api = OSFactory.builderV3()
                 .withConfig(getConnectionSettings())
                 .endpoint(cloud.getEndpoint())
                 .credentials(userName, cloud.getCredential(), Identifier.byId("default"))
@@ -39,13 +39,13 @@ public class OpenstackApiProvider {
         return region != null ? api.useRegion(region) : api;
     }
     
-    private OSClient.OSClientV3 getApi(Cloud cloud) {
+    private OSClient getApi(Cloud cloud) {
         return getApi(cloud, null);
     }
 
-    public void forEachComputeRegion(Cloud cloud, BiConsumer<String, OSClient.OSClientV3> action) {
-        OSClient.OSClientV3 api = getApi(cloud);
-        Set<String> computeRegions = getRegions(api, ServiceType.COMPUTE);
+    public void forEachComputeRegion(Cloud cloud, BiConsumer<String, OSClient> action) {
+        OSClient api = getApi(cloud);
+        Set<String> computeRegions = getRegions((OSClient.OSClientV3) api, ServiceType.COMPUTE);
         computeRegions.forEach(cr -> action.accept(cr, api.useRegion(cr)));
     }
     

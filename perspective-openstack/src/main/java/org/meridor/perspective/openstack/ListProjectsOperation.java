@@ -73,7 +73,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return String.format("%s_%s", cloud.getName(), region);
     }
 
-    private void addFlavors(Project project, OSClient.OSClientV3 api) {
+    private void addFlavors(Project project, OSClient api) {
         for (org.openstack4j.model.compute.Flavor flavor : api.compute().flavors().list()) {
             Flavor flavorToAdd = new org.meridor.perspective.beans.Flavor();
             flavorToAdd.setId(flavor.getId());
@@ -88,7 +88,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
 
-    private void addNetworks(Project project, OSClient.OSClientV3 api) {
+    private void addNetworks(Project project, OSClient api) {
         for (org.openstack4j.model.network.Network network : api.networking().network().list()) {
             Network networkToAdd = new org.meridor.perspective.beans.Network();
             networkToAdd.setId(network.getId());
@@ -130,7 +130,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return cidr;
     }
     
-    private void addAvailabilityZones(Project project, Cloud cloud, String region, OSClient.OSClientV3 api) {
+    private void addAvailabilityZones(Project project, Cloud cloud, String region, OSClient api) {
         try {
             for (org.openstack4j.model.compute.ext.AvailabilityZone az : api.compute().zones().list()) {
                 AvailabilityZone availabilityZone = new AvailabilityZone();
@@ -142,7 +142,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
     
-    private void addKeyPairs(Project project, OSClient.OSClientV3 api) {
+    private void addKeyPairs(Project project, OSClient api) {
         for (org.openstack4j.model.compute.Keypair keyPair : api.compute().keypairs().list()) {
             Keypair keypair = new Keypair();
             keypair.setName(keyPair.getName());

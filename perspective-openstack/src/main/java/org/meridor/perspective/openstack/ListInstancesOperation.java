@@ -158,7 +158,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
     
-    private void addConsoleUrl(Instance instance, OSClient.OSClientV3 api) {
+    private void addConsoleUrl(Instance instance, OSClient api) {
         try {
             VNCConsole console = api.compute().servers().getVNCConsole(instance.getRealId(), VNCConsole.Type.value(consoleType));
             instance.getMetadata().put(MetadataKey.CONSOLE_URL, console.getURL());

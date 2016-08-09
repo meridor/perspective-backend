@@ -14,49 +14,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.config.OperationType.REBOOT_INSTANCE;
 
 @Component
-public class RebootInstanceOperation implements ConsumingOperation<Instance> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RebootInstanceOperation.class);
-    
-    @Autowired
-    private OpenstackApiProvider apiProvider;
-
-    @Autowired
-    private ProjectsAware projectsAware;
+public class RebootInstanceOperation extends BaseInstanceOperation {
 
     @Override
-    public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
-        try {
-            Instance instance = supplier.get();
-            String region = instance.getMetadata().get(MetadataKey.REGION);
-            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
-            if (region == null) {
-                Project project = projectsAware.getProject(instance.getProjectId()).get();
-                region = project.getMetadata().get(MetadataKey.REGION);
-            }
-            api.useRegion(region);
-            api.compute().servers().reboot(instance.getRealId(), getRebootType());
-            LOG.debug(getSuccessMessage(), instance.getName(), instance.getId());
-            return true;
-        } catch (Exception e) {
-            LOG.error(getErrorMessage(), e);
-            return false;
-        }
-    }
-    
-    protected RebootType getRebootType() {
-        return RebootType.SOFT;
+    protected BiConsumer<OSClient, Instance> getAction() {
+        return (api, instance) -> api.compute().servers().reboot(instance.getRealId(), RebootType.SOFT);
     }
 
-    protected String getSuccessMessage() {
-        return "Rebooted instance {} ({})";
+    @Override
+    protected String getSuccessMessage(Instance instance) {
+        return String.format("Rebooted instance %s (%s)", instance.getName(), instance.getId());
     }
-    
+
+    @Override
     protected String getErrorMessage() {
         return "Failed to reboot instance";
     }

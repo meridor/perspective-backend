@@ -28,7 +28,7 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
         try {
             Image image = supplier.get();
             String region = image.getMetadata().get(MetadataKey.REGION);
-            OSClient.OSClientV3 api = apiProvider.getApi(cloud, region);
+            OSClient api = apiProvider.getApi(cloud, region);
             api.useRegion(region);
             String imageId = image.getRealId();
             api.compute().images().delete(imageId);
