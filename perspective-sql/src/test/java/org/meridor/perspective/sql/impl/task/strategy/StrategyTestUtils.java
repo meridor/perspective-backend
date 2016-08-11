@@ -1,6 +1,9 @@
 package org.meridor.perspective.sql.impl.task.strategy;
 
+import org.meridor.perspective.sql.DataRow;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class StrategyTestUtils {
 
@@ -46,4 +49,7 @@ public abstract class StrategyTestUtils {
     };
 
 
+    static List<List<Object>> rowsAsValues(List<DataRow> rows) {
+        return rows.stream().map(DataRow::getValues).collect(Collectors.toList());
+    }
 }

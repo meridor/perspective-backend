@@ -6,9 +6,10 @@ import org.meridor.perspective.sql.impl.expression.BooleanExpression;
 import org.meridor.perspective.sql.impl.expression.IndexBooleanExpression;
 import org.springframework.util.Assert;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class DataSourceUtils {
 
@@ -112,6 +113,64 @@ public final class DataSourceUtils {
                 rightDataSourceCandidate.get().getRightDataSource() :
                 Optional.empty();
         iterateDataSource(dataSourceCandidate, rightDataSourceCandidate, afterRightDataSourceCandidate, action);
+    }
+    
+    //Based on http://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists
+    public static <I, O> void crossProduct(List<I> left, List<I> right, Function<I, List<O>> transformer, BiConsumer<Integer, List<O>> rowConsumer) {
+        final int SIZE = left.size() * right.size();
+
+        for (int i = 0; i < SIZE; i++) {
+            List<O> newRowValues = new ArrayList<>();
+            int j = 1;
+            Integer currentIndex = null;
+            for (List<I> rowsList : new ArrayList<List<I>>() {
+                {
+                    add(left);
+                    add(right);
+                }
+            }) {
+                currentIndex = ( i / j ) % rowsList.size();
+                I row = rowsList.get(currentIndex);
+                List<O> rowPart = transformer.apply(row);
+                newRowValues.addAll(rowPart);
+                j *= rowsList.size();
+            }
+            if (currentIndex != null) {
+                rowConsumer.accept(currentIndex, newRowValues); //currentIndex % 2 == 0 for left part of row and != for right part
+            }
+        }
+    }
+    
+    public static <T> List<List<T>> crossProduct(List<Collection<T>> lists) {
+        if (lists == null || lists.size() == 0) {
+            return Collections.emptyList();
+        }
+        if (lists.size() == 1) {
+            return lists.get(0).stream()
+                    .map(Collections::singletonList)
+                    .collect(Collectors.toList());
+        }
+        if (lists.size() == 2) {
+            List<List<T>> leftRightCrossProduct = new ArrayList<>();
+            crossProduct(
+                    new ArrayList<>(lists.get(0)),
+                    new ArrayList<>(lists.get(1)),
+                    Collections::singletonList,
+                    (index, list) -> leftRightCrossProduct.add(list));
+            return leftRightCrossProduct;
+        }
+        List<T> left = new ArrayList<>(lists.get(0));
+        List<List<T>> rightCrossProduct = crossProduct(lists.subList(1, lists.size()));
+        List<List<T>> ret = new ArrayList<>();
+        left.forEach(entry -> rightCrossProduct.forEach(list -> {
+            ret.add(new ArrayList<T>(){
+                {
+                    add(entry);
+                    addAll(list);
+                }
+            });
+        }));
+        return ret;
     }
 
     public interface DataSourceAction {

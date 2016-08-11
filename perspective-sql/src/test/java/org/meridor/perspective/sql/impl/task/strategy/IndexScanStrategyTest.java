@@ -111,13 +111,40 @@ public class IndexScanStrategyTest {
     
     @Test
     public void testInnerJoin() {
+        //Simple join without condition
+        IndexBooleanExpression emptyCondition = new IndexBooleanExpression();
+        DataSource instancesDataSource = new DataSource(INSTANCES_ALIAS);
+        instancesDataSource.setCondition(emptyCondition);
+        DataSource projectsDataSource = new DataSource(PROJECTS_ALIAS);
+        ColumnRelation columnRelation = new ColumnRelation(INSTANCES_ALIAS, PROJECT_ID, PROJECTS_ALIAS, ID);
+        emptyCondition.getColumnRelations().add(columnRelation);
+        projectsDataSource.setCondition(emptyCondition);
+        projectsDataSource.setJoinType(INNER);
+        instancesDataSource.setRightDataSource(projectsDataSource);
+        
+        DataSourceStrategy strategy = getStrategy();
+        DataContainer result = strategy.process(instancesDataSource, TWO_TABLE_ALIASES);
+        assertThat(result.getRows(), hasSize(5));
+        assertThat(rowsAsValues(result.getRows()), containsInAnyOrder(
+                Arrays.asList("1", "first", "2", "2", "second_project"),
+                Arrays.asList("2", "second", "1", "1", "first_project"),
+                Arrays.asList("3", "third", "2", "2", "second_project"),
+                Arrays.asList("4", "third", "3", "3", "third_project"),
+                Arrays.asList("5", "fifth", "2", "2", "second_project")
+        ));
+    }
+    
+    @Test
+    public void testInnerJoinWithCondition() {
         DataSource dataSource = prepareJoinDataSource(INNER);
         DataSourceStrategy strategy = getStrategy();
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
         assertThat(result.getRows(), hasSize(2));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
-        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
+        assertThat(rowsAsValues(result.getRows()), containsInAnyOrder(
+                Arrays.asList("1", "first", "2", "1", "first_project"),
+                Arrays.asList("1", "first", "2", "2", "second_project")
+        ));
     }
     
     @Test
@@ -127,12 +154,14 @@ public class IndexScanStrategyTest {
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
         assertThat(result.getRows(), hasSize(6));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
-        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
-        assertThat(result.getRows().get(2).getValues(), contains("2", "second", "1", null, null));
-        assertThat(result.getRows().get(3).getValues(), contains("3", "third", "2", null, null));
-        assertThat(result.getRows().get(4).getValues(), contains("4", "third", "3", null, null));
-        assertThat(result.getRows().get(5).getValues(), contains("5", "fifth", "2", null, null));
+        assertThat(rowsAsValues(result.getRows()), containsInAnyOrder(
+                Arrays.asList("1", "first", "2", "1", "first_project"),
+                Arrays.asList("1", "first", "2", "2", "second_project"),
+                Arrays.asList("2", "second", "1", null, null),
+                Arrays.asList("3", "third", "2", null, null),
+                Arrays.asList("4", "third", "3", null, null),
+                Arrays.asList("5", "fifth", "2", null, null)
+        ));
     }
     
     @Test
@@ -142,9 +171,11 @@ public class IndexScanStrategyTest {
         DataContainer result = strategy.process(dataSource, TWO_TABLE_ALIASES);
         assertContainerColumns(result);
         assertThat(result.getRows(), hasSize(3));
-        assertThat(result.getRows().get(0).getValues(), contains("1", "first", "2", "1", "first_project"));
-        assertThat(result.getRows().get(1).getValues(), contains("1", "first", "2", "2", "second_project"));
-        assertThat(result.getRows().get(2).getValues(), contains(null, null, null, "3", "third_project"));
+        assertThat(rowsAsValues(result.getRows()), containsInAnyOrder(
+                Arrays.asList("1", "first", "2", "1", "first_project"),
+                Arrays.asList("1", "first", "2", "2", "second_project"),
+                Arrays.asList(null, null, null, "3", "third_project")
+        ));
     }
     
     private void assertContainerColumns(DataContainer result) {

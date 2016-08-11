@@ -94,6 +94,7 @@ public abstract class ScanStrategy implements DataSourceStrategy {
         int leftColumnsCount = left.getColumnNames().size();
         int rightColumnsCount = right.getColumnNames().size();
 
+        //TODO: migrate this to DataSourceUtils.crossProduct()!
         DataContainer dataContainer = mergeContainerColumns(left, right);
         for (int i = 0; i < SIZE; i++) {
             List<Object> newRowValues = new ArrayList<>();
@@ -109,8 +110,8 @@ public abstract class ScanStrategy implements DataSourceStrategy {
                 final int index = ( i / j ) % rowsList.size();
                 if (
                         (isLeftJoin && isLeftRow) ||
-                                (isRightJoin && !isLeftRow)
-                        ) {
+                        (isRightJoin && !isLeftRow)
+                ) {
                     currentIndex = index;
                 }
                 DataRow dataRow = rowsList.get(index);

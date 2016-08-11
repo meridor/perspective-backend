@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -58,10 +57,6 @@ public class TableScanStrategyTest {
     private DataSourceStrategy getStrategy() {
         return applicationContext.getBean(TableScanStrategy.class);
     }
-    
-    private static List<List<Object>> rowsAsValues(List<DataRow> rows) {
-        return rows.stream().map(DataRow::getValues).collect(Collectors.toList());
-    } 
 
     @Test(expected = IllegalArgumentException.class)
     public void testMissingTable() throws Exception {

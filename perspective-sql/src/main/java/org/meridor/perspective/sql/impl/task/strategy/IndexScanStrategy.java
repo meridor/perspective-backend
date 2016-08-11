@@ -120,30 +120,9 @@ public class IndexScanStrategy extends ScanStrategy {
 
     //Set of objects is used for OR conditions. Otherwise set contains only one value.
     private static Set<Key> conditionToKeys(int keyLength, Map<String, Set<Object>> condition) {
-        List<Set<Object>> values = new ArrayList<>(condition.values());
-        return setsCrossProduct(values).stream()
-                .map(v -> Keys.key(keyLength, v.toArray()))
-                .collect(Collectors.toSet());
-    }
-
-    //Based on http://stackoverflow.com/questions/714108/cartesian-product-of-arbitrary-sets-in-java 
-    private static Set<Set<Object>> setsCrossProduct(List<Set<Object>> sets) {
-        return setsCrossProductImpl(0, sets);
-    }
-
-    private static Set<Set<Object>> setsCrossProductImpl(int index, List<Set<Object>> sets) {
-        Set<Set<Object>> ret = new HashSet<>();
-        if (index == sets.size()) {
-            ret.add(new HashSet<>());
-        } else {
-            for (Object obj : sets.get(index)) {
-                for (Set<Object> set : setsCrossProductImpl(index + 1, sets)) {
-                    set.add(obj);
-                    ret.add(set);
-                }
-            }
-        }
-        return ret;
+        return crossProduct(new ArrayList<>(condition.values())).stream()
+                    .map(v -> Keys.key(keyLength, v.toArray()))
+                    .collect(Collectors.toSet());
     }
 
     private Index getIndex(String tableName, String columnName) {
@@ -181,8 +160,12 @@ public class IndexScanStrategy extends ScanStrategy {
                     return l;
                 });
         
-        Optional<Pair<Set<String>, Set<String>>> matchedIdsPair = columnRelations.stream()
-                .map(cr -> columnRelationToIds(cr, leftCondition, rightCondition, tableAliases, allColumnsInColumnRelations))
+        List<Pair<List<Pair<String, String>>, Pair<Set<String>, Set<String>>>> columnRelationsIds = columnRelations.stream()
+                .map(cr -> columnRelationToIdPairs(cr, leftCondition, rightCondition, tableAliases, allColumnsInColumnRelations))
+                .collect(Collectors.toList());
+
+        Optional<Pair<Set<String>, Set<String>>> allMatchedIdsPair = columnRelationsIds.stream()
+                .map(Pair::getSecond)
                 .reduce(
                         (l, r) -> new Pair<>(
                                 intersection(l.getFirst(), r.getFirst()),
@@ -190,13 +173,8 @@ public class IndexScanStrategy extends ScanStrategy {
                         )
                 );
         
-        Set<String> matchedLeftIds = matchedIdsPair.isPresent() ? matchedIdsPair.get().getFirst() : Collections.emptySet();
-        Set<String> matchedRightIds = matchedIdsPair.isPresent() ? matchedIdsPair.get().getSecond() : Collections.emptySet();
-        
-        Set<String> matchedIds =
-                (joinType == LEFT) ? 
-                        matchedLeftIds :
-                        (joinType == RIGHT) ? matchedRightIds : Collections.emptySet();
+        Set<String> allMatchedLeftIds = allMatchedIdsPair.isPresent() ? allMatchedIdsPair.get().getFirst() : Collections.emptySet();
+        Set<String> allMatchedRightIds = allMatchedIdsPair.isPresent() ? allMatchedIdsPair.get().getSecond() : Collections.emptySet();
 
         Collection<Column> leftTableColumns = tablesAware.getColumns(leftTableName); //These are all table columns
         Collection<Column> rightTableColumns = tablesAware.getColumns(rightTableName);
@@ -206,15 +184,21 @@ public class IndexScanStrategy extends ScanStrategy {
                 put(leftTableAlias, columnsToNames(leftTableColumns));
                 put(rightTableAlias, columnsToNames(rightTableColumns));
             }
-        }; 
+        };
         DataContainer dataContainer = new DataContainer(resultingColumnsMap);
-        
-        DataContainer leftResults = fetchByIds(leftTableName, leftTableAlias, matchedLeftIds);
-        DataContainer rightResults = fetchByIds(rightTableName, rightTableAlias, matchedRightIds);
 
         //Always adding inner join results
-        crossJoin(leftResults, rightResults, Optional.empty(), INNER).getRows()
-                .forEach(dataContainer::addRow);
+        columnRelationsIds.stream()
+                .flatMap(cri -> cri.getFirst().stream())
+                .filter(p -> allMatchedLeftIds.contains(p.getFirst()) && allMatchedRightIds.contains(p.getSecond()))
+                .forEach(pair -> {
+            
+                    DataContainer leftResults = fetchByIds(leftTableName, leftTableAlias, Collections.singleton(pair.getFirst()));
+                    DataContainer rightResults = fetchByIds(rightTableName, rightTableAlias, Collections.singleton(pair.getSecond()));
+            
+                    crossJoin(leftResults, rightResults, Optional.empty(), INNER).getRows()
+                            .forEach(dataContainer::addRow);
+                });
         
         //Adding outer join rows if needed
         if (joinType == LEFT) {
@@ -224,7 +208,7 @@ public class IndexScanStrategy extends ScanStrategy {
                     leftTableName,
                     leftTableAlias,
                     leftIndex,
-                    matchedIds,
+                    allMatchedLeftIds,
                     rightTableColumns.size(),
                     true,
                     dataContainer
@@ -235,7 +219,7 @@ public class IndexScanStrategy extends ScanStrategy {
                     rightTableName,
                     rightTableAlias,
                     rightIndex,
-                    matchedIds,
+                    allMatchedRightIds,
                     leftTableColumns.size(),
                     false,
                     dataContainer
@@ -245,7 +229,7 @@ public class IndexScanStrategy extends ScanStrategy {
         return dataContainer;
     }
 
-    private Pair<Set<String>, Set<String>> columnRelationToIds(
+    private Pair<List<Pair<String, String>>, Pair<Set<String>, Set<String>>> columnRelationToIdPairs(
             ColumnRelation columnRelation,
             Map<String, Set<Object>> leftCondition,
             Map<String, Set<Object>> rightCondition,
@@ -267,8 +251,9 @@ public class IndexScanStrategy extends ScanStrategy {
         Optional<IndexBooleanExpression> rightSupplementaryConditionCandidate = getSupplementaryCondition(allColumnsInColumnRelations, rightCondition);
 
         Set<Key> innerJoinForeignKeys = intersection(leftForeignKeys, rightForeignKeys);
-        Set<String> leftIds = new HashSet<>();
-        Set<String> rightIds = new HashSet<>();
+        Set<String> allLeftMatchedIds = new HashSet<>();
+        Set<String> allRightMatchedIds = new HashSet<>();
+        List<Pair<String, String>> pairs = new ArrayList<>();
         innerJoinForeignKeys.forEach(
                 mk -> {
 
@@ -278,22 +263,36 @@ public class IndexScanStrategy extends ScanStrategy {
                     Set<String> matchedRightIds = getMatchedForeignKeyIds(rightTableName, rightTableAlias, matchedRightForeignKeyIds, rightSupplementaryConditionCandidate);
 
                     if (!matchedLeftIds.isEmpty() && !matchedRightIds.isEmpty()) {
-                        leftIds.addAll(matchedLeftIds);
-                        rightIds.addAll(matchedRightIds);
+                        crossProduct(
+                                new ArrayList<>(matchedLeftIds),
+                                new ArrayList<>(matchedRightIds),
+                                Collections::singletonList,
+                                (i, s) -> {
+                                    Assert.isTrue(s.size() == 2, "Pair should contain exactly two items");
+                                    String[] pairContents = s.toArray(new String[s.size()]);
+                                    String leftId = pairContents[0];
+                                    String rightId = pairContents[1];
+                                    Pair<String, String> pair = new Pair<>(leftId, rightId);
+                                    pairs.add(pair);
+                                    allLeftMatchedIds.add(leftId);
+                                    allRightMatchedIds.add(rightId);
+                                });
                     }
                 }
         );
         if (columnRelation.getNextRelation().isPresent()) {
-            Pair<Set<String>, Set<String>> nextColumnRelationIds = columnRelationToIds(
+            Pair<List<Pair<String, String>>, Pair<Set<String>, Set<String>>> nextRelationData = columnRelationToIdPairs(
                     columnRelation.getNextRelation().get(),
                     leftCondition,
                     rightCondition,
                     tableAliases,
-                    allColumnsInColumnRelations);
-            leftIds.addAll(nextColumnRelationIds.getFirst());
-            rightIds.addAll(nextColumnRelationIds.getSecond());
+                    allColumnsInColumnRelations
+            );
+            pairs.addAll(nextRelationData.getFirst());
+            allLeftMatchedIds.addAll(nextRelationData.getSecond().getFirst());
+            allRightMatchedIds.addAll(nextRelationData.getSecond().getSecond());
         }
-        return new Pair<>(leftIds, rightIds);
+        return new Pair<>(pairs, new Pair<>(allLeftMatchedIds, allRightMatchedIds));
     }
 
     private void addNotMatchingRows(
