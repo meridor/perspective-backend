@@ -38,8 +38,7 @@ public class UpdateInstanceOperation implements ConsumingOperation<Instance> {
                 RESIZE_INSTANCE,
                 RESUME_INSTANCE,
                 HARD_REBOOT_INSTANCE,
-                SHUTDOWN_INSTANCE,
-                SNAPSHOT_INSTANCE
+                SHUTDOWN_INSTANCE
         };
     }
 }

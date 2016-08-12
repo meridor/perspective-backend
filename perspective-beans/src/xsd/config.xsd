@@ -29,7 +29,6 @@
             <xsd:enumeration value="resumeInstance"/>
             <xsd:enumeration value="addImage"/>
             <xsd:enumeration value="shutdownInstance"/>
-            <xsd:enumeration value="snapshotInstance"/>
             <xsd:enumeration value="suspendInstance"/>
         </xsd:restriction>
     </xsd:simpleType>

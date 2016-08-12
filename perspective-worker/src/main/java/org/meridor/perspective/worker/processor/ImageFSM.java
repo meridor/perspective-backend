@@ -5,6 +5,8 @@ import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
+import org.meridor.perspective.framework.messaging.Destination;
+import org.meridor.perspective.framework.messaging.Producer;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
@@ -15,6 +17,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
+
+import static org.meridor.perspective.beans.DestinationName.READ_TASKS;
+import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 
 @Component
 @FSM(start = ImageNotAvailableEvent.class)

@@ -359,13 +359,9 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceSnapshotting(InstanceSnapshottingEvent event) throws Exception {
         Instance instance = event.getInstance();
-        String cloudId = instance.getCloudId();
-        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        LOG.info("Taking instance {} ({}) snapshot", instance.getName(), instance.getId());
-        if (operationProcessor.supply(cloud, OperationType.SNAPSHOT_INSTANCE, () -> instance)) {
+        if (event.isSync()) {
+            LOG.info("Marking instance {} ({}) as snapshotting", instance.getName(), instance.getId());
             instance.setState(InstanceState.SNAPSHOTTING);
-        } else {
-            instance.setErrorReason("Failed to take snapshot");
         }
         storage.saveInstance(instance);
     }
