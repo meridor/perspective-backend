@@ -14,22 +14,25 @@
 
     <xsd:simpleType name="operationType">
         <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="deleteInstance"/>
-            <xsd:enumeration value="deleteImage"/>
-            <xsd:enumeration value="hardRebootInstance"/>
-            <xsd:enumeration value="addInstance"/>
             <xsd:enumeration value="listProjects"/>
+            
+            <xsd:enumeration value="addInstance"/>
+            <xsd:enumeration value="deleteInstance"/>
+            <xsd:enumeration value="hardRebootInstance"/>
             <xsd:enumeration value="listInstances"/>
-            <xsd:enumeration value="listImages"/>
             <xsd:enumeration value="migrateInstance"/>
             <xsd:enumeration value="pauseInstance"/>
             <xsd:enumeration value="rebootInstance"/>
             <xsd:enumeration value="rebuildInstance"/>
             <xsd:enumeration value="resizeInstance"/>
             <xsd:enumeration value="resumeInstance"/>
-            <xsd:enumeration value="addImage"/>
+            <xsd:enumeration value="startInstance"/>
             <xsd:enumeration value="shutdownInstance"/>
             <xsd:enumeration value="suspendInstance"/>
+            
+            <xsd:enumeration value="addImage"/>
+            <xsd:enumeration value="deleteImage"/>
+            <xsd:enumeration value="listImages"/>
         </xsd:restriction>
     </xsd:simpleType>
 
