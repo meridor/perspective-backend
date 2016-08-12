@@ -85,12 +85,12 @@ public class QueryProcessorTest {
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
-        assertThat(queryResult.getData().getColumnNames(), contains("column_name", "type", "default_value"));
+        assertThat(queryResult.getData().getColumnNames(), contains("column_name", "type", "default_value", "indexed"));
         assertThat(queryResult.getCount(), equalTo(2));
         List<Row> rows = queryResult.getData().getRows();
         assertThat(rows, hasSize(2));
-        assertThat(rows.get(0).getValues(), contains("project_id", "string", "null"));
-        assertThat(rows.get(1).getValues(), contains("image_id", "string", "null"));
+        assertThat(rows.get(0).getValues(), contains("project_id", "string", "null", "true"));
+        assertThat(rows.get(1).getValues(), contains("image_id", "string", "null", "true"));
     }
     
     @Test
