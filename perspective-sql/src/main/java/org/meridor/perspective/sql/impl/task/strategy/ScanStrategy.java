@@ -2,7 +2,8 @@ package org.meridor.perspective.sql.impl.task.strategy;
 
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
-import org.meridor.perspective.sql.impl.expression.*;
+import org.meridor.perspective.sql.impl.expression.BooleanExpression;
+import org.meridor.perspective.sql.impl.expression.ExpressionEvaluator;
 import org.meridor.perspective.sql.impl.parser.DataSource;
 import org.meridor.perspective.sql.impl.parser.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
+import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.crossProduct;
 
 @Component
 public abstract class ScanStrategy implements DataSourceStrategy {
@@ -85,52 +87,28 @@ public abstract class ScanStrategy implements DataSourceStrategy {
     DataContainer crossJoin(DataContainer left, DataContainer right, Optional<BooleanExpression> joinCondition, JoinType joinType) {
         final List<DataRow> leftRows = left.getRows();
         final List<DataRow> rightRows = right.getRows();
-        final int SIZE = leftRows.size() * rightRows.size();
         final Set<Integer> matchedIndexes = new HashSet<>();
 
         boolean isLeftJoin = joinType == JoinType.LEFT;
         boolean isRightJoin = joinType == JoinType.RIGHT;
-        boolean isOuterJoin = isLeftJoin || isRightJoin;
         int leftColumnsCount = left.getColumnNames().size();
         int rightColumnsCount = right.getColumnNames().size();
 
-        //TODO: migrate this to DataSourceUtils.crossProduct()!
         DataContainer dataContainer = mergeContainerColumns(left, right);
-        for (int i = 0; i < SIZE; i++) {
-            List<Object> newRowValues = new ArrayList<>();
-            int j = 1;
-            Integer currentIndex = null;
-            boolean isLeftRow = true;
-            for (List<DataRow> rowsList : new ArrayList<List<DataRow>>() {
-                {
-                    add(leftRows);
-                    add(rightRows);
-                }
-            }) {
-                final int index = ( i / j ) % rowsList.size();
-                if (
-                        (isLeftJoin && isLeftRow) ||
-                        (isRightJoin && !isLeftRow)
-                ) {
-                    currentIndex = index;
-                }
-                DataRow dataRow = rowsList.get(index);
-                List<Object> rowPart = dataRow.getValues();
-                newRowValues.addAll(rowPart);
-                j *= rowsList.size();
-                isLeftRow = false;
-            }
-
+        crossProduct(leftRows, rightRows, DataRow::getValues, (indexesPair, newRowValues) -> {
             DataRow dataRow = new DataRow(dataContainer, newRowValues);
             if (!joinCondition.isPresent() || expressionEvaluator.evaluateAs(joinCondition.get(), dataRow, Boolean.class)) {
                 dataContainer.addRow(dataRow);
-                if (isOuterJoin && (currentIndex != null) ) {
-                    matchedIndexes.add(currentIndex);
+                if (isLeftJoin) {
+                    matchedIndexes.add(indexesPair.getFirst());
+                }
+                if (isRightJoin) {
+                    matchedIndexes.add(indexesPair.getSecond());
                 }
             }
-        }
+        });
 
-        if (isOuterJoin) {
+        if (isLeftJoin || isRightJoin) {
             int rowsCount = isLeftJoin ? leftRows.size() : rightRows.size();
             for (int i = 0; i <= rowsCount - 1; i++) {
                 if (!matchedIndexes.contains(i)) {

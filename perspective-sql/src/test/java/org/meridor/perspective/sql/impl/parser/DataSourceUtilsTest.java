@@ -51,7 +51,7 @@ public class DataSourceUtilsTest {
                 Arrays.asList("1", "2"),
                 Arrays.asList("1", "4"),
                 Collections::singletonList,
-                (i, row) -> output.add(row)
+                (pair, row) -> output.add(row)
         );
         assertThat(output, hasSize(4));
         assertThat(output, contains(

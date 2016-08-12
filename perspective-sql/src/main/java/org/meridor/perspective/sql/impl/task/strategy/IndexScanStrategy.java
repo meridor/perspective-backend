@@ -267,9 +267,9 @@ public class IndexScanStrategy extends ScanStrategy {
                                 new ArrayList<>(matchedLeftIds),
                                 new ArrayList<>(matchedRightIds),
                                 Collections::singletonList,
-                                (i, s) -> {
-                                    Assert.isTrue(s.size() == 2, "Pair should contain exactly two items");
-                                    String[] pairContents = s.toArray(new String[s.size()]);
+                                (indexesPair, idsList) -> {
+                                    Assert.isTrue(idsList.size() == 2, "Pair should contain exactly two items");
+                                    String[] pairContents = idsList.toArray(new String[idsList.size()]);
                                     String leftId = pairContents[0];
                                     String rightId = pairContents[1];
                                     Pair<String, String> pair = new Pair<>(leftId, rightId);

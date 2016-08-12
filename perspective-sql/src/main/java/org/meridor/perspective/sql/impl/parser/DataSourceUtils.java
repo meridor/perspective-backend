@@ -116,27 +116,28 @@ public final class DataSourceUtils {
     }
     
     //Based on http://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists
-    public static <I, O> void crossProduct(List<I> left, List<I> right, Function<I, List<O>> transformer, BiConsumer<Integer, List<O>> rowConsumer) {
+    public static <I, O> void crossProduct(List<I> left, List<I> right, Function<I, List<O>> transformer, BiConsumer<Pair<Integer, Integer>, List<O>> rowConsumer) {
         final int SIZE = left.size() * right.size();
 
         for (int i = 0; i < SIZE; i++) {
             List<O> newRowValues = new ArrayList<>();
             int j = 1;
-            Integer currentIndex = null;
+            List<Integer> currentIndexes = new ArrayList<>();
             for (List<I> rowsList : new ArrayList<List<I>>() {
                 {
                     add(left);
                     add(right);
                 }
             }) {
-                currentIndex = ( i / j ) % rowsList.size();
-                I row = rowsList.get(currentIndex);
+                final int index = ( i / j ) % rowsList.size();
+                currentIndexes.add(index);
+                I row = rowsList.get(index);
                 List<O> rowPart = transformer.apply(row);
                 newRowValues.addAll(rowPart);
                 j *= rowsList.size();
             }
-            if (currentIndex != null) {
-                rowConsumer.accept(currentIndex, newRowValues); //currentIndex % 2 == 0 for left part of row and != for right part
+            if (currentIndexes.size() == 2) {
+                rowConsumer.accept(new Pair<>(currentIndexes.get(0), currentIndexes.get(1)), newRowValues);
             }
         }
     }
@@ -156,7 +157,7 @@ public final class DataSourceUtils {
                     new ArrayList<>(lists.get(0)),
                     new ArrayList<>(lists.get(1)),
                     Collections::singletonList,
-                    (index, list) -> leftRightCrossProduct.add(list));
+                    (indexesPair, list) -> leftRightCrossProduct.add(list));
             return leftRightCrossProduct;
         }
         List<T> left = new ArrayList<>(lists.get(0));
