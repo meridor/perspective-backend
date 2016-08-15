@@ -3,9 +3,7 @@ package org.meridor.perspective.sql.impl.expression;
 import org.meridor.perspective.sql.impl.table.Column;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
@@ -98,6 +96,10 @@ public final class ExpressionUtils {
         return columns.stream()
                 .map(Column::getName)
                 .collect(Collectors.toList());
+    }
+    
+    public static Map<String, List<String>> columnsToMap(String tableAlias, Collection<Column> columns) {
+        return Collections.singletonMap(tableAlias, columnsToNames(columns));
     }
 
     public static Optional<BooleanExpression> columnsToCondition(Optional<BooleanExpression> joinCondition, String leftTableAlias, List<String> columnNames, String rightTableAlias) {

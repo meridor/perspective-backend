@@ -31,8 +31,7 @@ public class DataContainer {
     
     public DataContainer(DataContainer another, Function<List<DataRow>, List<DataRow>> processor) {
         this(another.getColumnsMap());
-        processor.apply(another.getRows()).stream()
-                .forEach(this::addRow);
+        processor.apply(another.getRows()).forEach(this::addRow);
     }
     
     private void updateColumnsMap(Map<String, List<String>> columnsMap) {

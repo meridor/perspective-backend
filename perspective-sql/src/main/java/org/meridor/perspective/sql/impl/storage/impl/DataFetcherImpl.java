@@ -14,6 +14,7 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToMap;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 
 @Component
@@ -34,26 +35,21 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
-        List<String> columnNames = columnsToNames(columns);
-        Map<String, List<String>> columnsMap = new HashMap<String, List<String>>() {
-            {
-                put(tableAlias, columnNames);
-            }
-        };
-        DataContainer dataContainer = new DataContainer(columnsMap);
-        List<List<Object>> rows = fetchData(tableName, ids, columns);
-        rows.forEach(dataContainer::addRow);
-        return dataContainer;
+    public Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
+        return fetchData(tableName, ids, columns);
     }
 
     @Override
     public DataContainer fetch(String tableName, String tableAlias, Collection<Column> columns) {
         LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
-        return fetch(tableName, tableAlias, null, columns);
+        Map<String, List<String>> columnsMap = columnsToMap(tableAlias, columns);
+        DataContainer dataContainer = new DataContainer(columnsMap);
+        Collection<List<Object>> rows = fetchData(tableName, null, columns).values();
+        rows.forEach(dataContainer::addRow);
+        return dataContainer;
     }
 
-    private List<List<Object>> fetchData(String tableName, Set<String> ids, Collection<Column> columns) {
+    private Map<String, List<Object>> fetchData(String tableName, Set<String> ids, Collection<Column> columns) {
         if (!tableFetchers.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName));
         }

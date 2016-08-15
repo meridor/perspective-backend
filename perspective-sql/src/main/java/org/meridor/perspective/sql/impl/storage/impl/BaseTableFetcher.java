@@ -41,14 +41,14 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
     protected abstract Collection<T> getRawData();
 
     @Override
-    public List<List<Object>> fetch(Set<String> ids, Collection<Column> columns) {
+    public Map<String, List<Object>> fetch(Set<String> ids, Collection<Column> columns) {
         return prepareData(ids, columns);
     }
 
     @Override
     public abstract String getTableName();
 
-    private List<List<Object>> prepareData(Set<String> ids, Collection<Column> columns) {
+    private Map<String, List<Object>> prepareData(Set<String> ids, Collection<Column> columns) {
         Class<T> beanClass = getBeanClass();
         ObjectMapper<T> objectMapper = objectMapperAware.get(beanClass);
         String tableName = getTableName();
@@ -66,21 +66,23 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
                         String entityId = objectMapper.getId(re);
                         return ids == null || ids.contains(entityId);
                     })
-                    .map(re -> {
-                        Map<String, Object> rowAsMap = objectMapper.map(re);
-                        return columns.stream()
-                                .map(c -> {
-                                    Object columnValue = rowAsMap.get(c.getName());
-                                    return (columnValue == null && c.getDefaultValue() != null) ?
-                                            c.getDefaultValue() :
-                                            columnValue;
-                                })
-                                .collect(Collectors.toList());
-                    })
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toMap(
+                            objectMapper::getId,
+                            re -> {
+                                Map<String, Object> rowAsMap = objectMapper.map(re);
+                                return columns.stream()
+                                        .map(c -> {
+                                            Object columnValue = rowAsMap.get(c.getName());
+                                            return (columnValue == null && c.getDefaultValue() != null) ?
+                                                    c.getDefaultValue() :
+                                                    columnValue;
+                                        })
+                                        .collect(Collectors.toList());
+                            }
+                    ));
         } catch (Exception e) {
             LOG.error(String.format("Failed to fetch \"%s\" table contents", tableName), e);
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
     }
 

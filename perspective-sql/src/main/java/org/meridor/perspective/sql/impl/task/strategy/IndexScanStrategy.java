@@ -23,9 +23,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToMap;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
 import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.*;
-import static org.meridor.perspective.sql.impl.parser.JoinType.*;
+import static org.meridor.perspective.sql.impl.parser.JoinType.LEFT;
+import static org.meridor.perspective.sql.impl.parser.JoinType.RIGHT;
 
 @Component
 public class IndexScanStrategy extends ScanStrategy {
@@ -61,16 +63,25 @@ public class IndexScanStrategy extends ScanStrategy {
         return (IndexBooleanExpression) dataSource.getCondition().get();
     } 
 
-    //Here we assume that conditions contains only indexed columns. 
-    //Query planner should guarantee that. 
+    //Here we assume that condition contains only indexed columns - query 
+    //planner should guarantee that. 
     private DataContainer fetch(String tableAlias, IndexBooleanExpression condition, Map<String, String> tableAliases) {
         String tableName = tableAliases.get(tableAlias);
         Set<String> ids = getIdsFromIndex(tableName, tableAlias, condition);
-        return fetchByIds(tableName, tableAlias, ids);
+        return fetchContainer(tableName, tableAlias, ids);
     }
     
-    private DataContainer fetchByIds(String tableName, String tableAlias, Set<String> ids) {
-        return dataFetcher.fetch(tableName, tableAlias, ids, tablesAware.getColumns(tableName));
+    private DataContainer fetchContainer(String tableName, String tableAlias, Set<String> ids) {
+        Set<Column> columns = tablesAware.getColumns(tableName);
+        Map<String, List<String>> columnsMap = columnsToMap(tableAlias, columns);
+        DataContainer dataContainer = new DataContainer(columnsMap);
+        fetch(tableName, tableAlias, ids, columns).values()
+                .forEach(dataContainer::addRow);
+        return dataContainer;        
+    }
+    
+    private Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
+        return dataFetcher.fetch(tableName, tableAlias, ids, columns);
     }
     
     private Set<String> getIdsFromIndex(String tableName, String tableAlias, IndexBooleanExpression condition) {
@@ -188,16 +199,18 @@ public class IndexScanStrategy extends ScanStrategy {
         DataContainer dataContainer = new DataContainer(resultingColumnsMap);
 
         //Always adding inner join results
+        Map<String, List<Object>> leftResults = fetch(leftTableName, leftTableAlias, allMatchedLeftIds, tablesAware.getColumns(leftTableName));
+        Map<String, List<Object>> rightResults = fetch(rightTableName, rightTableAlias, allMatchedRightIds, tablesAware.getColumns(rightTableName));
         columnRelationsIds.stream()
                 .flatMap(cri -> cri.getFirst().stream())
                 .filter(p -> allMatchedLeftIds.contains(p.getFirst()) && allMatchedRightIds.contains(p.getSecond()))
                 .forEach(pair -> {
-            
-                    DataContainer leftResults = fetchByIds(leftTableName, leftTableAlias, Collections.singleton(pair.getFirst()));
-                    DataContainer rightResults = fetchByIds(rightTableName, rightTableAlias, Collections.singleton(pair.getSecond()));
-            
-                    crossJoin(leftResults, rightResults, Optional.empty(), INNER).getRows()
-                            .forEach(dataContainer::addRow);
+                    dataContainer.addRow(new ArrayList<Object>(){
+                        {
+                            addAll(leftResults.get(pair.getFirst()));
+                            addAll(rightResults.get(pair.getSecond()));
+                        }
+                    });
                 });
         
         //Adding outer join rows if needed
@@ -306,7 +319,7 @@ public class IndexScanStrategy extends ScanStrategy {
     ) {
         Set<String> allIds = index.getIds();
         Set<String> notMatchedIds = difference(allIds, matchedIds);
-        DataContainer requiredResults = fetchByIds(tableName, tableAlias, notMatchedIds);
+        DataContainer requiredResults = fetchContainer(tableName, tableAlias, notMatchedIds);
         requiredResults.getRows().forEach(dr -> {
                 List<Object> values = new ArrayList<Object>() {
                     {

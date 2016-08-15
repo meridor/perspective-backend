@@ -6,6 +6,8 @@ import org.meridor.perspective.sql.impl.table.Column;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class MockDataFetcher implements DataFetcher {
@@ -14,30 +16,31 @@ public class MockDataFetcher implements DataFetcher {
     private final Map<String, List<String>> columnsMap = new LinkedHashMap<>();
 
     @Override
-    public DataContainer fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
+    public Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
         //By convention data for mock data fetcher ID column should be the first
         if (!dataMap.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Table \"%s\" does not exist", tableName));
         }
-        List<String> columnNames = columnsMap.getOrDefault(tableName, Collections.emptyList());
-        Map<String, List<String>> columnsMap = new HashMap<String, List<String>>(){
-            {
-                put(tableAlias, columnNames);
-            }
-        };
-        DataContainer dataContainer = new DataContainer(columnsMap);
-        dataMap.get(tableName).forEach(dr -> {
-            String id = String.valueOf(dr.get(0));
-            if (ids == null || ids.contains(id)){
-                dataContainer.addRow(dr);
-            }
-        });
-        return dataContainer;
+        return dataMap.get(tableName).stream()
+                        .filter(dr -> ids == null || ids.contains(MockDataFetcher.getId(dr)))
+                        .collect(Collectors.toMap(
+                                MockDataFetcher::getId,
+                                Function.identity())
+                        );
     }
 
+    private static String getId(List<Object> dr) {
+        return String.valueOf(dr.get(0));
+    }
+    
     @Override
     public DataContainer fetch(String tableName, String tableAlias, Collection<Column> columns) {
-        return fetch(tableName, tableAlias, null, columns);
+        List<String> columnNames = columnsMap.getOrDefault(tableName, Collections.emptyList());
+        Map<String, List<String>> columnsMap = Collections.singletonMap(tableAlias, columnNames);
+        DataContainer dataContainer = new DataContainer(columnsMap);
+        fetch(tableName, tableAlias, null, columns).values()
+                .forEach(dataContainer::addRow);
+        return dataContainer;
     }
     
     public void setTableData(String tableName, List<String> columns, List<List<Object>> data) {
