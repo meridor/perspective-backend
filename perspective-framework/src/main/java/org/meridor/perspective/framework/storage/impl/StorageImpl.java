@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -81,12 +80,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             LOG.trace("Lock {} thread interrupted", lock);
             return null;
         }
-    }
-
-    @Override
-    public <K> Set<K> getMapKeys(String mapId) {
-        IMap<K, Object> map = getMap(mapId);
-        return map.keySet();
     }
 
     private <K, T> IMap<K, T> getMap(String name) {

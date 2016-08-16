@@ -4,16 +4,16 @@ import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
 @Component
-public class MockIndexStorage implements IndexStorage {
+public class IndexStorageImpl implements IndexStorage {
 
-    private final Map<IndexSignature, Index> indexes = new HashMap<>();
+    private final Map<IndexSignature, Index> indexes = new ConcurrentHashMap<>();
 
     @Override
     public Set<IndexSignature> getSignatures() {

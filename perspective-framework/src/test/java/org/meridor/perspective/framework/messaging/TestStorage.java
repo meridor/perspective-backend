@@ -176,13 +176,6 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
-    public <K> Set<K> getMapKeys(String mapId) {
-        @SuppressWarnings("unchecked")
-        Map<K, Object> map = (Map<K, Object>) otherMaps.get(mapId);
-        return map.keySet();
-    }
-
-    @Override
     public <K, T> void modifyMap(String mapId, K key, Consumer<Map<K, T>> action) {
         otherMaps.putIfAbsent(mapId, new HashMap<>());
         @SuppressWarnings("unchecked")

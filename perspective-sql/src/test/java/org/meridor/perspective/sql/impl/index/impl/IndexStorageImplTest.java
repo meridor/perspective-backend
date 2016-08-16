@@ -1,11 +1,10 @@
-package org.meridor.perspective.rest.data;
+package org.meridor.perspective.sql.impl.index.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Key;
 import org.meridor.perspective.sql.impl.index.Keys;
-import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.storage.IndexStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;

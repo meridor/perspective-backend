@@ -13,6 +13,6 @@
     <bean class="org.meridor.perspective.framework.messaging.TestStorage"/>
     <bean name="dataFetcher"
           class="org.meridor.perspective.sql.impl.storage.impl.DataFetcherImpl"/>
-    <bean name="indexStorage" class="org.meridor.perspective.sql.impl.index.impl.MockIndexStorage"/>
+    <bean name="indexStorage" class="org.meridor.perspective.sql.impl.index.impl.IndexStorageImpl"/>
 
 </beans>

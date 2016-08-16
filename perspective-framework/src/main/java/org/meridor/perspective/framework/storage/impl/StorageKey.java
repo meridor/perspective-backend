@@ -22,11 +22,6 @@ public final class StorageKey {
         return "deleted-images";
     }
     
-    public static String indexes() {
-        return "indexes";
-    }
-
-
     private StorageKey() {
     }
 }
