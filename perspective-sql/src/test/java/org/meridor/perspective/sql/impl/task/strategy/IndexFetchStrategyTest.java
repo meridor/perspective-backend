@@ -6,8 +6,6 @@ import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.DataRow;
 import org.meridor.perspective.sql.impl.index.Index;
-import org.meridor.perspective.sql.impl.index.Key;
-import org.meridor.perspective.sql.impl.index.Keys;
 import org.meridor.perspective.sql.impl.index.impl.HashTableIndex;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 import org.meridor.perspective.sql.impl.parser.DataSource;
@@ -26,13 +24,17 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.sql.impl.index.Keys.key;
 import static org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils.*;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext
 public class IndexFetchStrategyTest {
-    
+
+    private static final String ANY_ID = "id";
+    private static final String ANY_OTHER_ID = "other-id";
+
     @Autowired
     private IndexStorage indexStorage;
     
@@ -56,10 +58,9 @@ public class IndexFetchStrategyTest {
     @Before
     public void init() {
         Index index = new HashTableIndex(INDEX_SIGNATURE);
-        COLUMN_VALUES.forEach(cv -> {
-            Key key = Keys.key(0, cv);
-            index.put(key, ANY_ID);
-        });
+        index.put(key(0, COLUMN_VALUES.get(0)), ANY_ID);
+        index.put(key(0, COLUMN_VALUES.get(0)), ANY_OTHER_ID); //Two different ids for this key!
+        index.put(key(0, COLUMN_VALUES.get(1)), ANY_ID);
         indexStorage.update(INDEX_SIGNATURE, any -> index);
     }
     
@@ -78,10 +79,16 @@ public class IndexFetchStrategyTest {
 
 
         List<DataRow> rows = result.getRows();
-        assertThat(rows, hasSize(2));
+        assertThat(rows, hasSize(3));
 
         Set<Object[]> rowsAsValues = rows.stream().map(dr -> dr.getValues().toArray()).collect(Collectors.toSet());
-        assertThat(rowsAsValues, containsInAnyOrder(COLUMN_VALUES.get(0), COLUMN_VALUES.get(1)));
+        assertThat(
+                rowsAsValues,
+                containsInAnyOrder( //Should return a key for each id
+                        COLUMN_VALUES.get(0),
+                        COLUMN_VALUES.get(0),
+                        COLUMN_VALUES.get(1))
+        ); 
     }
     
     private DataSourceStrategy getStrategy() {

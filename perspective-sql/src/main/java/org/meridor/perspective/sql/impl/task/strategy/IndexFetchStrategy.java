@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Component
 public class IndexFetchStrategy implements DataSourceStrategy {
@@ -41,7 +42,10 @@ public class IndexFetchStrategy implements DataSourceStrategy {
         }
         Index index = indexCandidate.get();
         DataContainer result = new DataContainer(Collections.singletonMap(tableAlias, columnNames));
-        index.getKeys().forEach(k -> result.addRow(k.getValues()));
+        index.getKeys().forEach(k -> {
+            int numIds = index.get(k).size();
+            IntStream.rangeClosed(1, numIds).forEach(any -> result.addRow(k.getValues()));
+        });
         return result;
     }
     

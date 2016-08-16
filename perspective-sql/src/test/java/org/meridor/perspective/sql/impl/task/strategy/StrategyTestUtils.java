@@ -9,7 +9,6 @@ public abstract class StrategyTestUtils {
 
     static final String TABLE_NAME = "mock";
     static final String TABLE_ALIAS = "m";
-    static final String ANY_ID = "id";
     static final Map<String, String> TABLE_ALIASES = new HashMap<String, String>(){
         {
             put(TABLE_ALIAS, TABLE_NAME);
