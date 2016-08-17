@@ -1,5 +1,8 @@
 package org.meridor.perspective.sql.impl;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.meridor.perspective.sql.*;
 import org.meridor.perspective.sql.impl.parser.QueryType;
 import org.meridor.perspective.sql.impl.task.Task;
@@ -11,6 +14,8 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.meridor.perspective.sql.DataContainer.empty;
 import static org.meridor.perspective.sql.QueryStatus.*;
@@ -22,8 +27,29 @@ public class QueryProcessorImpl implements QueryProcessor {
     @Autowired
     private ApplicationContext applicationContext;
     
+    private LoadingCache<Query, List<QueryResult>> queryCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4) //This can be converted to property
+            .expireAfterAccess(10, TimeUnit.SECONDS)
+            .expireAfterWrite(10, TimeUnit.SECONDS)
+            .build(
+                    new CacheLoader<Query, List<QueryResult>>() {
+                        public List<QueryResult> load(Query query) throws Exception {
+                            return processQuery(query);
+                        }
+                    }
+            );
+
+
     @Override
     public List<QueryResult> process(Query query) {
+        try {
+            return queryCache.get(query);
+        } catch (ExecutionException e) {
+            return Collections.singletonList(getQueryResult(EVALUATION_ERROR, 0, empty(), e.getMessage()));
+        }
+    }
+    
+    private List<QueryResult> processQuery(Query query) {
         try {
             List<String> sqlQueries = prepareSQL(query);
             List<QueryResult> queryResults = new ArrayList<>();
