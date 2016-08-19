@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class ExtendedFlavorMapper extends BaseObjectMapper<ExtendedFlavor> {
     @Override
@@ -34,6 +36,6 @@ public class ExtendedFlavorMapper extends BaseObjectMapper<ExtendedFlavor> {
 
     @Override
     public String getId(ExtendedFlavor flavor) {
-        return flavor.getProjectId() + flavor.getId();
+        return createCompositeId(flavor.getProjectId(), flavor.getId());
     }
 }

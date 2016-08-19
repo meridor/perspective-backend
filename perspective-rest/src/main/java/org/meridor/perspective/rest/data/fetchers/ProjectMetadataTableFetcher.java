@@ -1,21 +1,19 @@
 package org.meridor.perspective.rest.data.fetchers;
 
-import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.ProjectMetadata;
 import org.meridor.perspective.rest.data.converters.ProjectConverters;
-import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
 
 @Component
-public class ProjectMetadataTableFetcher extends BaseTableFetcher<ProjectMetadata> {
-
-    @Autowired
-    private ProjectsAware projectsAware;
+public class ProjectMetadataTableFetcher extends ProjectsBasedTableFetcher<ProjectMetadata> {
 
     @Override
     protected Class<ProjectMetadata> getBeanClass() {
@@ -28,9 +26,15 @@ public class ProjectMetadataTableFetcher extends BaseTableFetcher<ProjectMetadat
     }
 
     @Override
-    protected Collection<ProjectMetadata> getRawData() {
-        return projectsAware.getProjects().stream()
-                .flatMap(ProjectConverters::projectToMetadata)
-                .collect(Collectors.toList());
+    protected Predicate<Project> getPredicate(String id) {
+        String[] pieces = parseCompositeId(id, 2);
+        String projectId = pieces[0];
+        return p -> projectId.equals(p.getId());
+
+    }
+
+    @Override
+    protected Function<Project, Stream<ProjectMetadata>> getConverter() {
+        return ProjectConverters::projectToMetadata;
     }
 }

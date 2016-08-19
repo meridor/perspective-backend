@@ -20,12 +20,14 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.framework.storage.impl.StorageKey.*;
@@ -133,6 +135,16 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
+    public Collection<Project> getProjects(Set<String> ids) {
+        return getProjectsByIdMap().getAll(ids).values();
+    }
+
+    @Override
+    public Collection<Project> getProjects(Predicate<Project> predicate) {
+        return getProjectsByIdMap().values(convertPredicate(predicate));
+    }
+
+    @Override
     public Optional<Project> getProject(String projectId) {
         return readProject(projectId, map -> Optional.ofNullable(map.get(projectId)));
     }
@@ -181,6 +193,16 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
+    public Collection<Instance> getInstances(Set<String> ids) {
+        return getInstancesByIdMap().getAll(ids).values();
+    }
+
+    @Override
+    public Collection<Instance> getInstances(Predicate<Instance> predicate) {
+        return getInstancesByIdMap().values(convertPredicate(predicate));
+    }
+
+    @Override
     public Optional<Instance> getInstance(String instanceId) {
         return readInstance(instanceId, map -> Optional.ofNullable(map.get(instanceId)));
     }
@@ -202,6 +224,16 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public Collection<Image> getImages() {
         return getImagesByIdMap().values();
+    }
+
+    @Override
+    public Collection<Image> getImages(Set<String> ids) {
+        return getImagesByIdMap().getAll(ids).values();
+    }
+
+    @Override
+    public Collection<Image> getImages(Predicate<Image> predicate) {
+        return getImagesByIdMap().values(convertPredicate(predicate));
     }
 
     @Override
@@ -253,12 +285,16 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return getMap(deletedImagesByCloud());
     }
 
+    private static <T> com.hazelcast.query.Predicate<String, T> convertPredicate(Predicate<T> predicate) {
+        return entry -> predicate.test(entry.getValue());
+    }
+
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
         LOG.debug("Marking storage as not available because application context is stopping");
         isAvailable = false;
     }
-    
+
     private static class EntryListenerImpl<T> implements 
             EntryAddedListener<String, T>,
             EntryUpdatedListener<String, T>,
@@ -299,6 +335,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             LOG.trace("Modified entity {} in map {}", entity, event.getName());
             listener.onEvent(entity, oldEntity, StorageEvent.MODIFIED);
         }
-
+    
     }
 }

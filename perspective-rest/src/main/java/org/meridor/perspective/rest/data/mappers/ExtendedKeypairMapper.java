@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class ExtendedKeypairMapper extends BaseObjectMapper<ExtendedKeypair> {
     @Override
@@ -29,6 +31,6 @@ public class ExtendedKeypairMapper extends BaseObjectMapper<ExtendedKeypair> {
 
     @Override
     public String getId(ExtendedKeypair keypair) {
-        return keypair.getProjectId() + keypair.getName();
+        return createCompositeId(keypair.getProjectId(), keypair.getName());
     }
 }

@@ -1,21 +1,17 @@
 package org.meridor.perspective.rest.data.fetchers;
 
-import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.Cloud;
 import org.meridor.perspective.rest.data.converters.ProjectConverters;
-import org.meridor.perspective.sql.impl.storage.impl.BaseTableFetcher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @Component
-public class CloudsTableFetcher extends BaseTableFetcher<Cloud> {
-
-    @Autowired
-    private ProjectsAware projectsAware;
+public class CloudsTableFetcher extends ProjectsBasedTableFetcher<Cloud> {
 
     @Override
     protected Class<Cloud> getBeanClass() {
@@ -28,9 +24,13 @@ public class CloudsTableFetcher extends BaseTableFetcher<Cloud> {
     }
 
     @Override
-    protected Collection<Cloud> getRawData() {
-        return projectsAware.getProjects().stream()
-                .flatMap(ProjectConverters::projectToCloud)
-                .collect(Collectors.toList());
+    protected Predicate<Project> getPredicate(String id) {
+        return p -> p.getCloudId().equals(id);
     }
+
+    @Override
+    protected Function<Project, Stream<Cloud>> getConverter() {
+        return ProjectConverters::projectToCloud;
+    }
+
 }

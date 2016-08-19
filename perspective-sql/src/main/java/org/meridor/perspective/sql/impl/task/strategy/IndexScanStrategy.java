@@ -75,13 +75,13 @@ public class IndexScanStrategy extends ScanStrategy {
         Set<Column> columns = tablesAware.getColumns(tableName);
         Map<String, List<String>> columnsMap = columnsToMap(tableAlias, columns);
         DataContainer dataContainer = new DataContainer(columnsMap);
-        fetch(tableName, tableAlias, ids, columns).values()
+        fetch(tableName, ids, columns).values()
                 .forEach(dataContainer::addRow);
         return dataContainer;        
     }
     
-    private Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
-        return dataFetcher.fetch(tableName, tableAlias, ids, columns);
+    private Map<String, List<Object>> fetch(String tableName, Set<String> ids, Collection<Column> columns) {
+        return dataFetcher.fetch(tableName, columns, ids);
     }
     
     private Set<String> getIdsFromIndex(String tableName, String tableAlias, IndexBooleanExpression condition) {
@@ -199,8 +199,8 @@ public class IndexScanStrategy extends ScanStrategy {
         DataContainer dataContainer = new DataContainer(resultingColumnsMap);
 
         //Always adding inner join results
-        Map<String, List<Object>> leftResults = fetch(leftTableName, leftTableAlias, allMatchedLeftIds, tablesAware.getColumns(leftTableName));
-        Map<String, List<Object>> rightResults = fetch(rightTableName, rightTableAlias, allMatchedRightIds, tablesAware.getColumns(rightTableName));
+        Map<String, List<Object>> leftResults = fetch(leftTableName, allMatchedLeftIds, tablesAware.getColumns(leftTableName));
+        Map<String, List<Object>> rightResults = fetch(rightTableName, allMatchedRightIds, tablesAware.getColumns(rightTableName));
         columnRelationsIds.stream()
                 .flatMap(cri -> cri.getFirst().stream())
                 .filter(p -> allMatchedLeftIds.contains(p.getFirst()) && allMatchedRightIds.contains(p.getSecond()))

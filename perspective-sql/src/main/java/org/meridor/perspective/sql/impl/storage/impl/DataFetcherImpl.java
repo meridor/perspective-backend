@@ -35,8 +35,8 @@ public class DataFetcherImpl implements DataFetcher {
     }
 
     @Override
-    public Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns) {
-        return fetchData(tableName, ids, columns);
+    public Map<String, List<Object>> fetch(String tableName, Collection<Column> columns, Set<String> ids) {
+        return fetchData(tableName, columns, ids);
     }
 
     @Override
@@ -44,12 +44,12 @@ public class DataFetcherImpl implements DataFetcher {
         LOG.trace("Fetching from {} as {} columns: {}", tableName, tableAlias, columnsToNames(columns).stream().collect(Collectors.joining(", ")));
         Map<String, List<String>> columnsMap = columnsToMap(tableAlias, columns);
         DataContainer dataContainer = new DataContainer(columnsMap);
-        Collection<List<Object>> rows = fetchData(tableName, null, columns).values();
+        Collection<List<Object>> rows = fetchData(tableName, columns, null).values();
         rows.forEach(dataContainer::addRow);
         return dataContainer;
     }
 
-    private Map<String, List<Object>> fetchData(String tableName, Set<String> ids, Collection<Column> columns) {
+    private Map<String, List<Object>> fetchData(String tableName, Collection<Column> columns, Set<String> ids) {
         if (!tableFetchers.containsKey(tableName)) {
             throw new IllegalArgumentException(String.format("Fetching from table \"%s\" is not supported", tableName));
         }

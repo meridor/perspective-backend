@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class ExtendedNetworkSubnetMapper extends BaseObjectMapper<ExtendedNetworkSubnet> {
     @Override
@@ -33,6 +35,6 @@ public class ExtendedNetworkSubnetMapper extends BaseObjectMapper<ExtendedNetwor
 
     @Override
     public String getId(ExtendedNetworkSubnet subnet) {
-        return subnet.getProjectId() + subnet.getNetworkId() + subnet.getId();
+        return createCompositeId(subnet.getProjectId(), subnet.getNetworkId(), subnet.getId());
     }
 }

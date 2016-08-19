@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class ImageMetadataMapper extends BaseObjectMapper<ImageMetadata> {
     @Override
@@ -28,6 +30,6 @@ public class ImageMetadataMapper extends BaseObjectMapper<ImageMetadata> {
 
     @Override
     public String getId(ImageMetadata metadata) {
-        return metadata.getId() + metadata.getKey();
+        return createCompositeId(metadata.getId(), metadata.getKey());
     }
 }

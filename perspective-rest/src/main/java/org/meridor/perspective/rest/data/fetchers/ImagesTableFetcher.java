@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Component
 public class ImagesTableFetcher extends BaseTableFetcher<Image> {
@@ -26,7 +27,12 @@ public class ImagesTableFetcher extends BaseTableFetcher<Image> {
     }
 
     @Override
-    protected Collection<Image> getRawData() {
+    protected Collection<Image> getRawEntities(Set<String> ids) {
+        return imagesAware.getImages(ids);
+    }
+
+    @Override
+    protected Collection<Image> getAllRawEntities() {
         return imagesAware.getImages();
     }
 }

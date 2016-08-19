@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class InstanceNetworksMapper extends BaseObjectMapper<InstanceNetwork> {
     @Override
@@ -27,6 +29,6 @@ public class InstanceNetworksMapper extends BaseObjectMapper<InstanceNetwork> {
 
     @Override
     public String getId(InstanceNetwork network) {
-        return network.getInstanceId() + network.getNetworkId();
+        return createCompositeId(network.getInstanceId(), network.getNetworkId());
     }
 }

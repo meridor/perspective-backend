@@ -15,7 +15,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.framework.storage.StorageEvent.*;
 
@@ -40,6 +42,21 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     public Collection<Image> getImages() {
         return imageMap.values();
+    }
+
+    @Override
+    public Collection<Image> getImages(Set<String> ids) {
+        return imageMap.keySet().stream()
+                .filter(ids::contains)
+                .map(imageMap::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Image> getImages(Predicate<Image> predicate) {
+        return imageMap.values().stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -85,6 +102,21 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
+    public Collection<Instance> getInstances(Set<String> ids) {
+        return instanceMap.keySet().stream()
+                .filter(ids::contains)
+                .map(instanceMap::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Instance> getInstances(Predicate<Instance> predicate) {
+        return instanceMap.values().stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Instance> getInstance(String instanceId) {
         return Optional.ofNullable(instanceMap.get(instanceId));
     }
@@ -124,6 +156,21 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     @Override
     public Collection<Project> getProjects() {
         return projectMap.values();
+    }
+
+    @Override
+    public Collection<Project> getProjects(Set<String> ids) {
+        return projectMap.keySet().stream()
+                .filter(ids::contains)
+                .map(projectMap::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Project> getProjects(Predicate<Project> predicate) {
+        return projectMap.values().stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
     @Override

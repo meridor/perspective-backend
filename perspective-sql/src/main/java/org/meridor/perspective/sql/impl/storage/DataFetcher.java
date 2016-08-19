@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface DataFetcher {
 
-    Map<String, List<Object>> fetch(String tableName, String tableAlias, Set<String> ids, Collection<Column> columns);
+    Map<String, List<Object>> fetch(String tableName, Collection<Column> columns, Set<String> ids);
     
     DataContainer fetch(String tableName, String tableAlias, Collection<Column> columns);
 

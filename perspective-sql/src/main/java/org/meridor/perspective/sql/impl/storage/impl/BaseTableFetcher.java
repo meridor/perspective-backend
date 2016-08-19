@@ -1,8 +1,5 @@
 package org.meridor.perspective.sql.impl.storage.impl;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.meridor.perspective.sql.impl.storage.ObjectMapper;
 import org.meridor.perspective.sql.impl.storage.ObjectMapperAware;
 import org.meridor.perspective.sql.impl.storage.TableFetcher;
@@ -13,42 +10,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
 public abstract class BaseTableFetcher<T> implements TableFetcher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TableFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseTableFetcher.class);
 
     @Autowired
     private ObjectMapperAware objectMapperAware;
 
-    private LoadingCache<String, Collection<T>> queryCache = CacheBuilder.newBuilder()
-            .concurrencyLevel(4)
-            .expireAfterAccess(10, TimeUnit.SECONDS)  //This can be converted to property
-            .expireAfterWrite(10, TimeUnit.SECONDS)
-            .build(
-                    new CacheLoader<String, Collection<T>>() {
-                        public Collection<T> load(String any) throws Exception {
-                            return getRawData();
-                        }
-                    }
-            );
-
     protected abstract Class<T> getBeanClass();
 
-    protected abstract Collection<T> getRawData();
+    protected abstract Collection<T> getAllRawEntities();
+    
+    protected abstract Collection<T> getRawEntities(Set<String> ids);
 
     @Override
     public Map<String, List<Object>> fetch(Set<String> ids, Collection<Column> columns) {
-        return prepareData(ids, columns);
-    }
-
-    @Override
-    public abstract String getTableName();
-
-    private Map<String, List<Object>> prepareData(Set<String> ids, Collection<Column> columns) {
         Class<T> beanClass = getBeanClass();
         ObjectMapper<T> objectMapper = objectMapperAware.get(beanClass);
         String tableName = getTableName();
@@ -60,12 +39,10 @@ public abstract class BaseTableFetcher<T> implements TableFetcher {
                     throw new IllegalArgumentException(String.format("Table \"%s\" does not contain column \"%s\"", tableName, columnName));
                 }
             });
-            Collection<T> rawEntities = queryCache.get(getTableName());
+            Collection<T> rawEntities = ids != null ? 
+                    ( !ids.isEmpty() ? getRawEntities(ids) : Collections.emptyList() ) :
+                    getAllRawEntities();
             return rawEntities.stream()
-                    .filter(re -> {
-                        String entityId = objectMapper.getId(re);
-                        return ids == null || ids.contains(entityId);
-                    })
                     .collect(Collectors.toMap(
                             objectMapper::getId,
                             re -> {

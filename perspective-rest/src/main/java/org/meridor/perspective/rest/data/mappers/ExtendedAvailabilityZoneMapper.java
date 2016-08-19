@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.createCompositeId;
+
 @Component
 public class ExtendedAvailabilityZoneMapper extends BaseObjectMapper<ExtendedAvailabilityZone> {
     @Override
@@ -27,6 +29,6 @@ public class ExtendedAvailabilityZoneMapper extends BaseObjectMapper<ExtendedAva
 
     @Override
     public String getId(ExtendedAvailabilityZone availabilityZone) {
-        return availabilityZone.getProjectId() + availabilityZone.getName();
+        return createCompositeId(availabilityZone.getProjectId(), availabilityZone.getName());
     }
 }

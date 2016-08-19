@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Component
 public class ProjectsTableFetcher extends BaseTableFetcher<Project> {
@@ -26,7 +27,12 @@ public class ProjectsTableFetcher extends BaseTableFetcher<Project> {
     }
 
     @Override
-    protected Collection<Project> getRawData() {
+    protected Collection<Project> getRawEntities(Set<String> ids) {
+        return projectsAware.getProjects(ids);
+    }
+
+    @Override
+    protected Collection<Project> getAllRawEntities() {
         return projectsAware.getProjects();
     }
 }
