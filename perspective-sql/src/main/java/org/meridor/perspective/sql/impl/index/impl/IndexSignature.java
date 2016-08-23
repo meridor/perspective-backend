@@ -16,7 +16,9 @@ public class IndexSignature implements Serializable {
     }
 
     public Map<String, Set<String>> getDesiredColumns() {
-        return new HashMap<>(desiredColumns);
+        Map<String, Set<String>> ret = new HashMap<>();
+        desiredColumns.forEach((k, v) -> ret.put(k, new TreeSet<String>(v)));
+        return ret;
     }
     
     @Override

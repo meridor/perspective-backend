@@ -115,6 +115,21 @@ public final class ExpressionUtils {
                         .reduce((l, r) -> new BinaryBooleanExpression(l, AND, r));
     }
 
+    public static Map<String, Set<Object>> mergeFixedValueConditions(Map<String, Set<Object>> left, Map<String, Set<Object>> right) {
+        right.keySet().forEach(columnName -> {
+            Set<Object> newValues = right.get(columnName);
+            if (newValues != null) {
+                left.merge(columnName, newValues, (l, r) -> new HashSet<Object>(){
+                    {
+                        addAll(l);
+                        addAll(r);
+                    }
+                });
+            }
+        });
+        return left;
+    }
+    
     private ExpressionUtils() {}
     
 }

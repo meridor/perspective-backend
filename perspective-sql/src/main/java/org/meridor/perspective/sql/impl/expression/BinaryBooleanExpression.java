@@ -64,17 +64,7 @@ public class BinaryBooleanExpression implements BooleanExpression {
         }
         if (rightAsBooleanExpression.isPresent()) {
             Map<String, Set<Object>> rightFixedValueConditions = rightAsBooleanExpression.get().getFixedValueConditions(tableAlias);
-            rightFixedValueConditions.keySet().forEach(columnName -> {
-                Set<Object> newValues = rightFixedValueConditions.get(columnName);
-                if (newValues != null) {
-                    ret.merge(columnName, newValues, (l, r) -> new HashSet<Object>(){
-                        {
-                            addAll(l);
-                            addAll(r);
-                        }
-                    });
-                }
-            });
+            return ExpressionUtils.mergeFixedValueConditions(ret, rightFixedValueConditions);
         }
         return ret;
     }

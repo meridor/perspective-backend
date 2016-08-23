@@ -30,7 +30,8 @@ import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.OR;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToNames;
-import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.*;
+import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.INDEX_FETCH;
+import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.INDEX_SCAN;
 import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.*;
 import static org.meridor.perspective.sql.impl.table.Column.ANY_TABLE;
 
@@ -398,8 +399,13 @@ public class QueryPlannerImpl implements QueryPlanner {
         return false;
     }
 
-    private Optional<IndexBooleanExpression> getIndexScanBooleanExpression(String tableAlias, Map<String, String> tableAliases, Map<String, Map<String, Set<Object>>> fixedValuesConditions) {
+    private Optional<IndexBooleanExpression> getIndexScanBooleanExpression(
+            String tableAlias,
+            Map<String, String> tableAliases,
+            Map<String, Map<String, Set<Object>>> fixedValuesConditions
+    ) {
         String tableName = tableAliases.get(tableAlias);
+        preprocessFixedValueConditions(tableAlias, tableAliases, fixedValuesConditions);
         boolean hasFixedValuesConditions = fixedValuesConditions.containsKey(tableAlias);
         if (hasFixedValuesConditions) {
             Map<String, Set<Object>> tableFixedValuesConditions = fixedValuesConditions.get(tableAlias);
@@ -425,6 +431,43 @@ public class QueryPlannerImpl implements QueryPlanner {
             }
         }
         return Optional.empty();
+    }
+    
+    //Moves conditions with * table alias to respective real aliases if possible
+    private void preprocessFixedValueConditions(
+            String tableAlias,
+            Map<String, String> tableAliases,
+            Map<String, Map<String, Set<Object>>> fixedValuesConditions
+    ) {
+        if (fixedValuesConditions.containsKey(ANY_TABLE)) {
+            HashSet<String> columnsWithAnyTable = new HashSet<>(fixedValuesConditions.get(ANY_TABLE).keySet());
+            columnsWithAnyTable.forEach(columnName -> {
+                Set<String> columnTableAliases = getColumnTableAliases(columnName, tableAliases);
+                if (columnTableAliases.size() == 1) {
+                    Map<String, Set<Object>> additionalValues = new HashMap<String, Set<Object>>(){
+                        {
+                            put(columnName, fixedValuesConditions.get(ANY_TABLE).remove(columnName));
+                        }
+                    };
+                    fixedValuesConditions.merge(tableAlias, additionalValues, ExpressionUtils::mergeFixedValueConditions);
+                }
+            });
+
+            if (fixedValuesConditions.get(ANY_TABLE).isEmpty()) {
+                fixedValuesConditions.remove(ANY_TABLE);
+            }
+        }
+    }
+    
+    private Set<String> getColumnTableAliases(String columnName, Map<String, String> tableAliases) {
+        Set<String> ret = new HashSet<>();
+        tableAliases.keySet().forEach(tableAlias -> {
+            String tableName = tableAliases.get(tableAlias);
+            if (tablesAware.getColumn(tableName, columnName).isPresent()) {
+                ret.add(tableAlias);
+            }
+        });
+        return ret;
     }
 
     //Currently we require that all columns from relation should be present in indexes.

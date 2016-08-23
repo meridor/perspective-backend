@@ -190,12 +190,26 @@ public class QueryPlannerImplTest {
 
     @Test
     public void testIndexScanStrategySimpleFetch() throws Exception {
+        testIndexScanStrategySimpleFetch(
+                new ColumnExpression(ID, INSTANCES_ALIAS),
+                new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE)
+        );
+    }
+
+    @Test
+    public void testIndexScanStrategySimpleFetchNotAliasedColumn() throws Exception {
+        testIndexScanStrategySimpleFetch(
+                new ColumnExpression(ID),
+                new SimpleBooleanExpression(new ColumnExpression(NAME), EQUAL, VALUE)
+        );
+    }
+    
+    private void testIndexScanStrategySimpleFetch(ColumnExpression columnExpression, BooleanExpression whereCondition) throws Exception {
         DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
         queryParser.setSelectQueryAware(new MockSelectQueryAware(){
             {
-                getSelectionMap().put(ID, new ColumnExpression(ID, INSTANCES_ALIAS));
+                getSelectionMap().put(ID, columnExpression);
                 setDataSource(leftDataSource);
-                BooleanExpression whereCondition = new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE);
                 setWhereExpression(whereCondition); //Where clause columns are from index but select map contains not indexed columns
                 getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
             }
@@ -208,11 +222,11 @@ public class QueryPlannerImplTest {
         
         BooleanExpression optimizedCondition = optimizedLeftDataSource.getCondition().get();
         assertThat(optimizedCondition, is(instanceOf(IndexBooleanExpression.class)));
-//        assertThat(optimizedCondition.getTableAliases(), contains(INSTANCES_ALIAS));
         assertThat(optimizedCondition.getColumnRelations(), is(empty()));
         assertThat(optimizedCondition.getRestOfExpression().isPresent(), is(false));
         assertThat(optimizedCondition.getFixedValueConditions(INSTANCES_ALIAS), equalTo(Collections.singletonMap(NAME, Collections.singleton(VALUE))));
     }
+    
 
     @Test
     public void testIndexScanStrategyInnerJoin() throws Exception {
