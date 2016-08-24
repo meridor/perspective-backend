@@ -140,11 +140,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Project> getProjects(Predicate<Project> predicate) {
-        return getProjectsByIdMap().values(convertPredicate(predicate));
-    }
-
-    @Override
     public Optional<Project> getProject(String projectId) {
         return readProject(projectId, map -> Optional.ofNullable(map.get(projectId)));
     }
@@ -198,11 +193,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
-    public Collection<Instance> getInstances(Predicate<Instance> predicate) {
-        return getInstancesByIdMap().values(convertPredicate(predicate));
-    }
-
-    @Override
     public Optional<Instance> getInstance(String instanceId) {
         return readInstance(instanceId, map -> Optional.ofNullable(map.get(instanceId)));
     }
@@ -229,11 +219,6 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public Collection<Image> getImages(Set<String> ids) {
         return getImagesByIdMap().getAll(ids).values();
-    }
-
-    @Override
-    public Collection<Image> getImages(Predicate<Image> predicate) {
-        return getImagesByIdMap().values(convertPredicate(predicate));
     }
 
     @Override
@@ -286,7 +271,14 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     private static <T> com.hazelcast.query.Predicate<String, T> convertPredicate(Predicate<T> predicate) {
-        return entry -> predicate.test(entry.getValue());
+        @SuppressWarnings("all")
+        com.hazelcast.query.Predicate<String, T> ret = new com.hazelcast.query.Predicate<String, T>() {
+            @Override
+            public boolean apply(Map.Entry<String, T> mapEntry) {
+                return predicate.test(mapEntry.getValue());
+            }
+        };
+        return ret;
     }
 
     @Override

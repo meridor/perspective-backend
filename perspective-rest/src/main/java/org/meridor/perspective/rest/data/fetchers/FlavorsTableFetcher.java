@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
@@ -25,19 +24,15 @@ public class FlavorsTableFetcher extends ProjectsBasedTableFetcher<ExtendedFlavo
         return TableName.FLAVORS.getTableName();
     }
 
-
     @Override
-    protected Predicate<Project> getPredicate(String id) {
+    protected String getBaseEntityId(String id) {
         String[] pieces = parseCompositeId(id, 2);
-        String projectId = pieces[0];
-        String flavorId = pieces[1];
-        return p ->
-                projectId.equals(p.getId()) &&
-                p.getFlavors().stream().anyMatch(f -> flavorId.equals(f.getId()));
+        return pieces[0];
     }
 
     @Override
     protected Function<Project, Stream<ExtendedFlavor>> getConverter() {
         return ProjectConverters::projectToFlavors;
     }
+
 }

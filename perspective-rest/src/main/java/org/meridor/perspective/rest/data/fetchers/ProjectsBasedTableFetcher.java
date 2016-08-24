@@ -7,18 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.Set;
 
 @Component
 public abstract class ProjectsBasedTableFetcher<T> extends DerivedTableFetcher<Project, T> {
     
     @Autowired
     private ProjectsAware projectsAware;
-    
+
     @Override
-    protected Function<Predicate<Project>, Collection<Project>> getPredicateFetcher() {
-        return predicate -> projectsAware.getProjects(predicate);
+    protected Collection<Project> getBaseEntities(Set<String> ids) {
+        return projectsAware.getProjects(ids);
     }
 
     @Override

@@ -46,7 +46,7 @@ public class InstanceFSMTest {
         //Emulating eviction
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.schedule(() -> {
-            storage.getInstances(i -> true).removeIf(
+            storage.getInstances().removeIf(
                     i -> Duration.between(i.getTimestamp(), now).getSeconds() > 5
             );
         }, 100, TimeUnit.MILLISECONDS);

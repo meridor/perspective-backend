@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.data.converters.ImageConverters;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
@@ -26,11 +25,9 @@ public class ImageMetadataTableFetcher extends ImagesBasedTableFetcher<ImageMeta
     }
 
     @Override
-    protected Predicate<Image> getPredicate(String id) {
+    protected String getBaseEntityId(String id) {
         String[] pieces = parseCompositeId(id, 2);
-        String imageId = pieces[0];
-        return i -> imageId.equals(i.getId());
-
+        return pieces[0];
     }
 
     @Override

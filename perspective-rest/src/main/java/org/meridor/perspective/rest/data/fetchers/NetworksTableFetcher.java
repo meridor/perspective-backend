@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
@@ -26,13 +25,9 @@ public class NetworksTableFetcher extends ProjectsBasedTableFetcher<ExtendedNetw
     }
 
     @Override
-    protected Predicate<Project> getPredicate(String id) {
+    protected String getBaseEntityId(String id) {
         String[] pieces = parseCompositeId(id, 2);
-        String projectId = pieces[0];
-        String networkId = pieces[1];
-        return p ->
-                projectId.equals(p.getId()) &&
-                p.getNetworks().stream().anyMatch(n -> networkId.equals(n.getId()));
+        return pieces[0];
     }
 
     @Override

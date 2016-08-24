@@ -4,11 +4,12 @@ import org.meridor.perspective.sql.impl.index.Index;
 import org.meridor.perspective.sql.impl.index.Key;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class HashTableIndex implements Index {
     
-    private final Map<Key, Set<String>> index = new HashMap<>();
+    private final Map<Key, Set<String>> index = new ConcurrentHashMap<>();
     private final IndexSignature signature;
     private final int keyLength;
 
@@ -24,8 +25,14 @@ public class HashTableIndex implements Index {
     @Override
     public void put(Key key, String id) {
         checkKeyLength(key);
-        index.putIfAbsent(key, new LinkedHashSet<>());
-        index.get(key).add(id);
+        index.compute(key, (k, oldIds) -> new LinkedHashSet<String>(){
+            {
+                if (oldIds != null) {
+                    addAll(oldIds);
+                }
+                add(id);
+            }
+        });
     }
 
     private void checkKeyLength(Key key) {

@@ -5,7 +5,6 @@ import org.meridor.perspective.beans.Instance;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public interface InstancesAware {
 
@@ -15,8 +14,6 @@ public interface InstancesAware {
     Collection<Instance> getInstances();
     
     Collection<Instance> getInstances(Set<String> ids);
-    
-    Collection<Instance> getInstances(Predicate<Instance> predicate);
 
     Optional<Instance> getInstance(String instanceId);
 

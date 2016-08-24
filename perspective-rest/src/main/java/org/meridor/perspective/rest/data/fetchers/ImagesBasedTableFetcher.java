@@ -7,18 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.Set;
 
 @Component
 public abstract class ImagesBasedTableFetcher<T> extends DerivedTableFetcher<Image, T> {
     
     @Autowired
     private ImagesAware imagesAware;
-    
+
     @Override
-    protected Function<Predicate<Image>, Collection<Image>> getPredicateFetcher() {
-        return predicate -> imagesAware.getImages(predicate);
+    protected Collection<Image> getBaseEntities(Set<String> ids) {
+        return imagesAware.getImages(ids);
     }
 
     @Override

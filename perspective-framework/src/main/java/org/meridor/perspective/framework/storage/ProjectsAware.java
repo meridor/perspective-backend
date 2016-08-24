@@ -5,7 +5,6 @@ import org.meridor.perspective.beans.Project;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public interface ProjectsAware {
 
@@ -14,8 +13,6 @@ public interface ProjectsAware {
     Collection<Project> getProjects();
     
     Collection<Project> getProjects(Set<String> ids);
-    
-    Collection<Project> getProjects(Predicate<Project> predicate);
 
     void saveProject(Project project);
 

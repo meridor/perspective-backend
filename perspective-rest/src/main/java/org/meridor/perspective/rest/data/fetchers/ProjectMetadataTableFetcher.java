@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.data.converters.ProjectConverters;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
@@ -26,11 +25,9 @@ public class ProjectMetadataTableFetcher extends ProjectsBasedTableFetcher<Proje
     }
 
     @Override
-    protected Predicate<Project> getPredicate(String id) {
+    protected String getBaseEntityId(String id) {
         String[] pieces = parseCompositeId(id, 2);
-        String projectId = pieces[0];
-        return p -> projectId.equals(p.getId());
-
+        return pieces[0];
     }
 
     @Override

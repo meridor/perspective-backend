@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.data.converters.InstanceConverters;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.meridor.perspective.sql.impl.storage.impl.StorageUtils.parseCompositeId;
@@ -26,10 +25,9 @@ public class InstanceMetadataTableFetcher extends InstancesBasedTableFetcher<Ins
     }
 
     @Override
-    protected Predicate<Instance> getPredicate(String id) {
+    protected String getBaseEntityId(String id) {
         String[] pieces = parseCompositeId(id, 2);
-        String instanceId = pieces[0];
-        return i -> instanceId.equals(i.getId());
+        return pieces[0];
     }
 
     @Override
