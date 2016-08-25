@@ -321,11 +321,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private BooleanExpression processInExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
-        Set<Object> processedExpressions = simpleBooleanExpression.expression().stream()
+        List<Object> processedExpressions = simpleBooleanExpression.expression().stream()
                 .map(e -> processExpression(e).getExpression())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         Object value = processedExpressions.remove(0);
-        InExpression inExpression = new InExpression(value, processedExpressions);
+        InExpression inExpression = new InExpression(value, new HashSet<>(processedExpressions));
         return (simpleBooleanExpression.NOT() != null) ?
                 new UnaryBooleanExpression(inExpression, UnaryBooleanOperator.NOT) :
                 inExpression;
