@@ -25,6 +25,15 @@ public class BinaryArithmeticExpression {
     public Object getRight() {
         return right;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        return
+                o instanceof BinaryArithmeticExpression &&
+                left.equals(((BinaryArithmeticExpression) o).getLeft()) &&
+                binaryArithmeticOperator.equals(((BinaryArithmeticExpression) o).getBinaryArithmeticOperator()) &&
+                right.equals(((BinaryArithmeticExpression) o).getRight());
+    }
 
     @Override
     public String toString() {

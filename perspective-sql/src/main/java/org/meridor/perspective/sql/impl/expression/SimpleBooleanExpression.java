@@ -32,6 +32,15 @@ public class SimpleBooleanExpression implements BooleanExpression {
     }
 
     @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof SimpleBooleanExpression
+                && left.equals(((SimpleBooleanExpression) another).getLeft())
+                && booleanRelation.equals(((SimpleBooleanExpression) another).getBooleanRelation())
+                && right.equals(((SimpleBooleanExpression) another).getRight());
+    }
+
+    @Override
     public String toString() {
         return String.format("%s %s %s", left, booleanRelation.getText(), right);
     }

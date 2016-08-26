@@ -2,7 +2,6 @@ package org.meridor.perspective.sql.impl.expression;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FunctionExpression {
     
@@ -24,11 +23,19 @@ public class FunctionExpression {
     }
 
     @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof FunctionExpression
+                && functionName.equals(((FunctionExpression) another).getFunctionName())
+                && args.equals(((FunctionExpression) another).getArgs());
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "%s(%s)",
                 functionName,
-                Stream.of(args).map(String::valueOf).collect(Collectors.joining(", "))
+                args.stream().map(String::valueOf).collect(Collectors.joining(", "))
         );
     }
 }

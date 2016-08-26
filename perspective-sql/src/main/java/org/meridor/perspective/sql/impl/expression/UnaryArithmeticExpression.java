@@ -20,6 +20,14 @@ public class UnaryArithmeticExpression {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return 
+                o instanceof UnaryArithmeticExpression
+                && value.equals(((UnaryArithmeticExpression)o).getValue())
+                && unaryArithmeticOperator.equals(((UnaryArithmeticExpression)o).getUnaryArithmeticOperator());
+    }
+    
+    @Override
     public String toString() {
         return unaryArithmeticOperator.getText() + value;
     }

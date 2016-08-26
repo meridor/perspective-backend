@@ -26,8 +26,13 @@ public class BinaryBooleanExpression implements BooleanExpression {
         return right;
     }
     
-    public static BinaryBooleanExpression alwaysTrue() {
-        return new BinaryBooleanExpression(true, BinaryBooleanOperator.OR, true);
+    @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof BinaryBooleanExpression
+                && left.equals(((BinaryBooleanExpression) another).getLeft())
+                && binaryBooleanOperator.equals(((BinaryBooleanExpression) another).getBinaryBooleanOperator())
+                && right.equals(((BinaryBooleanExpression) another).getRight());
     }
 
     @Override

@@ -89,7 +89,6 @@ columns_list
 
 complex_boolean_expression
    : simple_boolean_expression
-   | simple_boolean_expression binary_boolean_operator simple_boolean_expression
    | unary_boolean_operator complex_boolean_expression
    | complex_boolean_expression (binary_boolean_operator complex_boolean_expression)+
    | LPAREN complex_boolean_expression RPAREN
@@ -174,6 +173,8 @@ simple_boolean_expression
    | expression (NOT)? LIKE expression
    | expression (NOT)? REGEXP expression
    | expression (NOT)? IN LPAREN expression (COMMA expression)* RPAREN
+   | TRUE
+   | FALSE
    ;
 
 table_references
@@ -198,7 +199,7 @@ outer_join_clause
    ;
 
 natural_join_clause
-   : NATURAL ( ( LEFT | RIGHT ) OUTER )? JOIN table_atom
+   : NATURAL ( LEFT | RIGHT )? ( OUTER )? JOIN table_atom
    ;
    
 join_clause

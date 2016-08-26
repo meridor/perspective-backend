@@ -194,17 +194,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             BooleanExpression expression = processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
             UnaryBooleanOperator unaryBooleanOperator = processUnaryBooleanOperator(complexBooleanExpression.unary_boolean_operator());
             return new UnaryBooleanExpression(expression, unaryBooleanOperator);
-        } else if (
-                complexBooleanExpression.binary_boolean_operator(0) != null &&
-                complexBooleanExpression.simple_boolean_expression(0) != null &&
-                complexBooleanExpression.simple_boolean_expression(1) != null
-        ) {
-            Object left = processSimpleBooleanExpression(complexBooleanExpression.simple_boolean_expression(0));
-            Object right = processSimpleBooleanExpression(complexBooleanExpression.simple_boolean_expression(1));
-            BinaryBooleanOperator binaryBooleanOperator = processBinaryBooleanOperator(complexBooleanExpression.binary_boolean_operator(0));
-            return new BinaryBooleanExpression(left, binaryBooleanOperator, right);
-        } else if (complexBooleanExpression.simple_boolean_expression(0) != null) {
-            return processSimpleBooleanExpression(complexBooleanExpression.simple_boolean_expression(0));
+        } else if (complexBooleanExpression.simple_boolean_expression() != null) {
+            return processSimpleBooleanExpression(complexBooleanExpression.simple_boolean_expression());
         } else if (complexBooleanExpression.binary_boolean_operator(0) != null && complexBooleanExpression.complex_boolean_expression(1) != null) {
             return processComplexBooleanExpressionsList(
                     Optional.empty(),
@@ -265,6 +256,10 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return processRegexpExpression(simpleBooleanExpression);
         } else if (simpleBooleanExpression.IN() != null && simpleBooleanExpression.expression().size() >= 2) {
             return processInExpression(simpleBooleanExpression);
+        } else if (simpleBooleanExpression.TRUE() != null) {
+            return new LiteralBooleanExpression(true);
+        } else if (simpleBooleanExpression.FALSE() != null) {
+            return new LiteralBooleanExpression(false);
         }
         throw new ParseException(String.format("Unsupported simple boolean expression: \'%s\'", simpleBooleanExpression.getText()));
     }
@@ -627,7 +622,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             Integer intValue = Integer.valueOf(literal.INT().getText());
             return pair(String.valueOf(intValue), intValue);
         } else if (literal.FLOAT() != null) {
-            Float floatValue = Float.valueOf(literal.INT().getText());
+            Float floatValue = Float.valueOf(literal.FLOAT().getText());
             return pair(String.valueOf(floatValue), floatValue);
         } else if (literal.NULL() != null) {
             return pair("NULL", new Null());
@@ -814,19 +809,12 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
 
     @Override
     public void exitLimit_clause(SQLParser.Limit_clauseContext ctx) {
+        //According to grammar limit and offset can parsed only as positive integers
         if (ctx.offset() != null) {
-            Integer limitOffset = Integer.valueOf(ctx.offset().INT().getText());
-            if (limitOffset < 0) {
-                errors.add(String.format("Limit offset count should be less than or equal to zero but %d was given", limitOffset));
-            } else {
-                this.limitOffset = limitOffset;
-            }
+            this.limitOffset = Integer.valueOf(ctx.offset().INT().getText());
         }
-        Integer limitCount = Integer.valueOf(ctx.row_count().INT().getText());
-        if (limitCount < 0) {
-            errors.add(String.format("Limit count should be less than or equal to zero but %d was given", limitCount));
-        } else {
-            this.limitCount = limitCount;
+        if (ctx.row_count() != null) {
+            this.limitCount = Integer.valueOf(ctx.row_count().INT().getText());
         }
     }
 

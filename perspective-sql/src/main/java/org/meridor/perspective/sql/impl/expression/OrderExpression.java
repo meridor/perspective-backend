@@ -23,6 +23,14 @@ public class OrderExpression {
     }
 
     @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof OrderExpression
+                && expression.equals(((OrderExpression) another).getExpression())
+                && orderDirection.equals(((OrderExpression) another).getOrderDirection());
+    }
+
+    @Override
     public String toString() {
         return "OrderExpression{" +
                 "expression=" + expression +

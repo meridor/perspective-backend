@@ -101,11 +101,11 @@ public class DataSource {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object another) {
+        if (this == another) return true;
+        if (another == null || getClass() != another.getClass()) return false;
 
-        DataSource that = (DataSource) o;
+        DataSource that = (DataSource) another;
 
         if (isNaturalJoin != that.isNaturalJoin) return false;
         if (tableAlias != null ? !tableAlias.equals(that.tableAlias) : that.tableAlias != null)
@@ -116,7 +116,9 @@ public class DataSource {
         if (condition != null ? !condition.equals(that.condition) : that.condition != null)
             return false;
         if (!columns.equals(that.columns)) return false;
-        return rightDatasource != null ? rightDatasource.equals(that.rightDatasource) : that.rightDatasource == null && type == that.type;
+        if (rightDatasource != null ? !rightDatasource.equals(that.rightDatasource) : that.rightDatasource != null)
+            return false;
+        return type == that.type;
 
     }
 

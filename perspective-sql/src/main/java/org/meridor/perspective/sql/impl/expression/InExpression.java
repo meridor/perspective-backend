@@ -29,6 +29,14 @@ public class InExpression implements BooleanExpression {
     }
 
     @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof InExpression
+                && value.equals(((InExpression) another).getValue())
+                && candidates.equals(((InExpression) another).getCandidates());
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "%s IN (%s)",

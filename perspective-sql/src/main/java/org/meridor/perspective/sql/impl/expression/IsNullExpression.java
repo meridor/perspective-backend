@@ -25,7 +25,19 @@ public class IsNullExpression implements BooleanExpression {
     }
 
     @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof IsNullExpression
+                && value.equals(((IsNullExpression) another).getValue());
+    }
+
+    @Override
     public Optional<BooleanExpression> getRestOfExpression() {
         return Optional.of(this);
+    }
+
+    @Override
+    public String toString() {
+        return value + " is null";
     }
 }

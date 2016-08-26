@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.DataContainer;
 import org.meridor.perspective.sql.impl.expression.BinaryBooleanExpression;
+import org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator;
 import org.meridor.perspective.sql.impl.expression.ColumnRelation;
 import org.meridor.perspective.sql.impl.expression.IndexBooleanExpression;
 import org.meridor.perspective.sql.impl.index.Index;
@@ -222,7 +223,7 @@ public class IndexScanStrategyTest {
     @Test(expected = IllegalArgumentException.class)
     public void testWrongConditionType() {
         DataSource dataSource = new DataSource(TABLE_ALIAS);
-        dataSource.setCondition(BinaryBooleanExpression.alwaysTrue());
+        dataSource.setCondition(new BinaryBooleanExpression(true, BinaryBooleanOperator.OR, true));
         assertThat(dataSource.getCondition().isPresent(), is(true));
         DataSourceStrategy strategy = getStrategy();
         strategy.process(dataSource, TABLE_ALIASES);

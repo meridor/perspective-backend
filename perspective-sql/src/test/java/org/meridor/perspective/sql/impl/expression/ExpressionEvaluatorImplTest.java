@@ -131,6 +131,12 @@ public class ExpressionEvaluatorImplTest {
     }
     
     @Test
+    public void testEvaluateLiteralBooleanExpression() {
+        assertThat(bool(true), is(true));
+        assertThat(bool(false), is(false));
+    }
+    
+    @Test
     public void testEvaluateSimpleBooleanExpression() {
         assertThat(bool(null, EQUAL, 1), is(false));
         assertThat(bool(1, EQUAL, null), is(false));
@@ -229,6 +235,10 @@ public class ExpressionEvaluatorImplTest {
         assertThat(arithmetic(1, UnaryArithmeticOperator.MINUS, Integer.class), equalTo(-1));
         assertThat(arithmetic(column(NUMERIC_COLUMN_NAME, TABLE_NAME), UnaryArithmeticOperator.MINUS, ROW_WITH_VALUES, Double.class), equalTo(3d));
         assertThat(arithmetic(1, BIT_NOT, Integer.class), equalTo(-2)); //See http://stackoverflow.com/questions/2513525/bitwise-not-operator
+    }
+    
+    private boolean bool(boolean literal) {
+        return expressionEvaluator.evaluateAs(new LiteralBooleanExpression(literal), EMPTY_ROW, Boolean.class);
     }
     
     private boolean bool(Object left, BooleanRelation booleanRelation, Object right, DataRow dataRow) {

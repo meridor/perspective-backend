@@ -7,5 +7,6 @@
     <bean class="org.meridor.perspective.sql.impl.parser.QueryParserImpl"/>
     <bean class="org.meridor.perspective.sql.impl.table.TablesAwareImpl"/>
     <bean class="org.meridor.perspective.sql.impl.task.strategy.TestInstancesTable"/>
+    <bean class="org.meridor.perspective.sql.impl.task.strategy.TestProjectsTable"/>
 
 </beans>

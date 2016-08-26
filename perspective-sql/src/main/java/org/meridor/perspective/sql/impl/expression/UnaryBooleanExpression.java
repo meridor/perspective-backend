@@ -39,4 +39,17 @@ public class UnaryBooleanExpression implements BooleanExpression {
     public Optional<BooleanExpression> getRestOfExpression() {
         return Optional.of(this);
     }
+
+    @Override
+    public boolean equals(Object another) {
+        return 
+                another instanceof UnaryBooleanExpression
+                && value.equals(((UnaryBooleanExpression) another).getValue())
+                && unaryBooleanOperator.equals(((UnaryBooleanExpression) another).getUnaryBooleanOperator());
+    }
+
+    @Override
+    public String toString() {
+        return unaryBooleanOperator.getText() + " " + value;
+    }
 }

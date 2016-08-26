@@ -80,6 +80,8 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
             return cast(evaluateIsNullExpression((IsNullExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof InExpression) {
             return cast(evaluateInExpression((InExpression) expression, dataRow), Boolean.class, Comparable.class);
+        } else if (expression instanceof LiteralBooleanExpression) {
+            return cast(evaluateLiteralBooleanExpression((LiteralBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof SimpleBooleanExpression) {
             return cast(evaluateSimpleBooleanExpression((SimpleBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof BinaryBooleanExpression) {
@@ -171,6 +173,11 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     private Object evaluateIsNullExpression(IsNullExpression expression, DataRow dataRow) {
         FunctionExpression isNullExpression = new FunctionExpression(FunctionName.TYPEOF.name(), Arrays.asList(expression.getValue(), DataType.NULL));
         return evaluateFunctionExpression(isNullExpression, dataRow);
+    }
+
+
+    private boolean evaluateLiteralBooleanExpression(LiteralBooleanExpression literalBooleanExpression, DataRow dataRow) {
+        return literalBooleanExpression != null && literalBooleanExpression.getLiteral();
     }
 
     private boolean evaluateSimpleBooleanExpression(SimpleBooleanExpression simpleBooleanExpression, DataRow dataRow) {
