@@ -8,6 +8,7 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective.rest.data;org.meridor.perspective.sql">
         <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.sql\.impl\.MockQueryParser"/>
+        <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.sql\.impl\.MockQueryPlanner"/>
     </context:component-scan>
 
     <bean class="org.meridor.perspective.framework.messaging.TestStorage"/>
