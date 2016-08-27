@@ -11,6 +11,9 @@
     <context:component-scan base-package="org.meridor.perspective">
         <context:exclude-filter expression="org\.meridor\.perspective\.framework\.storage\.impl\.StorageImpl" type="regex" />
         <context:exclude-filter expression="org\.meridor\.perspective\.framework\.messaging\.TestConsumer" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.sql\.impl\.task\.MockDataFetcher" type="regex" />
+        <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.sql\.impl\.MockQueryPlanner"/>
+        <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.sql\.impl\.MockQueryParser"/>
     </context:component-scan>
     <aop:aspectj-autoproxy/>
 
