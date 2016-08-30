@@ -65,6 +65,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
 
     @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Instance>> consumer) {
+        LOG.warn("Not implemented. Doing full instances fetch instead.");
+        return perform(cloud, consumer);
+    }
+
+    @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_INSTANCES};
     }

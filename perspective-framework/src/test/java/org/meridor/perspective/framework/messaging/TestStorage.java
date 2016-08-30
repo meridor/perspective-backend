@@ -134,6 +134,11 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     }
 
     @Override
+    public boolean projectExists(String projectId) {
+        return projectMap.containsKey(projectId);
+    }
+
+    @Override
     public Optional<Project> getProject(String projectId) {
         return Optional.ofNullable(projectMap.get(projectId));
     }

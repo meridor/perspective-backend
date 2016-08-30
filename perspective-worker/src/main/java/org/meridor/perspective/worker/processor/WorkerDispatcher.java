@@ -5,7 +5,6 @@ import org.meridor.perspective.events.InstanceEvent;
 import org.meridor.perspective.events.ProjectEvent;
 import org.meridor.perspective.framework.messaging.Dispatcher;
 import org.meridor.perspective.framework.messaging.Message;
-import org.meridor.perspective.framework.messaging.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

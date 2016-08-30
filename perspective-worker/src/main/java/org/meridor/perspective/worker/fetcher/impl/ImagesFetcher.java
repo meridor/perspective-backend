@@ -1,4 +1,4 @@
-package org.meridor.perspective.worker.processor;
+package org.meridor.perspective.worker.fetcher.impl;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.config.Cloud;
@@ -8,14 +8,14 @@ import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.framework.messaging.Destination;
 import org.meridor.perspective.framework.messaging.IfNotLocked;
 import org.meridor.perspective.framework.messaging.Producer;
-import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
+import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -26,12 +26,9 @@ import static org.meridor.perspective.events.EventFactory.imageToEvent;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
 @Component
-public class ImagesFetcher {
+public class ImagesFetcher extends BaseFetcher<Image> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImagesFetcher.class);
-
-    @Autowired
-    private CloudConfigurationProvider cloudConfigurationProvider;
 
     @Destination(READ_TASKS)
     private Producer producer;
@@ -41,15 +38,17 @@ public class ImagesFetcher {
 
     @Autowired
     private WorkerMetadata workerMetadata;
-
-    @Async
-    @Scheduled(fixedDelayString = "${perspective.fetch.delay.images}")
-    public void fetchImages() {
-        cloudConfigurationProvider.getClouds().forEach(this::fetchCloudImages);
-    }
     
-    @IfNotLocked
-    protected void fetchCloudImages(Cloud cloud) {
+    @Autowired
+    private ApplicationContext applicationContext;
+    
+    @Value("${perspective.fetch.delay.images}")
+    private int fullSyncDelay;
+
+    
+    @IfNotLocked(lockName = "all")
+    @Override
+    public void fetch(Cloud cloud) {
         LOG.info("Fetching images list for cloud = {}", cloud.getName());
         try {
             if (!operationProcessor.consume(cloud, OperationType.LIST_IMAGES, getConsumer(cloud))) {
@@ -60,6 +59,37 @@ public class ImagesFetcher {
         }
     }
     
+    @IfNotLocked(lockName = "ids")
+    @Override
+    public void fetch(Cloud cloud, Set<String> ids) {
+        LOG.info("Fetching images with ids = {} for cloud = {}", ids, cloud.getName());
+        try {
+            if (!operationProcessor.consume(cloud, OperationType.LIST_IMAGES, ids, getConsumer(cloud))) {
+                throw new RuntimeException(String.format(
+                        "Failed to get images with ids = %s from cloud = %s",
+                        ids,
+                        cloud.getName()
+                ));
+            }
+        } catch (Exception e) {
+            LOG.error(String.format(
+                    "Error while fetching images with ids = %s for cloud = %s",
+                    ids,
+                    cloud.getName()
+            ), e);
+        }
+    }
+
+    @Override
+    protected int getFullSyncDelay() {
+        return fullSyncDelay;
+    }
+
+    @Override
+    protected LastModificationAware<Image> getLastModificationAware() {
+        return applicationContext.getBean(ImageModificationListener.class);
+    }
+
     private Consumer<Set<Image>> getConsumer(Cloud cloud) {
         return images -> {
             CloudType cloudType = workerMetadata.getCloudType();

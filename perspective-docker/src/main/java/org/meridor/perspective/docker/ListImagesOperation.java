@@ -56,6 +56,12 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     }
 
     @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Image>> consumer) {
+        LOG.warn("Not implemented. Doing full images fetch instead.");
+        return perform(cloud, consumer);
+    }
+
+    @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_IMAGES};
     }

@@ -5,11 +5,11 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.misc.impl.MockCloud;
 import org.meridor.perspective.worker.operation.OperationProcessor;
-import org.meridor.perspective.worker.operation.ProcessingOperation;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -23,6 +23,11 @@ public class AlwaysSucceedingOperationProcessor implements OperationProcessor, C
     @Override
     public Collection<Cloud> getClouds() {
         return Collections.singletonList(new MockCloud());
+    }
+
+    @Override
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
+        return true;
     }
 
     @Override

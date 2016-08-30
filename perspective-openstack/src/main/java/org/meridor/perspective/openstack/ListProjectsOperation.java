@@ -3,6 +3,7 @@ package org.meridor.perspective.openstack;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.api.OSClient;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
@@ -26,17 +30,16 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     
     @Autowired
     private IdGenerator idGenerator;
+    
+    @Autowired
+    private ProjectsAware projectsAware;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
         try {
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 try {
-                    Project project = createProject(cloud, region);
-                    addFlavors(project, api);
-                    addNetworks(project, api);
-                    addKeyPairs(project, api);
-                    addAvailabilityZones(project, cloud, region, api);
+                    Project project = processProject(cloud, region, api);
                     LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName(), region);
                     consumer.accept(project);
                 } catch (Exception e) {
@@ -51,10 +54,52 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     }
 
     @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Project> consumer) {
+        try {
+            Map<String, Project> fetchMap = getFetchMap(ids);
+            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+                if (fetchMap.containsKey(region)) {
+                    Project project = processProject(cloud, region, api);
+                    consumer.accept(project);
+                }
+            });
+            return true;
+        } catch (Exception e) {
+            LOG.error(String.format(
+                    "Failed to fetch projects with ids = %s for cloud = %s",
+                    ids,
+                    cloud.getName()
+            ), e);
+            return false;
+        }
+    }
+
+    private Map<String, Project> getFetchMap(Set<String> ids) {
+        Map<String, Project> ret = new HashMap<>();
+        ids.stream()
+                .filter(id -> projectsAware.projectExists(id))
+                .map(id -> projectsAware.getProject(id).get())
+                .forEach(p -> {
+                    String region = p.getMetadata().get(MetadataKey.REGION);
+                    ret.put(region, p);
+                });
+        return ret;
+    }
+
+    @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_PROJECTS};
     }
 
+    private Project processProject(Cloud cloud, String region, OSClient api) {
+        Project project = createProject(cloud, region);
+        addFlavors(project, api);
+        addNetworks(project, api);
+        addKeyPairs(project, api);
+        addAvailabilityZones(project, cloud, region, api);
+        return project;
+    }
+    
     private Project createProject(Cloud cloud, String region) {
         String projectId = idGenerator.getProjectId(cloud, region);
         Project project = new Project();

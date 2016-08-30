@@ -1,10 +1,12 @@
-package org.meridor.perspective.framework.storage;
+package org.meridor.perspective.worker.fetcher.impl;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.meridor.perspective.framework.messaging.IfNotLocked;
+import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
 
     @Autowired
     private Storage storage;
+    
+    @Autowired
+    private WorkerMetadata workerMetadata;
 
     private boolean isApplicationRunning = true;
 
@@ -39,9 +44,13 @@ public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
         }
 
         IfNotLocked annotation = method.getAnnotation(IfNotLocked.class);
-        String lockName = annotation.lockName();
-        if (lockName.isEmpty()) {
-            lockName = joinPoint.getSignature().getDeclaringType().getCanonicalName();
+        String className = joinPoint.getSignature().getDeclaringType().getCanonicalName();
+        String cloudType = workerMetadata.getCloudType().value();
+        String lockName = annotation.lockName().isEmpty() ?
+                String.format("%s_%s", cloudType, className) :
+                String.format("%s_%s_%s", cloudType, className, annotation.lockName());
+        if (!annotation.lockName().isEmpty()) {
+            lockName += "_" + annotation.lockName();
         }
         long timeout = annotation.timeout();
         

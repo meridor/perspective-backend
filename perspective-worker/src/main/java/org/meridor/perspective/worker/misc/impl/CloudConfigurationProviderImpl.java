@@ -30,7 +30,7 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
     @Value("${perspective.configuration.file}")
     private Resource configurationFileResource;
 
-    private Map<String, Cloud> cloudsMap = new HashMap<>();
+    private final Map<String, Cloud> cloudsMap = new HashMap<>();
 
     @PostConstruct
     public void init() {

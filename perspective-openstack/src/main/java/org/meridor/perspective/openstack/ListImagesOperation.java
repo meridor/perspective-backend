@@ -63,6 +63,48 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     }
 
     @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Image>> consumer) {
+        try {
+            Map<String, Set<String>> fetchMap = getFetchMap(ids);
+            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+                if (fetchMap.containsKey(region)) {
+                    fetchMap.get(region).forEach(realId -> {
+                        Optional<org.openstack4j.model.image.Image> imageCandidate = Optional.ofNullable(api.images().get(realId));
+                        if (imageCandidate.isPresent()) {
+                            org.openstack4j.model.image.Image image = imageCandidate.get();
+                            LOG.debug("Fetched image {} ({}) for cloud = {}, region = {}", image.getName(), image.getId(), cloud.getName(), region);
+                            consumer.accept(Collections.singleton(
+                                    createOrModifyImage(image, cloud, region)
+                            ));
+                        }
+                    });
+                }
+            });
+            return true;
+        } catch (Exception e) {
+            LOG.error(String.format(
+                    "Failed to fetch images with ids = %s for cloud = %s",
+                    ids,
+                    cloud.getName()
+            ), e);
+            return false;
+        }
+    }
+
+    private Map<String, Set<String>> getFetchMap(Set<String> ids) {
+        Map<String, Set<String>> ret = new HashMap<>();
+        ids.stream()
+                .filter(id -> imagesAware.imageExists(id))
+                .map(id -> imagesAware.getImage(id).get())
+                .forEach(i -> {
+                    String region = i.getMetadata().get(MetadataKey.REGION);
+                    ret.putIfAbsent(region, new HashSet<>());
+                    ret.get(region).add(i.getRealId());
+                });
+        return ret;
+    }
+    
+    @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_IMAGES};
     }

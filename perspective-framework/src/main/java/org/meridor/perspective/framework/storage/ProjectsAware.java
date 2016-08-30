@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ProjectsAware {
-
+    
+    boolean projectExists(String projectId);
+    
     Optional<Project> getProject(String projectId);
 
     Collection<Project> getProjects();

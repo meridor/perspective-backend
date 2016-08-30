@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
@@ -29,6 +30,12 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         consumer.accept(project);
         LOG.info("Fetched project {} for cloud = {}", project.getName(), cloud.getName());
         return true;
+    }
+
+    @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Project> consumer) {
+        LOG.warn("Not implemented. Doing full projects fetch instead.");
+        return perform(cloud, consumer);
     }
 
     @Override

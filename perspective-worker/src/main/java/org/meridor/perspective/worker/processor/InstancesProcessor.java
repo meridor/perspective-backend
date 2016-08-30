@@ -3,7 +3,6 @@ package org.meridor.perspective.worker.processor;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.events.InstanceEvent;
 import org.meridor.perspective.framework.messaging.Message;
-import org.meridor.perspective.framework.messaging.Processor;
 import org.meridor.perspective.framework.storage.InstancesAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

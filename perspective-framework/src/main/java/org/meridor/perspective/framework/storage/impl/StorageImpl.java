@@ -130,6 +130,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     @Override
+    public boolean projectExists(String projectId) {
+        return readProject(projectId, map -> getProjectsByIdMap().containsKey(projectId));
+    }
+
+    @Override
     public Collection<Project> getProjects() {
         return getProjectsByIdMap().values();
     }

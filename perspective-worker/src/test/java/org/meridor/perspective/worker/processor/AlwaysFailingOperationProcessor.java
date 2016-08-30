@@ -9,6 +9,7 @@ import org.meridor.perspective.worker.operation.OperationProcessor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -26,6 +27,11 @@ public class AlwaysFailingOperationProcessor implements OperationProcessor, Clou
 
     @Override
     public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
+        throw new RuntimeException("Always failing");
+    }
+
+    @Override
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
         throw new RuntimeException("Always failing");
     }
 

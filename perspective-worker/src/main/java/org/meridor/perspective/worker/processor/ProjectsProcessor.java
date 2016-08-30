@@ -4,7 +4,6 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.events.ProjectEvent;
 import org.meridor.perspective.events.ProjectSyncEvent;
 import org.meridor.perspective.framework.messaging.Message;
-import org.meridor.perspective.framework.messaging.Processor;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

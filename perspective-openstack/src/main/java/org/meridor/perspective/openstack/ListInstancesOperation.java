@@ -5,6 +5,7 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
@@ -42,9 +43,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Autowired
     private ProjectsAware projects;
-    
+
     @Autowired
-    private ImagesAware images;
+    private InstancesAware instancesAware;
+
+    @Autowired
+    private ImagesAware imagesAware;
     
     @Value("${perspective.openstack.console.type:off}")
     private String consoleType;
@@ -58,10 +62,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 try {
                     List<? extends org.openstack4j.model.compute.Server> servers = api.compute().servers().list(true);
                     servers.forEach(s -> {
-                        Instance instance = createInstance(cloud, region, s);
-                        if (!consoleType.equals(OFF)) {
-                            addConsoleUrl(instance, api);
-                        }
+                        Instance instance = processInstance(cloud, region, s, api);
                         instances.add(instance);
                     });
                     Integer regionInstancesCount = instances.size();
@@ -82,10 +83,61 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
 
     @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Instance>> consumer) {
+        try {
+            Map<String, Set<String>> fetchMap = getFetchMap(ids);
+            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+                if (fetchMap.containsKey(region)) {
+                    fetchMap.get(region).forEach(realId -> {
+                        Optional<Server> instanceCandidate = Optional.ofNullable(api.compute().servers().get(realId));
+                        if (instanceCandidate.isPresent()) {
+                            Server instance = instanceCandidate.get();
+                            LOG.debug("Fetched instance {} ({}) for cloud = {}, region = {}", instance.getName(), instance.getId(), cloud.getName(), region);
+                            consumer.accept(Collections.singleton(
+                                    processInstance(cloud, region, instance, api)
+                            ));
+                        }
+                    });
+                }
+            });
+            return true;
+        } catch (Exception e) {
+            LOG.error(String.format(
+                    "Failed to fetch instances with ids = %s for cloud = %s",
+                    ids,
+                    cloud.getName()
+            ), e);
+            return false;
+        }
+    }
+
+    private Map<String, Set<String>> getFetchMap(Set<String> ids) {
+        Map<String, Set<String>> ret = new HashMap<>();
+        ids.stream()
+                .filter(id -> instancesAware.instanceExists(id))
+                .map(id -> instancesAware.getInstance(id).get())
+                .forEach(i -> {
+                    String region = i.getMetadata().get(MetadataKey.REGION);
+                    ret.putIfAbsent(region, new HashSet<>());
+                    ret.get(region).add(i.getRealId());
+                });
+        return ret;
+    }
+
+
+    @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_INSTANCES};
     }
 
+    private Instance processInstance(Cloud cloud, String region, Server server, OSClient api) {
+        Instance instance = createInstance(cloud, region, server);
+        if (!consoleType.equals(OFF)) {
+            addConsoleUrl(instance, api);
+        }
+        return instance;
+    }
+    
     private Instance createInstance(Cloud cloud, String region, Server server) {
         Instance instance = new Instance();
         String realId = server.getId();
@@ -149,7 +201,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         
         if (server.getImage() != null) {
             String imageId = idGenerator.getImageId(cloud, server.getImage().getId());
-            Optional<Image> imageCandidate = images.getImage(imageId);
+            Optional<Image> imageCandidate = imagesAware.getImage(imageId);
             if (imageCandidate.isPresent()) {
                 instance.setImage(imageCandidate.get());
             }

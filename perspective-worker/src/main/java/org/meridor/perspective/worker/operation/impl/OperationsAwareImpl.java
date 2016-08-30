@@ -1,6 +1,5 @@
 package org.meridor.perspective.worker.operation.impl;
 
-import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.*;
 import org.slf4j.Logger;
@@ -16,8 +15,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Component
 public class OperationsAwareImpl implements OperationsAware {
@@ -32,7 +29,7 @@ public class OperationsAwareImpl implements OperationsAware {
     @PostConstruct
     private void init() {
         Map<String, Operation> operationBeans = applicationContext.getBeansOfType(Operation.class);
-        operationBeans.values().stream().forEach(bean -> {
+        operationBeans.values().forEach(bean -> {
             final Operation realBean = getRealBean(bean);
             Arrays.stream(realBean.getTypes()).forEach(t -> {
                 operationInstances.put(t, realBean);
@@ -58,55 +55,9 @@ public class OperationsAwareImpl implements OperationsAware {
         return bean;
     }
 
-    private Operation getOperation(OperationType operationType) {
-        Optional<Operation> operation = Optional.ofNullable(operationInstances.get(operationType));
-        if (!operation.isPresent()) {
-            throw new IllegalArgumentException(String.format("Operation %s is not supported. This is probably a bug.", operationType));
-        }
-        return operation.get();
+    @Override
+    public Optional<Operation> getOperation(OperationType operationType) {
+        return Optional.ofNullable(operationInstances.get(operationType));
     }
 
-    @Override
-    public boolean isOperationSupported(OperationType operationType) {
-        return operationInstances.containsKey(operationType);
-    }
-
-    @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
-        Operation operation = getOperation(operationType);
-        if (operation instanceof SupplyingOperation) {
-            @SuppressWarnings("unchecked")
-            boolean result = ((SupplyingOperation<T>) operation).perform(cloud, consumer);
-            return result;
-        } else {
-            LOG.error("Operation {} should be a supplying operation", operationType);
-            return false;
-        }
-    }
-
-    @Override
-    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
-        Operation operation = getOperation(operationType);
-        if (operation instanceof ConsumingOperation) {
-            @SuppressWarnings("unchecked")
-            boolean result = ((ConsumingOperation<T>) operation).perform(cloud, supplier);
-            return result;
-        } else {
-            LOG.error("Operation {} should be a consuming operation", operationType);
-            return false;
-        }
-    }
-
-    @Override
-    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
-        Operation operation = getOperation(operationType);
-        if (operation instanceof ProcessingOperation) {
-            @SuppressWarnings("unchecked")
-            O result = ((ProcessingOperation<I, O>) operation).perform(cloud, supplier);
-            return Optional.ofNullable(result);
-        } else {
-            LOG.error("Operation {} should be a consuming operation", operationType);
-            return Optional.empty();
-        }
-    }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
 
@@ -21,6 +22,15 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
         consumer.accept(images);
+        return true;
+    }
+
+    @Override
+    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Image>> consumer) {
+        Set<Image> matchingImages = images.stream()
+                .filter(i -> ids.contains(i.getRealId()))
+                .collect(Collectors.toSet());
+        consumer.accept(matchingImages);
         return true;
     }
 
