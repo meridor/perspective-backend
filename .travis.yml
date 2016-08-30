@@ -3,3 +3,5 @@ jdk: oraclejdk8
 script: mvn clean test -Pintegration-tests
 notifications:
   email: false
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

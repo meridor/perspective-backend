@@ -1,6 +1,7 @@
 # Perspective Backend
 
 [![Build Status](https://travis-ci.org/meridor/perspective-backend.svg?branch=master)](https://travis-ci.org/meridor/perspective-backend)[![maven](https://img.shields.io/maven-central/v/org.meridor.perspective/perspective-backend.svg)](http://mvnrepository.com/artifact/org.meridor.perspective/perspective-backend)
+[![Coverage](https://codecov.io/github/meridor/perspective-backend/coverage.svg)](https://codecov.io/gh/meridor/perspective-backend)
 
 This repository contains source code for Perspective backend products including shell and API.
 
