@@ -126,7 +126,7 @@ public class QueryParserImplTest {
     }
     
     @Test(expected = SQLSyntaxErrorException.class)
-    public void testMissingTableAlias() throws Exception {
+    public void testMissingTableAliasInColumnName() throws Exception {
         parse("select missing.id from instances");
     }
     
@@ -138,6 +138,11 @@ public class QueryParserImplTest {
     @Test(expected = SQLSyntaxErrorException.class)
     public void testMissingColumn() throws Exception {
         parse("select missing_column from instances");
+    }
+    
+    @Test(expected = SQLSyntaxErrorException.class)
+    public void testMissingTable() throws Exception {
+        parse("select name from missing_table");
     }
     
     @Test(expected = SQLSyntaxErrorException.class)

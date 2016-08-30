@@ -393,6 +393,9 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         if (tableAliasCandidate.isPresent()) {
             String tableAlias = tableAliasCandidate.get();
             String tableName = tableAliases.get(tableAlias);
+            if (!tablesAware.getTables().contains(tableName)) {
+                errors.add(String.format("Table \"%s\" does not exist", tableName));
+            }
             List<String> columnNames = columnsToNames(tablesAware.getColumns(tableName));
             currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));
         } else if (dataSourceCandidate.isPresent()) {
@@ -697,7 +700,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return emptyPair();
         }
         if (getAvailableColumns().get(columnName).size() > 1 && !isUsingClause) {
-            errors.add(String.format("Ambiguous column name \"%s\": use aliases to specify destination table", columnName));
+            errors.add(String.format(
+                    "Ambiguous column name \"%s\": use aliases to specify destination table. Possible aliases are: %s.",
+                    columnName,
+                    getAvailableColumns().get(columnName)
+            ));
             return emptyPair();
         }
         ColumnExpression columnExpression = new ColumnExpression(columnName);
