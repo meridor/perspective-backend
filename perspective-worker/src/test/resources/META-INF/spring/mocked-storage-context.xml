@@ -3,13 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-4.2.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective">
@@ -32,8 +30,8 @@
     </bean>
 
     <!-- Scheduler -->
-    <task:annotation-driven scheduler="perspectiveScheduler"/>
-    <task:scheduler id="perspectiveScheduler" pool-size="${perspective.scheduler.pool.size}"/>
-
+    <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+        <property name="poolSize" value="10"/>
+    </bean>
 
 </beans>

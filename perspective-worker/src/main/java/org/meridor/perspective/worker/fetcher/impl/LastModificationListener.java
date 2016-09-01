@@ -12,7 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class LastModificationListener<T> implements EntityListener<T>, LastModificationAware<T> {
+import static org.meridor.perspective.framework.storage.StorageEvent.ADDED;
+import static org.meridor.perspective.framework.storage.StorageEvent.MODIFIED;
+import static org.meridor.perspective.worker.fetcher.impl.LastModified.*;
+import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.getMomentsAgoLimit;
+import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.getSomeTimeAgoLimit;
+
+public abstract class LastModificationListener<T> implements EntityListener<T>, LastModificationAware {
     
     private final Map<String, Set<String>> lastModifiedData = new ConcurrentHashMap<>();
     
@@ -30,45 +36,32 @@ public abstract class LastModificationListener<T> implements EntityListener<T>, 
         String id = getId(entity);
         String cloudId = getCloudId(entity);
         String key = lastModified.getKey(cloudId);
-        switch (event) {
-            case ADDED:
-            case MODIFIED: {
-                lastModifiedData.compute(key, (k, oldIds) -> new HashSet<String>(){
-                    {
-                        if (oldIds != null) {
-                            addAll(oldIds);
-                        }
-                        add(id);
-                    }
-                });
-            }
-            case DELETED:
-            case EVICTED: {
-                lastModifiedData.compute(key, (k, oldIds) -> new HashSet<String>(){
-                    {
-                        if (oldIds != null) {
-                            oldIds.remove(id);
-                            addAll(oldIds);
-                        }
-                    }
-                });
-            }
+        removeId(id);
+        if (event == ADDED || event == MODIFIED) {
+            lastModifiedData.putIfAbsent(key, new HashSet<>());
+            lastModifiedData.get(key).add(id);
         }
+    }
+    
+    private void removeId(String id) {
+        lastModifiedData.keySet().forEach(k -> lastModifiedData.get(k).remove(id));
     }
     
     private LastModified getLastModified(T entity) {
         int longTimeAgoLimit = getLongTimeAgoLimit();
-        int momentsAgoLimit = SchedulerUtils.getMomentsAgoLimit(longTimeAgoLimit);
-        int someTimeAgoLimit = SchedulerUtils.getSomeTimeAgoLimit(longTimeAgoLimit);
-        Instant currentTimestamp = Instant.now();
-        Duration difference = Duration.between(currentTimestamp, getLastModifiedInstant(entity));
+        int momentsAgoLimit = getMomentsAgoLimit(longTimeAgoLimit);
+        int someTimeAgoLimit = getSomeTimeAgoLimit(longTimeAgoLimit);
+        Instant currentInstant = Instant.now();
+        Duration difference = Duration.between(getLastModifiedInstant(entity), currentInstant);
         long differenceMilliseconds = difference.toMillis();
         if (differenceMilliseconds <= momentsAgoLimit) {
-            return LastModified.MOMENTS_AGO;
+            return NOW;
         } else if (differenceMilliseconds <= someTimeAgoLimit) {
-            return LastModified.SOME_TIME_AGO;
+            return MOMENTS_AGO;
+        } else if (differenceMilliseconds <= longTimeAgoLimit) {
+            return SOME_TIME_AGO;
         } else {
-            return LastModified.LONG_AGO;
+            return LONG_AGO;
         }
     }
 

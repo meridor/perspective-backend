@@ -6,6 +6,10 @@ public final class SchedulerUtils {
     public static int delayToLimit(int delay) {
         return delay * 60;
     }
+
+    public static int getNowDelay(int fullSyncDelay) {
+        return Math.floorDiv(fullSyncDelay, 40);
+    }
     
     public static int getMomentsAgoLimit(int longTimeAgoLimit) {
         return Math.floorDiv(longTimeAgoLimit, 10);

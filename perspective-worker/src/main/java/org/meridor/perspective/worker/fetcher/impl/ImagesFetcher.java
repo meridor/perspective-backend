@@ -26,7 +26,7 @@ import static org.meridor.perspective.events.EventFactory.imageToEvent;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
 @Component
-public class ImagesFetcher extends BaseFetcher<Image> {
+public class ImagesFetcher extends BaseFetcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImagesFetcher.class);
 
@@ -45,7 +45,6 @@ public class ImagesFetcher extends BaseFetcher<Image> {
     @Value("${perspective.fetch.delay.images}")
     private int fullSyncDelay;
 
-    
     @IfNotLocked(lockName = "all")
     @Override
     public void fetch(Cloud cloud) {
@@ -86,7 +85,7 @@ public class ImagesFetcher extends BaseFetcher<Image> {
     }
 
     @Override
-    protected LastModificationAware<Image> getLastModificationAware() {
+    protected LastModificationAware getLastModificationAware() {
         return applicationContext.getBean(ImageModificationListener.class);
     }
 

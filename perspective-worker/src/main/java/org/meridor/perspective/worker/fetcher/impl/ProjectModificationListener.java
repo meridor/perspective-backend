@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 
+import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayToLimit;
+
 @Component
 public class ProjectModificationListener extends LastModificationListener<Project> {
     
@@ -25,7 +27,7 @@ public class ProjectModificationListener extends LastModificationListener<Projec
 
     @Override
     protected int getLongTimeAgoLimit() {
-        return SchedulerUtils.delayToLimit(projectsFetchDelay);
+        return delayToLimit(projectsFetchDelay);
     }
 
     @Override

@@ -26,7 +26,7 @@ import static org.meridor.perspective.events.EventFactory.instanceToEvent;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
 @Component
-public class InstancesFetcher extends BaseFetcher<Instance> {
+public class InstancesFetcher extends BaseFetcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstancesFetcher.class);
 
@@ -85,7 +85,7 @@ public class InstancesFetcher extends BaseFetcher<Instance> {
     }
 
     @Override
-    protected LastModificationAware<Instance> getLastModificationAware() {
+    protected LastModificationAware getLastModificationAware() {
         return applicationContext.getBean(InstanceModificationListener.class);
     }
 

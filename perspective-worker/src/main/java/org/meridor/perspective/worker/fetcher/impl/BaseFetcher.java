@@ -12,8 +12,11 @@ import javax.annotation.PostConstruct;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.meridor.perspective.worker.fetcher.impl.LastModified.*;
+import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.*;
+
 @Component
-public abstract class BaseFetcher<T> implements Fetcher {
+public abstract class BaseFetcher implements Fetcher {
 
     @Autowired
     private TaskScheduler scheduler;
@@ -22,19 +25,24 @@ public abstract class BaseFetcher<T> implements Fetcher {
     private CloudConfigurationProvider cloudConfigurationProvider;
     
     @PostConstruct
-    public void init() {
+    public void start() {
         int fullSyncDelay = getFullSyncDelay();
+        scheduleNowSync(fullSyncDelay);
         scheduleMomentsAgoSync(fullSyncDelay);
         scheduleSomeTimeAgoSync(fullSyncDelay);
         scheduleFullSync(fullSyncDelay);
     }
 
+    private void scheduleNowSync(int fullSyncDelay) {
+        scheduleIdsFetch(NOW, getNowDelay(fullSyncDelay));
+    }
+    
     private void scheduleMomentsAgoSync(int fullSyncDelay) {
-        scheduleIdsFetch(LastModified.MOMENTS_AGO, SchedulerUtils.getMomentsAgoDelay(fullSyncDelay));
+        scheduleIdsFetch(MOMENTS_AGO, getMomentsAgoDelay(fullSyncDelay));
     }
     
     private void scheduleSomeTimeAgoSync(int fullSyncDelay) {
-        scheduleIdsFetch(LastModified.SOME_TIME_AGO, SchedulerUtils.getSomeTimeAgoDelay(fullSyncDelay));
+        scheduleIdsFetch(SOME_TIME_AGO, getSomeTimeAgoDelay(fullSyncDelay));
     }
     
     private void scheduleIdsFetch(LastModified lastModified, int syncDelay) {
@@ -63,6 +71,6 @@ public abstract class BaseFetcher<T> implements Fetcher {
 
     protected abstract int getFullSyncDelay();
     
-    protected abstract LastModificationAware<T> getLastModificationAware();
+    protected abstract LastModificationAware getLastModificationAware();
 
 }

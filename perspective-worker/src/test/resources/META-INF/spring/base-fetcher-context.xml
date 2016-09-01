@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
+    
+    <bean class="org.meridor.perspective.worker.misc.impl.CloudConfigurationProviderImpl"/>
+    <bean class="org.meridor.perspective.worker.fetcher.impl.MockFetcher"/>
+    
+    <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+        <property name="poolSize" value="10"/>
+    </bean>
+
+    <bean id="configurationProperties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:worker.properties</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>
