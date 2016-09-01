@@ -25,14 +25,8 @@ public class HashTableIndex implements Index {
     @Override
     public void put(Key key, String id) {
         checkKeyLength(key);
-        index.compute(key, (k, oldIds) -> new LinkedHashSet<String>(){
-            {
-                if (oldIds != null) {
-                    addAll(oldIds);
-                }
-                add(id);
-            }
-        });
+        index.putIfAbsent(key, new HashSet<>());
+        index.get(key).add(id);
     }
 
     private void checkKeyLength(Key key) {
