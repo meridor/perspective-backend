@@ -32,4 +32,9 @@ public class ProjectsProcessor implements Processor {
             LOG.error("Skipping empty message {}", message.getId());
         }
     }
+
+    @Override
+    public boolean isPayloadSupported(Class<?> payloadClass) {
+        return ProjectEvent.class.isAssignableFrom(payloadClass);
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.Yatomata;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.meridor.perspective.events.EventFactory.imageToEvent;
@@ -67,5 +68,10 @@ public class ImagesProcessor implements Processor {
                     imageFromEvent.getId()
             );
         }
+    }
+
+    @Override
+    public boolean isPayloadSupported(Class<?> payloadClass) {
+        return ImageEvent.class.isAssignableFrom(payloadClass);
     }
 }

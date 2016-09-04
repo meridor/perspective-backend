@@ -53,9 +53,14 @@ public class MessageImpl implements Message {
         }
         return Optional.of(cls.cast(payload));
     }
-
+    
     @Override
     public int getTtl() {
         return ttl;
+    }
+
+    @Override
+    public boolean equals(Object another) {
+        return another instanceof Message && id.equals(((Message) another).getId());
     }
 }

@@ -1,15 +1,15 @@
 package org.meridor.perspective.worker.processor;
 
-import org.meridor.perspective.events.ImageEvent;
-import org.meridor.perspective.events.InstanceEvent;
-import org.meridor.perspective.events.ProjectEvent;
 import org.meridor.perspective.framework.messaging.Dispatcher;
 import org.meridor.perspective.framework.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -18,13 +18,9 @@ public class WorkerDispatcher implements Dispatcher {
     private static final Logger LOG = LoggerFactory.getLogger(WorkerDispatcher.class);
 
     @Autowired
-    private ProjectsProcessor projectsProcessor;
-
-    @Autowired
-    private InstancesProcessor instancesProcessor;
+    private ApplicationContext applicationContext;
     
-    @Autowired
-    private ImagesProcessor imagesProcessor;
+    private final Map<Class<?>, Processor> processorsMap = new HashMap<>();
 
     @Override
     public Optional<Message> dispatch(Message message) {
@@ -47,13 +43,15 @@ public class WorkerDispatcher implements Dispatcher {
     }
     
     private Optional<Processor> getProcessor(Object payload) {
-        if (payload instanceof InstanceEvent) {
-            return Optional.of(instancesProcessor);
-        } else if (payload instanceof ImageEvent) {
-            return Optional.of(imagesProcessor);
-        } else if (payload instanceof ProjectEvent) {
-            return Optional.of(projectsProcessor);
-        }
-        return Optional.empty();
+        Class<?> payloadClass = payload.getClass();
+        processorsMap.computeIfAbsent(payloadClass, pc -> {
+            Optional<Processor> processorCandidate = applicationContext
+                    .getBeansOfType(Processor.class).values().stream()
+                    .filter(p -> p.isPayloadSupported(pc))
+                    .findFirst();
+            return processorCandidate.isPresent() ?
+                    processorCandidate.get() : null;
+        });
+        return Optional.ofNullable(processorsMap.get(payloadClass));
     }
 }
