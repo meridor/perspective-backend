@@ -25,7 +25,7 @@ public abstract class BaseFetcher implements Fetcher {
     private CloudConfigurationProvider cloudConfigurationProvider;
     
     @PostConstruct
-    public void start() {
+    public void init() {
         int fullSyncDelay = getFullSyncDelay();
         scheduleNowSync(fullSyncDelay);
         scheduleMomentsAgoSync(fullSyncDelay);
@@ -60,7 +60,7 @@ public abstract class BaseFetcher implements Fetcher {
     
     private void scheduleFullSync(int fullSyncDelay) {
         scheduler.scheduleAtFixedRate(
-                () -> forEachCloud(this::fetch), 
+                forEachCloud(this::fetch), 
                 fullSyncDelay
         );
     }

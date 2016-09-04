@@ -5,14 +5,14 @@ import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 class MockFetcher extends BaseFetcher {
     
-    private final Map<String, Integer> fetches = new HashMap<>();
+    private volatile Map<String, Integer> fetches = new ConcurrentHashMap<>();
     
     @Override
     public void fetch(Cloud cloud) {
@@ -31,7 +31,7 @@ class MockFetcher extends BaseFetcher {
     
     @Override
     protected int getFullSyncDelay() {
-        return 5000;
+        return 400;
     }
 
     @Override
@@ -47,7 +47,8 @@ class MockFetcher extends BaseFetcher {
         };
     }
 
-    public int getFetches(String key) {
+    int getFetches(String key) {
         return fetches.getOrDefault(key, 0);
     }
+
 }
