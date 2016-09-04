@@ -20,7 +20,7 @@ public class IdGenerator {
     @Value("${perspective.storage.id.cache.size:1000}")
     private int cacheSize;
 
-    private final LimitedSizeMap<String, String> idCache = new LimitedSizeMap<>(cacheSize);
+    private LimitedSizeMap<String, String> idCache;
     
     public String generate(Class<?> role, String id) {
         String cloudId = workerMetadata.getId();
@@ -30,6 +30,9 @@ public class IdGenerator {
     }
     
     private String getOrGenerate(String seed) {
+        if (idCache == null) {
+            idCache = new LimitedSizeMap<>(cacheSize);
+        }
         if (idCache.containsKey(seed)) {
             return idCache.get(seed);
         }

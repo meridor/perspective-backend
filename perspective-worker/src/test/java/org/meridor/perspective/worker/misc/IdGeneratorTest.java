@@ -25,7 +25,7 @@ public class IdGeneratorTest {
     private IdGenerator idGenerator;
     
     @Test
-    public void testGenerate() throws Exception {
+    public void testGenerate() {
         String attempt1 = idGenerator.generate(getClass(), ID);
         String attempt2 = idGenerator.generate(getClass(), ID);
         assertThat(attempt1, equalTo("54a31dbb-57f2-3ec5-9366-e53e59c3999f"));
@@ -33,25 +33,25 @@ public class IdGeneratorTest {
     }
 
     @Test
-    public void testGetProjectId() throws Exception {
+    public void testGetProjectId() {
         String projectId = idGenerator.getProjectId(CLOUD, ID);
         assertThat(projectId, equalTo("8f348574-f915-3c28-9c6e-14905ca09a21"));
     }
 
     @Test
-    public void testGetProjectIdEmptyId() throws Exception {
+    public void testGetProjectIdEmptyId() {
         String projectId = idGenerator.getProjectId(CLOUD);
         assertThat(projectId, equalTo("3edc0fed-ab7a-31e0-bae8-cb01b95e9919"));
     }
 
     @Test
-    public void testGetInstanceId() throws Exception {
+    public void testGetInstanceId() {
         String instanceId = idGenerator.getInstanceId(CLOUD, ID);
         assertThat(instanceId, equalTo("539becb6-6bfd-3630-809b-848b50723081"));
     }
 
     @Test
-    public void testGetImageId() throws Exception {
+    public void testGetImageId() {
         String imageId = idGenerator.getImageId(CLOUD, ID);
         assertThat(imageId, equalTo("f4db4cbb-8f6b-3a3b-beef-904305645342"));
     }
