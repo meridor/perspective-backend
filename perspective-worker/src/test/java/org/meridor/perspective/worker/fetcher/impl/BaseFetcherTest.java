@@ -18,7 +18,7 @@ public class BaseFetcherTest {
     
     @Test
     public void testSchedulerProportions() throws Exception {
-        Thread.sleep(500);
+        Thread.sleep(700);
         int all = mockFetcher.getFetches("all");
         int now = mockFetcher.getFetches("now");
         int momentsAgo = mockFetcher.getFetches("moments");
