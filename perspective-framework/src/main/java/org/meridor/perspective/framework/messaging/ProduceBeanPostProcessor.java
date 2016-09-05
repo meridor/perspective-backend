@@ -22,11 +22,6 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return bean;
-    }
-
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class cls = bean.getClass();
         String className = cls.getCanonicalName();
         ReflectionUtils.doWithFields(
@@ -56,6 +51,11 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
                 },
                 f -> Producer.class.isAssignableFrom(f.getType())
         );
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return bean;
     }
 }
