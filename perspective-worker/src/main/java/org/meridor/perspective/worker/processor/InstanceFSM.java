@@ -156,7 +156,7 @@ public class InstanceFSM {
             LOG.info("Adding instance {} ({})", instance.getName(), instance.getId());
             Optional<Instance> updatedInstanceCandidate = operationProcessor.process(cloud, OperationType.ADD_INSTANCE, () -> instance);
             if (!updatedInstanceCandidate.isPresent()) {
-                throw new InstanceException("Failed to add", instance);
+                throw new RuntimeException(String.format("Failed to add %s", instance));
             }
             Instance updatedInstance = updatedInstanceCandidate.get();
             updatedInstance.setState(InstanceState.LAUNCHING);
@@ -349,7 +349,7 @@ public class InstanceFSM {
                 LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
                 storage.deleteInstance(instance.getId());
             } else {
-                throw new InstanceException("Failed to delete", instance);
+                throw new RuntimeException(String.format("Failed to delete %s", instance));
             }
         } else {
             LOG.error("Can't delete instance {} ({}) - not exists", instance.getName(), instance.getId());

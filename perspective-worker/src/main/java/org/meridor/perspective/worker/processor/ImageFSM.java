@@ -81,7 +81,7 @@ public class ImageFSM {
             LOG.info("Adding image {} ({})", image.getName(), image.getId());
             Optional<Image> updatedImageCandidate = operationProcessor.process(cloud, OperationType.ADD_IMAGE, () -> image);
             if (!updatedImageCandidate.isPresent()) {
-                throw new ImageException("Failed to add", image);
+                throw new RuntimeException(String.format("Failed to add %s", image));
             }
             Image updatedImage = updatedImageCandidate.get();
             updatedImage.setState(ImageState.SAVING);
@@ -113,7 +113,7 @@ public class ImageFSM {
             if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_IMAGE, () -> image)) {
                 storage.deleteImage(image.getId());
             } else {
-                throw new ImageException("Failed to delete", image);
+                throw new RuntimeException(String.format("Failed to delete %s", image));
             }
         } else {
             LOG.error("Can't delete image {} ({}) - not exists", image.getName(), image.getId());
