@@ -93,6 +93,7 @@ public class EntityGenerator {
         instance.setRealId("test-instance");
         instance.setTimestamp(now());
         instance.setCreated(now());
+        instance.setCloudId(CloudType.MOCK.value());
         instance.setCloudType(CloudType.MOCK);
         instance.setProjectId("test-project");
         instance.setName("test-instance");
