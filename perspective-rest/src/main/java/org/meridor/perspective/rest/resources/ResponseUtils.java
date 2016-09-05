@@ -42,9 +42,4 @@ public final class ResponseUtils {
         }).build();
     }
     
-    
-    
-    private ResponseUtils() {
-        
-    }
 }

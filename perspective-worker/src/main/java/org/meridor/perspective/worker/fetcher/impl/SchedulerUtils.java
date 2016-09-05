@@ -27,8 +27,4 @@ public final class SchedulerUtils {
         return Math.floorDiv(fullSyncDelay, 4);
     }
     
-    private SchedulerUtils() {
-        
-    }
-
 }

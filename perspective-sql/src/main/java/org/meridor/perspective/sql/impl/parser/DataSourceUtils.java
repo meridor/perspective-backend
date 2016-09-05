@@ -178,7 +178,4 @@ public final class DataSourceUtils {
         void apply(Optional<DataSource> previousDataSourceCandidate, DataSource dataSource, Optional<DataSource> nextDataSourceCandidate);
     }
     
-    private DataSourceUtils() {
-
-    }
 }

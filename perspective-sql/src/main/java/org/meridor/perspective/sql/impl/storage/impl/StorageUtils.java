@@ -19,8 +19,4 @@ public final class StorageUtils {
         return ret;
     }
 
-    private StorageUtils(){
-        
-    }
-    
 }

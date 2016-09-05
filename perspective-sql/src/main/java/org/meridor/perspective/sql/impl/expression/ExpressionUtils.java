@@ -130,6 +130,4 @@ public final class ExpressionUtils {
         return left;
     }
     
-    private ExpressionUtils() {}
-    
 }

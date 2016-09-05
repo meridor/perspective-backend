@@ -45,6 +45,4 @@ public final class DataUtils {
         }
     }
     
-    private DataUtils() {
-    }
 }

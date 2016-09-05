@@ -31,8 +31,4 @@ public final class MessageUtils {
         return String.format("%s_%s", cloudType.value(), queueName);
     }
 
-    private MessageUtils() {
-        
-    }
-
 }

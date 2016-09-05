@@ -28,6 +28,4 @@ public final class PathUtils {
         return getConfigurationDirectoryPath().resolve(name);
     }
     
-    private PathUtils() {}
-    
 }

@@ -384,8 +384,4 @@ public final class TextUtils {
         return version.isPresent() ? version.get() : "devel";
     }
     
-    private TextUtils() {
-        
-    }
-
 }

@@ -28,7 +28,4 @@ public final class PatternUtils {
         return expression.substring(1, expression.length() - 1);
     }
 
-    private PatternUtils() {
-        
-    }
 }
