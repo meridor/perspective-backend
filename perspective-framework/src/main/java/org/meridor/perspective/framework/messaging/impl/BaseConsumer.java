@@ -54,7 +54,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
                 String storageKey = getStorageKey();
                 try {
                     if (!storage.isAvailable()) {
-                        LOG.debug("Stopping consuming from queue = {} as storage is not available", storageKey);
+                        LOG.debug("Stopping consuming from queue \"{}\" as storage is not available", storageKey);
                         return;
                     }
                     BlockingQueue<Object> queue = storage.getQueue(storageKey);
@@ -63,15 +63,15 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
                     if (item != null) {
                         if (item instanceof Message) {
                             if (queueSize > tolerableQueueSize) {
-                                LOG.warn("Messages queue {} size = {} exceeds tolerable size = {}. This can be a signal to increase total number of workers.", storageKey, queueSize, tolerableQueueSize);
+                                LOG.warn("Messages queue \"{}\" size = {} exceeds tolerable size = {}. This can be a signal to increase total number of workers.", storageKey, queueSize, tolerableQueueSize);
                             }
                             Message message = (Message) item;
-                            LOG.trace("Consumed message = {} from queue = {}", message.getId(), storageKey);
+                            LOG.trace("Consumed message {} from queue = {}", message, storageKey);
                             Optional<Message> notProcessedMessage = dispatcher.dispatch(message);
                             if (notProcessedMessage.isPresent()) {
                                 Optional<Message> nextRetry = retry(notProcessedMessage.get());
                                 if (nextRetry.isPresent()) {
-                                    LOG.trace("Retrying not processed message = {}", message.getId());
+                                    LOG.trace("Retrying not processed message = {}", message);
                                     queue.put(nextRetry.get());
                                 }
                             }
@@ -90,7 +90,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     public void destroy() throws InterruptedException {
         canExecute = false;
         if (executorService != null) {
-            LOG.debug("Shutting down consuming from queue {}", getStorageKey());
+            LOG.debug("Shutting down consuming from queue \"{}\"", getStorageKey());
             executorService.shutdown();
             executorService.awaitTermination(shutdownTimeout, TimeUnit.MILLISECONDS);
         }
@@ -99,7 +99,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         final int parallelConsumers = getParallelConsumers();
-        LOG.debug("Will use {} parallel consumers for queue {}", parallelConsumers, getStorageKey());
+        LOG.debug("Will use {} parallel consumers for queue \"{}\"", parallelConsumers, getStorageKey());
         executorService = Executors.newFixedThreadPool(parallelConsumers);
         for (int threadNumber = 0; threadNumber <= parallelConsumers - 1; threadNumber++) {
             Runnable runnable = getRunnable();

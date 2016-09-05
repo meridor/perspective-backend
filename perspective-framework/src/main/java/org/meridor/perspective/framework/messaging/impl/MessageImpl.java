@@ -63,4 +63,14 @@ public class MessageImpl implements Message {
     public boolean equals(Object another) {
         return another instanceof Message && id.equals(((Message) another).getId());
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id='" + id + '\'' +
+                ", cloudType=" + cloudType +
+                ", payload=" + payload +
+                ", ttl=" + ttl +
+                '}';
+    }
 }

@@ -29,7 +29,7 @@ public class OperationProcessorImpl implements OperationProcessor {
 
     @Override
     public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
-        return false;
+        return consumeImpl(cloud, operationType, ids, consumer);
     }
 
     private <T> boolean consumeImpl(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) {

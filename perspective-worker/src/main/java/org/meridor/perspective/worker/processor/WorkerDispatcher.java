@@ -37,7 +37,7 @@ public class WorkerDispatcher implements Dispatcher {
                 return Optional.of(message);
             }
         } else {
-            LOG.warn("Skipping message {} as no corresponding processor exists", message.getId());
+            LOG.warn("Skipping message {} as no corresponding processor exists", message);
         }
         return Optional.empty();
     }

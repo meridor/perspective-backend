@@ -36,4 +36,9 @@ public class ProducerImplTest {
         assertThat(msg.getCloudType(), equalTo(receivedMsg.getCloudType()));
         assertThat(msg.getPayload(), equalTo(receivedMsg.getPayload()));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testNoQueueName() {
+        new ProducerImpl(null, new TestStorage());
+    }
 }

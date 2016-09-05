@@ -20,7 +20,7 @@ public class ProducerImpl implements Producer {
 
     public ProducerImpl(String queueName, Storage storage) {
         if (queueName == null) {
-            throw new IllegalStateException("Queue name can't be null");
+            throw new IllegalArgumentException("Queue name can't be null");
         }
         this.queueName = queueName;
         this.storage = storage;
@@ -30,7 +30,7 @@ public class ProducerImpl implements Producer {
     public void produce(Message message) {
         try {
             String realQueueName = getRealQueueName(queueName, message.getCloudType());
-            LOG.trace("Putting message {} to queue {}", message.getId(), realQueueName);
+            LOG.trace("Putting message {} to queue \"{}\"", message, realQueueName);
             if (!storage.isAvailable()) {
                 LOG.trace("Storage is not available. Will not put {} to queue {}.", message, realQueueName);
                 return;
@@ -38,7 +38,7 @@ public class ProducerImpl implements Producer {
             BlockingQueue<Object> queue = storage.getQueue(realQueueName);
             queue.put(message);
         } catch (Exception e) {
-            LOG.error("Failed to put message to queue " + queueName, e);
+            LOG.error(String.format("Failed to put message to queue \"%s\"", queueName), e);
         }
     }
 
