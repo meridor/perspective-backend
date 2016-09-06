@@ -32,6 +32,8 @@ import java.util.Optional;
         @Transit(from = InstanceNotAvailableEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
+        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
+        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
@@ -126,7 +128,7 @@ public class InstanceFSM {
     private CloudConfigurationProvider cloudConfigurationProvider;
 
     @Autowired
-    private InstancesAware storage;
+    private InstancesAware instancesAware;
 
     @BeforeTransit
     public void beforeTransit(InstanceEvent instanceEvent) {
@@ -139,7 +141,7 @@ public class InstanceFSM {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as queued", instance.getName(), instance.getId());
             instance.setState(InstanceState.QUEUED);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         }
     }
 
@@ -151,7 +153,7 @@ public class InstanceFSM {
         if (event.isSync()) {
             LOG.info("Marking instance {} ({}) as launching", instance.getName(), instance.getId());
             instance.setState(InstanceState.LAUNCHING);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         } else {
             LOG.info("Adding instance {} ({})", instance.getName(), instance.getId());
             Optional<Instance> updatedInstanceCandidate = operationProcessor.process(cloud, OperationType.ADD_INSTANCE, () -> instance);
@@ -164,8 +166,12 @@ public class InstanceFSM {
                 Initially we assign some random UUID to instance while it's being created (just to show that instance was queued).
                 When real ID becomes available we replace initially queued instance by one with correct ID. 
              */
-            storage.deleteInstance(event.getTemporaryInstanceId());
-            storage.saveInstance(updatedInstance);
+
+            String temporaryInstanceId = event.getTemporaryInstanceId();
+            if (temporaryInstanceId != null && instancesAware.instanceExists(temporaryInstanceId)) {
+                instancesAware.deleteInstance(temporaryInstanceId);
+            }
+            instancesAware.saveInstance(updatedInstance);
         }
     }
 
@@ -175,7 +181,7 @@ public class InstanceFSM {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as launched", instance.getName(), instance.getId());
             instance.setState(InstanceState.LAUNCHED);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         }
     }
 
@@ -190,7 +196,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to reboot");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -204,7 +210,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to hard reboot");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -218,7 +224,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to shut down");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -227,7 +233,7 @@ public class InstanceFSM {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as shutoff", instance.getName(), instance.getId());
             instance.setState(InstanceState.SHUTOFF);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         }
     }
 
@@ -242,7 +248,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to pause");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -251,7 +257,7 @@ public class InstanceFSM {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as paused", instance.getName(), instance.getId());
             instance.setState(InstanceState.PAUSED);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         }
     }
 
@@ -266,7 +272,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to resume");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -280,7 +286,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to rebuild");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -294,7 +300,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to resize");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -308,7 +314,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to suspend");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -317,7 +323,7 @@ public class InstanceFSM {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as suspended", instance.getName(), instance.getId());
             instance.setState(InstanceState.SUSPENDED);
-            storage.saveInstance(instance);
+            instancesAware.saveInstance(instance);
         }
     }
 
@@ -332,7 +338,7 @@ public class InstanceFSM {
         } else {
             instance.setErrorReason("Failed to migrate");
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -343,11 +349,11 @@ public class InstanceFSM {
         if (event.isSync()) {
             LOG.info("Marking instance {} ({}) as deleting", instance.getName(), instance.getId());
             instance.setState(InstanceState.DELETING);
-            storage.saveInstance(instance);
-        } else if (storage.instanceExists(instance.getId())) {
+            instancesAware.saveInstance(instance);
+        } else if (instancesAware.instanceExists(instance.getId())) {
             if (operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
                 LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
-                storage.deleteInstance(instance.getId());
+                instancesAware.deleteInstance(instance.getId());
             } else {
                 throw new RuntimeException(String.format("Failed to delete %s", instance));
             }
@@ -363,7 +369,7 @@ public class InstanceFSM {
             LOG.info("Marking instance {} ({}) as snapshotting", instance.getName(), instance.getId());
             instance.setState(InstanceState.SNAPSHOTTING);
         }
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
@@ -372,7 +378,7 @@ public class InstanceFSM {
         LOG.info("Changing instance {} ({}) status to error with reason = {}", instance.getName(), instance.getId(), event.getErrorReason());
         instance.setState(InstanceState.ERROR);
         instance.setErrorReason(event.getErrorReason());
-        storage.saveInstance(instance);
+        instancesAware.saveInstance(instance);
     }
 
     @OnTransit
