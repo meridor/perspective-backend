@@ -10,12 +10,12 @@ import java.util.function.Supplier;
 
 public interface OperationProcessor {
 
-    <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception;
+    <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer);
     
-    <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception;
+    <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer);
 
-    <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception;
+    <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier);
     
-    <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception;
+    <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier);
 
 }

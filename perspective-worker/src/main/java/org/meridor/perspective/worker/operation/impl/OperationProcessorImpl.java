@@ -23,12 +23,12 @@ public class OperationProcessorImpl implements OperationProcessor {
     private OperationsAware operationsAware;
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) {
         return consumeImpl(cloud, operationType, Collections.emptySet(), consumer);
     }
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) {
         return consumeImpl(cloud, operationType, ids, consumer);
     }
 
@@ -47,7 +47,7 @@ public class OperationProcessorImpl implements OperationProcessor {
     }
 
     @Override
-    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
+    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) {
         Operation operation = doChecks(operationType, supplier);
         if (operation instanceof ConsumingOperation) {
             @SuppressWarnings("unchecked")
@@ -61,7 +61,7 @@ public class OperationProcessorImpl implements OperationProcessor {
     }
 
     @Override
-    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
+    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) {
         Operation operation = doChecks(operationType, supplier);
         if (operation instanceof ProcessingOperation) {
             @SuppressWarnings("unchecked")

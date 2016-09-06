@@ -26,22 +26,22 @@ public class AlwaysSucceedingOperationProcessor implements OperationProcessor, C
     }
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) {
         return true;
     }
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) {
         return true;
     }
 
     @Override
-    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
+    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) {
         return true;
     }
 
     @Override
-    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
+    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) {
         @SuppressWarnings("unchecked")
         O ret = (O) supplier.get();
         return Optional.of(ret);

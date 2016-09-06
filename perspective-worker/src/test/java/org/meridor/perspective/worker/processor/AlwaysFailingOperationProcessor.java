@@ -26,22 +26,22 @@ public class AlwaysFailingOperationProcessor implements OperationProcessor, Clou
     }
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) {
         throw new RuntimeException("Always failing");
     }
 
     @Override
-    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) throws Exception {
+    public <T> boolean consume(Cloud cloud, OperationType operationType, Set<String> ids, Consumer<T> consumer) {
         throw new RuntimeException("Always failing");
     }
 
     @Override
-    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) throws Exception {
+    public <T> boolean supply(Cloud cloud, OperationType operationType, Supplier<T> supplier) {
         throw new RuntimeException("Always failing");
     }
 
     @Override
-    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) throws Exception {
+    public <I, O> Optional<O> process(Cloud cloud, OperationType operationType, Supplier<I> supplier) {
         throw new RuntimeException("Always failing");
     }
 }
