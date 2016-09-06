@@ -51,7 +51,7 @@ public class ImageFSM {
     private CloudConfigurationProvider cloudConfigurationProvider;
 
     @Autowired
-    private ImagesAware storage;
+    private ImagesAware imagesAware;
 
     @BeforeTransit
     public void beforeTransit(ImageEvent imageEvent) {
@@ -61,10 +61,10 @@ public class ImageFSM {
     @OnTransit
     public void onImageQueued(ImageQueuedEvent event) {
         if (event.isSync()) {
-            Image instance = event.getImage();
-            LOG.info("Marking instance {} ({}) as queued", instance.getName(), instance.getId());
-            instance.setState(ImageState.QUEUED);
-            storage.saveImage(instance);
+            Image image = event.getImage();
+            LOG.info("Marking image {} ({}) as queued", image.getName(), image.getId());
+            image.setState(ImageState.QUEUED);
+            imagesAware.saveImage(image);
         }
     }
 
@@ -76,7 +76,7 @@ public class ImageFSM {
         if (event.isSync()) {
             LOG.info("Marking image {} ({}) as saving", image.getName(), image.getId());
             image.setState(ImageState.SAVING);
-            storage.saveImage(image);
+            imagesAware.saveImage(image);
         } else {
             LOG.info("Adding image {} ({})", image.getName(), image.getId());
             Optional<Image> updatedImageCandidate = operationProcessor.process(cloud, OperationType.ADD_IMAGE, () -> image);
@@ -87,8 +87,11 @@ public class ImageFSM {
             updatedImage.setState(ImageState.SAVING);
             
             //Swap images with random UUID and real ID
-            storage.deleteImage(event.getTemporaryImageId());
-            storage.saveImage(updatedImage);
+            String temporaryImageId = event.getTemporaryImageId();
+            if (temporaryImageId != null && imagesAware.imageExists(temporaryImageId)) {
+                imagesAware.deleteImage(temporaryImageId);
+            }
+            imagesAware.saveImage(updatedImage);
         }
         
     }
@@ -99,7 +102,7 @@ public class ImageFSM {
             Image image = event.getImage();
             LOG.info("Marking image {} ({}) as saved", image.getName(), image.getId());
             image.setState(ImageState.SAVED);
-            storage.saveImage(image);
+            imagesAware.saveImage(image);
         }
     }
     
@@ -108,10 +111,14 @@ public class ImageFSM {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
-        if (storage.imageExists(image.getId())) {
-            LOG.info("Deleting image {} ({})", image.getName(), image.getId());
-            if (event.isSync() || operationProcessor.supply(cloud, OperationType.DELETE_IMAGE, () -> image)) {
-                storage.deleteImage(image.getId());
+        if (event.isSync()) {
+            LOG.info("Marking image {} ({}) as deleting", image.getName(), image.getId());
+            image.setState(ImageState.DELETING);
+            imagesAware.saveImage(image);
+        } else if (imagesAware.imageExists(image.getId())) {
+            if (operationProcessor.supply(cloud, OperationType.DELETE_IMAGE, () -> image)) {
+                LOG.info("Deleting image {} ({})", image.getName(), image.getId());
+                imagesAware.deleteImage(image.getId());
             } else {
                 throw new RuntimeException(String.format("Failed to delete %s", image));
             }
@@ -126,7 +133,7 @@ public class ImageFSM {
         LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId(), event.getErrorReason());
         image.setState(ImageState.ERROR);
         image.setErrorReason(event.getErrorReason());
-        storage.saveImage(image);
+        imagesAware.saveImage(image);
     }
 
     @OnTransit
