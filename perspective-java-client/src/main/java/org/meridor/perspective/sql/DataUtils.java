@@ -23,20 +23,9 @@ public final class DataUtils {
         return get(data, row, getColumnIndex(data, columnName));
     }
 
-    public static void put(Data data, Row row, int columnIndex, Object value) {
-        checkColumnIndex(data, columnIndex);
-        row.getValues().add(columnIndex, value);
-    }
-
-    public static void put(Data data, Row row, String columnName, Object value) {
-        int columnIndex = getColumnIndex(data, columnName);
-        checkColumnIndex(data, columnIndex);
-        row.getValues().add(columnIndex, value);
-    }
-    
     private static void checkColumnIndex(Data data, int columnIndex) {
         final int NUM_COLS = data.getColumnNames().size();
-        if (columnIndex < 0 && columnIndex >= NUM_COLS) {
+        if (columnIndex < 0 || columnIndex >= NUM_COLS) {
             throw new IllegalArgumentException(String.format(
                     "Column index should be between 0 and %d but %d was specified",
                     NUM_COLS,

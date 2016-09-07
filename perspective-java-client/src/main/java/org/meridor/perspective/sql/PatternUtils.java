@@ -22,7 +22,7 @@ public final class PatternUtils {
     }
     
     public static String removeFirstAndLastChars(String expression) {
-        if (expression.length() < 2) {
+        if (expression == null || expression.length() < 2) {
             return expression;
         }
         return expression.substring(1, expression.length() - 1);
