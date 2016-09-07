@@ -2,7 +2,6 @@ package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.shell.common.repository.QueryRepository;
 import org.meridor.perspective.shell.common.repository.SettingsAware;
-import org.meridor.perspective.shell.common.validator.Setting;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;

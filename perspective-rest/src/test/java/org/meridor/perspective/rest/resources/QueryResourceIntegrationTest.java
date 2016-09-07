@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
+@SuppressWarnings("SpringJavaAutowiredMembersInspection")
 @RunWith(Parameterized.class)
 public class QueryResourceIntegrationTest extends BaseIntegrationTest {
 

@@ -15,9 +15,7 @@ public class EventBusImplTest {
     public void testFire() {
         final AtomicBoolean fired = new AtomicBoolean(false);
         Object event = new Object();
-        EventListener<Object> listener = evt -> {
-            fired.set(true);
-        };
+        EventListener<Object> listener = evt -> fired.set(true);
         EventBus eventBus = new EventBusImpl();
         eventBus.addListener(Object.class, listener);
         assertThat(fired.get(), is(false));

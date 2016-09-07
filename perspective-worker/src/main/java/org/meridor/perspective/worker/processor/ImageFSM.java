@@ -69,7 +69,7 @@ public class ImageFSM {
     }
 
     @OnTransit
-    public void onImageSaving(ImageSavingEvent event) throws Exception {
+    public void onImageSaving(ImageSavingEvent event) {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -107,7 +107,7 @@ public class ImageFSM {
     }
     
     @OnTransit
-    public void onImageDeleting(ImageDeletingEvent event) throws Exception {
+    public void onImageDeleting(ImageDeletingEvent event) {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);

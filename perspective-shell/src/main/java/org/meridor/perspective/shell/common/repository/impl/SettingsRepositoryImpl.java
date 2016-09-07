@@ -29,7 +29,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
     @Override public Set<String> set(String data) {
         Set<String> errors = new HashSet<>();
         Map<String, Set<String>> values = TextUtils.parseAssignment(data);
-        values.keySet().stream().forEach(
+        values.keySet().forEach(
                 k -> {
                     Set<String> value = values.get(k);
                     String enumName = k.toUpperCase();

@@ -23,9 +23,9 @@ public class FilterProcessorImplTest {
     
     @Test
     public void testAll() throws Exception {
-        ObjectWithFilter objectWithFilter = new ObjectWithFilter();
-        assertThat(filterProcessor.hasAppliedFilters(objectWithFilter), is(false));
-        filterProcessor.applyFilters(objectWithFilter);
+        ObjectWithFilter object = new ObjectWithFilter();
+        assertThat(filterProcessor.hasAppliedFilters(object), is(false));
+        ObjectWithFilter objectWithFilter = filterProcessor.applyFilters(object);
         assertThat(filterProcessor.hasAppliedFilters(objectWithFilter), is(true));
 
         String[] fieldNames = {"fieldOne", "fieldTwo"};
@@ -37,9 +37,9 @@ public class FilterProcessorImplTest {
             assertThat(String.valueOf(fieldValue), equalTo("one, two"));
         }
 
-        filterProcessor.unsetFilters(objectWithFilter);
+        ObjectWithFilter objectWithNoFilter = filterProcessor.unsetFilters(objectWithFilter);
         for (String fieldName : fieldNames) {
-            Object fieldValue = getFieldValue(objectWithFilter, fieldName);
+            Object fieldValue = getFieldValue(objectWithNoFilter, fieldName);
             assertThat(fieldValue, is(nullValue()));
         }
     }

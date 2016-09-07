@@ -27,7 +27,7 @@ public class SetCommands extends BaseCommands {
     
     @CliCommand(value = "unset", help = "Unset filter or option")
     public void unset(
-            @CliOption(key = "", mandatory = false, help = "Data to unset") String data,
+            @CliOption(key = "", help = "Data to unset") String data,
             @CliOption(key = "filters", unspecifiedDefaultValue = "false", specifiedDefaultValue = "true", help = "Show all available settings") boolean filters
             
     ) {

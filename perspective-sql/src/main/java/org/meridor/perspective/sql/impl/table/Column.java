@@ -3,7 +3,6 @@ package org.meridor.perspective.sql.impl.table;
 import org.meridor.perspective.sql.impl.index.impl.IndexSignature;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 

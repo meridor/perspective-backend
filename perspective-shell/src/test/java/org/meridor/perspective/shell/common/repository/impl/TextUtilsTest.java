@@ -56,10 +56,10 @@ public class TextUtilsTest {
         List<String> lines = Arrays.asList("line1", "line2");
         String joinedLines = joinLines(lines);
         assertThat(joinedLines, is(notNullValue()));
-        List<String> splittedLines = Arrays.asList(joinedLines.split("\\r?\\n"));
-        assertThat(splittedLines, hasSize(2));
-        assertThat(splittedLines.get(0), equalTo("line1"));
-        assertThat(splittedLines.get(1), equalTo("line2"));
+        List<String> splitLines = Arrays.asList(joinedLines.split("\\r?\\n"));
+        assertThat(splitLines, hasSize(2));
+        assertThat(splitLines.get(0), equalTo("line1"));
+        assertThat(splitLines.get(1), equalTo("line2"));
         assertThat(joinLines(Collections.singletonList("line")), equalTo("line"));
     }
 

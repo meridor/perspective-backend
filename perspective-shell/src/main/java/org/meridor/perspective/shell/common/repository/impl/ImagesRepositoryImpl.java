@@ -32,24 +32,23 @@ public class ImagesRepositoryImpl implements ImagesRepository {
         QueryResult networksResult = queryRepository.query(findImagesRequest.getPayload());
         Data data = networksResult.getData();
         Map<String, FindImagesResult> resultsMap = new LinkedHashMap<>();
-        data.getRows().stream()
-                .forEach(r -> {
-                    ValueFormatter vf = new ValueFormatter(data, r);
-                    String imageId = vf.getString("images.id");
-                    FindImagesResult findImagesResult = resultsMap.getOrDefault(imageId, new FindImagesResult(
-                            vf.getString("images.id"),
-                            vf.getString("images.real_id"),
-                            vf.getString("images.name"),
-                            vf.getString("images.cloud_type"),
-                            vf.getString("images.state"),
-                            vf.getString("images.last_updated")
-                    ));
-                    String projectId = vf.getString("projects.id");
-                    String projectName = vf.getString("projects.name");
-                    findImagesResult.getProjectIds().add(projectId);
-                    findImagesResult.getProjectNames().add(projectName);
-                    resultsMap.put(imageId, findImagesResult);
-                });
+        data.getRows().forEach(r -> {
+            ValueFormatter vf = new ValueFormatter(data, r);
+            String imageId = vf.getString("images.id");
+            FindImagesResult findImagesResult = resultsMap.getOrDefault(imageId, new FindImagesResult(
+                    vf.getString("images.id"),
+                    vf.getString("images.real_id"),
+                    vf.getString("images.name"),
+                    vf.getString("images.cloud_type"),
+                    vf.getString("images.state"),
+                    vf.getString("images.last_updated")
+            ));
+            String projectId = vf.getString("projects.id");
+            String projectName = vf.getString("projects.name");
+            findImagesResult.getProjectIds().add(projectId);
+            findImagesResult.getProjectNames().add(projectName);
+            resultsMap.put(imageId, findImagesResult);
+        });
         return new ArrayList<>(resultsMap.values());
     }
 

@@ -7,7 +7,6 @@ import org.meridor.perspective.sql.impl.table.TablesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.checkLeftDataSource;

@@ -516,8 +516,8 @@ public class QueryParserImplTest {
         assertThat(selectQueryAware.getWhereExpression(), equalTo(Optional.of(booleanExpression)));
     }
 
-    private QueryParser parse(String sql) throws SQLSyntaxErrorException {
-        return parse(sql, QueryParser.class);
+    private void parse(String sql) throws SQLSyntaxErrorException {
+        parse(sql, QueryParser.class);
     }
     
     private <T> T parse(String sql, Class<T> cls) throws SQLSyntaxErrorException {

@@ -25,6 +25,8 @@ import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 @Component
 public abstract class BaseCommands implements CommandMarker {
 
+    private static final String NOTHING_TO_SHOW = "Nothing to show";
+    
     @Autowired
     private TableRenderer tableRenderer;
 
@@ -57,10 +59,6 @@ public abstract class BaseCommands implements CommandMarker {
     
     protected void error(String message) {
         logger.error(message);
-    }
-
-    protected static String nothingToShow() {
-        return "Nothing to show";
     }
 
     protected void okOrShowErrors(Set<String> errors) {
@@ -96,7 +94,7 @@ public abstract class BaseCommands implements CommandMarker {
                 ok(tableRenderer.render(columns, rows));
             }
         } else {
-            ok(nothingToShow());
+            ok(NOTHING_TO_SHOW);
         }
     }
 

@@ -146,7 +146,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceLaunching(InstanceLaunchingEvent event) throws Exception {
+    public void onInstanceLaunching(InstanceLaunchingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -186,7 +186,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceRebooting(InstanceRebootingEvent event) throws Exception {
+    public void onInstanceRebooting(InstanceRebootingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -200,7 +200,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceHardRebooting(InstanceHardRebootingEvent event) throws Exception {
+    public void onInstanceHardRebooting(InstanceHardRebootingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -214,7 +214,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceShuttingDown(InstanceShuttingDownEvent event) throws Exception {
+    public void onInstanceShuttingDown(InstanceShuttingDownEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -238,7 +238,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstancePausing(InstancePausingEvent event) throws Exception {
+    public void onInstancePausing(InstancePausingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -262,7 +262,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceResuming(InstanceResumingEvent event) throws Exception {
+    public void onInstanceResuming(InstanceResumingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -276,7 +276,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceRebuilding(InstanceRebuildingEvent event) throws Exception {
+    public void onInstanceRebuilding(InstanceRebuildingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -290,7 +290,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceResizing(InstanceResizingEvent event) throws Exception {
+    public void onInstanceResizing(InstanceResizingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -304,7 +304,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceSuspending(InstanceSuspendingEvent event) throws Exception {
+    public void onInstanceSuspending(InstanceSuspendingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -328,7 +328,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceMigrating(InstanceMigratingEvent event) throws Exception {
+    public void onInstanceMigrating(InstanceMigratingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -342,7 +342,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceDeleting(InstanceDeletingEvent event) throws Exception {
+    public void onInstanceDeleting(InstanceDeletingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -363,7 +363,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceSnapshotting(InstanceSnapshottingEvent event) throws Exception {
+    public void onInstanceSnapshotting(InstanceSnapshottingEvent event) {
         Instance instance = event.getInstance();
         if (event.isSync()) {
             LOG.info("Marking instance {} ({}) as snapshotting", instance.getName(), instance.getId());

@@ -29,16 +29,16 @@ public class ObjectValidatorImpl implements ObjectValidator {
     @Override
     public Set<String> validate(Object object) {
         Set<String> errors = new HashSet<>();
-        filterProcessor.applyFilters(object);
-        Arrays.stream(object.getClass().getDeclaredFields())
+        Object objectWithFilters = filterProcessor.applyFilters(object);
+        Arrays.stream(objectWithFilters.getClass().getDeclaredFields())
                 .forEach(f -> {
                             try {
                                 f.setAccessible(true);
-                                Object value = f.get(object);
+                                Object value = f.get(objectWithFilters);
                                 getValidators().stream()
                                     .filter(v -> f.isAnnotationPresent(v.getAnnotationClass()))
                                     .forEach(v -> {
-                                        Set<String> fieldErrors = validateField(v, object, value, f);
+                                        Set<String> fieldErrors = validateField(v, objectWithFilters, value, f);
                                         errors.addAll(fieldErrors);
                                     });
                             } catch (IllegalAccessException e) {
@@ -59,7 +59,7 @@ public class ObjectValidatorImpl implements ObjectValidator {
         Annotation annotation = f.getAnnotation(v.getAnnotationClass());
         if (value != null && isSet(value.getClass())) {
             Set<?> set = Set.class.cast(value);
-            set.stream().forEach(val -> {
+            set.forEach(val -> {
                 if (!v.validate(object, annotation, val)) {
                     errors.add(v.getMessage(annotation, filterName, value));
                 }

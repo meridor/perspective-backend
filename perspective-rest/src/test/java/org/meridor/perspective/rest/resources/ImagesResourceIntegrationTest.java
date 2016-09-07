@@ -16,6 +16,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@SuppressWarnings("SpringJavaAutowiredMembersInspection")
 public class ImagesResourceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -53,7 +54,7 @@ public class ImagesResourceIntegrationTest extends BaseIntegrationTest {
         deleteImage(EntityGenerator.getImage());
     }
 
-    private void deleteImage(Image image) throws Exception {
+    private void deleteImage(Image image) {
         List<String> images = new ArrayList<String>() {
             {
                 add(image.getId());

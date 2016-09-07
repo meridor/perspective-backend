@@ -5,7 +5,6 @@ import org.meridor.perspective.sql.impl.table.annotation.ForeignKey;
 import org.springframework.stereotype.Component;
 
 import static org.meridor.perspective.rest.data.TableName.AVAILABILITY_ZONES;
-import static org.meridor.perspective.rest.data.TableName.PROJECTS;
 
 @Component
 @ForeignKey(columns = "project_id", table = "projects", tableColumns = "id")

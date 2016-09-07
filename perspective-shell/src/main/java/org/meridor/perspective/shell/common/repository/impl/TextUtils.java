@@ -197,7 +197,7 @@ public final class TextUtils {
             return null;
         }
         return new HashSet<>(
-                Arrays.asList(data.split(delimiter)).stream()
+                Arrays.stream(data.split(delimiter))
                         .filter(el -> !el.isEmpty())
                         .map(String::trim)
                 .collect(Collectors.toList())

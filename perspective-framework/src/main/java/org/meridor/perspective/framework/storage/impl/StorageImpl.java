@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static org.meridor.perspective.framework.storage.impl.StorageKey.*;
@@ -111,11 +110,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     private void modifyProject(String projectId, Consumer<Map<String, Project>> action) {
-        modifyMap(projectsById(), projectId, action);
+        modifyMap(PROJECTS_BY_ID, projectId, action);
     }
 
     private <T> T readProject(String projectId, Function<Map<String, Project>, T> function) {
-        return readFromMap(projectsById(), projectId, function);
+        return readFromMap(PROJECTS_BY_ID, projectId, function);
     }
 
     @Override
@@ -126,7 +125,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public void addProjectListener(EntityListener<Project> listener) {
         MapListener entryListener = new EntryListenerImpl<>(listener);
-        getMap(projectsById()).addEntryListener(entryListener, true);
+        getMap(PROJECTS_BY_ID).addEntryListener(entryListener, true);
     }
 
     @Override
@@ -155,11 +154,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     }
 
     private void modifyInstance(String instanceId, Consumer<Map<String, Instance>> action) {
-        modifyMap(instancesById(), instanceId, action);
+        modifyMap(INSTANCES_BY_ID, instanceId, action);
     }
 
     private <T> T readInstance(String instanceId, Function<Map<String, Instance>, T> function) {
-        return readFromMap(instancesById(), instanceId, function);
+        return readFromMap(INSTANCES_BY_ID, instanceId, function);
     }
 
     //TODO: add @Transactional annotation and respective aspect for Hazelcast transactions
@@ -174,7 +173,7 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public void addInstanceListener(EntityListener<Instance> listener) {
         MapListener entryListener = new EntryListenerImpl<>(listener);
-        getMap(instancesById()).addEntryListener(entryListener, true);
+        getInstancesByIdMap().addEntryListener(entryListener, true);
     }
 
     @Override
@@ -202,13 +201,12 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return readInstance(instanceId, map -> Optional.ofNullable(map.get(instanceId)));
     }
 
-
     private void modifyImage(String imageId, Consumer<Map<String, Image>> action) {
-        modifyMap(imagesById(), imageId, action);
+        modifyMap(IMAGES_BY_ID, imageId, action);
     }
 
     private <T> T readImage(String imageId, Function<Map<String, Image>, T> function) {
-        return readFromMap(imagesById(), imageId, function);
+        return readFromMap(IMAGES_BY_ID, imageId, function);
     }
 
     @Override
@@ -252,38 +250,27 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Override
     public void addImageListener(EntityListener<Image> listener) {
         MapListener entryListener = new EntryListenerImpl<>(listener);
-        getMap(imagesById()).addEntryListener(entryListener, true);
+        getImagesByIdMap().addEntryListener(entryListener, true);
     }
 
     private IMap<String, Project> getProjectsByIdMap() {
-        return getMap(projectsById());
+        return getMap(PROJECTS_BY_ID);
     }
 
     private IMap<String, Instance> getInstancesByIdMap() {
-        return getMap(instancesById());
+        return getMap(INSTANCES_BY_ID);
     }
 
     private IMap<String, Image> getImagesByIdMap() {
-        return getMap(imagesById());
+        return getMap(IMAGES_BY_ID);
     }
 
     private Map<String, Instance> getDeletedInstancesByIdMap() {
-        return getMap(deletedInstancesByCloud());
+        return getMap(DELETED_INSTANCES);
     }
 
     private Map<String, Image> getDeletedImagesByIdMap() {
-        return getMap(deletedImagesByCloud());
-    }
-
-    private static <T> com.hazelcast.query.Predicate<String, T> convertPredicate(Predicate<T> predicate) {
-        @SuppressWarnings("all")
-        com.hazelcast.query.Predicate<String, T> ret = new com.hazelcast.query.Predicate<String, T>() {
-            @Override
-            public boolean apply(Map.Entry<String, T> mapEntry) {
-                return predicate.test(mapEntry.getValue());
-            }
-        };
-        return ret;
+        return getMap(DELETED_IMAGES);
     }
 
     @Override

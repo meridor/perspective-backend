@@ -69,21 +69,20 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
         QueryResult networksResult = queryRepository.query(findNetworksRequest.getPayload());
         Data data = networksResult.getData();
         Map<String, FindNetworksResult> resultsMap = new LinkedHashMap<>();
-        data.getRows().stream()
-                .forEach(r -> {
-                    ValueFormatter vf = new ValueFormatter(data, r);
-                    String networkId = vf.getString("networks.id");
-                    FindNetworksResult findNetworksResult = resultsMap.getOrDefault(networkId, new FindNetworksResult(
-                            vf.getString("networks.id"),
-                            vf.getString("networks.name"),
-                            vf.getString("projects.name"),
-                            vf.getString("networks.state"),
-                            Boolean.valueOf(vf.getString("networks.is_shared")))
-                    );
-                    String cidr = vf.getString("network_subnets.cidr");
-                    findNetworksResult.getSubnets().add(cidr);
-                    resultsMap.put(networkId, findNetworksResult);
-                });
+        data.getRows().forEach(r -> {
+            ValueFormatter vf = new ValueFormatter(data, r);
+            String networkId = vf.getString("networks.id");
+            FindNetworksResult findNetworksResult = resultsMap.getOrDefault(networkId, new FindNetworksResult(
+                    vf.getString("networks.id"),
+                    vf.getString("networks.name"),
+                    vf.getString("projects.name"),
+                    vf.getString("networks.state"),
+                    Boolean.valueOf(vf.getString("networks.is_shared")))
+            );
+            String cidr = vf.getString("network_subnets.cidr");
+            findNetworksResult.getSubnets().add(cidr);
+            resultsMap.put(networkId, findNetworksResult);
+        });
         return new ArrayList<>(resultsMap.values());
     }
 

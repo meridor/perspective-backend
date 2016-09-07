@@ -46,7 +46,7 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
         }
     }
 
-    private void load(InputStream configFileInputStream) throws JAXBException, IOException {
+    private void load(InputStream configFileInputStream) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(ObjectFactory.class.getPackage().getName());
         Unmarshaller unmarshaller = context.createUnmarshaller();
         Clouds clouds = (Clouds) unmarshaller.unmarshal(configFileInputStream);

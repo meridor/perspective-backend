@@ -81,7 +81,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
         } else if (expression instanceof InExpression) {
             return cast(evaluateInExpression((InExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof LiteralBooleanExpression) {
-            return cast(evaluateLiteralBooleanExpression((LiteralBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
+            return cast(evaluateLiteralBooleanExpression((LiteralBooleanExpression) expression), Boolean.class, Comparable.class);
         } else if (expression instanceof SimpleBooleanExpression) {
             return cast(evaluateSimpleBooleanExpression((SimpleBooleanExpression) expression, dataRow), Boolean.class, Comparable.class);
         } else if (expression instanceof BinaryBooleanExpression) {
@@ -176,7 +176,7 @@ public class ExpressionEvaluatorImpl implements ExpressionEvaluator {
     }
 
 
-    private boolean evaluateLiteralBooleanExpression(LiteralBooleanExpression literalBooleanExpression, DataRow dataRow) {
+    private boolean evaluateLiteralBooleanExpression(LiteralBooleanExpression literalBooleanExpression) {
         return literalBooleanExpression != null && literalBooleanExpression.getLiteral();
     }
 

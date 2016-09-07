@@ -22,6 +22,6 @@ public class NameStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return String.format("Specify instance name. Any %s occurence will be replaced by instance number:", getPlaceholder(Placeholder.NUMBER));
+        return String.format("Specify instance name. Any %s occurrence will be replaced by instance number:", getPlaceholder(Placeholder.NUMBER));
     }
 }

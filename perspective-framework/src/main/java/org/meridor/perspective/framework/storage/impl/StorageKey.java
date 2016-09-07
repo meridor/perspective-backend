@@ -2,26 +2,10 @@ package org.meridor.perspective.framework.storage.impl;
 
 public final class StorageKey {
 
-    public static String projectsById() {
-        return "projects_by_id";
-    }
+    static final String PROJECTS_BY_ID = "projects_by_id";
+    static final String INSTANCES_BY_ID = "instances_by_id";
+    static final String IMAGES_BY_ID = "images_by_id";
+    static final String DELETED_INSTANCES = "deleted-instances";
+    static final String DELETED_IMAGES = "deleted-images";
 
-    public static String instancesById() {
-        return "instances_by_id";
-    }
-    
-    public static String imagesById() {
-        return "images_by_id";
-    }
-
-    public static String deletedInstancesByCloud() {
-        return "deleted-instances";
-    }
-    
-    public static String deletedImagesByCloud() {
-        return "deleted-images";
-    }
-    
-    private StorageKey() {
-    }
 }

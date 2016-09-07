@@ -4,7 +4,6 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.OperationType;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Action;
-import org.openstack4j.model.compute.RebootType;
 import org.springframework.stereotype.Component;
 
 import java.util.function.BiConsumer;

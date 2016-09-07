@@ -18,6 +18,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@SuppressWarnings("SpringJavaAutowiredMembersInspection")
 public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -94,7 +95,7 @@ public class InstancesResourceIntegrationTest extends BaseIntegrationTest {
         deleteInstance(missingInstance);
     }
 
-    private void deleteInstance(Instance instance) throws Exception {
+    private void deleteInstance(Instance instance) {
         List<String> instances = new ArrayList<String>() {
             {
                 add(instance.getId());

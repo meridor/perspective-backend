@@ -22,14 +22,14 @@ public class DataRow {
     }
     
     public Object get(int columnIndex) {
-        if (!isColumnIndexValid(columnIndex)) {
+        if (isColumnIndexWrong(columnIndex)) {
             throw new IllegalArgumentException(String.format("Index should be one of 0..%d", getColumnsCount() - 1));
         }
         return (columnIndex <= values.size() - 1) ? values.get(columnIndex) : null;
     }
     
-    private boolean isColumnIndexValid(int columnIndex) {
-        return columnIndex >= 0 && columnIndex <= getColumnsCount();
+    private boolean isColumnIndexWrong(int columnIndex) {
+        return columnIndex < 0 || columnIndex > getColumnsCount();
     }
     
     private int getColumnsCount() {
@@ -53,7 +53,7 @@ public class DataRow {
     }
     
     public void put(int columnIndex, Object value) {
-        if (!isColumnIndexValid(columnIndex)) {
+        if (isColumnIndexWrong(columnIndex)) {
             throw new IllegalArgumentException(String.format("Index should be one of 0..%d", values.size() - 1));
         }
         this.values.set(columnIndex, value);

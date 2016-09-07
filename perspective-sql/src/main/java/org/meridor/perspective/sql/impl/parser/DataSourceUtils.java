@@ -163,14 +163,12 @@ public final class DataSourceUtils {
         List<T> left = new ArrayList<>(lists.get(0));
         List<List<T>> rightCrossProduct = crossProduct(lists.subList(1, lists.size()));
         List<List<T>> ret = new ArrayList<>();
-        left.forEach(entry -> rightCrossProduct.forEach(list -> {
-            ret.add(new ArrayList<T>(){
-                {
-                    add(entry);
-                    addAll(list);
-                }
-            });
-        }));
+        left.forEach(entry -> rightCrossProduct.forEach(list -> ret.add(new ArrayList<T>(){
+            {
+                add(entry);
+                addAll(list);
+            }
+        })));
         return ret;
     }
 

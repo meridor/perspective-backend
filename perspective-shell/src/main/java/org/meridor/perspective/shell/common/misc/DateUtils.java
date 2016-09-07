@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 public class DateUtils {
+
+    private static final String DEFAULT_FORMAT_PATTERN = "YYYYMMdd_HHmmss";
     
     @Autowired
     private SettingsAware settingsAware;
@@ -22,7 +24,7 @@ public class DateUtils {
         try {
             return DateTimeFormatter.ofPattern(pattern);
         } catch (Exception e) {
-            return getDateTimeFormatter(getDefaultFormatPattern());
+            return getDateTimeFormatter(DEFAULT_FORMAT_PATTERN);
         }
     }
 
@@ -30,11 +32,7 @@ public class DateUtils {
         if (settingsAware.hasSetting(Setting.DATE_FORMAT)) {
             return settingsAware.getSettingAs(Setting.DATE_FORMAT, String.class);
         }
-        return getDefaultFormatPattern();
-    }
-    
-    private String getDefaultFormatPattern() {
-        return "YYYYMMdd_HHmmss";
+        return DEFAULT_FORMAT_PATTERN;
     }
     
 }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.util.function.BiConsumer;
 
 import static org.meridor.perspective.config.OperationType.SHUTDOWN_INSTANCE;
-import static org.meridor.perspective.config.OperationType.START_INSTANCE;
 
 @Component
 public class ShutdownInstanceOperation extends BaseInstanceOperation {

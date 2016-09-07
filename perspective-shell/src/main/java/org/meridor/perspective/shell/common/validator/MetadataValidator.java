@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
 public class MetadataValidator implements Validator {
     
     private static final List<String> ALL_METADATA_KEYS =
-            Arrays.asList(MetadataKey.values())
-            .stream()
+            Arrays.stream(MetadataKey.values())
             .map(k -> k.name().toLowerCase())
             .collect(Collectors.toList());
     
