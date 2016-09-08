@@ -1,11 +1,8 @@
 package org.meridor.perspective.shell.common.repository.impl;
 
-import jline.console.ConsoleReader;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,16 +12,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.meridor.perspective.shell.common.repository.impl.ConsoleUtils.mockConsoleReader;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 
 public class TextUtilsTest {
 
     @Test
     public void testReplacePlaceholders(){
-        String stringWithPlaceholder = "start-$number-$name-end";
+        String stringWithPlaceholder = "start-$defaultAnswer-$name-end";
         Map<Placeholder, String> replacementMap = new HashMap<Placeholder, String>(){
             {
-                put(Placeholder.NUMBER, "1");
+                put(Placeholder.DEFAULT_ANSWER, "1");
                 put(Placeholder.NAME, "test");
             }
         };
@@ -34,6 +32,7 @@ public class TextUtilsTest {
     @Test
     public void testGetPlaceholder(){
         assertThat(getPlaceholder(Placeholder.NUMBER), equalTo("$number"));
+        assertThat(getPlaceholder(Placeholder.DEFAULT_ANSWER), equalTo("$defaultAnswer"));
     }
 
     @Test
@@ -184,6 +183,8 @@ public class TextUtilsTest {
         assertThat(isNumericKey("1"), is(true));
         assertThat(isNumericKey("a"), is(false));
         assertThat(isNumericKey(" "), is(false));
+        assertThat(isNumericKey(""), is(false));
+        assertThat(isNumericKey("-"), is(false));
     }
 
     @Test
@@ -249,11 +250,6 @@ public class TextUtilsTest {
         routeByKey(mockConsoleReader("e"), routes, onInvalidKey, onException);
         assertThat(exceptions, hasSize(1));
         
-    }
-    
-    private static ConsoleReader mockConsoleReader(String input) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
-        return new ConsoleReader(inputStream, System.out);
     }
     
 }

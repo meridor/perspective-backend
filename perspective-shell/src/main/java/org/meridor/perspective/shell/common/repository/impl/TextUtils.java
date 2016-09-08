@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.common.repository.impl;
 
+import com.google.common.base.CaseFormat;
 import jline.console.ConsoleReader;
 import org.ocpsoft.prettytime.PrettyTime;
 
@@ -41,7 +42,7 @@ public final class TextUtils {
     }
 
     public static String getPlaceholder(Placeholder placeholder) {
-        return String.format("$%s", placeholder.name().toLowerCase());
+        return String.format("$%s", CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, placeholder.name()));
     }
     
     public static boolean containsPlaceholder(final String template, Placeholder placeholder) {

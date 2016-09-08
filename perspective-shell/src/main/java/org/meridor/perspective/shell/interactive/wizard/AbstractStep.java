@@ -11,22 +11,29 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.containsPlaceholder;
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.replacePlaceholders;
+
 @Component
 public abstract class AbstractStep implements Step {
 
     @Autowired
     private Logger logger;
     
+    protected ConsoleReader getConsoleReader() throws IOException {
+        return new ConsoleReader();
+    }
+    
     protected String waitForAnswer() {
         try {
-            ConsoleReader consoleReader = new ConsoleReader();
+            ConsoleReader consoleReader = getConsoleReader();
             String answer = consoleReader.readLine();
             Optional<String> defaultAnswer = getDefaultAnswer();
             return answer.isEmpty() && defaultAnswer.isPresent() ?
                     defaultAnswer.get() :
                     answer;
-        } catch (IOException e) {
-           logger.error(String.format("Error while getting input: %s", e.getMessage()));
+        } catch (Exception e) {
+            logger.error(String.format("Error while getting input: %s", e.getMessage()));
             return "";
         }
     }
@@ -36,14 +43,14 @@ public abstract class AbstractStep implements Step {
         String message = getMessage();
         if (defaultAnswer.isPresent()) {
             String defaultAnswerValue = defaultAnswer.get();
-            if (message != null && TextUtils.containsPlaceholder(message, Placeholder.DEFAULT_ANSWER)) {
-                message = TextUtils.replacePlaceholders(message, new HashMap<Placeholder, String>() {
+            if (message != null && containsPlaceholder(message, Placeholder.DEFAULT_ANSWER)) {
+                message = replacePlaceholders(message, new HashMap<Placeholder, String>() {
                     {
                         put(Placeholder.DEFAULT_ANSWER, defaultAnswerValue);
                     }
                 });
             } else {
-                message = String.format("%s [%s]", getMessage(), defaultAnswer.get());
+                message = String.format("%s [%s]", message, defaultAnswerValue);
             }
         }
         logger.ok(message);
