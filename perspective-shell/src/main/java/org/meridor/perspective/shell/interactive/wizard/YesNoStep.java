@@ -13,24 +13,6 @@ public abstract class YesNoStep extends AbstractStep {
     private Logger logger; 
     
     private String yes;
-    
-    private final boolean proceedAnyway;
-    
-    private final boolean proceedOnYes;
-    
-
-    public YesNoStep(boolean proceedAnyway, boolean proceedOnYes) {
-        this.proceedAnyway = proceedAnyway;
-        this.proceedOnYes = proceedOnYes;
-    }
-
-    public YesNoStep(boolean proceedAnyway) {
-        this(proceedAnyway, true);
-    }
-    
-    public YesNoStep() {
-        this(false, true);
-    }
 
     @Override
     public boolean run() {
@@ -45,7 +27,11 @@ public abstract class YesNoStep extends AbstractStep {
             return false;
         }
         yes = answer;
-        return proceedAnyway || (proceedOnYes && isYesKey(yes));
+        return shouldProceedAnyway() || isYesKey(yes);
+    }
+
+    protected boolean shouldProceedAnyway(){
+        return false;
     }
     
     private boolean validateAnswer(String answer) {

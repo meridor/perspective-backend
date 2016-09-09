@@ -26,7 +26,7 @@ public final class TextUtils {
     private static final String LESS_PREVIOUS = "w";
     private static final String PREVIOUS = "p";
     private static final String SKIP = "s";
-    private static final String QUIT = "q";
+    public static final String QUIT = "q";
     private static final String REPEAT = "r";
     public static final String DASH = "-";
 

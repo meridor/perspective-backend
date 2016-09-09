@@ -9,10 +9,6 @@ import java.util.Optional;
 @Component
 public class CountOrRangeStep extends YesNoStep {
 
-    public CountOrRangeStep() {
-        super(true);
-    }
-
     @Override
     public String getMessage() {
         return "Do you want to specify a range of instance numbers?";
@@ -21,5 +17,10 @@ public class CountOrRangeStep extends YesNoStep {
     @Override
     public Optional<String> getDefaultAnswer() {
         return Optional.of(TextUtils.NO);
+    }
+
+    @Override
+    protected boolean shouldProceedAnyway() {
+        return true;
     }
 }
