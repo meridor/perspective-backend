@@ -8,8 +8,7 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.meridor.perspective.framework.storage.StorageEvent.ADDED;
-import static org.meridor.perspective.framework.storage.StorageEvent.DELETED;
+import static org.meridor.perspective.framework.storage.StorageEvent.*;
 
 public class LastModificationListenerTest {
 
@@ -46,6 +45,16 @@ public class LastModificationListenerTest {
         //Should return a new set each time otherwise we have concurrency issues
         assertThat(idsFirst != idsSecond, is(true));
         listener.onEvent(object, null, DELETED);
+        assertThat(listener.getIds(CLOUD_ID, LastModified.NOW), not(contains(ENTITY_ID)));
+    }
+    
+    @Test
+    public void testAddAndEvict() {
+        LastModificationListener<ModifiableObject> listener = new MockLastModificationListener();
+        ModifiableObject object = new ModifiableObject();
+        listener.onEvent(object, null, ADDED);
+        assertThat(listener.getIds(CLOUD_ID, LastModified.NOW), contains(ENTITY_ID));
+        listener.onEvent(null, object, EVICTED);
         assertThat(listener.getIds(CLOUD_ID, LastModified.NOW), not(contains(ENTITY_ID)));
     }
     

@@ -64,14 +64,19 @@ public abstract class LastModificationListener<T> implements EntityListener<T>, 
     
     @Override
     public void onEvent(T entity, T previousEntity, StorageEvent event) {
-        LastModified lastModified = getLastModified(entity);
-        String id = getId(entity);
-        String cloudId = getCloudId(entity);
-        String key = lastModified.getKey(cloudId);
-        removeId(id);
-        if (event == ADDED || event == MODIFIED) {
-            lastModifiedData.putIfAbsent(key, new HashSet<>());
-            lastModifiedData.get(key).add(id);
+        T entityToProcess = entity != null ? 
+                entity :
+                previousEntity != null ? previousEntity : null;
+        if (entityToProcess != null) {
+            LastModified lastModified = getLastModified(entityToProcess);
+            String id = getId(entityToProcess);
+            String cloudId = getCloudId(entityToProcess);
+            String key = lastModified.getKey(cloudId);
+            removeId(id);
+            if (event == ADDED || event == MODIFIED) {
+                lastModifiedData.putIfAbsent(key, new HashSet<>());
+                lastModifiedData.get(key).add(id);
+            }
         }
     }
     
