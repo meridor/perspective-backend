@@ -24,7 +24,7 @@ public class SchedulerUtilsTest {
     
     @Test
     public void delayToLimitTest() {
-        assertThat(delayToLimit(30), equalTo(1800));
+        assertThat(delayToLimit(30), equalTo(60));
     }
 
 }

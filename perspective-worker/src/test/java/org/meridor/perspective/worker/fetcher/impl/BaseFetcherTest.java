@@ -32,9 +32,9 @@ public class BaseFetcherTest {
         
         //Because of precision errors we expect numbers near some value
         final double ROUND_ERROR = 1.0;
-        assertThat((double) (now / momentsAgo), closeTo(2.0, ROUND_ERROR));
-        assertThat((double) (momentsAgo / someTimeAgo), closeTo(5.0, ROUND_ERROR));
-        assertThat((double) (someTimeAgo / all), closeTo(2.0, ROUND_ERROR));
+        assertThat((double) (now / momentsAgo), closeTo(4.0, ROUND_ERROR));
+        assertThat((double) (momentsAgo / someTimeAgo), closeTo(10.0, ROUND_ERROR));
+        assertThat((double) (someTimeAgo / all), closeTo(3.0, ROUND_ERROR));
     }
 
 }

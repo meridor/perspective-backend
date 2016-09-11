@@ -3,7 +3,10 @@ package org.meridor.perspective.worker.fetcher.impl;
 import org.meridor.perspective.framework.storage.EntityListener;
 import org.meridor.perspective.framework.storage.StorageEvent;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -20,6 +23,8 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.getSome
 
 public abstract class LastModificationListener<T> implements EntityListener<T>, LastModificationAware {
     
+    private static final Logger LOG = LoggerFactory.getLogger(LastModificationListener.class);
+    
     private final Map<String, Set<String>> lastModifiedData = new ConcurrentHashMap<>();
     
     protected abstract int getLongTimeAgoLimit();
@@ -30,6 +35,33 @@ public abstract class LastModificationListener<T> implements EntityListener<T>, 
     
     protected abstract Instant getLastModifiedInstant(T entity);
 
+    @PostConstruct
+    public void init() {
+        int longTimeAgoLimit = getLongTimeAgoLimit();
+        LOG.debug(
+                "{} considers entities modified less than {} milliseconds ago as modified NOW",
+                getClass().getSimpleName(),
+                getMomentsAgoLimit(longTimeAgoLimit)
+        );
+        LOG.debug(
+                "{} considers entities modified more than {} milliseconds ago and less than {} milliseconds ago as modified MOMENTS AGO",
+                getClass().getSimpleName(),
+                getMomentsAgoLimit(longTimeAgoLimit),
+                getSomeTimeAgoLimit(longTimeAgoLimit)
+        );
+        LOG.debug(
+                "{} considers entities modified more than {} milliseconds ago and less than {} milliseconds ago as modified SOME TIME AGO",
+                getClass().getSimpleName(),
+                getSomeTimeAgoLimit(longTimeAgoLimit),
+                longTimeAgoLimit
+        );
+        LOG.debug(
+                "{} considers entities modified more than {} milliseconds ago as modified LONG AGO",
+                getClass().getSimpleName(),
+                longTimeAgoLimit
+        );
+    }
+    
     @Override
     public void onEvent(T entity, T previousEntity, StorageEvent event) {
         LastModified lastModified = getLastModified(entity);

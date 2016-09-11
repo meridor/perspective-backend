@@ -31,7 +31,7 @@ class MockFetcher extends BaseFetcher {
     
     @Override
     protected int getFullSyncDelay() {
-        return 600; //Can be divided by all SchedulerUtils constants so all limits ha
+        return 600; //Can be divided by all SchedulerUtils constants so all limits are integers
     }
 
     @Override

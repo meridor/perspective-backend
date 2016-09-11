@@ -4,6 +4,8 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.worker.fetcher.Fetcher;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.*;
 @Component
 public abstract class BaseFetcher implements Fetcher {
 
+    private static final Logger LOG = LoggerFactory.getLogger(BaseFetcher.class);
+    
     @Autowired
     private TaskScheduler scheduler;
 
@@ -34,15 +38,33 @@ public abstract class BaseFetcher implements Fetcher {
     }
 
     private void scheduleNowSync(int fullSyncDelay) {
-        scheduleIdsFetch(NOW, getNowDelay(fullSyncDelay));
+        int nowDelay = getNowDelay(fullSyncDelay);
+        LOG.debug(
+                "{} will fetch entities modified NOW every {} milliseconds",
+                getClass().getSimpleName(),
+                nowDelay
+        );
+        scheduleIdsFetch(NOW, nowDelay);
     }
     
     private void scheduleMomentsAgoSync(int fullSyncDelay) {
-        scheduleIdsFetch(MOMENTS_AGO, getMomentsAgoDelay(fullSyncDelay));
+        int momentsAgoDelay = getMomentsAgoDelay(fullSyncDelay);
+        scheduleIdsFetch(MOMENTS_AGO, momentsAgoDelay);
+        LOG.debug(
+                "{} will fetch entities modified MOMENTS AGO every {} milliseconds",
+                getClass().getSimpleName(),
+                momentsAgoDelay
+        );
     }
     
     private void scheduleSomeTimeAgoSync(int fullSyncDelay) {
-        scheduleIdsFetch(SOME_TIME_AGO, getSomeTimeAgoDelay(fullSyncDelay));
+        int someTimeAgoDelay = getSomeTimeAgoDelay(fullSyncDelay);
+        scheduleIdsFetch(SOME_TIME_AGO, someTimeAgoDelay);
+        LOG.debug(
+                "{} will fetch entities modified SOME TIME AGO every {} milliseconds",
+                getClass().getSimpleName(),
+                someTimeAgoDelay
+        );
     }
     
     private void scheduleIdsFetch(LastModified lastModified, int syncDelay) {
@@ -61,6 +83,11 @@ public abstract class BaseFetcher implements Fetcher {
     private void scheduleFullSync(int fullSyncDelay) {
         scheduler.scheduleAtFixedRate(
                 forEachCloud(this::fetch), 
+                fullSyncDelay
+        );
+        LOG.debug(
+                "{} will fetch all entities every {} milliseconds",
+                getClass().getSimpleName(),
                 fullSyncDelay
         );
     }
