@@ -118,12 +118,6 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         return queryType;
     }
 
-    //Show tables query
-    @Override
-    public void exitShow_tables_query(SQLParser.Show_tables_queryContext ctx) {
-        this.queryType = QueryType.SHOW_TABLES;
-    }
-    
     //Explain query
     @Override
     public void exitExplain_query(SQLParser.Explain_queryContext ctx) {
