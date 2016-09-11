@@ -107,7 +107,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Project project = new Project();
         project.setId(projectId);
         project.setName(getProjectName(cloud, region));
-        project.setTimestamp(ZonedDateTime.now());
+        project.setTimestamp(ZonedDateTime.now().minusHours(1));
 
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.REGION, region);

@@ -47,7 +47,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Project project = new Project();
         project.setId(idGenerator.getProjectId(cloud));
         project.setName(cloud.getName());
-        project.setTimestamp(ZonedDateTime.now());
+        //Setting now will cause Docker project to sync very often...
+        project.setTimestamp(ZonedDateTime.now().minusHours(1));
         return project;
     }
 }
