@@ -113,14 +113,15 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private Map<String, Set<String>> getFetchMap(Set<String> ids) {
         Map<String, Set<String>> ret = new HashMap<>();
-        ids.stream()
-                .filter(id -> instancesAware.instanceExists(id))
-                .map(id -> instancesAware.getInstance(id).get())
-                .forEach(i -> {
-                    String region = i.getMetadata().get(MetadataKey.REGION);
-                    ret.putIfAbsent(region, new HashSet<>());
-                    ret.get(region).add(i.getRealId());
-                });
+        ids.forEach(id -> {
+            Optional<Instance> instanceCandidate = instancesAware.getInstance(id);
+            if (instanceCandidate.isPresent()) {
+                Instance instance = instanceCandidate.get();
+                String region = instance.getMetadata().get(MetadataKey.REGION);
+                ret.putIfAbsent(region, new HashSet<>());
+                ret.get(region).add(instance.getRealId());
+            }
+        });
         return ret;
     }
 

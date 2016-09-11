@@ -4,9 +4,9 @@ import org.junit.Test;
 import org.meridor.perspective.config.CloudType;
 
 import java.time.Instant;
+import java.util.Set;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.framework.storage.StorageEvent.ADDED;
 import static org.meridor.perspective.framework.storage.StorageEvent.DELETED;
@@ -39,7 +39,12 @@ public class LastModificationListenerTest {
         LastModificationListener<ModifiableObject> listener = new MockLastModificationListener();
         ModifiableObject object = new ModifiableObject();
         listener.onEvent(object, null, ADDED);
-        assertThat(listener.getIds(CLOUD_ID, LastModified.NOW), contains(ENTITY_ID));
+        Set<String> idsFirst = listener.getIds(CLOUD_ID, LastModified.NOW);
+        Set<String> idsSecond = listener.getIds(CLOUD_ID, LastModified.NOW);
+        assertThat(idsFirst, contains(ENTITY_ID));
+        assertThat(idsFirst, equalTo(idsSecond));
+        //Should return a new set each time otherwise we have concurrency issues
+        assertThat(idsFirst != idsSecond, is(true));
         listener.onEvent(object, null, DELETED);
         assertThat(listener.getIds(CLOUD_ID, LastModified.NOW), not(contains(ENTITY_ID)));
     }

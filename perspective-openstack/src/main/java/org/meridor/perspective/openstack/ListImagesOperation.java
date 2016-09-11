@@ -93,14 +93,15 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private Map<String, Set<String>> getFetchMap(Set<String> ids) {
         Map<String, Set<String>> ret = new HashMap<>();
-        ids.stream()
-                .filter(id -> imagesAware.imageExists(id))
-                .map(id -> imagesAware.getImage(id).get())
-                .forEach(i -> {
-                    String region = i.getMetadata().get(MetadataKey.REGION);
-                    ret.putIfAbsent(region, new HashSet<>());
-                    ret.get(region).add(i.getRealId());
-                });
+        ids.forEach(id -> {
+            Optional<Image> imageCandidate = imagesAware.getImage(id);
+            if (imageCandidate.isPresent()) {
+                Image image = imageCandidate.get();
+                String region = image.getMetadata().get(MetadataKey.REGION);
+                ret.putIfAbsent(region, new HashSet<>());
+                ret.get(region).add(image.getRealId());
+            }
+        });
         return ret;
     }
     

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -76,13 +77,14 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private Map<String, Project> getFetchMap(Set<String> ids) {
         Map<String, Project> ret = new HashMap<>();
-        ids.stream()
-                .filter(id -> projectsAware.projectExists(id))
-                .map(id -> projectsAware.getProject(id).get())
-                .forEach(p -> {
-                    String region = p.getMetadata().get(MetadataKey.REGION);
-                    ret.put(region, p);
-                });
+        ids.forEach(id -> {
+            Optional<Project> projectCandidate = projectsAware.getProject(id);
+            if (projectCandidate.isPresent()) {
+                Project project = projectCandidate.get();
+                String region = project.getMetadata().get(MetadataKey.REGION);
+                ret.put(region, project);
+            }
+        });
         return ret;
     }
 

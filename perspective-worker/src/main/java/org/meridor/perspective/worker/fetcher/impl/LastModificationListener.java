@@ -99,6 +99,6 @@ public abstract class LastModificationListener<T> implements EntityListener<T>, 
 
     @Override
     public Set<String> getIds(String cloudId, LastModified lastModified) {
-        return lastModifiedData.getOrDefault(lastModified.getKey(cloudId), Collections.emptySet());
+        return new HashSet<>(lastModifiedData.getOrDefault(lastModified.getKey(cloudId), Collections.emptySet()));
     }
 }
