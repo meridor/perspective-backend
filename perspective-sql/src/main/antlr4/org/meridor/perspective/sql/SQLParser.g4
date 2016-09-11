@@ -217,9 +217,3 @@ join_condition
    : ON complex_boolean_expression 
    | USING LPAREN columns_list RPAREN
    ;
-
-
-// Show tables query
-show_tables_query
-   : SHOW TABLES
-   ;
