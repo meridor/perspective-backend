@@ -26,33 +26,42 @@ public class AddInstancesWizard extends BaseWizard {
     @Override
     protected String getCommand() {
         CommandBuilder commandBuilder = new CommandBuilder("add instances");
-        if (getAnswers().containsKey(ProjectStep.class)) {
-            commandBuilder.addArgument(PROJECT, getAnswers().get(ProjectStep.class));
+        Optional<String> projectCandidate = getAnswer(ProjectStep.class);
+        if (projectCandidate.isPresent()) {
+            commandBuilder.addArgument(PROJECT, projectCandidate.get());
         }
-        if (getAnswers().containsKey(NameStep.class)) {
-            commandBuilder.addArgument(NAME, getAnswers().get(NameStep.class));
+        Optional<String> nameCandidate = getAnswer(NameStep.class);
+        if (nameCandidate.isPresent()) {
+            commandBuilder.addArgument(NAME, nameCandidate.get());
         }
-        if (getAnswers().containsKey(FlavorStep.class)) {
-            commandBuilder.addArgument(FLAVOR, getAnswers().get(FlavorStep.class));
+        Optional<String> flavorCandidate = getAnswer(FlavorStep.class);
+        if (flavorCandidate.isPresent()) {
+            commandBuilder.addArgument(FLAVOR, flavorCandidate.get());
         }
-        if (getAnswers().containsKey(ImageStep.class)) {
-            commandBuilder.addArgument(IMAGE, getAnswers().get(ImageStep.class));
+        Optional<String> imageCandidate = getAnswer(ImageStep.class);
+        if (imageCandidate.isPresent()) {
+            commandBuilder.addArgument(IMAGE, imageCandidate.get());
         }
-        if (getAnswers().containsKey(NetworkStep.class)) {
-            commandBuilder.addArgument(NETWORK, getAnswers().get(NetworkStep.class));
+        Optional<String> networkCandidate = getAnswer(NetworkStep.class);
+        if (networkCandidate.isPresent()) {
+            commandBuilder.addArgument(NETWORK, networkCandidate.get());
         }
-        if (getAnswers().containsKey(KeypairStep.class)) {
-            commandBuilder.addArgument(KEYPAIR, getAnswers().get(KeypairStep.class));
+        Optional<String> keypairCandidate = getAnswer(KeypairStep.class);
+        if (keypairCandidate.isPresent()) {
+            commandBuilder.addArgument(KEYPAIR, keypairCandidate.get());
         }
-        if (getAnswers().containsKey(CountStep.class)) {
-            commandBuilder.addArgument(COUNT, getAnswers().get(CountStep.class));
-        } else if (getAnswers().containsKey(RangeStep.class)) {
-            commandBuilder.addArgument(RANGE, getAnswers().get(RangeStep.class));
+        Optional<String> countCandidate = getAnswer(CountStep.class);
+        Optional<String> rangeCandidate = getAnswer(RangeStep.class);
+        if (countCandidate.isPresent()) {
+            commandBuilder.addArgument(COUNT, countCandidate.get());
+        } else if (rangeCandidate.isPresent()) {
+            commandBuilder.addArgument(RANGE, rangeCandidate.get());
         }
 
         Map<String, Set<String>> options = new HashMap<>();
-        if (getAnswers().containsKey(CommandStep.class)) {
-            options.put(COMMAND.toString(), new HashSet<>(Arrays.asList(new String[]{getAnswers().get(CommandStep.class)})));
+        Optional<String> commandCandidate = getAnswer(CommandStep.class);
+        if (commandCandidate.isPresent()) {
+            options.put(COMMAND.toString(), new HashSet<>(Arrays.asList(new String[]{commandCandidate.get()})));
         }
         if (!options.isEmpty()) {
             commandBuilder.addArgument(OPTIONS, options);

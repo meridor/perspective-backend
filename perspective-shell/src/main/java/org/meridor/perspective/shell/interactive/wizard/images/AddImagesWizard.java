@@ -1,6 +1,5 @@
 package org.meridor.perspective.shell.interactive.wizard.images;
 
-import org.meridor.perspective.shell.interactive.commands.CommandArgument;
 import org.meridor.perspective.shell.interactive.wizard.BaseWizard;
 import org.meridor.perspective.shell.interactive.wizard.CommandBuilder;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
@@ -9,6 +8,11 @@ import org.meridor.perspective.shell.interactive.wizard.images.step.InstanceStep
 import org.meridor.perspective.shell.interactive.wizard.images.step.NameStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+import static org.meridor.perspective.shell.interactive.commands.CommandArgument.INSTANCES;
+import static org.meridor.perspective.shell.interactive.commands.CommandArgument.NAME;
 
 @Component
 public class AddImagesWizard extends BaseWizard {
@@ -24,11 +28,14 @@ public class AddImagesWizard extends BaseWizard {
     @Override
     protected String getCommand() {
         CommandBuilder commandBuilder = new CommandBuilder("add images");
-        if (getAnswers().containsKey(InstanceStep.class)) {
-            commandBuilder.addArgument(CommandArgument.INSTANCES, getAnswers().get(InstanceStep.class));
+        Optional<String> instancesCandidate = getAnswer(InstanceStep.class);
+        if (instancesCandidate.isPresent()) {
+            commandBuilder.addArgument(INSTANCES, instancesCandidate.get());
         }
-        if (getAnswers().containsKey(NameStep.class)) {
-            commandBuilder.addArgument(CommandArgument.NAME, getAnswers().get(NameStep.class));
+        
+        Optional<String> nameCandidate = getAnswer(NameStep.class);
+        if (nameCandidate.isPresent()) {
+            commandBuilder.addArgument(NAME, nameCandidate.get());
         }
         return commandBuilder.getCommand();
     }

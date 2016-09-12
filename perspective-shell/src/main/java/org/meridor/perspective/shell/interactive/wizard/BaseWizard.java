@@ -40,8 +40,12 @@ public abstract class BaseWizard implements Wizard {
 
     protected abstract WizardScreen getFirstScreen();
 
-    protected Map<Class<? extends Step>, String> getAnswers() {
+    private Map<Class<? extends Step>, String> getAnswers() {
         return answers;
+    }
+    
+    protected Optional<String> getAnswer(Class<? extends Step> cls) {
+        return Optional.ofNullable(getAnswers().get(cls));
     }
 
     @Override
