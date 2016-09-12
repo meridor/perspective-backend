@@ -5,7 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.meridor.perspective.shell.interactive.TestLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandResult;
@@ -26,24 +25,24 @@ public class CommandsTest {
 
     @Parameterized.Parameters(name = "Command \"{0}\" should work")
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "show settings" },
-                { "show filters" },
-                { "set projects = test" },
-                { "set page_size = 20" },
-                { "unset --filters" },
-                { "show projects" },
-                { "show networks" },
-                { "show flavors" },
-                { "show keypairs" },
-                { "show instances" },
-                { "show images" },
-                { "delete instances test-instance" },
-                { "delete images test-image" },
-                { "reboot test-instance" },
-                { "reboot test-instance --hard" },
-                { "select 1 + 1" },
-                { "explain select 1 + 1" },
+        return Arrays.asList(new Object[][]{
+                {"show settings"},
+                {"show filters"},
+                {"set projects = test"},
+                {"set page_size = 20"},
+                {"unset --filters"},
+                {"show projects"},
+                {"show networks"},
+                {"show flavors"},
+                {"show keypairs"},
+                {"show instances"},
+                {"show images"},
+                {"delete instances test-instance"},
+                {"delete images test-image"},
+                {"reboot test-instance"},
+                {"reboot test-instance --hard"},
+                {"select 1 + 1"},
+                {"explain select 1 + 1"},
         });
     }
 
@@ -55,16 +54,16 @@ public class CommandsTest {
 
     @Autowired
     private AbstractShell shell;
-    
+
     @Autowired
     private TestLogger testLogger;
-    
+
     private final String command;
 
     public CommandsTest(String command) {
         this.command = command;
     }
-    
+
     @Test
     public void testExecuteCommand() throws Throwable {
         CommandResult commandResult = shell.executeCommand(command);

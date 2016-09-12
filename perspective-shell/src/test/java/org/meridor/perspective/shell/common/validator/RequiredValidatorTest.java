@@ -20,8 +20,8 @@ public class RequiredValidatorTest {
             public Class<? extends Annotation> annotationType() {
                 return Required.class;
             }
-            
-        };  
+
+        };
         assertThat(validator.validate(instance, annotation, null), is(false));
         assertThat(validator.validate(instance, annotation, "something"), is(true));
     }

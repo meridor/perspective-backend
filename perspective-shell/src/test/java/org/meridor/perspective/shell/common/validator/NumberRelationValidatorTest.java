@@ -19,7 +19,7 @@ public class NumberRelationValidatorTest {
 
     @Autowired
     private NumberRelationValidator validator;
-    
+
     @Test
     public void testValidate() throws Exception {
         Object instance = new Object();
@@ -45,5 +45,5 @@ public class NumberRelationValidatorTest {
         assertThat(validator.validate(instance, annotation, 1), is(true));
         assertThat(validator.validate(instance, annotation, -1), is(false));
     }
-    
+
 }

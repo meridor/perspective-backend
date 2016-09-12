@@ -9,21 +9,21 @@ import java.util.Map;
 
 @Component
 public class MockBaseChoiceStep extends BaseChoiceStep {
-    
+
     public static final String TEST_MESSAGE = "test-message";
     public static final String TEST_PROMPT = "test-prompt";
     public static final String TEST_INCORRECT_CHOICE_MESSAGE = "incorrect-choice";
 
     private boolean answerRequired;
-    
+
     private List<String> validAnswers;
-    
+
     private ConsoleReader consoleReader;
-    
+
     private String valueToSave;
-    
+
     private List<String> possibleChoices;
-    
+
     @Override
     public String getMessage() {
         return TEST_MESSAGE;

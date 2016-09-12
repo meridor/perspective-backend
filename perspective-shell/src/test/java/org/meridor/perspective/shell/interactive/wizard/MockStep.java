@@ -8,15 +8,15 @@ import java.util.Optional;
 
 @Component
 public class MockStep extends AbstractStep {
-    
+
     private String message;
-    
+
     private String answer;
-    
+
     private String defaultAnswer;
-    
+
     private boolean answerRequired;
-    
+
     private ConsoleReader consoleReader;
 
     @Override

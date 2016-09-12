@@ -22,5 +22,5 @@ public class EventBusImplTest {
         eventBus.fire(event);
         assertThat(fired.get(), is(true));
     }
-    
+
 }

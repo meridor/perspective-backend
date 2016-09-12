@@ -24,27 +24,27 @@ public class YesNoStepTest {
 
     @Autowired
     private TestLogger logger;
-    
+
     @Autowired
     private ApplicationContext applicationContext;
-    
+
     @Test
     public void testQuit() throws Exception {
         MockYesNoStep step = applicationContext.getBean(MockYesNoStep.class);
         step.setConsoleReader(mockConsoleReader(QUIT + "\n"));
         assertThat(step.run(), is(false));
     }
-    
+
     @Test
     public void testRun() throws Exception {
         testRun(false, false);
     }
-    
+
     @Test
     public void testRunProceedAnyway() throws Exception {
         testRun(true, true);
     }
-    
+
     private void testRun(boolean shouldProceedAnyway, boolean result) throws Exception {
         MockYesNoStep step = applicationContext.getBean(MockYesNoStep.class);
         step.setConsoleReader(mockConsoleReader(TextUtils.DASH + "\n" + NO + "\n"));
@@ -55,5 +55,5 @@ public class YesNoStepTest {
         assertThat(logger.getWarnMessages(), hasSize(1));
         assertThat(step.getAnswer(), equalTo(NO));
     }
-    
+
 }

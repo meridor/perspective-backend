@@ -17,10 +17,10 @@ import static org.meridor.perspective.shell.common.validator.impl.ObjectValidato
 @ContextConfiguration(locations = "/META-INF/spring/validator-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FilterProcessorImplTest {
-    
+
     @Autowired
     private FilterProcessor filterProcessor;
-    
+
     @Test
     public void testAll() throws Exception {
         ObjectWithFilter object = new ObjectWithFilter();
@@ -48,7 +48,7 @@ public class FilterProcessorImplTest {
 
         @Filter(Field.INSTANCE_NAMES)
         private String fieldOne;
-        
+
         @Filter(Field.IMAGE_NAMES)
         private String fieldTwo;
 

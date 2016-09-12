@@ -28,7 +28,7 @@ public class BaseChoiceStepTest {
 
     @Autowired
     private MockBaseChoiceStep mockBaseChoiceStep;
-    
+
     @Test
     public void testSimpleRun() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("s\nn\ny\n"));
@@ -55,7 +55,7 @@ public class BaseChoiceStepTest {
         assertThat(mockBaseChoiceStep.run(), is(false));
         assertThat(logger.getErrorMessages(), hasSize(1));
     }
-    
+
     @Test
     public void testZeroChoicesAnswerOptional() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("y\n"));
@@ -64,7 +64,7 @@ public class BaseChoiceStepTest {
         assertThat(mockBaseChoiceStep.run(), is(true));
         assertThat(logger.getWarnMessages(), hasSize(1));
     }
-    
+
     @Test
     public void testSingleChoiceAnswerRequired() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("y\n"));
@@ -74,14 +74,14 @@ public class BaseChoiceStepTest {
         assertThat(mockBaseChoiceStep.getAnswer(), equalTo("single"));
         assertThat(logger.getOkMessages(), hasSize(2));
     }
-    
+
     @Test
     public void testExit() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("q\n"));
         mockBaseChoiceStep.setPossibleChoices(Arrays.asList("one", "two"));
         assertThat(mockBaseChoiceStep.run(), is(false));
     }
-    
+
     @Test
     public void testExitAfterInvalidAnswer() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("n\nq\n"));
@@ -90,7 +90,7 @@ public class BaseChoiceStepTest {
         mockBaseChoiceStep.setAnswerRequired(true);
         assertThat(mockBaseChoiceStep.run(), is(false));
     }
-    
+
     @Test
     public void testSkip() throws Exception {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("s\n"));
@@ -99,5 +99,5 @@ public class BaseChoiceStepTest {
         assertThat(mockBaseChoiceStep.run(), is(true));
 
     }
-    
+
 }

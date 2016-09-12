@@ -10,15 +10,15 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 @ContextConfiguration(locations = "/META-INF/spring/date-utils-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class DateUtilsTest {
-    
+
     @Autowired
     private DateUtils dateUtils;
-    
+
     @Test
     public void testFormatDate() {
         ZonedDateTime zonedDateTime = ZonedDateTime.of(2016, 2, 1, 10, 5, 20, 0, ZoneId.systemDefault());

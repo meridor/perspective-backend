@@ -19,7 +19,7 @@ public class NumericFieldRelationValidatorTest {
 
     @Autowired
     private NumericFieldRelationValidator validator;
-    
+
     @Test
     public void testValidateDoubleField() throws Exception {
         TestObject instance = new TestObject();
@@ -46,7 +46,7 @@ public class NumericFieldRelationValidatorTest {
         assertThat(validator.validate(instance, doubleFieldAnnotation, -1), is(false));
 
     }
-    
+
     @Test
     public void testValidateStringField() {
         TestObject instance = new TestObject();
@@ -70,7 +70,7 @@ public class NumericFieldRelationValidatorTest {
         };
         assertThat(validator.validate(instance, stringFieldAnnotation, "anything"), is(false));
     }
-    
+
     @Test
     public void testValidateMissingField() {
         TestObject instance = new TestObject();
@@ -94,12 +94,12 @@ public class NumericFieldRelationValidatorTest {
         };
         assertThat(validator.validate(instance, missingFieldAnnotation, "anything"), is(false));
     }
-    
+
     private static class TestObject {
-        
+
         private String stringField = "anything";
-        
+
         private double doubleField = 0;
-        
+
     }
 }

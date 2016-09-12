@@ -19,23 +19,23 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 public class SingleChoiceStepTest {
-    
+
     @Autowired
     private MockSingleChoiceStep mockSingleChoiceStep;
-    
+
     @Test
-    public void testRun() throws Exception{
+    public void testRun() throws Exception {
         mockSingleChoiceStep.setPossibleChoices(Arrays.asList("one", "two"));
         mockSingleChoiceStep.setConsoleReader(mockConsoleReader("n\n2\n"));
         assertThat(mockSingleChoiceStep.run(), is(true));
         assertThat(mockSingleChoiceStep.getAnswer(), equalTo("^two$"));
     }
-    
+
     @Test
-    public void testExit() throws Exception{
+    public void testExit() throws Exception {
         mockSingleChoiceStep.setPossibleChoices(Arrays.asList("one", "two"));
         mockSingleChoiceStep.setConsoleReader(mockConsoleReader("q\n"));
         assertThat(mockSingleChoiceStep.run(), is(false));
     }
-    
+
 }

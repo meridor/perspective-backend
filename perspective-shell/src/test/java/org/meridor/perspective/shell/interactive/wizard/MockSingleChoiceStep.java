@@ -8,16 +8,14 @@ import java.util.List;
 
 @Component
 public class MockSingleChoiceStep extends SingleChoiceStep {
-    
-    public static final String TEST_MESSAGE = "test-message";
-    
+
     private List<String> possibleChoices;
-    
+
     private ConsoleReader consoleReader;
-    
+
     @Override
     public String getMessage() {
-        return TEST_MESSAGE;
+        return "test-message";
     }
 
     public void setPossibleChoices(List<String> possibleChoices) {

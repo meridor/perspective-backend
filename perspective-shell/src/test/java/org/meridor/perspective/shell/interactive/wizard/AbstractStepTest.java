@@ -24,17 +24,17 @@ public class AbstractStepTest {
 
     @Autowired
     private TestLogger logger;
-    
+
     @Autowired
     private MockStep mockStep;
-    
+
     @Test
     public void testPrintMessageWithNoDefaultAnswer() {
         mockStep.setMessage("test-message");
         mockStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test-message"));
     }
-    
+
     @Test
     public void testPrintMessageWithDefaultAnswer() {
         mockStep.setMessage("test-message");
@@ -42,7 +42,7 @@ public class AbstractStepTest {
         mockStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test-message [default-answer]"));
     }
-    
+
     @Test
     public void testPrintMessageContainingPlaceholderWithDefaultAnswer() {
         mockStep.setMessage("test $defaultAnswer message");
@@ -50,14 +50,14 @@ public class AbstractStepTest {
         mockStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test default-answer message"));
     }
-    
+
     @Test
     public void testWaitForAnswer() throws Exception {
         mockStep.setConsoleReader(mockConsoleReader("test-answer\n"));
         String answer = mockStep.waitForAnswer();
         assertThat(answer, equalTo("test-answer"));
     }
-    
+
     @Test
     public void testWaitForEmptyAnswer() throws Exception {
         mockStep.setConsoleReader(mockConsoleReader("\n"));
@@ -65,7 +65,7 @@ public class AbstractStepTest {
         String answer = mockStep.waitForAnswer();
         assertThat(answer, equalTo(DEFAULT_ANSWER));
     }
-    
+
     @Test
     public void testWaitForAnswerError() throws Exception {
         ConsoleReader consoleReader = mockConsoleReader("test-answer\n");
@@ -74,5 +74,5 @@ public class AbstractStepTest {
         String answer = mockStep.waitForAnswer();
         assertThat(answer, equalTo(""));
     }
-    
+
 }

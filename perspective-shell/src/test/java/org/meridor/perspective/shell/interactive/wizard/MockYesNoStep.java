@@ -8,13 +8,13 @@ import java.util.Optional;
 
 @Component
 public class MockYesNoStep extends YesNoStep {
-    
+
     private String message;
-    
+
     private String defaultAnswer;
 
     private boolean shouldProceedAnyway;
-    
+
     private ConsoleReader consoleReader;
 
     @Override

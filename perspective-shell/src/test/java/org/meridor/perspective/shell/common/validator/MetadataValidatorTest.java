@@ -33,21 +33,21 @@ public class MetadataValidatorTest {
         assertThat(validator.validate(instance, annotation, getIncorrectMetadataMap()), is(false));
 
     }
-    
+
     private static Map<String, Set<String>> getCorrectMetadataMap() {
-        return new HashMap<String, Set<String>>(){
+        return new HashMap<String, Set<String>>() {
             {
                 put(MetadataKey.ID.value(), Collections.singleton("anything"));
             }
         };
     }
-    
+
     private static Map<String, Set<String>> getIncorrectMetadataMap() {
-        return new HashMap<String, Set<String>>(){
+        return new HashMap<String, Set<String>>() {
             {
                 put("not-metadata", Collections.singleton("anything"));
             }
         };
     }
-    
+
 }

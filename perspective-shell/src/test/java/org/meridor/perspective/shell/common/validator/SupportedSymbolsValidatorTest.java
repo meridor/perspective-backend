@@ -13,7 +13,7 @@ public class SupportedSymbolsValidatorTest {
     @Test
     public void testValidate() throws Exception {
         Validator validator = new SupportedSymbolsValidator();
-        SupportedSymbols annotation = new SupportedSymbols(){
+        SupportedSymbols annotation = new SupportedSymbols() {
             @Override
             public Class<? extends Annotation> annotationType() {
                 return SupportedSymbols.class;

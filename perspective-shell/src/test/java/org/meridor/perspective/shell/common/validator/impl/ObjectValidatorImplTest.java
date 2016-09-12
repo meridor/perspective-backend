@@ -2,8 +2,8 @@ package org.meridor.perspective.shell.common.validator.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.shell.common.validator.Field;
 import org.meridor.perspective.beans.BooleanRelation;
+import org.meridor.perspective.shell.common.validator.Field;
 import org.meridor.perspective.shell.common.validator.ObjectValidator;
 import org.meridor.perspective.shell.common.validator.annotation.Filter;
 import org.meridor.perspective.shell.common.validator.annotation.RelativeToNumber;
@@ -26,25 +26,26 @@ public class ObjectValidatorImplTest {
 
     @Autowired
     private ObjectValidator objectValidator;
-    
+
     @Test
     public void testValidObject() throws Exception {
         ObjectToValidate validObject = new ObjectToValidate();
         validObject.setRequiredField("something"); //Required field is explicitly set
         assertThat(objectValidator.validate(validObject), is(empty()));
     }
-    
+
     @Test
     public void testInvalidObject() throws Exception {
         ObjectToValidate validObject = new ObjectToValidate();
         assertThat(objectValidator.validate(validObject), hasSize(1));
     }
+
     @Test
     public void testValidObjectWithFilter() throws Exception {
         ObjectToValidateWithFilter validObjectWithFilter = new ObjectToValidateWithFilter();
         assertThat(objectValidator.validate(validObjectWithFilter), is(empty()));
     }
-    
+
     @Test
     public void testFilterButNoValidator() throws Exception {
         ObjectWithFilterOnly validObjectWithFilterOnly = new ObjectWithFilterOnly();
@@ -60,45 +61,45 @@ public class ObjectValidatorImplTest {
         ObjectToValidateWithSet invalidObject = new ObjectToValidateWithSet();
         assertThat(objectValidator.validate(invalidObject), hasSize(1));
     }
-    
+
     public static Object getFieldValue(Object instance, String fieldName) throws Exception {
         java.lang.reflect.Field field = instance.getClass()
                 .getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
     }
-    
+
     private static class ObjectToValidate {
-        
+
         @Required
         private String requiredField;
 
         public void setRequiredField(String requiredField) {
             this.requiredField = requiredField;
         }
-        
+
     }
-    
+
     private static class ObjectToValidateWithFilter {
-        
+
         @Required
         @Filter(Field.INSTANCE_NAMES)
         private Set<String> requiredField; //Injected from TestRepository class
-        
+
     }
-    
+
     private static class ObjectWithFilterOnly {
-        
+
         @Filter(Field.INSTANCE_NAMES)
         private String fieldWithFilter; //No validation annotation here but value should be assigned
-        
+
     }
-    
+
     private static class ObjectToValidateWithSet {
-        
+
         @RelativeToNumber(number = 0, relation = BooleanRelation.GREATER_THAN_EQUAL)
         private Set<Integer> fieldContainingSet = Stream.of(1, 0, -1).collect(Collectors.toSet());
-        
+
     }
-    
+
 }

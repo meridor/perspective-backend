@@ -20,7 +20,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     public static final String ONE = "one";
     public static final String TWO = "two";
-    
+
     @Override
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
         FindImagesResult findImagesResult = new FindImagesResult(
@@ -200,14 +200,14 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
         }
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Map<String, String> getSettings(boolean all) {
         return getSettingsMap();
     }
 
     private static Map<String, String> getSettingsMap() {
-        return new HashMap<String, String>(){
+        return new HashMap<String, String>() {
             {
                 put(ONE, ONE);
                 put(TWO, TWO);
@@ -247,14 +247,14 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public QueryResult query(Query query) {
-        return new QueryResult(){
+        return new QueryResult() {
             {
                 setCount(1);
                 setStatus(QueryStatus.SUCCESS);
-                Data data = new Data(){
+                Data data = new Data() {
                     {
                         setColumnNames(Collections.singletonList("test"));
-                        Row row = new Row(){
+                        Row row = new Row() {
                             {
                                 getValues().add("test-data");
                             }

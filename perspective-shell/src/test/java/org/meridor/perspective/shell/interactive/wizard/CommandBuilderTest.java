@@ -9,16 +9,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class CommandBuilderTest {
-    
+
     private static final String COMMAND = "command";
-    
+
     @Test
     public void testAddArgumentWithValue() {
         CommandBuilder commandBuilder = new CommandBuilder(COMMAND);
         commandBuilder.addArgument(CommandArgument.NAME, "value");
         assertThat(commandBuilder.getCommand(), equalTo("command --name value"));
     }
-    
+
     @Test
     public void testAddArgumentWithAssignment() {
         CommandBuilder commandBuilder = new CommandBuilder(COMMAND);
@@ -27,12 +27,12 @@ public class CommandBuilderTest {
         commandBuilder.addArgument(CommandArgument.NAME, data);
         assertThat(commandBuilder.getCommand(), equalTo("command --name key=value1,value2"));
     }
-    
+
     @Test
     public void testAddArgumentWithoutValue() {
         CommandBuilder commandBuilder = new CommandBuilder(COMMAND);
         commandBuilder.addArgument(CommandArgument.NAME);
         assertThat(commandBuilder.getCommand(), equalTo("command --name"));
     }
-    
+
 }

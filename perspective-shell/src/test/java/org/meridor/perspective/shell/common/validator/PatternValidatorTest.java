@@ -17,15 +17,15 @@ public class PatternValidatorTest {
 
     @Parameterized.Parameters(name = "{0} should return {1}")
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "test", true },
-                { "%test%", true },
-                { "^test$", true },
-                { "\\d+", true },
-                { "test{", false },
+        return Arrays.asList(new Object[][]{
+                {"test", true},
+                {"%test%", true},
+                {"^test$", true},
+                {"\\d+", true},
+                {"test{", false},
         });
     }
-    
+
     private final String pattern;
     private final boolean result;
 
@@ -33,12 +33,12 @@ public class PatternValidatorTest {
         this.pattern = pattern;
         this.result = result;
     }
-    
+
     @Test
     public void testValidate() {
         PatternValidator patternValidator = new PatternValidator();
         Object instance = new Object();
-        Pattern annotation = new Pattern(){
+        Pattern annotation = new Pattern() {
 
             @Override
             public Class<? extends Annotation> annotationType() {
