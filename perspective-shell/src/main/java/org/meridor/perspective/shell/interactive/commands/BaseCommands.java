@@ -101,7 +101,7 @@ public abstract class BaseCommands implements CommandMarker {
     private boolean alwaysSayYes() {
         return (settingsAware.hasSetting(Setting.ALWAYS_SAY_YES));
     }
-
+    
     protected <T, I, P, R extends Request<P>> void validateConfirmExecuteShowStatus(
             R request,
             Function<R, T> payloadProcessor,
