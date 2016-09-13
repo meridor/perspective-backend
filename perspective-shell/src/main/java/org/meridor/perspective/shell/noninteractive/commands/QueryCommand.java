@@ -21,14 +21,6 @@ public class QueryCommand extends CommandWithDependencyInjection {
         executeQuery(sql);
     }
 
-    private void selectAction() {
-        if (sql != null) {
-            executeQuery(sql);
-        } else {
-            throw new UnsupportedOperationException("Unknown operation selected. This is probably a bug.");
-        }
-    }
-    
     private void executeQuery(String sql) {
         QueryRepository queryRepository = getApplicationContext().getBean(QueryRepository.class);
         Query query = new Query();

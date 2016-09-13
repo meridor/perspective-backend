@@ -16,6 +16,7 @@ import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.QueryResult;
 import org.meridor.perspective.sql.QueryStatus;
+import org.meridor.perspective.sql.Row;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -37,8 +38,13 @@ public class NonInteractiveCommandsTest {
                                 setStatus(QueryStatus.SUCCESS);
                                 setData(new Data() {
                                     {
-                                        setColumnNames(Collections.emptyList());
-                                        setRows(Collections.emptyList());
+                                        setColumnNames(Arrays.asList("one", "two"));
+                                        setRows(Collections.singletonList(new Row(){
+                                            {
+                                                getValues().addAll(Arrays.asList("11", "12"));
+                                                getValues().addAll(Arrays.asList("21", "22"));
+                                            }
+                                        }));
                                     }
                                 });
                             }
