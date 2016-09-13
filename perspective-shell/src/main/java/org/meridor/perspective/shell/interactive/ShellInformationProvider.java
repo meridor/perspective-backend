@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.interactive;
 
-import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.meridor.perspective.shell.common.events.EventBus;
 import org.meridor.perspective.shell.common.events.EventListener;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
+import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -26,7 +26,7 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
     
     private static final String DEFAULT_PROMPT = "perspective>";
     
-    private Optional<String> prompt = Optional.empty();
+    private String prompt;
     
     @Autowired
     private EventBus eventBus;
@@ -75,17 +75,18 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
 
     @Override
     public String getPrompt() {
-        return prompt.isPresent() ? prompt.get() : DEFAULT_PROMPT;
+        Optional<String> promptCandidate = Optional.ofNullable(prompt);
+        return promptCandidate.isPresent() ? promptCandidate.get() : DEFAULT_PROMPT;
     }
 
     @Override
     public void setPrompt(String prompt) {
-        this.prompt = Optional.ofNullable(prompt);
+        this.prompt = prompt;
     }
 
     @Override
     public void resetPrompt() {
-        this.prompt = Optional.empty();
+        this.prompt = null;
     }
 
     @Override

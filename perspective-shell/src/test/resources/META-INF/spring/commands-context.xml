@@ -9,6 +9,7 @@
     <context:component-scan base-package="org.meridor.perspective.shell;org.springframework.shell">
         <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.impl\.LoggerImpl" type="regex" />
         <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\..*" type="regex" />
+        <context:exclude-filter expression="org\.springframework\.shell\.plugin\.support\.DefaultPromptProvider" type="regex" />
     </context:component-scan>
     
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
