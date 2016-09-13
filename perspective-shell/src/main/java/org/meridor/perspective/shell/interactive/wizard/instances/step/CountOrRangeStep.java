@@ -20,7 +20,7 @@ public class CountOrRangeStep extends YesNoStep {
     }
 
     @Override
-    protected boolean shouldProceedAnyway() {
+    protected boolean anyAnswerIsCorrect() {
         return true;
     }
 }

@@ -13,17 +13,17 @@ public class MockYesNoStep extends YesNoStep {
 
     private String defaultAnswer;
 
-    private boolean shouldProceedAnyway;
+    private boolean anyAnswerIsCorrect;
 
     private ConsoleReader consoleReader;
 
     @Override
-    protected boolean shouldProceedAnyway() {
-        return shouldProceedAnyway;
+    protected boolean anyAnswerIsCorrect() {
+        return anyAnswerIsCorrect;
     }
 
-    public void setShouldProceedAnyway(boolean shouldProceedAnyway) {
-        this.shouldProceedAnyway = shouldProceedAnyway;
+    public void setAnyAnswerIsCorrect(boolean anyAnswerIsCorrect) {
+        this.anyAnswerIsCorrect = anyAnswerIsCorrect;
     }
 
     @Override

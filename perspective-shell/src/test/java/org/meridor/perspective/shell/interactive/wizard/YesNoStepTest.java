@@ -45,12 +45,12 @@ public class YesNoStepTest {
         testRun(true, true);
     }
 
-    private void testRun(boolean shouldProceedAnyway, boolean result) throws Exception {
+    private void testRun(boolean anyAnswerIsCorrect, boolean result) throws Exception {
         MockYesNoStep step = applicationContext.getBean(MockYesNoStep.class);
         step.setConsoleReader(mockConsoleReader(TextUtils.DASH + "\n" + NO + "\n"));
         step.setMessage("test-message");
         step.setDefaultAnswer(NO);
-        step.setShouldProceedAnyway(shouldProceedAnyway);
+        step.setAnyAnswerIsCorrect(anyAnswerIsCorrect);
         assertThat(step.run(), is(result));
         assertThat(logger.getWarnMessages(), hasSize(1));
         assertThat(step.getAnswer(), equalTo(NO));

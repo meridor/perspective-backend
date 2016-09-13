@@ -27,10 +27,10 @@ public abstract class YesNoStep extends AbstractStep {
             return false;
         }
         yes = answer;
-        return shouldProceedAnyway() || isYesKey(yes);
+        return anyAnswerIsCorrect() || isYesKey(yes);
     }
 
-    protected boolean shouldProceedAnyway(){
+    protected boolean anyAnswerIsCorrect(){
         return false;
     }
     
