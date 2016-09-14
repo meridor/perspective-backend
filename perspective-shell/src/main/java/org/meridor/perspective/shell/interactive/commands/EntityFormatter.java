@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 
+//TODO: completely remove this class
 @Component
 public class EntityFormatter {
 

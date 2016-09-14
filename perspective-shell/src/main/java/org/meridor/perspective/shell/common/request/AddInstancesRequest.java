@@ -122,6 +122,7 @@ public class AddInstancesRequest implements Request<List<Instance>> {
         Set<Integer> numbers = parseRange(range);
         final int instancesCount = numbers.size();
         for (Integer i : numbers) {
+            //TODO: here we do a new request to the API for each number, works fast because of query cache only!
             final String number = String.valueOf(i);
             String instanceName = (containsPlaceholder(name, Placeholder.NUMBER)) ?
                     replacePlaceholders(name, new HashMap<Placeholder, String>(){
