@@ -46,7 +46,7 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "options", help = "Various instance options") String options
     ) {
         if (name != null) {
-            AddInstancesRequest addInstancesQuery = requestProvider.get(AddInstancesRequest.class)
+            AddInstancesRequest addInstancesRequest = requestProvider.get(AddInstancesRequest.class)
                     .withName(name)
                     .withProject(project)
                     .withFlavor(flavor)
@@ -59,12 +59,12 @@ public class AddCommands extends BaseCommands {
                 count = 1;
             }
             
-            addInstancesQuery = (count != null) ?
-                    addInstancesQuery.withCount(count) :
-                    addInstancesQuery.withRange(range);
+            addInstancesRequest = (count != null) ?
+                    addInstancesRequest.withCount(count) :
+                    addInstancesRequest.withRange(range);
             
             validateConfirmExecuteShowStatus(
-                    addInstancesQuery,
+                    addInstancesRequest,
                     instances -> String.format("Going to add %d instances:", instances.size()),
                     instances -> new String[]{"Name", "Project", "Image", "Flavor", "More"},
                     instances -> entityFormatter.formatNewInstances(instances),
@@ -82,9 +82,9 @@ public class AddCommands extends BaseCommands {
             @CliOption(key = "name", help = "Image name") String imageName
     ) {
         if (instanceNames != null) {
-            AddImagesRequest addImagesQuery = requestProvider.get(AddImagesRequest.class).withInstanceNames(instanceNames).withName(imageName);
+            AddImagesRequest addImagesRequest = requestProvider.get(AddImagesRequest.class).withInstanceNames(instanceNames).withName(imageName);
             validateConfirmExecuteShowStatus(
-                    addImagesQuery,
+                    addImagesRequest,
                     images -> String.format("Going to add %d images.", images.size()),
                     images -> new String[]{"Name", "Instance", "Project"},
                     images -> entityFormatter.formatNewImages(images),

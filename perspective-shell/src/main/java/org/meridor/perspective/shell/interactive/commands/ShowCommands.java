@@ -48,8 +48,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findProjectsRequest,
                 new String[]{"Name", "Cloud"},
-                q -> {
-                    List<FindProjectsResult> projects = projectsRepository.findProjects(q);
+                r -> {
+                    List<FindProjectsResult> projects = projectsRepository.findProjects(r);
                     return projects.stream()
                             .map(p -> new String[]{p.getName(), p.getCloudType().name().toLowerCase()})
                             .collect(Collectors.toList());
@@ -70,8 +70,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findFlavorsRequest,
                 new String[]{"Name", "Project", "VCPUs", "RAM", "Root disk", "Ephemeral disk"},
-                q -> {
-                    List<FindFlavorsResult> flavors = projectsRepository.findFlavors(q);
+                r -> {
+                    List<FindFlavorsResult> flavors = projectsRepository.findFlavors(r);
                     return flavors.stream()
                             .map(f -> new String[]{
                                     f.getName(),
@@ -98,8 +98,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findNetworksRequest,
                 new String[]{"Name", "Project", "Subnets", "State", "Is Shared"},
-                q -> {
-                    List<FindNetworksResult> networks = projectsRepository.findNetworks(q);
+                r -> {
+                    List<FindNetworksResult> networks = projectsRepository.findNetworks(r);
                     return networks.stream()
                             .map(n -> new String[]{
                                     n.getName(),
@@ -125,8 +125,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findKeypairsRequest,
                 new String[]{"Name", "Fingerprint", "Project"},
-                q -> {
-                    List<FindKeypairsResult> keypairs = projectsRepository.findKeypairs(q);
+                r -> {
+                    List<FindKeypairsResult> keypairs = projectsRepository.findKeypairs(r);
                     return keypairs.stream()
                             .map(k -> new String[]{k.getName(), k.getFingerprint(), k.getProjectName()})
                             .collect(Collectors.toList());
@@ -155,8 +155,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findInstancesRequest,
                 new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
-                q -> {
-                    List<FindInstancesResult> instances = instancesRepository.findInstances(q);
+                r -> {
+                    List<FindInstancesResult> instances = instancesRepository.findInstances(r);
                     return instances.stream()
                             .map(i -> new String[]{
                                     i.getName(),
@@ -187,8 +187,8 @@ public class ShowCommands extends BaseCommands {
         validateExecuteShowResult(
                 findImagesRequest,
                 new String[]{"Name", "Projects", "State", "Last modified"},
-                q -> {
-                    List<FindImagesResult> images = imagesRepository.findImages(q);
+                r -> {
+                    List<FindImagesResult> images = imagesRepository.findImages(r);
                     return images.stream()
                             .map(i -> new String[] {
                                     i.getName(),
@@ -212,8 +212,8 @@ public class ShowCommands extends BaseCommands {
                 .withNames(names);
         validateExecuteShowResult(
                 showInstancesRequest,
-                q -> {
-                    Map<String, Map<String, String>> instancesMetadata = instancesRepository.getInstancesMetadata(q);
+                r -> {
+                    Map<String, Map<String, String>> instancesMetadata = instancesRepository.getInstancesMetadata(r);
                     if (instancesMetadata.isEmpty()) {
                         error(String.format("Instances not found: %s", names));
                     }
