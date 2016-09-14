@@ -8,6 +8,7 @@ import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandResult;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
@@ -21,6 +22,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 @ContextConfiguration(locations = "/META-INF/spring/commands-context.xml")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class CommandsTest {
 
     @Parameterized.Parameters(name = "Command \"{0}\" should work")
