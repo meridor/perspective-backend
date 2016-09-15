@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.validator.Setting.SHOW_QUERY_STATS;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 public class QueryCommands extends BaseCommands {
@@ -56,7 +58,12 @@ public class QueryCommands extends BaseCommands {
             case SYNTAX_ERROR:
             case MISSING_PARAMETERS:
             case EVALUATION_ERROR: {
-                error(String.format("Error: %s", result.getMessage()));
+                error(String.format(
+                        "SQL error: status = %s, message = %s",
+                        result.getStatus().value(),
+                        !isEmpty(result.getMessage()) ? 
+                                result.getMessage() : "<empty>"
+                ));
                 break;
             }
         }
