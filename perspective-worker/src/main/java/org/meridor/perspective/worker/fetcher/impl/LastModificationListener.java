@@ -6,7 +6,6 @@ import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -35,8 +34,7 @@ public abstract class LastModificationListener<T> implements EntityListener<T>, 
     
     protected abstract Instant getLastModifiedInstant(T entity);
 
-    @PostConstruct
-    public void init() {
+    void showInfo() {
         int longTimeAgoLimit = getLongTimeAgoLimit();
         LOG.debug(
                 "{} considers entities modified less than {} milliseconds ago as modified NOW",

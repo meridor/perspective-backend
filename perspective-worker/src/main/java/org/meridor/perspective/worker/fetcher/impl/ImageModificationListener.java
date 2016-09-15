@@ -22,6 +22,7 @@ public class ImageModificationListener extends LastModificationListener<Image> {
     
     @PostConstruct
     public void init() {
+        showInfo();
         imagesAware.addImageListener(this);
     }
 

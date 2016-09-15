@@ -22,6 +22,7 @@ public class InstanceModificationListener extends LastModificationListener<Insta
     
     @PostConstruct
     public void init() {
+        showInfo();
         instancesAware.addInstanceListener(this);
     }
 

@@ -13,7 +13,6 @@ public final class EventFactory {
             ZonedDateTime now = now();
             event.setId(uuid());
             event.setTimestamp(now);
-            instance.setTimestamp(now);
             event.setInstance(instance);
             return event;
         } catch (Exception e) {
@@ -79,7 +78,6 @@ public final class EventFactory {
             ZonedDateTime now = now();
             event.setId(uuid());
             event.setTimestamp(now);
-            image.setTimestamp(now);
             event.setImage(image);
             return event;
         } catch (Exception e) {
@@ -122,7 +120,6 @@ public final class EventFactory {
             event.setId(uuid());
             event.setTimestamp(now);
             event.setProject(project);
-            project.setTimestamp(now);
             return event;
         } catch (Exception e) {
             throw new RuntimeException(e);

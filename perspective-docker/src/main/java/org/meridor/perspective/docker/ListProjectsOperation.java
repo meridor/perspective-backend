@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
+import static org.meridor.perspective.events.EventFactory.now;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
@@ -48,7 +48,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         project.setId(idGenerator.getProjectId(cloud));
         project.setName(cloud.getName());
         //Setting now will cause Docker project to sync very often...
-        project.setTimestamp(ZonedDateTime.now().minusHours(1));
+        project.setTimestamp(now().minusHours(1));
         return project;
     }
 }

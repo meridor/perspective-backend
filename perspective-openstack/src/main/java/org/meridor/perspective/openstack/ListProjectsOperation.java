@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +19,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
+import static org.meridor.perspective.events.EventFactory.now;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
@@ -107,7 +107,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Project project = new Project();
         project.setId(projectId);
         project.setName(getProjectName(cloud, region));
-        project.setTimestamp(ZonedDateTime.now().minusHours(1));
+        project.setTimestamp(now().minusHours(1));
 
         MetadataMap metadata = new MetadataMap();
         metadata.put(MetadataKey.REGION, region);

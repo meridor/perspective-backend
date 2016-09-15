@@ -78,6 +78,16 @@
             <artifactId>jaxb2-basics-runtime</artifactId>
             <version>0.9.3</version>
         </dependency>
+        
+        <!-- Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

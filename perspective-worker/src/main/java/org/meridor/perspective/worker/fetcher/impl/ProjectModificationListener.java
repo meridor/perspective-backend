@@ -22,6 +22,7 @@ public class ProjectModificationListener extends LastModificationListener<Projec
     
     @PostConstruct
     public void init() {
+        showInfo();
         projectsAware.addProjectListener(this);
     }
 
