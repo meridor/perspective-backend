@@ -1,39 +1,5 @@
 # Development Specific Stuff
 
-## API
-### Project
-* GET /projects - list projects [+]
-
-### Instances (/instances)
-* GET /?query - list project instance [+]
-* POST / - launch instance [+]
-* GET /$id - show instance information [+]
-* GET /$id/console - redirect to instance console
-* GET /$id/log - return instance log
-* POST /delete?query - delete (terminate) instances [+]
-* PUT /rebuild?query - rebuild instance
-* PUT /instance/reboot?query - reboot instance [+]
-* PUT /instance/hard-reboot?query - hard reboot instance [+]
-* PUT /instance/resize?query - resize instance
-* PUT /instance/snapshot?query - snapshot instance
-* PUT /instance/pause?query - pause instance
-* PUT /instance/resume?query - resume instance
-* PUT /instance/suspend?query - suspend instance
-* PUT /instance/shutdown?query - shutdown instance
-* POST /instance/tag?query - add tags to instance
-* DELETE /instance/tag?query - remove instance tags
-* PUT /instance/lock?query - lock instance
-* PUT /instance/unlock?query - unlock instance
-* PUT /instance/ip?query - add ip to instance
-* DELETE /instance/ip?query - remove instance ip
- 
-### Images
-* GET /image/list?query - list project images
-* GET /image/$id - show image info
-* PUT /image?query - modify images
-* DELETE /image?query - delete images
-
-
 ## Shell
 
 ~/.perspective/rc (/etc/perspective/shell/rc) file support [+]
@@ -77,12 +43,6 @@ Settings - e.g. ```set log_file /var/log/shell.log```
 * show settings [+]
 * show filters [+]
 
-### Groups commands
-E.g. error, active, running and stopped instances.
-* define group where <predicate> 
-* show group <name>
-* show groups
-
 ### Triggers
 Показывает предупреждение или выполняет действие, если выполняется какое-то условие (например, больше 3 инстансов в состоянии Error).
 * define trigger where
@@ -94,8 +54,3 @@ E.g. error, active, running and stopped instances.
 * define view where
 * show view <name>
 * show views
-
-### SQL statements
-* select ... [+]
-* insert ...
-* delete ...
