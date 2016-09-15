@@ -6,6 +6,8 @@ import com.google.common.cache.LoadingCache;
 import org.meridor.perspective.sql.*;
 import org.meridor.perspective.sql.impl.parser.QueryType;
 import org.meridor.perspective.sql.impl.task.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,8 @@ import static org.meridor.perspective.sql.impl.parser.QueryType.EXPLAIN;
 
 @Component
 public class QueryProcessorImpl implements QueryProcessor {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(QueryProcessorImpl.class);
     
     @Autowired
     private ApplicationContext applicationContext;
@@ -63,8 +67,10 @@ public class QueryProcessorImpl implements QueryProcessor {
                             createExplainExecutionResult(tasks);
                     queryResults.add(getQueryResult(SUCCESS, executionResult.getCount(), executionResult.getData(), ""));
                 } catch (SQLSyntaxErrorException e) {
+                    LOG.debug("Marking query as having syntax error", e);
                     queryResults.add(getQueryResult(SYNTAX_ERROR, 0, empty(), e.getMessage()));
                 } catch (SQLException e) {
+                    LOG.debug("Marking query as having evaluation error", e);
                     String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
                     queryResults.add(getQueryResult(EVALUATION_ERROR, 0, empty(), message));
                 }
