@@ -3,7 +3,6 @@ package org.meridor.perspective.shell.interactive.wizard;
 import jline.console.ConsoleReader;
 import org.meridor.perspective.shell.common.misc.Logger;
 import org.meridor.perspective.shell.common.repository.impl.Placeholder;
-import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +18,17 @@ public abstract class AbstractStep implements Step {
 
     @Autowired
     private Logger logger;
-    
+
+    private ConsoleReader consoleReader;
+
     protected ConsoleReader getConsoleReader() throws IOException {
-        return new ConsoleReader();
+        return consoleReader != null ? consoleReader : new ConsoleReader();
     }
-    
+
+    void setConsoleReader(ConsoleReader consoleReader) {
+        this.consoleReader = consoleReader;
+    }
+
     protected String waitForAnswer() {
         try {
             ConsoleReader consoleReader = getConsoleReader();

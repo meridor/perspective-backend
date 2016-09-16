@@ -6,8 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandResult;
+import org.springframework.shell.core.Shell;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
@@ -55,7 +55,7 @@ public class CommandsTest {
     public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Autowired
-    private AbstractShell shell;
+    private Shell shell;
 
     @Autowired
     private TestLogger testLogger;

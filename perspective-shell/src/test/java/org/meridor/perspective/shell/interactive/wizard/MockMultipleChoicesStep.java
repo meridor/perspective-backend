@@ -1,17 +1,13 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
-import jline.console.ConsoleReader;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.List;
 
 @Component
 public class MockMultipleChoicesStep extends MultipleChoicesStep {
 
     private List<String> possibleChoices;
-
-    private ConsoleReader consoleReader;
 
     @Override
     public String getMessage() {
@@ -27,12 +23,4 @@ public class MockMultipleChoicesStep extends MultipleChoicesStep {
         return possibleChoices;
     }
 
-    @Override
-    protected ConsoleReader getConsoleReader() throws IOException {
-        return consoleReader;
-    }
-
-    public void setConsoleReader(ConsoleReader consoleReader) {
-        this.consoleReader = consoleReader;
-    }
 }

@@ -1,11 +1,9 @@
 package org.meridor.perspective.shell.interactive;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ShellStatus;
 import org.springframework.shell.event.ShellStatusListener;
-import org.springframework.shell.event.ShellStatusProvider;
 import org.springframework.shell.support.logging.HandlerUtils;
 import org.springframework.stereotype.Component;
 

@@ -1,8 +1,8 @@
 package org.meridor.perspective.shell.interactive.wizard.instances.screen;
 
-import org.meridor.perspective.shell.common.request.RequestProvider;
-import org.meridor.perspective.shell.common.request.FindProjectsRequest;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
+import org.meridor.perspective.shell.common.request.FindProjectsRequest;
+import org.meridor.perspective.shell.common.request.RequestProvider;
 import org.meridor.perspective.shell.common.result.FindProjectsResult;
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
@@ -43,9 +43,9 @@ public class ImageScreen implements WizardScreen {
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
         String projectName = previousAnswers.get(ProjectStep.class);
-        Optional<FindProjectsResult> maybeProject = getProject(projectName);
-        if (maybeProject.isPresent()) {
-            switch (maybeProject.get().getCloudType()) {
+        Optional<FindProjectsResult> projectCandidate = getProject(projectName);
+        if (projectCandidate.isPresent()) {
+            switch (projectCandidate.get().getCloudType()) {
                 case OPENSTACK: return Optional.of(flavorScreen);
                 case DOCKER: return Optional.of(commandScreen);
                 default: return Optional.empty();

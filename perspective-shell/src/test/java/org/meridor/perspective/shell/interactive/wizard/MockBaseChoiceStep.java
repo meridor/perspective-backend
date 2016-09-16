@@ -3,7 +3,6 @@ package org.meridor.perspective.shell.interactive.wizard;
 import jline.console.ConsoleReader;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -75,12 +74,4 @@ public class MockBaseChoiceStep extends BaseChoiceStep {
         this.validAnswers = validAnswers;
     }
 
-    @Override
-    protected ConsoleReader getConsoleReader() throws IOException {
-        return consoleReader;
-    }
-
-    public void setConsoleReader(ConsoleReader consoleReader) {
-        this.consoleReader = consoleReader;
-    }
 }

@@ -26,43 +26,43 @@ public class AbstractStepTest {
     private TestLogger logger;
 
     @Autowired
-    private MockStep mockStep;
+    private MockAbstractStep mockAbstractStep;
 
     @Test
     public void testPrintMessageWithNoDefaultAnswer() {
-        mockStep.setMessage("test-message");
-        mockStep.printMessageWithDefaultAnswer();
+        mockAbstractStep.setMessage("test-message");
+        mockAbstractStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test-message"));
     }
 
     @Test
     public void testPrintMessageWithDefaultAnswer() {
-        mockStep.setMessage("test-message");
-        mockStep.setDefaultAnswer(DEFAULT_ANSWER);
-        mockStep.printMessageWithDefaultAnswer();
+        mockAbstractStep.setMessage("test-message");
+        mockAbstractStep.setDefaultAnswer(DEFAULT_ANSWER);
+        mockAbstractStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test-message [default-answer]"));
     }
 
     @Test
     public void testPrintMessageContainingPlaceholderWithDefaultAnswer() {
-        mockStep.setMessage("test $defaultAnswer message");
-        mockStep.setDefaultAnswer(DEFAULT_ANSWER);
-        mockStep.printMessageWithDefaultAnswer();
+        mockAbstractStep.setMessage("test $defaultAnswer message");
+        mockAbstractStep.setDefaultAnswer(DEFAULT_ANSWER);
+        mockAbstractStep.printMessageWithDefaultAnswer();
         assertThat(logger.getOkMessages(), contains("test default-answer message"));
     }
 
     @Test
     public void testWaitForAnswer() throws Exception {
-        mockStep.setConsoleReader(mockConsoleReader("test-answer\n"));
-        String answer = mockStep.waitForAnswer();
+        mockAbstractStep.setConsoleReader(mockConsoleReader("test-answer\n"));
+        String answer = mockAbstractStep.waitForAnswer();
         assertThat(answer, equalTo("test-answer"));
     }
 
     @Test
     public void testWaitForEmptyAnswer() throws Exception {
-        mockStep.setConsoleReader(mockConsoleReader("\n"));
-        mockStep.setDefaultAnswer(DEFAULT_ANSWER);
-        String answer = mockStep.waitForAnswer();
+        mockAbstractStep.setConsoleReader(mockConsoleReader("\n"));
+        mockAbstractStep.setDefaultAnswer(DEFAULT_ANSWER);
+        String answer = mockAbstractStep.waitForAnswer();
         assertThat(answer, equalTo(DEFAULT_ANSWER));
     }
 
@@ -70,8 +70,8 @@ public class AbstractStepTest {
     public void testWaitForAnswerError() throws Exception {
         ConsoleReader consoleReader = mockConsoleReader("test-answer\n");
         consoleReader.getInput().close(); //Trying to read closed stream
-        mockStep.setConsoleReader(consoleReader);
-        String answer = mockStep.waitForAnswer();
+        mockAbstractStep.setConsoleReader(consoleReader);
+        String answer = mockAbstractStep.waitForAnswer();
         assertThat(answer, equalTo(""));
     }
 

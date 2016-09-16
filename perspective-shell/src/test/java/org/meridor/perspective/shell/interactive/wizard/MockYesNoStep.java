@@ -1,9 +1,7 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
-import jline.console.ConsoleReader;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @Component
@@ -15,8 +13,6 @@ public class MockYesNoStep extends YesNoStep {
 
     private boolean anyAnswerIsCorrect;
 
-    private ConsoleReader consoleReader;
-
     @Override
     protected boolean anyAnswerIsCorrect() {
         return anyAnswerIsCorrect;
@@ -24,15 +20,6 @@ public class MockYesNoStep extends YesNoStep {
 
     public void setAnyAnswerIsCorrect(boolean anyAnswerIsCorrect) {
         this.anyAnswerIsCorrect = anyAnswerIsCorrect;
-    }
-
-    @Override
-    protected ConsoleReader getConsoleReader() throws IOException {
-        return consoleReader;
-    }
-
-    public void setConsoleReader(ConsoleReader consoleReader) {
-        this.consoleReader = consoleReader;
     }
 
     @Override
