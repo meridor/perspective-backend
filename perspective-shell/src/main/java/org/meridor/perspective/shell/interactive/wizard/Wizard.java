@@ -6,6 +6,6 @@ public interface Wizard extends Iterator<WizardScreen>, Iterable<WizardScreen> {
     
     boolean runSteps();
     
-    void runCommand();
+    String getCommand();
     
 }

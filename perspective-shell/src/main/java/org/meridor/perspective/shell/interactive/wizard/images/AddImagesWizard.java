@@ -26,7 +26,7 @@ public class AddImagesWizard extends BaseWizard {
     }
 
     @Override
-    protected String getCommand() {
+    public String getCommand() {
         CommandBuilder commandBuilder = new CommandBuilder("add images");
         Optional<String> instancesCandidate = getAnswer(InstanceStep.class);
         if (instancesCandidate.isPresent()) {

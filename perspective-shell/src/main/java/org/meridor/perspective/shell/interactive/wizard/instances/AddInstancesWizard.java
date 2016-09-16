@@ -24,7 +24,7 @@ public class AddInstancesWizard extends BaseWizard {
     }
 
     @Override
-    protected String getCommand() {
+    public String getCommand() {
         CommandBuilder commandBuilder = new CommandBuilder("add instances");
         Optional<String> projectCandidate = getAnswer(ProjectStep.class);
         if (projectCandidate.isPresent()) {

@@ -2,7 +2,6 @@ package org.meridor.perspective.shell.interactive.wizard;
 
 import org.meridor.perspective.shell.common.misc.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.core.AbstractShell;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -16,9 +15,6 @@ public abstract class BaseWizard implements Wizard {
     
     private boolean isFirstScreen = true;
     
-    @Autowired
-    private AbstractShell shell;
-
     @Autowired
     private Logger logger;
     
@@ -82,13 +78,6 @@ public abstract class BaseWizard implements Wizard {
         getAnswers().clear();
     }
 
-    protected abstract String getCommand();
-
-    @Override
-    public void runCommand() {
-        String command = getCommand();
-        logger.ok(String.format("Executing command: %s", command));
-        shell.executeCommand(command);
-    }
+    public abstract String getCommand();
 
 }

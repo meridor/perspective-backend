@@ -2,8 +2,10 @@ package org.meridor.perspective.shell.interactive;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ShellStatus;
 import org.springframework.shell.event.ShellStatusListener;
+import org.springframework.shell.event.ShellStatusProvider;
 import org.springframework.shell.support.logging.HandlerUtils;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +28,7 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
     private static final Logger COMMAND_LOG = HandlerUtils.getLogger(org.meridor.perspective.shell.common.misc.Logger.class);
     
     @Autowired
-    private AbstractShell shell;
+    private Shell shell;
     
     @PostConstruct
     public void init() {
@@ -51,7 +53,7 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
                     while ( (line = bufferedReader.readLine()) != null) {
                         if (!line.trim().isEmpty()) {
                             LOG.fine(String.format("Executing command %s", line));
-                            boolean success = shell.executeScriptLine(line);
+                            boolean success = shell.executeCommand(line).isSuccess();
                             if (!success) {
                                 LOG.severe(String.format("Failed to execute line %s: %s", lineNumber, line));
                                 break;

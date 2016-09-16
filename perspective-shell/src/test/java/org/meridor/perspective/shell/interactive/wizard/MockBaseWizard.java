@@ -28,7 +28,7 @@ public class MockBaseWizard extends BaseWizard {
 
     @Override
     @SuppressWarnings("all")
-    protected String getCommand() {
+    public String getCommand() {
         return String.format(
                 "%s %s",
                 getAnswer(MockSingleChoiceStep.class).get(),

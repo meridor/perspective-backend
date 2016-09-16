@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.interactive.commands;
 
+import org.meridor.perspective.shell.common.misc.CommandExecuter;
 import org.meridor.perspective.shell.common.request.AddImagesRequest;
 import org.meridor.perspective.shell.common.request.AddInstancesRequest;
 import org.meridor.perspective.shell.common.request.RequestProvider;
@@ -32,6 +33,9 @@ public class AddCommands extends BaseCommands {
     
     @Autowired
     private EntityFormatter entityFormatter;
+    
+    @Autowired
+    private CommandExecuter commandExecuter;
 
     @CliCommand(value = "add instances", help = "Add one or more instances to project")
     public void addInstance(
@@ -71,7 +75,7 @@ public class AddCommands extends BaseCommands {
                     instancesRepository::addInstances
             );
         } else if (addInstancesWizard.runSteps()) {
-            addInstancesWizard.runCommand();
+            commandExecuter.execute(addInstancesWizard.getCommand());
         }
         
     }
@@ -91,7 +95,7 @@ public class AddCommands extends BaseCommands {
                     imagesRepository::addImages
             );
         } else if (addImagesWizard.runSteps()) {
-            addImagesWizard.runCommand();
+            commandExecuter.execute(addImagesWizard.getCommand());
         }
     }
     
