@@ -28,10 +28,11 @@ import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.sql.impl.index.Keys.key;
 import static org.meridor.perspective.sql.impl.parser.JoinType.*;
 import static org.meridor.perspective.sql.impl.task.strategy.StrategyTestUtils.*;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS;
 
 @ContextConfiguration(locations = "/META-INF/spring/test-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@DirtiesContext
+@DirtiesContext(classMode = BEFORE_CLASS)
 public class IndexScanStrategyTest {
     
     @Autowired
@@ -68,6 +69,7 @@ public class IndexScanStrategyTest {
             put(key("2"), "3");
             put(key("3"), "4");
             put(key("2"), "5");
+            put(key("2"), "6"); //This id does not exist in data. Used to test for possible NPEs in code.
         }
     };
     private static final Index PROJECTS_ID_INDEX = new HashTableIndex(new IndexSignature(PROJECTS, Collections.singleton(ID))){

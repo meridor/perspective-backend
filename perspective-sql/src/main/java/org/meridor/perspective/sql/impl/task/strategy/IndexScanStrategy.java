@@ -204,12 +204,18 @@ public class IndexScanStrategy extends ScanStrategy {
         columnRelationsIds.stream()
                 .flatMap(cri -> cri.getFirst().stream())
                 .filter(p -> allMatchedLeftIds.contains(p.getFirst()) && allMatchedRightIds.contains(p.getSecond()))
-                .forEach(pair -> dataContainer.addRow(new ArrayList<Object>(){
-                    {
-                        addAll(leftResults.get(pair.getFirst()));
-                        addAll(rightResults.get(pair.getSecond()));
+                .forEach(pair -> {
+                    List<Object> leftValues = leftResults.get(pair.getFirst());
+                    List<Object> rightValues = rightResults.get(pair.getSecond());
+                    if (leftValues != null && rightValues != null) {
+                        dataContainer.addRow(new ArrayList<Object>(){
+                            {
+                                addAll(leftValues);
+                                addAll(rightValues);
+                            }
+                        });
                     }
-                }));
+                });
         
         //Adding outer join rows if needed
         if (joinType == LEFT) {
