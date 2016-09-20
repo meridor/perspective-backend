@@ -26,6 +26,8 @@
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>org.meridor.perspective.worker.Worker</mainClass>
                             <useUniqueVersions>false</useUniqueVersions>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>

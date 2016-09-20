@@ -26,6 +26,8 @@
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>org.meridor.perspective.storage.Storage</mainClass>
                             <useUniqueVersions>false</useUniqueVersions>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>
