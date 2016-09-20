@@ -1,64 +1,68 @@
 package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.rest.handler.Response;
 import org.meridor.perspective.rest.services.InstancesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
-import static org.meridor.perspective.rest.resources.ResponseUtils.notFound;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.meridor.perspective.rest.handler.Response.notFound;
+import static org.meridor.perspective.rest.handler.Response.ok;
 
 @Component
 @Path("/instances")
 public class InstancesResource {
 
+    private final InstancesService instancesService;
+
     @Autowired
-    private InstancesService instancesService;
+    public InstancesResource(InstancesService instancesService) {
+        this.instancesService = instancesService;
+    }
     
     @GET
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Path("/{instanceId}")
     public Response getInstanceById(@PathParam("instanceId") String instanceId) {
         Optional<Instance> instance = instancesService.getInstanceById(instanceId);
         return instance.isPresent() ?
-                Response.ok(instance.get()).build() :
+                ok(instance.get()) :
                 notFound(String.format("Instance with id = %s not found", instanceId));
     }
 
     @POST
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes(APPLICATION_JSON)
     public Response launchInstances(List<Instance> instances) {
         instancesService.launchInstances(instances);
-        return Response.ok().build();
+        return ok();
     }
 
     @PUT
     @Path("/reboot")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes(APPLICATION_JSON)
     public Response rebootInstances(List<String> instanceIds) {
         instancesService.rebootInstances(instanceIds);
-        return Response.ok().build();
+        return ok();
     }
 
     @PUT
     @Path("/hard-reboot")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes(APPLICATION_JSON)
     public Response hardRebootInstances(List<String> instanceIds) {
         instancesService.hardRebootInstances(instanceIds);
-        return Response.ok().build();
+        return ok();
     }
 
     @POST
     @Path("/delete")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes(APPLICATION_JSON)
     public Response deleteInstances(List<String> instanceIds) {
         instancesService.deleteInstances(instanceIds);
-        return Response.ok().build();
+        return ok();
     }
 
 }

@@ -27,19 +27,23 @@ import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 public class InstancesService {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstancesService.class);
-    
-    @Autowired
-    private InstancesAware instancesAware;
 
-    @Autowired
-    private ProjectsAware projectsAware;
+    private final InstancesAware instancesAware;
+
+    private final ProjectsAware projectsAware;
 
     @Destination(WRITE_TASKS)
     private Producer producer;
     
     @Value("${perspective.messaging.max.retries}")
     private int maxRetries;
-    
+
+    @Autowired
+    public InstancesService(InstancesAware instancesAware, ProjectsAware projectsAware) {
+        this.instancesAware = instancesAware;
+        this.projectsAware = projectsAware;
+    }
+
     public Optional<Instance> getInstanceById(String instanceId) {
         LOG.info("Getting instance with id = {}", instanceId);
         return instancesAware.getInstance(instanceId);

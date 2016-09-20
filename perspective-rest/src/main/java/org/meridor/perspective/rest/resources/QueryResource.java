@@ -8,16 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.Produces;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
@@ -26,13 +26,18 @@ public class QueryResource {
     
     private static final Logger LOG = LoggerFactory.getLogger(InstancesResource.class);
 
-    @Autowired
-    private QueryProcessor queryProcessor;
+    private final QueryProcessor queryProcessor;
     
     private final AtomicLong queryCounter = new AtomicLong();
-    
+
+    @Autowired
+    public QueryResource(QueryProcessor queryProcessor) {
+        this.queryProcessor = queryProcessor;
+    }
+
     @POST
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public List<QueryResult> query(List<Query> queries) {
         long queryId = queryCounter.incrementAndGet();
         List<QueryResult> results = queries.stream().flatMap(q -> {

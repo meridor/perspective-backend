@@ -27,15 +27,19 @@ import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 public class ImagesService {
     
     private static final Logger LOG = LoggerFactory.getLogger(ImagesService.class);
-    
-    @Autowired
-    private ImagesAware imagesAware;
+
+    private final ImagesAware imagesAware;
     
     @Destination(WRITE_TASKS)
     private Producer producer;
 
     @Value("${perspective.messaging.max.retries}")
     private int maxRetries;
+
+    @Autowired
+    public ImagesService(ImagesAware imagesAware) {
+        this.imagesAware = imagesAware;
+    }
 
     public Optional<Image> getImageById(String imageId) {
         LOG.info("Getting image with id = {}", imageId);

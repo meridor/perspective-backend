@@ -1,9 +1,12 @@
 package org.meridor.perspective.rest.resources;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.meridor.perspective.client.QueryApi;
 import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
@@ -12,22 +15,24 @@ import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 import org.meridor.perspective.sql.QueryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
+import retrofit2.Response;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
-@SuppressWarnings("SpringJavaAutowiredMembersInspection")
+@ContextConfiguration(locations = "/META-INF/spring/integration-test-context.xml")
 @RunWith(Parameterized.class)
-public class QueryResourceIntegrationTest extends BaseIntegrationTest {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+public class QueryResourceTest extends BaseResourceTest<QueryApi> {
 
     @Parameterized.Parameters(name = "Query \"{0}\" should work")
     public static Collection<Object[]> data() {
@@ -38,7 +43,11 @@ public class QueryResourceIntegrationTest extends BaseIntegrationTest {
         });
     }
 
-    private final String sql;
+    @ClassRule
+    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Autowired
     private ProjectsAware projectsAware;
@@ -49,7 +58,9 @@ public class QueryResourceIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private ImagesAware imagesAware;
 
-    public QueryResourceIntegrationTest(String sql) {
+    private final String sql;
+
+    public QueryResourceTest(String sql) {
         this.sql = sql;
     }
     
@@ -62,21 +73,22 @@ public class QueryResourceIntegrationTest extends BaseIntegrationTest {
     
     @Test
     public void testExecuteQuery() throws Exception {
-        Thread.sleep(500);
         Query query = new Query();
         query.setSql(sql);
         List<Query> queries = new ArrayList<>();
         queries.add(query);
-        Entity<List<Query>> entity = Entity.entity(queries, MediaType.APPLICATION_JSON);
-        GenericType<List<QueryResult>> resultType = new GenericType<List<QueryResult>>(){};
-        List<QueryResult> queryResults = target("/query")
-                .request()
-                .post(entity, resultType);
+        Response<Collection<QueryResult>> response = getApi().query(queries).execute();
+        assertThat(response.isSuccessful(), is(true));
+        List<QueryResult> queryResults = new ArrayList<>(response.body());
         assertThat(queryResults, hasSize(1));
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getCount(), equalTo(1));
         assertThat(queryResult.getData().getRows(), hasSize(1));
     }
-    
+
+    @Override
+    protected Class<QueryApi> getApiClass() {
+        return QueryApi.class;
+    }
 }

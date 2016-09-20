@@ -2,7 +2,6 @@ package org.meridor.perspective.client;
 
 import okhttp3.ResponseBody;
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -14,7 +13,7 @@ import java.util.Collection;
 public interface ImagesApi {
     
     @GET("/images/{id}")
-    Call<Instance> getById(@Path("id") String instanceId);
+    Call<Image> getById(@Path("id") String instanceId);
     
     @POST("/images")
     Call<ResponseBody> add(@Body Collection<Image> images);

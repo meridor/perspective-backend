@@ -1,6 +1,6 @@
 language: java
 jdk: oraclejdk8
-script: mvn clean test -Pintegration-tests
+script: mvn clean test
 notifications:
   email: false
 after_success:
