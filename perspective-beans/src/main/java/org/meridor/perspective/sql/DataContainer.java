@@ -19,9 +19,13 @@ public class DataContainer implements Comparable<DataContainer> {
     public DataContainer(Collection<String> columnNames) {
         this(Collections.singletonMap(
                 ANY,
-                (columnNames != null) ?
-                        new ArrayList<>(columnNames) :
-                        Collections.emptyList()
+                new ArrayList<String>() {
+                    {
+                        if (columnNames != null) {
+                            addAll(columnNames);
+                        }
+                    }
+                }
         ));
     }
     
@@ -35,10 +39,9 @@ public class DataContainer implements Comparable<DataContainer> {
     }
     
     private void updateColumnsMap(Map<String, List<String>> columnsMap) {
-        if (columnsMap == null) {
-            throw new IllegalArgumentException("Columns map can't be null");
+        if (columnsMap != null) {
+            this.columnsMap.putAll(columnsMap);
         }
-        this.columnsMap.putAll(columnsMap);
     }
     
     public void addRow(List<Object> values) {
@@ -77,16 +80,10 @@ public class DataContainer implements Comparable<DataContainer> {
         });
         return data;
     }
-    
-    public static DataContainer fromData(Data data) {
-        DataContainer dataContainer = new DataContainer(data.getColumnNames());
-        data.getRows().forEach(r -> dataContainer.addRow(r.getValues()));
-        return dataContainer;
-    }
 
     @Override
-    public int compareTo(DataContainer o) {
-        if (o.getColumnsMap().equals(getColumnsMap())) {
+    public int compareTo(DataContainer another) {
+        if (another.getColumnsMap().equals(getColumnsMap())) {
             return 0;
         }
         return -1;

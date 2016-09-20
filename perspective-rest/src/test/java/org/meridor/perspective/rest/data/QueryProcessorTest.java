@@ -73,7 +73,7 @@ public class QueryProcessorTest {
         assertThat(queryResult.getCount(), is(greaterThan(0)));
         assertThat(queryResult.getData().getRows().size(), is(greaterThan(0)));
     }
-    
+
     @Test
     public void testShowColumns() {
         Query query = new Query() {
@@ -92,7 +92,7 @@ public class QueryProcessorTest {
         assertThat(rows.get(0).getValues(), contains("project_id", "string", "null", "true"));
         assertThat(rows.get(1).getValues(), contains("image_id", "string", "null", "true"));
     }
-    
+
     @Test
     public void testExplainSimpleQuery() {
         Query query = new Query() {
@@ -109,7 +109,7 @@ public class QueryProcessorTest {
         assertThat(data.getColumnNames(), contains("task"));
         assertThat(data.getRows().size(), is(greaterThan(0)));
     }
-    
+
     @Test
     public void testSelectVersion() {
         Query query = new Query() {
@@ -123,7 +123,7 @@ public class QueryProcessorTest {
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("version"));
         assertThat(queryResult.getCount(), equalTo(1));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("version"), is(notNullValue()));
     }
@@ -132,12 +132,12 @@ public class QueryProcessorTest {
     public void testSelectAsterisk() {
         doAsteriskTest("select * from instances");
     }
-    
+
     @Test
     public void testSelectTableAsterisk() {
         doAsteriskTest("select instances.* from instances");
     }
-    
+
     @Test
     public void testSelectTableAliasAsterisk() {
         doAsteriskTest("select i.* from instances i");
@@ -156,11 +156,11 @@ public class QueryProcessorTest {
         List<String> columnNamesList = columnsToNames(tablesAware.getColumns("instances"));
         String[] columnNames = columnNamesList.toArray(new String[columnNamesList.size()]);
         assertThat(queryResult.getData().getColumnNames(), contains(columnNames));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("name"), equalTo("test-instance"));
     }
-    
+
     @Test
     public void testSelectQueryWithPlaceholders() {
         Query query = new Query() {
@@ -183,11 +183,11 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), containsInAnyOrder("state"));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("state"), equalTo("launched"));
     }
-    
+
     @Test
     public void testImplicitInnerJoinWithCondition() {
         doInnerJoinWithConditionAssertions(
@@ -196,7 +196,7 @@ public class QueryProcessorTest {
                 "where i.project_id = p.id and i.flavor_id = f.id and i.project_id = f.project_id"
         );
     }
-    
+
     @Test
     public void testInnerJoinWithCondition() {
         doInnerJoinWithConditionAssertions("select p.name as project_name, i.name as instance_name, f.name as flavor_name " +
@@ -205,7 +205,7 @@ public class QueryProcessorTest {
                 "on i.flavor_id = f.id and i.project_id = f.project_id"
         );
     }
-    
+
     private void doInnerJoinWithConditionAssertions(String sqlText) {
         Query query = new Query(){
             {
@@ -217,26 +217,26 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("project_name", "instance_name", "flavor_name"));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("project_name"), equalTo("test-project - test-region"));
         assertThat(rows.get(0).get("instance_name"), equalTo("test-instance"));
         assertThat(rows.get(0).get("flavor_name"), equalTo("test-flavor"));
     }
-    
+
     @Test
     public void testInnerJoinWithUsingClause() {
         testInnerJoinWithUsingClause("select n.name, i.instance_id as id " +
                 "from instance_networks as i inner join network_subnets as n " +
                 "using (network_id)");
     }
-    
+
     @Test
     public void testNaturalInnerJoin() {
         testInnerJoinWithUsingClause("select n.name, i.instance_id as id " +
                 "from instance_networks as i natural join network_subnets as n");
     }
-    
+
     private void testInnerJoinWithUsingClause(String sql) {
         Query query = new Query();
         query.setSql(sql);
@@ -245,7 +245,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("n.name", "id"));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("n.name"), equalTo("test-subnet"));
         assertThat(rows.get(0).get("id"), equalTo("test-instance"));
@@ -261,7 +261,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("id1", "id2"));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(1));
         assertThat(rows.get(0).get("id1"), equalTo("test-instance"));
         assertThat(rows.get(0).get("id2"), is(nullValue()));
@@ -298,7 +298,7 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
         assertThat(queryResult.getData().getColumnNames(), contains("id", "name"));
-        List<DataRow> rows = DataContainer.fromData(queryResult.getData()).getRows();
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
         assertThat(rows, hasSize(2));
         assertThat(rows.get(0).get("name"), equalTo("second-image"));
         assertThat(rows.get(1).get("name"), equalTo("test-image"));
@@ -313,6 +313,12 @@ public class QueryProcessorTest {
         QueryResult queryResult = queryResults.get(0);
         assertThat(queryResult.getStatus(), equalTo(QueryStatus.EVALUATION_ERROR));
         assertThat(queryResult.getMessage(), is(notNullValue()));
+    }
+
+    private static DataContainer fromData(Data data) {
+        DataContainer dataContainer = new DataContainer(data.getColumnNames());
+        data.getRows().forEach(r -> dataContainer.addRow(r.getValues()));
+        return dataContainer;
     }
     
 }

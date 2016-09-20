@@ -14,11 +14,14 @@ public class DataRow {
     private final DataContainer dataContainer;
     
     public DataRow(DataContainer dataContainer, List<Object> values) {
-        if (values == null) {
-            throw new IllegalArgumentException("Values can't be null");
-        }
         this.dataContainer = dataContainer;
-        this.values = new ArrayList<>(values);
+        this.values = new ArrayList<Object>() {
+            {
+                if (values != null) {
+                    addAll(values);
+                }
+            }
+        };
     }
     
     public Object get(int columnIndex) {

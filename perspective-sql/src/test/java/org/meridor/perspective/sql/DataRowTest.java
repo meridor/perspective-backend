@@ -44,9 +44,19 @@ public class DataRowTest {
         assertThat(dataRow.get(1), equalTo(SECOND_COLUMN_VALUE));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithWrongIndex() {
+        dataRow.get(4);
+    }
+    
     @Test
     public void testGetByColumnName() throws Exception {
         assertThat(dataRow.get(0), equalTo(FIRST_COLUMN_VALUE));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithWrongColumnName() throws Exception {
+        dataRow.get("missing-column");
     }
     
     @Test
@@ -62,6 +72,16 @@ public class DataRowTest {
     @Test
     public void testGetByColumnNameAndTableAlias() throws Exception {
         assertThat(dataRow.get(FIRST_COLUMN, FIRST_TABLE), equalTo(FIRST_COLUMN_VALUE));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithWrongColumnNameAndTableAlias() throws Exception {
+        dataRow.get("missing-column", "any-alias");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithAmbiguousColumnName() throws Exception {
+        dataRow.get(FIRST_COLUMN);
     }
 
     @Test
