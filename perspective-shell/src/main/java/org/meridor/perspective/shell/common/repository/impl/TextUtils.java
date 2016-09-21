@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.common.repository.impl;
 
 import com.google.common.base.CaseFormat;
 import jline.console.ConsoleReader;
+import org.apache.commons.lang3.StringUtils;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.time.ZonedDateTime;
@@ -101,7 +102,10 @@ public final class TextUtils {
                 } else if (counter == 0) {
                     key = token.trim();
                 } else {
-                    value.add(token.trim());
+                    String trimmedValue = token.trim();
+                    if (!StringUtils.isEmpty(trimmedValue)) {
+                        value.add(trimmedValue);
+                    }
                 }
                 counter++;
             }

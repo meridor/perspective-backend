@@ -74,6 +74,10 @@ public class TextUtilsTest {
     public void testParseAssignment() {
         assertThat(parseAssignment(null).keySet(), empty());
 
+        Map<String, Set<String>> parsedEmptyValueAssignment = parseAssignment("key1 = ");
+        assertThat(parsedEmptyValueAssignment.keySet(), contains("key1"));
+        assertThat(parsedEmptyValueAssignment.get("key1"), empty());
+
         String assignmentString = "key1 = value11, value12; key2=value21,value22";
         Map<String, Set<String>> assignmentData = parseAssignment(assignmentString);
         assertThat(assignmentData.keySet(), hasSize(2));

@@ -54,7 +54,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
     @Override public Set<String> unset(String data) {
         Set<String> errors = new HashSet<>();
         Map<String, Set<String>> values = TextUtils.parseAssignment(data);
-        values.keySet().stream().forEach(
+        values.keySet().forEach(
                 k -> {
                     String enumName = k.toUpperCase();
                     if (Field.contains(enumName)) {

@@ -29,7 +29,9 @@ public class CommandsTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"show settings"},
+                {"show settings --all"},
                 {"show filters"},
+                {"show filters --all"},
                 {"set projects = test"},
                 {"set page_size = 20"},
                 {"unset --filters"},
