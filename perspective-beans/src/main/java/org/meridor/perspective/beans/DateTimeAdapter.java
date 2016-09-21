@@ -3,7 +3,7 @@ package org.meridor.perspective.beans;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class DateTimeAdapter {
+public final class DateTimeAdapter {
 
     public static ZonedDateTime parseDate(String dateTimeString) {
         return ZonedDateTime.parse(dateTimeString);

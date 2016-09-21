@@ -134,6 +134,4 @@ public final class EventFactory {
         return ZonedDateTime.now();
     }
 
-    private EventFactory() {
-    }
 }

@@ -1,15 +1,13 @@
 package org.meridor.perspective.events;
 
 import org.junit.Test;
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.*;
 
 import java.time.ZonedDateTime;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.beans.InstanceState.*;
 import static org.meridor.perspective.events.EventFactory.*;
 
 public class EventFactoryTest {
@@ -54,6 +52,70 @@ public class EventFactoryTest {
         assertThat(event1.getTimestamp(), not(equalTo(event2.getTimestamp())));
         assertThat(event1.getImage(), equalTo(event2.getImage()));
         assertThat(event1.getImage().getTimestamp(), equalTo(timestamp));
+    }
+    
+    @Test
+    public void testInstanceToEvent() {
+        testInstanceToEvent(DELETING, InstanceDeletingEvent.class);
+        testInstanceToEvent(ERROR, InstanceErrorEvent.class);
+        testInstanceToEvent(HARD_REBOOTING, InstanceHardRebootingEvent.class);
+        testInstanceToEvent(LAUNCHED, InstanceLaunchedEvent.class);
+        testInstanceToEvent(LAUNCHING, InstanceLaunchingEvent.class);
+        testInstanceToEvent(MIGRATING, InstanceMigratingEvent.class);
+        testInstanceToEvent(PAUSED, InstancePausedEvent.class);
+        testInstanceToEvent(PAUSING, InstancePausingEvent.class);
+        testInstanceToEvent(QUEUED, InstanceQueuedEvent.class);
+        testInstanceToEvent(REBOOTING, InstanceRebootingEvent.class);
+        testInstanceToEvent(REBUILDING, InstanceRebuildingEvent.class);
+        testInstanceToEvent(RESIZING, InstanceResizingEvent.class);
+        testInstanceToEvent(SHUTOFF, InstanceShutOffEvent.class);
+        testInstanceToEvent(SHUTTING_DOWN, InstanceShuttingDownEvent.class);
+        testInstanceToEvent(SUSPENDING, InstanceSuspendingEvent.class);
+        testInstanceToEvent(SUSPENDED, InstanceSuspendedEvent.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInstanceToEventWrongState() {
+        Instance instance = new Instance();
+        instance.setState(null);
+        instanceToEvent(instance);
+    }
+    
+    private void testInstanceToEvent(InstanceState instanceState, Class<? extends InstanceEvent> cls) {
+        Instance instance = new Instance();
+        instance.setId("test-id");
+        instance.setState(instanceState);
+        InstanceEvent instanceEvent = instanceToEvent(instance);
+        assertThat(instanceEvent, is(instanceOf(cls)));
+        assertThat(instanceEvent.getId(), is(notNullValue()));
+        assertThat(instanceEvent.getTimestamp(), is(notNullValue()));
+        assertThat(instanceEvent.getInstance(), equalTo(instance));
+    }
+    @Test
+    public void testImageToEvent() {
+        testImageToEvent(ImageState.DELETING, ImageDeletingEvent.class);
+        testImageToEvent(ImageState.ERROR, ImageErrorEvent.class);
+        testImageToEvent(ImageState.QUEUED, ImageQueuedEvent.class);
+        testImageToEvent(ImageState.SAVING, ImageSavingEvent.class);
+        testImageToEvent(ImageState.SAVED, ImageSavedEvent.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testImageToEventWrongState() {
+        Image image = new Image();
+        image.setState(null);
+        imageToEvent(image);
+    }
+    
+    private void testImageToEvent(ImageState imageState, Class<? extends ImageEvent> cls) {
+        Image image = new Image();
+        image.setId("test-id");
+        image.setState(imageState);
+        ImageEvent imageEvent = imageToEvent(image);
+        assertThat(imageEvent, is(instanceOf(cls)));
+        assertThat(imageEvent.getId(), is(notNullValue()));
+        assertThat(imageEvent.getTimestamp(), is(notNullValue()));
+        assertThat(imageEvent.getImage(), equalTo(image));
     }
     
 }
