@@ -19,7 +19,7 @@ public class CommandStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return "Select command to launch container with ([$default_answer]):";
+        return "Select command to launch container with ([$defaultAnswer]):";
     }
 
     @Override

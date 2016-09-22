@@ -29,6 +29,6 @@ public class CountStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return "Select instances count ([$default_answer]):";
+        return "Select instances count ([$defaultAnswer]):";
     }
 }
