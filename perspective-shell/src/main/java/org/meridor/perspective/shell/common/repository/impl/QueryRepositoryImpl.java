@@ -22,8 +22,7 @@ import static org.meridor.perspective.shell.common.repository.ApiProvider.proces
 @Component
 public class QueryRepositoryImpl implements QueryRepository {
 
-    @Autowired
-    private ApiProvider apiProvider;
+    private final ApiProvider apiProvider;
     
     private LoadingCache<Query, QueryResult> queryCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
@@ -37,6 +36,11 @@ public class QueryRepositoryImpl implements QueryRepository {
                 }
             );
     
+    @Autowired
+    public QueryRepositoryImpl(ApiProvider apiProvider) {
+        this.apiProvider = apiProvider;
+    }
+
     @Override
     public QueryResult query(Query query) {
         try {

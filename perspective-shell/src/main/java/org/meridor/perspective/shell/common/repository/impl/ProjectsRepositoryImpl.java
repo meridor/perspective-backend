@@ -24,8 +24,12 @@ import java.util.stream.Collectors;
 @Repository
 public class ProjectsRepositoryImpl implements ProjectsRepository {
 
+    private final QueryRepository queryRepository;
+
     @Autowired
-    private QueryRepository queryRepository;
+    public ProjectsRepositoryImpl(QueryRepository queryRepository) {
+        this.queryRepository = queryRepository;
+    }
 
     @Override 
     public List<FindProjectsResult> findProjects(FindProjectsRequest findProjectsRequest) {

@@ -7,7 +7,6 @@ import org.meridor.perspective.shell.common.repository.*;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.*;
 import org.meridor.perspective.sql.*;
-import org.springframework.stereotype.Repository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -15,11 +14,10 @@ import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
-@Repository
 public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository {
 
-    public static final String ONE = "one";
-    public static final String TWO = "two";
+    private static final String ONE = "one";
+    private static final String TWO = "two";
 
     @Override
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {

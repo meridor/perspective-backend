@@ -15,6 +15,7 @@
     </context:component-scan>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     
+    <bean class="org.meridor.perspective.shell.common.validator.TestRepository"/>
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
     <bean class="org.springframework.shell.CommandLine">
         <constructor-arg index="0">

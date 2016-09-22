@@ -46,19 +46,22 @@ public class EntityGenerator {
         Network network = new Network();
         network.setId("test-network");
         network.setName("test-network");
-        network.getSubnets().add(new Subnet(){
+        network.getSubnets().add(getSubnet());
+        network.setState("ACTIVE");
+        return network;
+    }
+
+    public static Subnet getSubnet() {
+        Subnet subnet = new Subnet();
+        subnet.setId("test-subnet");
+        subnet.setName("test-subnet");
+        subnet.setCidr(new Cidr() {
             {
-                setId("test-subnet");
-                setName("test-subnet");
-                setCidr(new Cidr() {
-                    {
-                        setAddress("5.255.210.0");
-                        setPrefixSize(24);
-                    }
-                });
+                setAddress("5.255.210.0");
+                setPrefixSize(24);
             }
         });
-        return network;
+        return subnet;
     }
     
     public static Keypair getKeypair() {

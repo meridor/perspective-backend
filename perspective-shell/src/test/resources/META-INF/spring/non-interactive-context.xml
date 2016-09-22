@@ -8,8 +8,6 @@
 
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:annotation-config/>
-    <context:component-scan base-package="org.meridor.perspective.shell.common;org.meridor.perspective.shell.noninteractive">
-        <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.shell\.common\.validator\.TestRepository"/>
-    </context:component-scan>
+    <context:component-scan base-package="org.meridor.perspective.shell.common;org.meridor.perspective.shell.noninteractive"/>
 
 </beans>
