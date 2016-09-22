@@ -2,8 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective.shell;org.springframework.shell">
@@ -12,6 +13,7 @@
         <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\..*" type="regex" />
         <context:exclude-filter expression="org\.springframework\.shell\.plugin\.support\.DefaultPromptProvider" type="regex" />
     </context:component-scan>
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
     
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
     <bean class="org.springframework.shell.CommandLine">
