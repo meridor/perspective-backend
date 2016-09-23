@@ -5,7 +5,6 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.QueryRepository;
-import org.meridor.perspective.shell.common.request.AddInstancesRequest;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;
 import org.meridor.perspective.shell.common.result.FindInstancesResult;
 import org.meridor.perspective.sql.Data;
@@ -97,9 +96,9 @@ public class InstancesRepositoryImpl implements InstancesRepository {
         return instancesMetadata;
     }
 
-    @Override public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {
+    @Override
+    public Set<String> addInstances(List<Instance> instances) {
         return processRequestOrException(() -> {
-            List<Instance> instances = addInstancesRequest.getPayload();
             Call<ResponseBody> call = apiProvider.getInstancesApi().launch(instances);
             call.execute();
             return Collections.emptySet();

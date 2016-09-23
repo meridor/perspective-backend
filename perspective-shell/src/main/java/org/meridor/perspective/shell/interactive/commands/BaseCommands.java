@@ -171,7 +171,7 @@ public abstract class BaseCommands implements CommandMarker {
             Function<T, String> confirmationMessageProvider,
             Function<T, String[]> confirmationColumnsProvider,
             Function<T, List<String[]>> confirmationRowsProvider,
-            Function<R, Set<String>> task
+            Function<T, Set<String>> task
     ) {
         validateConfirmExecuteShowStatus(
                 request,
@@ -179,7 +179,7 @@ public abstract class BaseCommands implements CommandMarker {
                 confirmationMessageProvider,
                 confirmationColumnsProvider,
                 confirmationRowsProvider,
-                (r, cd) -> r,
+                (r, cd) -> cd,
                 task
         );
     }

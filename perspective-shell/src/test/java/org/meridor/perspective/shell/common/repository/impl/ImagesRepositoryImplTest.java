@@ -72,7 +72,8 @@ public class ImagesRepositoryImplTest {
         AddImagesRequest addImagesRequest = requestProvider.get(AddImagesRequest.class)
                 .withInstanceNames(instance.getName())
                 .withName("something");
-        assertThat(imagesRepository.addImages(addImagesRequest), is(empty()));
+        List<Image> images = addImagesRequest.getPayload();
+        assertThat(imagesRepository.addImages(images), is(empty()));
     }
 
     @Test

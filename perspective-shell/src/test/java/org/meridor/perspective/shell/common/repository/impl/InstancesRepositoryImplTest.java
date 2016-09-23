@@ -102,7 +102,8 @@ public class InstancesRepositoryImplTest {
                 .withNetwork(network.getName())
                 .withKeypair(keypair.getName())
                 .withProject(project.getName());
-        assertThat(instancesRepository.addInstances(addInstancesRequest), is(empty()));
+        List<Instance> instances = addInstancesRequest.getPayload();
+        assertThat(instancesRepository.addInstances(instances), is(empty()));
 
     }
 

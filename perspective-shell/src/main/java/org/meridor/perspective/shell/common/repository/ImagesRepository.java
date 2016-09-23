@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.common.repository;
 
-import org.meridor.perspective.shell.common.request.AddImagesRequest;
+import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;
 import org.meridor.perspective.shell.common.result.FindImagesResult;
 
@@ -12,7 +12,7 @@ public interface ImagesRepository {
     
     List<FindImagesResult> findImages(FindImagesRequest findImagesRequest);
 
-    Set<String> addImages(AddImagesRequest addImagesRequest);
+    Set<String> addImages(List<Image> images);
 
     Set<String> deleteImages(Collection<String> imageIds);
     

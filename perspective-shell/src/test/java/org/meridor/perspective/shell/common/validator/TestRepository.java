@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.common.validator;
 
+import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.framework.EntityGenerator;
@@ -35,7 +37,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public Set<String> addImages(AddImagesRequest addImagesRequest) {
+    public Set<String> addImages(List<Image> images) {
         return Collections.emptySet();
     }
 
@@ -68,7 +70,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
-    public Set<String> addInstances(AddInstancesRequest addInstancesRequest) {
+    public Set<String> addInstances(List<Instance> instances) {
         return Collections.emptySet();
     }
 

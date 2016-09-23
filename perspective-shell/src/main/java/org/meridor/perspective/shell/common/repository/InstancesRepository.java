@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.common.repository;
 
-import org.meridor.perspective.shell.common.request.AddInstancesRequest;
+import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;
 import org.meridor.perspective.shell.common.result.FindInstancesResult;
 
@@ -15,7 +15,7 @@ public interface InstancesRepository {
     
     Map<String, Map<String, String>> getInstancesMetadata(FindInstancesRequest findInstancesRequest);
 
-    Set<String> addInstances(AddInstancesRequest addInstancesRequest);
+    Set<String> addInstances(List<Instance> instances);
 
     Set<String> deleteInstances(Collection<String> instanceIds);
 

@@ -5,7 +5,6 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.QueryRepository;
-import org.meridor.perspective.shell.common.request.AddImagesRequest;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;
 import org.meridor.perspective.shell.common.result.FindImagesResult;
 import org.meridor.perspective.sql.Data;
@@ -52,10 +51,9 @@ public class ImagesRepositoryImpl implements ImagesRepository {
         return new ArrayList<>(resultsMap.values());
     }
 
-    @Override 
-    public Set<String> addImages(AddImagesRequest addImagesRequest) {
+    @Override
+    public Set<String> addImages(List<Image> images) {
         return processRequestOrException(() -> {
-            List<Image> images = addImagesRequest.getPayload();
             Call<ResponseBody> call = apiProvider.getImagesApi().add(images);
             call.execute();
             return Collections.emptySet();
