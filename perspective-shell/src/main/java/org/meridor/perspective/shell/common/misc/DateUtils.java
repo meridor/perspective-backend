@@ -12,9 +12,13 @@ import java.time.format.DateTimeFormatter;
 public class DateUtils {
 
     private static final String DEFAULT_FORMAT_PATTERN = "YYYYMMdd_HHmmss";
-    
+
+    private final SettingsAware settingsAware;
+
     @Autowired
-    private SettingsAware settingsAware;
+    public DateUtils(SettingsAware settingsAware) {
+        this.settingsAware = settingsAware;
+    }
     
     public String formatDate(ZonedDateTime date) {
         return getDateTimeFormatter(getFormatPattern()).format(date);

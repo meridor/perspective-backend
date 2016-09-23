@@ -12,7 +12,6 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.meridor.perspective.api.ObjectMapperFactory;
-import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.QueryResult;
 import org.meridor.perspective.sql.QueryStatus;
@@ -21,6 +20,8 @@ import org.meridor.perspective.sql.Row;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+
+import static org.meridor.perspective.shell.common.repository.ApiProvider.API_SYSTEM_PROPERTY;
 
 @RunWith(Parameterized.class)
 public class NonInteractiveCommandsTest {
@@ -90,7 +91,7 @@ public class NonInteractiveCommandsTest {
             server.enqueue(response);
             server.start();
             String serverUrl = server.url("/").url().toString();
-            System.setProperty(ApiProvider.API_SYSTEM_PROPERTY, serverUrl);
+            System.setProperty(API_SYSTEM_PROPERTY, serverUrl);
         }
     }
 

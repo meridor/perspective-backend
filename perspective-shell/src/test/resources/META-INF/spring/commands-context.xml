@@ -14,7 +14,8 @@
         <context:exclude-filter expression="org\.springframework\.shell\.plugin\.support\.DefaultPromptProvider" type="regex" />
     </context:component-scan>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
-    
+
+    <bean class="org.meridor.perspective.shell.common.repository.impl.ApiProviderImpl"/>
     <bean class="org.meridor.perspective.shell.common.validator.TestRepository"/>
     <bean class="org.springframework.shell.core.JLineShellComponent"/>
     <bean class="org.springframework.shell.CommandLine">

@@ -9,10 +9,19 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective.shell.common.repository;org.meridor.perspective.shell.common.request;org.meridor.perspective.shell.common.events;org.meridor.perspective.shell.common.validator">
         <context:exclude-filter expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\.QueryRepositoryImpl" type="regex" />
+        <context:exclude-filter
+                expression="org\.meridor\.perspective\.shell\.common\.repository\.impl\.ApiProviderImpl"
+                type="regex"/>
+        <context:exclude-filter
+                expression="org\.meridor\.perspective\.shell\.common\.validator\.ExistingEntityValidator"
+                type="regex"/>
     </context:component-scan>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
     <bean class="org.springframework.shell.converters.StringConverter"/>
-    <bean class="org.meridor.perspective.shell.common.validator.MockQueryRepository"/>
+    <bean class="org.meridor.perspective.shell.common.repository.impl.MockQueryRepository"/>
+    <bean class="org.meridor.perspective.shell.common.repository.impl.MockApiProvider"/>
+    <bean class="org.meridor.perspective.shell.common.misc.DateUtils"/>
+    <bean class="org.meridor.perspective.shell.common.repository.impl.AlwaysPassingExistingEntityValidator"/>
     
 </beans>
