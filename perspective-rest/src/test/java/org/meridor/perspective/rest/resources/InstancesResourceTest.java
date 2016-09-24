@@ -7,16 +7,20 @@ import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.client.InstancesApi;
 import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import retrofit2.Call;
 import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -29,10 +33,18 @@ public class InstancesResourceTest extends BaseResourceTest<InstancesApi> {
 
     @Autowired
     private InstancesAware instancesAware;
+
+    @Autowired
+    private ImagesAware imagesAware;
+
+    @Autowired
+    private ProjectsAware projectsAware;
     
     @Before
     public void before() {
         instancesAware.saveInstance(EntityGenerator.getInstance());
+        imagesAware.saveImage(EntityGenerator.getImage());
+        projectsAware.saveProject(EntityGenerator.getProject());
     }
     
     @Test
@@ -62,14 +74,70 @@ public class InstancesResourceTest extends BaseResourceTest<InstancesApi> {
     }
     
     @Test
+    public void testStartInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.start(getInstanceIds()));
+    }
+
+    @Test
+    public void testShutdownInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.shutdown(getInstanceIds()));
+    }
+
+    @Test
+    public void testPauseInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.pause(getInstanceIds()));
+    }
+
+    @Test
+    public void testResumeInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.resume(getInstanceIds()));
+    }
+
+    @Test
+    public void testSuspendInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.suspend(getInstanceIds()));
+    }
+
+    @Test
+    public void testResizeInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.resize(
+                EntityGenerator.getFlavor().getId(),
+                getInstanceIds()
+        ));
+    }
+
+    @Test
+    public void testResizeInstancesMissingFlavor() throws Exception {
+        Response<ResponseBody> response = getApi().resize("missing-id", getInstanceIds()).execute();
+        assertThat(response.code(), equalTo(404));
+    }
+
+    @Test
+    public void testRebuildInstances() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.rebuild(
+                EntityGenerator.getImage().getId(),
+                getInstanceIds()
+        ));
+    }
+
+    @Test
+    public void testRebuildInstancesMissingImage() throws Exception {
+        Response<ResponseBody> response = getApi().rebuild("missing-id", getInstanceIds()).execute();
+        assertThat(response.code(), equalTo(404));
+    }
+
+    @Test
     public void testRebootInstances() throws Exception {
-        Response<ResponseBody> response = getApi().reboot(getInstanceIds()).execute();
-        assertThat(response.isSuccessful(), is(true));
+        testResponseIsSuccessful(instancesApi -> instancesApi.reboot(getInstanceIds()));
     }
     
     @Test
     public void testHardRebootInstances() throws Exception {
-        Response<ResponseBody> response = getApi().hardReboot(getInstanceIds()).execute();
+        testResponseIsSuccessful(instancesApi -> instancesApi.hardReboot(getInstanceIds()));
+    }
+
+    private void testResponseIsSuccessful(Function<InstancesApi, Call<ResponseBody>> action) throws Exception {
+        Response<ResponseBody> response = action.apply(getApi()).execute();
         assertThat(response.isSuccessful(), is(true));
     }
 

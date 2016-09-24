@@ -39,6 +39,41 @@ public class MockApiProvider implements ApiProvider {
             }
 
             @Override
+            public Call<ResponseBody> start(@Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> shutdown(@Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> pause(@Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> resume(@Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> suspend(@Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> resize(@Path("flavorId") String flavorId, @Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
+            public Call<ResponseBody> rebuild(@Path("imageId") String imageId, @Body Collection<String> instanceIds) {
+                return ok();
+            }
+
+            @Override
             public Call<ResponseBody> reboot(@Body Collection<String> instanceIds) {
                 return ok();
             }

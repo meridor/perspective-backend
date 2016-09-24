@@ -42,6 +42,64 @@ public class InstancesResource {
     }
 
     @PUT
+    @Path("/start")
+    @Consumes(APPLICATION_JSON)
+    public Response startInstances(List<String> instanceIds) {
+        instancesService.startInstances(instanceIds);
+        return ok();
+    }
+
+    @PUT
+    @Path("/shutdown")
+    @Consumes(APPLICATION_JSON)
+    public Response shutdownInstances(List<String> instanceIds) {
+        instancesService.shutdownInstances(instanceIds);
+        return ok();
+    }
+
+    @PUT
+    @Path("/pause")
+    @Consumes(APPLICATION_JSON)
+    public Response pauseInstances(List<String> instanceIds) {
+        instancesService.pauseInstances(instanceIds);
+        return ok();
+    }
+
+    @PUT
+    @Path("/resume")
+    @Consumes(APPLICATION_JSON)
+    public Response resumeInstances(List<String> instanceIds) {
+        instancesService.resumeInstances(instanceIds);
+        return ok();
+    }
+
+    @PUT
+    @Path("/suspend")
+    @Consumes(APPLICATION_JSON)
+    public Response suspendInstances(List<String> instanceIds) {
+        instancesService.suspendInstances(instanceIds);
+        return ok();
+    }
+
+    @PUT
+    @Path("/resize/{flavorId}")
+    @Consumes(APPLICATION_JSON)
+    public Response resizeInstances(@PathParam("flavorId") String flavorId, List<String> instanceIds) {
+        boolean flavorExists = instancesService.resizeInstances(flavorId, instanceIds);
+        return flavorExists ?
+                ok() : notFound(String.format("Flavor %s does not exist", flavorId));
+    }
+
+    @PUT
+    @Path("/rebuild/{imageId}")
+    @Consumes(APPLICATION_JSON)
+    public Response rebuildInstances(@PathParam("imageId") String imageId, List<String> instanceIds) {
+        boolean imageExists = instancesService.rebuildInstances(imageId, instanceIds);
+        return imageExists ?
+                ok() : notFound(String.format("Image %s does not exist", imageId));
+    }
+
+    @PUT
     @Path("/reboot")
     @Consumes(APPLICATION_JSON)
     public Response rebootInstances(List<String> instanceIds) {
