@@ -65,23 +65,15 @@ public class FindImagesRequest implements Request<Query> {
 
     @Override
     public Query getPayload() {
-        return getImagePredicate(
-                Optional.ofNullable(ids),
-                Optional.ofNullable(names),
-                Optional.ofNullable(states),
-                Optional.ofNullable(clouds),
-                Optional.ofNullable(projects)
-        );
+        return getQuery();
     }
 
-    private Query getImagePredicate(
-            Optional<Set<String>> ids,
-            Optional<Set<String>> names,
-            Optional<Set<String>> states,
-            Optional<Set<String>> clouds,
-            Optional<Set<String>> projects
-            
-    ) {
+    private Query getQuery() {
+        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
+        Optional<Set<String>> names = Optional.ofNullable(this.names);
+        Optional<Set<String>> states = Optional.ofNullable(this.states);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
+        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "images.id",

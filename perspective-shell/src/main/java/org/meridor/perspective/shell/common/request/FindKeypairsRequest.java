@@ -48,10 +48,13 @@ public class FindKeypairsRequest implements Request<Query> {
 
     @Override
     public Query getPayload() {
-        return getQuery(Optional.ofNullable(names), Optional.ofNullable(clouds), Optional.ofNullable(projects));
+        return getQuery();
     }
 
-    private Query getQuery(Optional<Set<String>> names, Optional<Set<String>> clouds, Optional<Set<String>> projects) {
+    private Query getQuery() {
+        Optional<Set<String>> names = Optional.ofNullable(this.names);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
+        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "keypairs.name",

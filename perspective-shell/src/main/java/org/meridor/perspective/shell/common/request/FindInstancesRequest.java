@@ -90,15 +90,7 @@ public class FindInstancesRequest implements Request<Query> {
 
     @Override
     public Query getPayload() {
-        return getInstanceQuery(
-                Optional.ofNullable(ids),
-                Optional.ofNullable(removeSuffixes(names, getInstanceSuffixes())),
-                Optional.ofNullable(flavors),
-                Optional.ofNullable(images),
-                Optional.ofNullable(states),
-                Optional.ofNullable(clouds),
-                Optional.ofNullable(projects)
-        );
+        return getQuery();
     }
 
     private Set<String> getInstanceSuffixes() {
@@ -108,15 +100,14 @@ public class FindInstancesRequest implements Request<Query> {
         return Collections.emptySet();
     }
     
-    private Query getInstanceQuery(
-            Optional<Set<String>> ids,
-            Optional<Collection<String>> names,
-            Optional<Set<String>> flavors,
-            Optional<Set<String>> images,
-            Optional<Set<String>> states,
-            Optional<Set<String>> clouds,
-            Optional<Set<String>> projects
-    ) {
+    private Query getQuery() {
+        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
+        Optional<Collection<String>> names = Optional.ofNullable(removeSuffixes(this.names, getInstanceSuffixes()));
+        Optional<Set<String>> flavors = Optional.ofNullable(this.flavors);
+        Optional<Set<String>> images = Optional.ofNullable(this.images);
+        Optional<Set<String>> states = Optional.ofNullable(this.states);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
+        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "instances.id",

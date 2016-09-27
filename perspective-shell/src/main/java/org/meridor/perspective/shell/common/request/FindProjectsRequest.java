@@ -47,10 +47,13 @@ public class FindProjectsRequest implements Request<Query> {
 
     @Override
     public Query getPayload() {
-        return getProjectQuery(Optional.ofNullable(ids), Optional.ofNullable(names), Optional.ofNullable(clouds));
+        return getQuery();
     }
 
-    private Query getProjectQuery(Optional<Set<String>> ids, Optional<Set<String>> names, Optional<Set<String>> clouds) {
+    private Query getQuery() {
+        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
+        Optional<Set<String>> names = Optional.ofNullable(this.names);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
         FromClause fromClause = new SelectQuery()
                 .all()
                 .from()
