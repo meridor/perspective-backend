@@ -15,7 +15,7 @@ import java.util.Map;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class EventBusImpl implements EventBus {
     
-    private Map<Class<?>, List<EventListener<Object>>> recipients = new HashMap<>();
+    private final Map<Class<?>, List<EventListener<Object>>> recipients = new HashMap<>();
 
     @Override
     public <T> void addListener(Class<T> eventClass, EventListener<T> listener) {

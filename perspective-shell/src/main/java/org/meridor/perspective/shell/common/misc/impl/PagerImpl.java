@@ -22,7 +22,7 @@ import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 public class PagerImpl implements Pager {
     
     private static final Integer DEFAULT_PAGE_SIZE = 20;
-    public static final String PAGING_MODE_EXTERNAL = "external"; 
+    private static final String PAGING_MODE_EXTERNAL = "external"; 
     
     @Autowired
     private Logger logger;

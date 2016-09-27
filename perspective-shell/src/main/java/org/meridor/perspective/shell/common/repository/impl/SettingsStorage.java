@@ -18,9 +18,9 @@ import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enu
 @Component
 public class SettingsStorage implements FiltersAware, SettingsAware {
     
-    private Map<String, Set<String>> storage = new HashMap<>();
+    private final Map<String, Set<String>> storage = new HashMap<>();
     
-    private Set<Converter> converters = new HashSet<>();
+    private final Set<Converter> converters = new HashSet<>();
     
     @Autowired
     private ApplicationContext applicationContext;

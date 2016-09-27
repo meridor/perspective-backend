@@ -15,7 +15,7 @@ import java.util.logging.Level;
 @Component
 public class MockShell implements Shell {
     
-    private List<String> commands = new ArrayList<>();
+    private final List<String> commands = new ArrayList<>();
     
     @Override
     public void promptLoop() {

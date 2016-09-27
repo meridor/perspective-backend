@@ -1,13 +1,13 @@
 package org.meridor.perspective.shell.common.misc.impl;
 
-import org.meridor.perspective.shell.common.misc.CommandExecuter;
+import org.meridor.perspective.shell.common.misc.CommandExecutor;
 import org.meridor.perspective.shell.common.misc.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.Shell;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CommandExecuterImpl implements CommandExecuter {
+public class CommandExecutorImpl implements CommandExecutor {
     
     @Autowired
     private Shell shell;

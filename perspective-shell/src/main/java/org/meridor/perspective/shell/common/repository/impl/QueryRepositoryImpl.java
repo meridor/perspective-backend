@@ -24,7 +24,7 @@ public class QueryRepositoryImpl implements QueryRepository {
 
     private final ApiProvider apiProvider;
     
-    private LoadingCache<Query, QueryResult> queryCache = CacheBuilder.newBuilder()
+    private final LoadingCache<Query, QueryResult> queryCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
             .maximumSize(100)
             .expireAfterWrite(10, TimeUnit.SECONDS) //This can be converted to shell setting

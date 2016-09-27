@@ -58,7 +58,7 @@ public class NonInteractiveCommandsTest {
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
-    private String[] args;
+    private final String[] args;
 
     private final boolean needsServer;
 

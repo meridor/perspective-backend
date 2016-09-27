@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.interactive.commands;
 
-import org.meridor.perspective.shell.common.misc.CommandExecuter;
+import org.meridor.perspective.shell.common.misc.CommandExecutor;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
@@ -67,7 +67,7 @@ public class ModifyCommands extends BaseCommands {
     private RebuildInstancesWizard rebuildInstancesWizard;
 
     @Autowired
-    private CommandExecuter commandExecuter;
+    private CommandExecutor commandExecutor;
 
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
@@ -188,7 +188,7 @@ public class ModifyCommands extends BaseCommands {
             );
 
         } else if (resizeInstancesWizard.runSteps()) {
-            commandExecuter.execute(resizeInstancesWizard.getCommand());
+            commandExecutor.execute(resizeInstancesWizard.getCommand());
         }
     }
 
@@ -228,7 +228,7 @@ public class ModifyCommands extends BaseCommands {
 
             );
         } else if (rebuildInstancesWizard.runSteps()) {
-            commandExecuter.execute(rebuildInstancesWizard.getCommand());
+            commandExecutor.execute(rebuildInstancesWizard.getCommand());
         }
     }
 

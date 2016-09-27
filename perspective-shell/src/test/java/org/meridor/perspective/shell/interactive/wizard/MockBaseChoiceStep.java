@@ -17,8 +17,6 @@ public class MockBaseChoiceStep extends BaseChoiceStep {
 
     private List<String> validAnswers;
 
-    private ConsoleReader consoleReader;
-
     private String valueToSave;
 
     private List<String> possibleChoices;

@@ -2,7 +2,7 @@ package org.meridor.perspective.shell.common.misc.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.shell.common.misc.CommandExecuter;
+import org.meridor.perspective.shell.common.misc.CommandExecutor;
 import org.meridor.perspective.shell.interactive.TestLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThat;
 
 @ContextConfiguration(locations = "/META-INF/spring/command-executer-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class CommandExecuterImplTest {
+public class CommandExecutorImplTest {
 
     @Autowired
     private TestLogger logger;
@@ -23,11 +23,11 @@ public class CommandExecuterImplTest {
     private MockShell mockShell;
     
     @Autowired
-    private CommandExecuter commandExecuter;
+    private CommandExecutor commandExecutor;
     
     @Test
     public void testExecute() {
-        commandExecuter.execute("some command");
+        commandExecutor.execute("some command");
         assertThat(mockShell.getCommands(), contains("some command"));
         assertThat(logger.getOkMessages(), hasSize(1));
     }

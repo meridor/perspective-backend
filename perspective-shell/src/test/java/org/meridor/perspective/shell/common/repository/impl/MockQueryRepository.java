@@ -9,7 +9,7 @@ import java.util.Queue;
 
 public class MockQueryRepository implements QueryRepository {
 
-    private Queue<QueryResult> queryResult = new LinkedList<>();
+    private final Queue<QueryResult> queryResult = new LinkedList<>();
     
     @Override
     public QueryResult query(Query query) {

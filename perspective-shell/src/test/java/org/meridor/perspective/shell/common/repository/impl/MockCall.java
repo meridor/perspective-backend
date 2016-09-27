@@ -44,7 +44,7 @@ public class MockCall<T> implements Call<T> {
 
     @Override
     public Call<T> clone() {
-        return new MockCall<T>(response);
+        return new MockCall<>(response);
     }
 
     @Override

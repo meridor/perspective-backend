@@ -10,7 +10,7 @@ import static org.meridor.perspective.shell.common.repository.impl.TextUtils.quo
 
 public class CommandBuilder {
     
-    private StringBuilder command;
+    private final StringBuilder command;
     
     public CommandBuilder(String command) {
         this.command = new StringBuilder(command);

@@ -9,11 +9,11 @@ import java.util.List;
 @Component
 public class TestLogger implements Logger {
 
-    private List<String> okMessages = new ArrayList<>();
+    private final List<String> okMessages = new ArrayList<>();
 
-    private List<String> warnMessages = new ArrayList<>();
+    private final List<String> warnMessages = new ArrayList<>();
 
-    private List<String> errorMessages = new ArrayList<>();
+    private final List<String> errorMessages = new ArrayList<>();
 
     @Override
     public void ok() {
