@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import retrofit2.Call;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static java.lang.String.valueOf;
@@ -98,32 +99,95 @@ public class InstancesRepositoryImpl implements InstancesRepository {
 
     @Override
     public Set<String> addInstances(List<Instance> instances) {
-        return processRequestOrException(() -> {
-            Call<ResponseBody> call = apiProvider.getInstancesApi().launch(instances);
-            call.execute();
-            return Collections.emptySet();
-        });
+        return executeAction(
+                (apiProvider, is) -> apiProvider.getInstancesApi().launch(is),
+                instances
+        );
     }
-    
-    @Override public Set<String> deleteInstances(Collection<String> instanceIds) {
-        return processRequestOrException(() -> {
-            Call<ResponseBody> call = apiProvider.getInstancesApi().delete(instanceIds);
-            call.execute();
-            return Collections.emptySet();
-        });
+
+    @Override
+    public Set<String> startInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().start(ids),
+                instanceIds
+        );
     }
-    
-    @Override public Set<String> rebootInstances(Collection<String> instanceIds) {
-        return processRequestOrException(() -> {
-            Call<ResponseBody> call = apiProvider.getInstancesApi().reboot(instanceIds);
-            call.execute();
-            return Collections.emptySet();
-        });
+
+    @Override
+    public Set<String> shutdownInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().shutdown(ids),
+                instanceIds
+        );
     }
-    
-    @Override public Set<String> hardRebootInstances(Collection<String> instanceIds) {
+
+    @Override
+    public Set<String> deleteInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().delete(ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> rebootInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().reboot(ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> rebuildInstances(String imageId, Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().rebuild(imageId, ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> resizeInstances(String flavorId, Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().resize(flavorId, ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> pauseInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().reboot(ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> resumeInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().resume(ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> suspendInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().suspend(ids),
+                instanceIds
+        );
+    }
+
+    @Override
+    public Set<String> hardRebootInstances(Collection<String> instanceIds) {
+        return executeAction(
+                (apiProvider, ids) -> apiProvider.getInstancesApi().hardReboot(ids),
+                instanceIds
+        );
+    }
+
+    private <T> Set<String> executeAction(BiFunction<ApiProvider, T, Call<ResponseBody>> action, T data) {
         return processRequestOrException(() -> {
-            Call<ResponseBody> call = apiProvider.getInstancesApi().hardReboot(instanceIds);
+            Call<ResponseBody> call = action.apply(apiProvider, data);
             call.execute();
             return Collections.emptySet();
         });

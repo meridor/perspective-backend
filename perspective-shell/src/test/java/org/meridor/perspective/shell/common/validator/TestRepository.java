@@ -75,12 +75,47 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
+    public Set<String> startInstances(Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> shutdownInstances(Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
     public Set<String> deleteInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }
 
     @Override
     public Set<String> rebootInstances(Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> rebuildInstances(String imageId, Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> resizeInstances(String flavorId, Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> pauseInstances(Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> resumeInstances(Collection<String> instanceIds) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> suspendInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }
 

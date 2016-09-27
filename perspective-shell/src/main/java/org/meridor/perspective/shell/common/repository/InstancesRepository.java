@@ -17,9 +17,23 @@ public interface InstancesRepository {
 
     Set<String> addInstances(List<Instance> instances);
 
-    Set<String> deleteInstances(Collection<String> instanceIds);
+    Set<String> startInstances(Collection<String> instanceIds);
+
+    Set<String> shutdownInstances(Collection<String> instanceIds);
 
     Set<String> rebootInstances(Collection<String> instanceIds);
 
+    Set<String> rebuildInstances(String imageId, Collection<String> instanceIds);
+
+    Set<String> resizeInstances(String flavorId, Collection<String> instanceIds);
+
+    Set<String> pauseInstances(Collection<String> instanceIds);
+
+    Set<String> resumeInstances(Collection<String> instanceIds);
+
+    Set<String> suspendInstances(Collection<String> instanceIds);
+
     Set<String> hardRebootInstances(Collection<String> instanceIds);
+
+    Set<String> deleteInstances(Collection<String> instanceIds);
 }

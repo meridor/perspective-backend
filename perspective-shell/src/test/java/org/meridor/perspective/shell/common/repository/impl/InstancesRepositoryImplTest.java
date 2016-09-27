@@ -113,6 +113,41 @@ public class InstancesRepositoryImplTest {
     }
 
     @Test
+    public void testStartInstances() {
+        testModificationOperation(instancesRepository::startInstances);
+    }
+
+    @Test
+    public void testShutdownInstances() {
+        testModificationOperation(instancesRepository::shutdownInstances);
+    }
+
+    @Test
+    public void testPauseInstances() {
+        testModificationOperation(instancesRepository::pauseInstances);
+    }
+
+    @Test
+    public void testSuspendInstances() {
+        testModificationOperation(instancesRepository::suspendInstances);
+    }
+
+    @Test
+    public void testResumeInstances() {
+        testModificationOperation(instancesRepository::resumeInstances);
+    }
+
+    @Test
+    public void testRebuildInstances() {
+        assertThat(instancesRepository.rebuildInstances("test-image", Collections.singleton("test-id")), is(empty()));
+    }
+
+    @Test
+    public void testResizeInstances() {
+        assertThat(instancesRepository.resizeInstances("test-flavor", Collections.singleton("test-id")), is(empty()));
+    }
+
+    @Test
     public void testRebootInstances() {
         testModificationOperation(instancesRepository::rebootInstances);
     }

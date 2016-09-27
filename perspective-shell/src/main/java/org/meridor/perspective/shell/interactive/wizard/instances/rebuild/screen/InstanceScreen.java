@@ -1,23 +1,27 @@
-package org.meridor.perspective.shell.interactive.wizard.images.screen;
+package org.meridor.perspective.shell.interactive.wizard.instances.rebuild.screen;
 
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
-import org.meridor.perspective.shell.interactive.wizard.images.step.InstanceStep;
+import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step.InstanceStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
 
-@Component("addImagesInstanceScreen")
+@Component("rebuildInstancesInstanceScreen")
 public class InstanceScreen implements WizardScreen {
-    
+
+    private final InstanceStep instanceStep;
+
+    private final ImageScreen imageScreen;
+
     @Autowired
-    private InstanceStep instanceStep;
-    
-    @Autowired
-    private NameScreen nameScreen;
-    
+    public InstanceScreen(InstanceStep instanceStep, ImageScreen imageScreen) {
+        this.instanceStep = instanceStep;
+        this.imageScreen = imageScreen;
+    }
+
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
         return instanceStep;
@@ -25,7 +29,7 @@ public class InstanceScreen implements WizardScreen {
 
     @Override
     public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
-        return Optional.of(nameScreen);
+        return Optional.of(imageScreen);
     }
-    
+
 }

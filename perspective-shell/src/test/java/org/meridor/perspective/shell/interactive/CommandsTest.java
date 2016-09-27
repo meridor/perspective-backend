@@ -45,6 +45,13 @@ public class CommandsTest {
                 {"delete images test-image"},
                 {"reboot test-instance"},
                 {"reboot test-instance --hard"},
+                {"start test-instance"},
+                {"shutdown test-instance"},
+                {"pause test-instance"},
+                {"suspend test-instance"},
+                {"resume test-instance"},
+                {"resize --flavor test-flavor --instances test-instance"},
+                {"rebuild --image test-image --instances test-instance"},
                 {"select 1 + 1"},
                 {"explain select 1 + 1"},
         });

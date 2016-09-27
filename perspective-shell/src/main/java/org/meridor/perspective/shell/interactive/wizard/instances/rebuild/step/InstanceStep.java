@@ -1,14 +1,14 @@
-package org.meridor.perspective.shell.interactive.wizard.images.step;
+package org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step;
 
 import org.meridor.perspective.shell.interactive.wizard.common.step.AbstractMultipleInstancesStep;
 import org.springframework.stereotype.Component;
 
-@Component("addImagesInstanceStep")
+@Component("rebuildInstancesInstanceStep")
 public class InstanceStep extends AbstractMultipleInstancesStep {
-    
+
     @Override
     public String getMessage() {
-        return "Select instances to create images for:";
+        return "Select instances to rebuild:";
     }
-    
+
 }
