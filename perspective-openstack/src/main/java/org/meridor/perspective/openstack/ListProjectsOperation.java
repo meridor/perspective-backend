@@ -7,6 +7,7 @@ import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.api.OSClient;
+import org.openstack4j.model.compute.AbsoluteLimit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +100,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         addNetworks(project, api);
         addKeyPairs(project, api);
         addAvailabilityZones(project, cloud, region, api);
+        addQuota(project, cloud, region, api);
         return project;
     }
     
@@ -196,6 +198,40 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             keypair.setFingerprint(keyPair.getFingerprint());
             project.getKeypairs().add(keypair);
         }
+    }
+
+    private void addQuota(Project project, Cloud cloud, String region, OSClient api) {
+        Quota quota = new Quota();
+        try {
+            AbsoluteLimit limits = api.compute().quotaSets().limits().getAbsolute();
+            quota.setInstances(formatQuota(limits.getTotalInstancesUsed(), limits.getMaxTotalInstances()));
+            quota.setVcpus(formatQuota(limits.getTotalCoresUsed(), limits.getMaxTotalCores()));
+            quota.setRam(formatQuota(limits.getTotalRAMUsed(), limits.getMaxTotalRAMSize()));
+            quota.setIps(formatQuota(limits.getTotalFloatingIpsUsed(), limits.getMaxTotalFloatingIps()));
+            quota.setSecurityGroups(formatQuota(limits.getTotalSecurityGroupsUsed(), limits.getMaxSecurityGroups()));
+            quota.setVolumes(formatQuota(limits.getMaxTotalVolumes(), limits.getMaxTotalVolumeGigabytes()));
+            quota.setKeypairs(formatQuota(limits.getTotalKeyPairsUsed(), limits.getMaxTotalKeypairs()));
+        } catch (Exception e) {
+            LOG.debug("Failed to fetch quota information for cloud = {}, region = {}", cloud.getName(), region);
+        }
+        project.setQuota(quota);
+    }
+    
+    private String formatQuota(Integer currentValue, Integer maxValue) {
+        if (currentValue == null && maxValue == null) {
+            return null;
+        }
+        return String.format("%s/%s", formatValue(currentValue), formatValue(maxValue));
+    }
+    
+    private String formatValue(Integer value){
+        if (value == null) {
+            return "?";
+        }
+        if (value != -1) {
+            return "inf";
+        }
+        return String.valueOf(value);
     }
 
 }

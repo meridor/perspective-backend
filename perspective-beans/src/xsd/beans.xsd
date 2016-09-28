@@ -137,11 +137,14 @@
     <xsd:element name="image" type="tns:image"/>
 
     <xsd:complexType name="quota">
-        <xsd:attribute name="maxInstances" type="xsd:int"/>
-        <xsd:attribute name="maxVCPUs" type="xsd:int"/>
-        <xsd:attribute name="maxRAM" type="xsd:double"/>
-        <xsd:attribute name="maxFloatingIPs" type="xsd:double"/>
-        <xsd:attribute name="maxSecurityGroups" type="xsd:double"/>
+        <xsd:attribute name="instances" type="xsd:string"/>
+        <xsd:attribute name="vcpus" type="xsd:string"/>
+        <xsd:attribute name="ram" type="xsd:string"/>
+        <xsd:attribute name="disk" type="xsd:string"/>
+        <xsd:attribute name="ips" type="xsd:string"/>
+        <xsd:attribute name="securityGroups" type="xsd:string"/>
+        <xsd:attribute name="volumes" type="xsd:string"/>
+        <xsd:attribute name="keypairs" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="subnets">
@@ -216,6 +219,7 @@
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="availabilityZones" type="tns:availabilityZones"/>
             <xsd:element name="keypairs" type="tns:keypairs"/>
+            <xsd:element name="quota" type="tns:quota"/>
             <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>

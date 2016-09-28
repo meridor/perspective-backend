@@ -53,6 +53,7 @@ public class ProjectsRepositoryImplTest {
         assertThat(result.getName(), equalTo(project.getName()));
         assertThat(result.getCloudId(), equalTo(project.getCloudId()));
         assertThat(result.getCloudType(), equalTo(project.getCloudType()));
+        assertThat(result.getQuota(), equalTo(String.format("Instances: %s", project.getQuota().getInstances())));
     }
 
     @Test

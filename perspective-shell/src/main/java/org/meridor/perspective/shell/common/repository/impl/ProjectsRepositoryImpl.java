@@ -15,10 +15,7 @@ import org.meridor.perspective.sql.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -42,7 +39,19 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                             vf.getString("id"),
                             vf.getString("name"),
                             vf.getString("cloud_id"),
-                            vf.getString("cloud_type")
+                            vf.getString("cloud_type"),
+                            vf.getString(new HashMap<String, String>() {
+                                {
+                                    put("instances", "Instances");
+                                    put("vcpus", "Vcpus");
+                                    put("ram", "RAM");
+                                    put("disk", "Disk");
+                                    put("ips", "IPs");
+                                    put("security_groups", "Security groups");
+                                    put("volumes", "Volumes");
+                                    put("keypairs", "Keypairs");
+                                }
+                            })
                     );
                 })
                 .collect(Collectors.toList());

@@ -6,6 +6,7 @@ import org.meridor.perspective.sql.Row;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -23,6 +24,18 @@ public class ValueFormatterTest {
         
         assertThat(valueFormatter.getString("not-null"), equalTo("value"));
         assertThat(valueFormatter.getString("nullable"), equalTo("-"));
+
+        assertThat(valueFormatter.getString(new HashMap<String, String>() {
+            {
+                put("not-null", "Name");
+                put("nullable", "Anything");
+            }
+        }), equalTo("Name: value"));
+        assertThat(valueFormatter.getString(new HashMap<String, String>() {
+            {
+                put("nullable", "Anything");
+            }
+        }), equalTo("-"));
     }
 
 }

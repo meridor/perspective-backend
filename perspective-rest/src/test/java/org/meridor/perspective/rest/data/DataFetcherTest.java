@@ -232,6 +232,27 @@ public class DataFetcherTest {
     }
     
     @Test
+    public void testFetchProjectQuota() {
+        checkAssertions(TableName.PROJECT_QUOTA, new LinkedHashMap<String, Object>(){
+            {
+                put("project_id", "test-project");
+                put("instances", "instances-quota");
+                put("vcpus", "vcpus-quota");
+            }
+        });
+    }
+
+    @Test
+    public void testFetchProjectQuotaByIds() {
+        checkByIdsAssertions(
+                TableName.PROJECT_QUOTA,
+                new HashSet<>(Arrays.asList("project_id", "instances", "vcpus")),
+                Collections.singleton("test-project"),
+                Collections.singletonMap("test-project", Arrays.asList("test-project", "instances-quota", "vcpus-quota"))
+        );
+    }
+    
+    @Test
     public void testFetchInstances() {
         checkAssertions(TableName.INSTANCES, new LinkedHashMap<String, Object>(){
             {

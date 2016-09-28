@@ -1,6 +1,7 @@
 package org.meridor.perspective.docker;
 
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.Quota;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
@@ -47,6 +48,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Project project = new Project();
         project.setId(idGenerator.getProjectId(cloud));
         project.setName(cloud.getName());
+        project.setQuota(new Quota());
         //Setting now will cause Docker project to sync very often...
         project.setTimestamp(now().minusHours(1));
         return project;

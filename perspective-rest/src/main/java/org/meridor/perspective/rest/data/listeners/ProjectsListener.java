@@ -26,6 +26,7 @@ public class ProjectsListener extends BaseEntityListener<Project> {
     public void onEvent(Project project, Project oldProject, StorageEvent event) {
         updateEntity(event, PROJECTS.getTableName(), project, oldProject);
         updateDerivedEntities(event, PROJECT_METADATA.getTableName(), project, oldProject, ProjectConverters::projectToMetadata);
+        updateDerivedEntities(event, PROJECT_QUOTA.getTableName(), project, oldProject, ProjectConverters::projectToQuota);
         updateDerivedEntities(event, AVAILABILITY_ZONES.getTableName(), project, oldProject, ProjectConverters::projectToAvailabilityZones);
         updateDerivedEntities(event, CLOUDS.getTableName(), project, oldProject, ProjectConverters::projectToCloud);
         updateDerivedEntities(event, FLAVORS.getTableName(), project, oldProject, ProjectConverters::projectToFlavors);

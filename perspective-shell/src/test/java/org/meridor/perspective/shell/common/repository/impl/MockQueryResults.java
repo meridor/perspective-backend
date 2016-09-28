@@ -91,12 +91,18 @@ public final class MockQueryResults {
 
     static QueryResult createMockProjectsResult(Project project) {
         return createQueryResult(
-                Arrays.asList("id", "name", "cloud_id", "cloud_type"),
+                Arrays.asList(
+                        "id", "name", "cloud_id", "cloud_type",
+                        "instances", "vcpus", "ram", "disk", "ips",
+                        "security_groups", "volumes", "keypairs"
+                ),
                 Collections.singletonList(Arrays.asList(
                         project.getId(),
                         project.getName(),
                         project.getCloudId(),
-                        project.getCloudType().value()
+                        project.getCloudType().value(),
+                        project.getQuota().getInstances(),
+                        null, null, null, null, null, null, null
                 ))
         );
     }

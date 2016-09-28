@@ -8,12 +8,14 @@ public class FindProjectsResult {
     private final String name;
     private final String cloudId;
     private final String cloudType;
+    private final String quota;
 
-    public FindProjectsResult(String id, String name, String cloudId, String cloudType) {
+    public FindProjectsResult(String id, String name, String cloudId, String cloudType, String quota) {
         this.id = id;
         this.name = name;
         this.cloudId = cloudId;
         this.cloudType = cloudType;
+        this.quota = quota;
     }
 
     public String getId() {
@@ -30,5 +32,9 @@ public class FindProjectsResult {
 
     public CloudType getCloudType() {
         return CloudType.fromValue(cloudType);
+    }
+
+    public String getQuota() {
+        return quota;
     }
 }

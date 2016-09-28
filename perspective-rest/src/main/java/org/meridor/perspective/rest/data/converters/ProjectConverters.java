@@ -39,6 +39,10 @@ public final class ProjectConverters {
         );
     }
     
+    public static Stream<ExtendedQuota> projectToQuota(Project p) {
+        return Stream.of(new ExtendedQuota(p.getId(), p.getQuota()));
+    }
+
     private ProjectConverters() {
         
     }

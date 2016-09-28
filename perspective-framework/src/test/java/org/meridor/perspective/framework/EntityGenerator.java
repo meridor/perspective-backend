@@ -24,6 +24,7 @@ public class EntityGenerator {
         MetadataMap metadataMap = new MetadataMap();
         metadataMap.put(MetadataKey.REGION, "test-region");
         project.setMetadata(metadataMap);
+        project.setQuota(getQuota());
         return project;
     }
 
@@ -72,6 +73,19 @@ public class EntityGenerator {
         return keypair;
     }
 
+    public static Quota getQuota() {
+        Quota quota = new Quota();
+        quota.setInstances("instances-quota");
+        quota.setVcpus("vcpus-quota");
+        quota.setRam("ram-quota");
+        quota.setDisk("disk-quota");
+        quota.setIps("ips-quota");
+        quota.setSecurityGroups("security-groups-quota");
+        quota.setVolumes("volumes-quota");
+        quota.setKeypairs("keypairs-quota");
+        return quota;
+    }
+    
     public static Image getImage() {
         Image image = new Image();
         image.setId("test-image");

@@ -15,7 +15,8 @@ public enum TableName {
     NETWORK_SUBNETS,
     PROJECTS,
     PROJECT_IMAGES,
-    PROJECT_METADATA;
+    PROJECT_METADATA,
+    PROJECT_QUOTA;
     
     public String getTableName() {
         return name().toLowerCase();

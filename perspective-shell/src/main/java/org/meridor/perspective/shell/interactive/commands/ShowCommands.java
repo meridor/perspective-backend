@@ -47,11 +47,11 @@ public class ShowCommands extends BaseCommands {
                 .withNames(name);
         validateExecuteShowResult(
                 findProjectsRequest,
-                new String[]{"Name", "Cloud"},
+                new String[]{"Name", "Cloud", "Quota"},
                 r -> {
                     List<FindProjectsResult> projects = projectsRepository.findProjects(r);
                     return projects.stream()
-                            .map(p -> new String[]{p.getName(), p.getCloudType().name().toLowerCase()})
+                            .map(p -> new String[]{p.getName(), p.getCloudType().name().toLowerCase(), p.getQuota()})
                             .collect(Collectors.toList());
                 }
         );

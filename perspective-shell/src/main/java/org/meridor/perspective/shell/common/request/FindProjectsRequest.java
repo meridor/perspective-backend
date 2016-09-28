@@ -3,7 +3,7 @@ package org.meridor.perspective.shell.common.request;
 import org.meridor.perspective.shell.common.validator.annotation.Filter;
 import org.meridor.perspective.shell.common.validator.annotation.Pattern;
 import org.meridor.perspective.shell.common.validator.annotation.SupportedCloud;
-import org.meridor.perspective.sql.FromClause;
+import org.meridor.perspective.sql.JoinClause;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.SelectQuery;
 import org.springframework.context.annotation.Scope;
@@ -54,10 +54,14 @@ public class FindProjectsRequest implements Request<Query> {
         Optional<Set<String>> ids = Optional.ofNullable(this.ids);
         Optional<Set<String>> names = Optional.ofNullable(this.names);
         Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
-        FromClause fromClause = new SelectQuery()
+        JoinClause joinClause = new SelectQuery()
                 .all()
                 .from()
-                .table("projects");
+                .table("projects")
+                .innerJoin()
+                .table("project_quota")
+                .on()
+                .equal("projects.project_id", "project_quota.project_id");
         Map<String, Collection<String>> whereMap = new HashMap<>();
         if (ids.isPresent()) {
             whereMap.put("id", ids.get());
@@ -68,11 +72,11 @@ public class FindProjectsRequest implements Request<Query> {
         if (clouds.isPresent()) {
             whereMap.put("cloud_type", clouds.get());
         }
-        return whereMap.isEmpty() ? 
-                fromClause
+        return whereMap.isEmpty() ?
+                joinClause
                         .orderBy().column("name")
                         .getQuery() :
-                fromClause
+                joinClause
                         .where().matches(whereMap)
                         .orderBy().column("name")
                         .getQuery();
