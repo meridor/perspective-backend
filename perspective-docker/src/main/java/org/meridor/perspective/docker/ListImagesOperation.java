@@ -1,6 +1,5 @@
 package org.meridor.perspective.docker;
 
-import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ImageInfo;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
@@ -19,7 +18,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -34,18 +32,14 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private IdGenerator idGenerator;
     
     @Autowired
-    private DockerApiProvider apiProvider;
+    private ApiProvider apiProvider;
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
         try {
-            DockerClient dockerApi = apiProvider.getApi(cloud);
+            Api api = apiProvider.getApi(cloud);
             Set<Image> instances = new HashSet<>();
-            List<com.spotify.docker.client.messages.Image> dockerImages = dockerApi.listImages(DockerClient.ListImagesParam.allImages(false));
-            for (com.spotify.docker.client.messages.Image image : dockerImages) {
-                ImageInfo imageInfo = dockerApi.inspectImage(image.id());
-                instances.add(createImage(image, imageInfo, cloud));
-            }
+            api.listImages((image, imageInfo) -> instances.add(createImage(image, imageInfo, cloud)));
             LOG.debug("Fetched {} images", instances.size());
             consumer.accept(instances);
             return true;

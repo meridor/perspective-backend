@@ -1,8 +1,5 @@
 package org.meridor.perspective.docker;
 
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.Cloud;
@@ -26,7 +23,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     private static final Logger LOG = LoggerFactory.getLogger(AddImageOperation.class);
     
     @Autowired
-    private DockerApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private IdGenerator idGenerator;
@@ -38,23 +35,14 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     public Image perform(Cloud cloud, Supplier<Image> supplier) {
         Image image = supplier.get();
         try {
-            DockerClient dockerApi = apiProvider.getApi(cloud);
+            Api api = apiProvider.getApi(cloud);
             String instanceId = image.getInstanceId();
             Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
             if (!instanceCandidate.isPresent()) {
                 throw new IllegalArgumentException(String.format("Failed to add image: instance with ID = %s does not exist", image.getInstanceId()));
             }
             String instanceRealId = instanceCandidate.get().getRealId();
-            ContainerConfig containerConfig = ContainerConfig.builder().build();
-            ContainerCreation createdImage = dockerApi.commitContainer(
-                    instanceRealId,
-                    image.getName(),
-                    null,
-                    containerConfig,
-                    null,
-                    null
-            );
-            String imageId = createdImage.id();
+            String imageId = api.addImage(instanceRealId, image.getName());
             image.setRealId(imageId);
             String id = idGenerator.getImageId(cloud, imageId);
             image.setId(id);

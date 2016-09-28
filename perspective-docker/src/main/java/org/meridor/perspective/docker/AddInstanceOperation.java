@@ -1,8 +1,5 @@
 package org.meridor.perspective.docker;
 
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
@@ -24,7 +21,7 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
     private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
     @Autowired
-    private DockerApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private IdGenerator idGenerator;
@@ -33,15 +30,10 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {
         Instance instance = supplier.get();
         try {
-            DockerClient dockerApi = apiProvider.getApi(cloud);
+            Api api = apiProvider.getApi(cloud);
             String command = instance.getMetadata().get(MetadataKey.COMMAND);
             String imageId = instance.getImage().getRealId();
-            ContainerConfig containerConfig = ContainerConfig.builder()
-                    .cmd(command)
-                    .image(imageId)
-                    .build();
-            ContainerCreation createdContainer = dockerApi.createContainer(containerConfig, instance.getName());
-            String realId = createdContainer.id();
+            String realId = api.addContainer(imageId, instance.getName(), command);
             instance.setRealId(realId);
             String instanceId = idGenerator.getInstanceId(cloud, realId);
             instance.setId(instanceId);

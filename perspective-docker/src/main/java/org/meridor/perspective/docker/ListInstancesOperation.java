@@ -1,7 +1,5 @@
 package org.meridor.perspective.docker;
 
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.ContainerState;
 import org.meridor.perspective.beans.*;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -36,7 +33,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     private IdGenerator idGenerator;
     
     @Autowired
-    private DockerApiProvider apiProvider;
+    private ApiProvider apiProvider;
 
     @Autowired
     private ProjectsAware projects;
@@ -47,14 +44,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try {
-            DockerClient dockerApi = apiProvider.getApi(cloud);
+            Api api = apiProvider.getApi(cloud);
             Set<Instance> instances = new HashSet<>();
-            List<Container> containers = dockerApi.listContainers(DockerClient.ListContainersParam.allContainers());
-            for (Container container : containers) {
-                ContainerInfo containerInfo = dockerApi.inspectContainer(container.id());
-                instances.add(createInstance(cloud, containerInfo));
-            }
-
+            api.listContainers((
+                    (cld, containerInfo) -> instances.add(createInstance(cld, containerInfo))
+            ));
             LOG.debug("Fetched {} instances for cloud = {}", instances.size(), cloud.getName());
             consumer.accept(instances);
             return true;

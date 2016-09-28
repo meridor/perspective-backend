@@ -1,6 +1,5 @@
 package org.meridor.perspective.docker;
 
-import com.spotify.docker.client.DockerClient;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
@@ -20,15 +19,15 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
 
     @Autowired
-    private DockerApiProvider apiProvider;
+    private ApiProvider apiProvider;
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Image> supplier) {
         try {
-            DockerClient dockerApi = apiProvider.getApi(cloud);
+            Api api = apiProvider.getApi(cloud);
             Image image = supplier.get();
             String imageId = image.getRealId();
-            dockerApi.removeImage(imageId);
+            api.deleteImage(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;
         } catch (Exception e) {
