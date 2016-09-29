@@ -17,8 +17,12 @@ public class ProduceBeanPostProcessor implements BeanPostProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProduceBeanPostProcessor.class);
 
+    private final Storage storage;
+
     @Autowired
-    private Storage storage;
+    public ProduceBeanPostProcessor(Storage storage) {
+        this.storage = storage;
+    }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

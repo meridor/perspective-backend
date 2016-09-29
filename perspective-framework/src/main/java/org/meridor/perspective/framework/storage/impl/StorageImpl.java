@@ -36,13 +36,17 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageImpl.class);
 
-    @Autowired
-    private HazelcastInstance hazelcastInstance;
+    private final HazelcastInstance hazelcastInstance;
     
     @Value("${perspective.storage.lock.timeout:5000}")
     private long lockTimeout;
 
     private volatile boolean isAvailable = true;
+
+    @Autowired
+    public StorageImpl(HazelcastInstance hazelcastInstance) {
+        this.hazelcastInstance = hazelcastInstance;
+    }
 
     @Override
     public boolean isAvailable() {
