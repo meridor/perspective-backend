@@ -2,8 +2,6 @@ package org.meridor.perspective.openstack;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.OperationType;
-import org.openstack4j.api.OSClient;
-import org.openstack4j.model.compute.actions.RebuildOptions;
 import org.springframework.stereotype.Component;
 
 import java.util.function.BiConsumer;
@@ -14,13 +12,8 @@ import static org.meridor.perspective.config.OperationType.REBUILD_INSTANCE;
 public class RebuildInstanceOperation extends BaseInstanceOperation {
 
     @Override
-    protected BiConsumer<OSClient, Instance> getAction() {
-        return (api, instance) -> api.compute().servers().rebuild(
-                instance.getRealId(),
-                RebuildOptions.create()
-                        .image(instance.getImage().getId())
-                        .name(instance.getName())
-        );
+    protected BiConsumer<Api, Instance> getAction() {
+        return (api, instance) -> api.rebuildInstance(instance.getRealId(), instance.getImage().getId());
     }
 
     @Override

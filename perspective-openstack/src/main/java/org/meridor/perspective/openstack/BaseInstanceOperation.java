@@ -6,7 +6,6 @@ import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
-import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +30,11 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
         try {
             Instance instance = supplier.get();
             String region = instance.getMetadata().get(MetadataKey.REGION);
-            OSClient api = apiProvider.getApi(cloud, region);
             if (region == null) {
                 Project project = projectsAware.getProject(instance.getProjectId()).get();
                 region = project.getMetadata().get(MetadataKey.REGION);
             }
-            api.useRegion(region);
+            Api api = apiProvider.getApi(cloud, region);
             getAction().accept(api, instance);
             LOG.debug(getSuccessMessage(instance));
             return true;
@@ -45,8 +43,8 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
             return false;
         }
     }
-    
-    protected abstract BiConsumer<OSClient, Instance> getAction();
+
+    protected abstract BiConsumer<Api, Instance> getAction();
 
     protected abstract String getSuccessMessage(Instance instance);
 

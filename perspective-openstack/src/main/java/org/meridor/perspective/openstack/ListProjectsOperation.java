@@ -6,7 +6,6 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
-import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.AbsoluteLimit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +93,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return new OperationType[]{LIST_PROJECTS};
     }
 
-    private Project processProject(Cloud cloud, String region, OSClient api) {
+    private Project processProject(Cloud cloud, String region, Api api) {
         Project project = createProject(cloud, region);
         addFlavors(project, api);
         addNetworks(project, api);
@@ -122,8 +121,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return String.format("%s_%s", cloud.getName(), region);
     }
 
-    private void addFlavors(Project project, OSClient api) {
-        for (org.openstack4j.model.compute.Flavor flavor : api.compute().flavors().list()) {
+    private void addFlavors(Project project, Api api) {
+        for (org.openstack4j.model.compute.Flavor flavor : api.listFlavors()) {
             Flavor flavorToAdd = new org.meridor.perspective.beans.Flavor();
             flavorToAdd.setId(flavor.getId());
             flavorToAdd.setName(flavor.getName());
@@ -137,8 +136,8 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
 
-    private void addNetworks(Project project, OSClient api) {
-        for (org.openstack4j.model.network.Network network : api.networking().network().list()) {
+    private void addNetworks(Project project, Api api) {
+        for (org.openstack4j.model.network.Network network : api.listNetworks()) {
             Network networkToAdd = new org.meridor.perspective.beans.Network();
             networkToAdd.setId(network.getId());
             networkToAdd.setName(network.getName());
@@ -178,10 +177,10 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
         return cidr;
     }
-    
-    private void addAvailabilityZones(Project project, Cloud cloud, String region, OSClient api) {
+
+    private void addAvailabilityZones(Project project, Cloud cloud, String region, Api api) {
         try {
-            for (org.openstack4j.model.compute.ext.AvailabilityZone az : api.compute().zones().list()) {
+            for (org.openstack4j.model.compute.ext.AvailabilityZone az : api.listAvailabilityZones()) {
                 AvailabilityZone availabilityZone = new AvailabilityZone();
                 availabilityZone.setName(az.getZoneName());
                 project.getAvailabilityZones().add(availabilityZone);
@@ -190,9 +189,9 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             LOG.debug("Failed to fetch availability zone information for cloud = {}, region = {}", cloud.getName(), region);
         }
     }
-    
-    private void addKeyPairs(Project project, OSClient api) {
-        for (org.openstack4j.model.compute.Keypair keyPair : api.compute().keypairs().list()) {
+
+    private void addKeyPairs(Project project, Api api) {
+        for (org.openstack4j.model.compute.Keypair keyPair : api.listKeypairs()) {
             Keypair keypair = new Keypair();
             keypair.setName(keyPair.getName());
             keypair.setFingerprint(keyPair.getFingerprint());
@@ -200,10 +199,10 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
 
-    private void addQuota(Project project, Cloud cloud, String region, OSClient api) {
+    private void addQuota(Project project, Cloud cloud, String region, Api api) {
         Quota quota = new Quota();
         try {
-            AbsoluteLimit limits = api.compute().quotaSets().limits().getAbsolute();
+            AbsoluteLimit limits = api.getQuota();
             quota.setInstances(formatQuota(limits.getTotalInstancesUsed(), limits.getMaxTotalInstances()));
             quota.setVcpus(formatQuota(limits.getTotalCoresUsed(), limits.getMaxTotalCores()));
             quota.setRam(formatQuota(limits.getTotalRAMUsed(), limits.getMaxTotalRAMSize()));

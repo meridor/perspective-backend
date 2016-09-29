@@ -9,10 +9,8 @@ import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
-import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Address;
 import org.openstack4j.model.compute.Server;
-import org.openstack4j.model.compute.VNCConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +58,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 Set<Instance> instances = new HashSet<>();
                 try {
-                    List<? extends org.openstack4j.model.compute.Server> servers = api.compute().servers().list(true);
+                    List<? extends org.openstack4j.model.compute.Server> servers = api.listInstances();
                     servers.forEach(s -> {
                         Instance instance = processInstance(cloud, region, s, api);
                         instances.add(instance);
@@ -89,7 +87,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
-                        Optional<Server> instanceCandidate = Optional.ofNullable(api.compute().servers().get(realId));
+                        Optional<Server> instanceCandidate = api.getInstanceById(realId);
                         if (instanceCandidate.isPresent()) {
                             Server instance = instanceCandidate.get();
                             LOG.debug("Fetched instance {} ({}) for cloud = {}, region = {}", instance.getName(), instance.getId(), cloud.getName(), region);
@@ -131,7 +129,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return new OperationType[]{LIST_INSTANCES};
     }
 
-    private Instance processInstance(Cloud cloud, String region, Server server, OSClient api) {
+    private Instance processInstance(Cloud cloud, String region, Server server, Api api) {
         Instance instance = createInstance(cloud, region, server);
         if (!consoleType.equals(OFF)) {
             addConsoleUrl(instance, api);
@@ -210,11 +208,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         
         return instance;
     }
-    
-    private void addConsoleUrl(Instance instance, OSClient api) {
+
+    private void addConsoleUrl(Instance instance, Api api) {
         try {
-            VNCConsole console = api.compute().servers().getVNCConsole(instance.getRealId(), VNCConsole.Type.value(consoleType));
-            instance.getMetadata().put(MetadataKey.CONSOLE_URL, console.getURL());
+            String consoleUrl = api.getInstanceConsoleUrl(instance.getRealId(), consoleType);
+            instance.getMetadata().put(MetadataKey.CONSOLE_URL, consoleUrl);
         } catch (Exception e) {
             LOG.trace("Failed to fetch console information for instance {} ({})", instance.getName(), instance.getId());
         }

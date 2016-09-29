@@ -2,7 +2,6 @@ package org.meridor.perspective.openstack;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.OperationType;
-import org.openstack4j.api.OSClient;
 import org.springframework.stereotype.Component;
 
 import java.util.function.BiConsumer;
@@ -13,8 +12,8 @@ import static org.meridor.perspective.config.OperationType.RESIZE_INSTANCE;
 public class ResizeInstanceOperation extends BaseInstanceOperation {
 
     @Override
-    protected BiConsumer<OSClient, Instance> getAction() {
-        return (api, instance) -> api.compute().servers().resize(instance.getRealId(), instance.getFlavor().getId());
+    protected BiConsumer<Api, Instance> getAction() {
+        return (api, instance) -> api.resizeInstance(instance.getRealId(), instance.getFlavor().getId());
     }
 
     @Override

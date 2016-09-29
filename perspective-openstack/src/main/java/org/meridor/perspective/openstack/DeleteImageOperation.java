@@ -5,7 +5,6 @@ import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
-import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,9 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
         try {
             Image image = supplier.get();
             String region = image.getMetadata().get(MetadataKey.REGION);
-            OSClient api = apiProvider.getApi(cloud, region);
-            api.useRegion(region);
+            Api api = apiProvider.getApi(cloud, region);
             String imageId = image.getRealId();
-            api.compute().images().delete(imageId);
+            api.deleteImage(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;
         } catch (Exception e) {

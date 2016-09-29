@@ -7,8 +7,6 @@ import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.openstack4j.api.Builders;
-import org.openstack4j.api.OSClient;
-import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.ServerCreate;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 import org.slf4j.Logger;
@@ -44,9 +42,8 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         Project project = projectsAware.getProject(projectId).get();
         try {
             String region = project.getMetadata().get(MetadataKey.REGION);
-            OSClient api = apiProvider.getApi(cloud, region);
-            Server createdServer = api.compute().servers().boot(getServerConfig(instance));
-            String realId = createdServer.getId();
+            Api api = apiProvider.getApi(cloud, region);
+            String realId = api.addInstance(getServerConfig(instance));
             instance.getMetadata().put(MetadataKey.REGION, region);
             instance.setRealId(realId);
             String instanceId = idGenerator.getInstanceId(cloud, realId);

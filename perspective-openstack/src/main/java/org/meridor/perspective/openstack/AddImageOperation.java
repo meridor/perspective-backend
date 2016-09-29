@@ -10,7 +10,6 @@ import org.meridor.perspective.framework.storage.InstancesAware;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
-import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +56,8 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
                 throw new IllegalArgumentException(String.format("Failed to add image: instance with ID = %s does not exist", image.getInstanceId()));
             }
             String instanceRealId = instanceCandidate.get().getRealId();
-            OSClient api = apiProvider.getApi(cloud, region);
-            String realId = api.compute().servers().createSnapshot(instanceRealId, image.getName());
+            Api api = apiProvider.getApi(cloud, region);
+            String realId = api.addImage(instanceRealId, image.getName());
             image.getMetadata().put(MetadataKey.REGION, region);
             image.setRealId(realId);
             String imageId = idGenerator.getImageId(cloud, realId);

@@ -43,7 +43,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 Set<Image> images = new HashSet<>();
                 try {
-                    List<? extends org.openstack4j.model.image.Image> imagesList = api.images().listAll();
+                    List<? extends org.openstack4j.model.image.Image> imagesList = api.listImages();
                     imagesList.forEach(img -> images.add(createOrModifyImage(img, cloud, region)));
                     Integer regionImagesCount = images.size();
                     overallImagesCount.getAndUpdate(c -> c + regionImagesCount);
@@ -69,7 +69,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
-                        Optional<org.openstack4j.model.image.Image> imageCandidate = Optional.ofNullable(api.images().get(realId));
+                        Optional<org.openstack4j.model.image.Image> imageCandidate = api.getImageById(realId);
                         if (imageCandidate.isPresent()) {
                             org.openstack4j.model.image.Image image = imageCandidate.get();
                             LOG.debug("Fetched image {} ({}) for cloud = {}, region = {}", image.getName(), image.getId(), cloud.getName(), region);
