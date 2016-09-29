@@ -13,13 +13,17 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 
 @Component
 public class ImageModificationListener extends LastModificationListener<Image> {
-    
-    @Autowired
-    private ImagesAware imagesAware;
+
+    private final ImagesAware imagesAware;
     
     @Value("${perspective.fetch.delay.images}")
     private int imagesFetchDelay;
     
+    @Autowired
+    public ImageModificationListener(ImagesAware imagesAware) {
+        this.imagesAware = imagesAware;
+    }
+
     @PostConstruct
     public void init() {
         showInfo();

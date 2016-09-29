@@ -15,8 +15,12 @@ public class ReadTasksConsumer extends BaseConsumer {
     @Value("${perspective.messaging.read.consumers}")
     private int parallelConsumers;
 
+    private final WorkerMetadata workerMetadata;
+
     @Autowired
-    private WorkerMetadata workerMetadata;
+    public ReadTasksConsumer(WorkerMetadata workerMetadata) {
+        this.workerMetadata = workerMetadata;
+    }
 
     @Override
     protected int getParallelConsumers() {

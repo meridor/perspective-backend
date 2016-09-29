@@ -44,14 +44,18 @@ public class ImageFSM {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImageFSM.class);
 
-    @Autowired
-    private OperationProcessor operationProcessor;
+    private final OperationProcessor operationProcessor;
+
+    private final CloudConfigurationProvider cloudConfigurationProvider;
+
+    private final ImagesAware imagesAware;
 
     @Autowired
-    private CloudConfigurationProvider cloudConfigurationProvider;
-
-    @Autowired
-    private ImagesAware imagesAware;
+    public ImageFSM(OperationProcessor operationProcessor, ImagesAware imagesAware, CloudConfigurationProvider cloudConfigurationProvider) {
+        this.operationProcessor = operationProcessor;
+        this.imagesAware = imagesAware;
+        this.cloudConfigurationProvider = cloudConfigurationProvider;
+    }
 
     @BeforeTransit
     public void beforeTransit(ImageEvent imageEvent) {

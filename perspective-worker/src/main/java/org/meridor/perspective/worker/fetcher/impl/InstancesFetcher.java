@@ -33,18 +33,22 @@ public class InstancesFetcher extends BaseFetcher {
     @Destination(READ_TASKS)
     private Producer producer;
 
-    @Autowired
-    private OperationProcessor operationProcessor;
+    private final OperationProcessor operationProcessor;
 
-    @Autowired
-    private WorkerMetadata workerMetadata;
+    private final WorkerMetadata workerMetadata;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     
     @Value("${perspective.fetch.delay.instances}")
     private int fullSyncDelay;
-    
+
+    @Autowired
+    public InstancesFetcher(OperationProcessor operationProcessor, WorkerMetadata workerMetadata, ApplicationContext applicationContext) {
+        this.operationProcessor = operationProcessor;
+        this.workerMetadata = workerMetadata;
+        this.applicationContext = applicationContext;
+    }
+
     @IfNotLocked(lockName = "all")
     @Override
     public void fetch(Cloud cloud) {

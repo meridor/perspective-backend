@@ -1,17 +1,21 @@
 package org.meridor.perspective.worker.processor.impl;
 
 import org.meridor.perspective.worker.processor.FSMBuilderAware;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.Yatomata;
 import ru.yandex.qatools.fsm.impl.YatomataImpl;
 
 @Component
-public class FSMBuilderAwareImpl implements FSMBuilderAware, ApplicationContextAware {
+public class FSMBuilderAwareImpl implements FSMBuilderAware {
 
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+
+    @Autowired
+    public FSMBuilderAwareImpl(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public <T> Yatomata.Builder<T> get(Class<T> cls) {
@@ -22,16 +26,11 @@ public class FSMBuilderAwareImpl implements FSMBuilderAware, ApplicationContextA
         return applicationContext.getBean(cls);
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    public class FSMBuilder<T> implements Yatomata.Builder<T> {
+    private class FSMBuilder<T> implements Yatomata.Builder<T> {
 
         private final Class<T> cls;
 
-        public FSMBuilder(Class<T> cls) {
+        FSMBuilder(Class<T> cls) {
             this.cls = cls;
         }
 

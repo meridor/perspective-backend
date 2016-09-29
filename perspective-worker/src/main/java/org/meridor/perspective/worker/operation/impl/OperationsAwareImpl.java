@@ -1,7 +1,8 @@
 package org.meridor.perspective.worker.operation.impl;
 
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.operation.*;
+import org.meridor.perspective.worker.operation.Operation;
+import org.meridor.perspective.worker.operation.OperationsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
@@ -21,10 +22,14 @@ public class OperationsAwareImpl implements OperationsAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(OperationsAwareImpl.class);
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
     private final Map<OperationType, Operation> operationInstances = new HashMap<>();
+
+    @Autowired
+    public OperationsAwareImpl(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @PostConstruct
     private void init() {

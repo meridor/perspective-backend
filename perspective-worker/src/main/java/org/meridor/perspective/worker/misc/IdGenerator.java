@@ -13,15 +13,19 @@ import java.util.UUID;
 
 @Component
 public class IdGenerator {
-    
-    @Autowired
-    private WorkerMetadata workerMetadata;
+
+    private final WorkerMetadata workerMetadata;
 
     @Value("${perspective.storage.id.cache.size:1000}")
     private int cacheSize;
 
     private LimitedSizeMap<String, String> idCache;
-    
+
+    @Autowired
+    public IdGenerator(WorkerMetadata workerMetadata) {
+        this.workerMetadata = workerMetadata;
+    }
+
     public String generate(Class<?> role, String id) {
         String cloudId = workerMetadata.getId();
         String idRole = role.getCanonicalName();

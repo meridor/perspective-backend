@@ -13,13 +13,17 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 
 @Component
 public class InstanceModificationListener extends LastModificationListener<Instance> {
-    
-    @Autowired
-    private InstancesAware instancesAware;
+
+    private final InstancesAware instancesAware;
     
     @Value("${perspective.fetch.delay.instances}")
     private int instancesFetchDelay;
     
+    @Autowired
+    public InstanceModificationListener(InstancesAware instancesAware) {
+        this.instancesAware = instancesAware;
+    }
+
     @PostConstruct
     public void init() {
         showInfo();

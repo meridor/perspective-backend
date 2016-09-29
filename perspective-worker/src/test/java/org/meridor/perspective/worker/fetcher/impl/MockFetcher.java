@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 class MockFetcher extends BaseFetcher {
-    
-    private volatile Map<String, Integer> fetches = new ConcurrentHashMap<>();
+
+    private final Map<String, Integer> fetches = new ConcurrentHashMap<>();
     
     @Override
     public void fetch(Cloud cloud) {

@@ -19,11 +19,15 @@ public class InstancesProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstancesProcessor.class);
 
-    @Autowired
-    private InstancesAware storage;
+    private final InstancesAware instancesAware;
+
+    private final FSMBuilderAware fsmBuilderAware;
 
     @Autowired
-    private FSMBuilderAware fsmBuilderAware;
+    public InstancesProcessor(FSMBuilderAware fsmBuilderAware, InstancesAware instancesAware) {
+        this.fsmBuilderAware = fsmBuilderAware;
+        this.instancesAware = instancesAware;
+    }
 
     @Override
     public void process(Message message) {
@@ -38,7 +42,7 @@ public class InstancesProcessor implements Processor {
 
     private void processInstances(InstanceEvent event) {
         Instance instanceFromEvent = event.getInstance();
-        Optional<Instance> instanceOrEmpty = storage.getInstance(instanceFromEvent.getId());
+        Optional<Instance> instanceOrEmpty = instancesAware.getInstance(instanceFromEvent.getId());
         if (instanceOrEmpty.isPresent()) {
             Instance instance = instanceOrEmpty.get();
             InstanceEvent currentState = instanceToEvent(instance);
@@ -51,7 +55,7 @@ public class InstancesProcessor implements Processor {
                     event.getClass().getSimpleName()
             );
             fsm.fire(event);
-        } else if (event.isSync() && !storage.isInstanceDeleted(instanceFromEvent.getId())) {
+        } else if (event.isSync() && !instancesAware.isInstanceDeleted(instanceFromEvent.getId())) {
             LOG.debug(
                     "Syncing instance {} ({}) with state = {} for the first time",
                     event.getInstance().getName(),

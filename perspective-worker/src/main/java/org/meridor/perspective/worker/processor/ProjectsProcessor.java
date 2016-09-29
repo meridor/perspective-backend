@@ -17,8 +17,12 @@ public class ProjectsProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsProcessor.class);
 
+    private final ProjectsAware projectsAware;
+
     @Autowired
-    private ProjectsAware storage;
+    public ProjectsProcessor(ProjectsAware projectsAware) {
+        this.projectsAware = projectsAware;
+    }
 
     @Override
     public void process(Message message) {
@@ -27,7 +31,7 @@ public class ProjectsProcessor implements Processor {
         if (projectEvent.isPresent() && projectEvent.get() instanceof ProjectSyncEvent) {
             Project project = projectEvent.get().getProject();
             LOG.info("Syncing project state for project {} ({})", project.getName(), project.getId());
-            storage.saveProject(project);
+            projectsAware.saveProject(project);
         } else {
             LOG.error("Skipping empty message {}", message.getId());
         }

@@ -18,9 +18,13 @@ import java.util.function.Supplier;
 public class OperationProcessorImpl implements OperationProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(OperationProcessorImpl.class);
-    
+
+    private final OperationsAware operationsAware;
+
     @Autowired
-    private OperationsAware operationsAware;
+    public OperationProcessorImpl(OperationsAware operationsAware) {
+        this.operationsAware = operationsAware;
+    }
 
     @Override
     public <T> boolean consume(Cloud cloud, OperationType operationType, Consumer<T> consumer) {

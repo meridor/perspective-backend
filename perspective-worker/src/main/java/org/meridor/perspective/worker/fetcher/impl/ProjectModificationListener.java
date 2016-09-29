@@ -13,13 +13,17 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 
 @Component
 public class ProjectModificationListener extends LastModificationListener<Project> {
-    
-    @Autowired
-    private ProjectsAware projectsAware;
+
+    private final ProjectsAware projectsAware;
     
     @Value("${perspective.fetch.delay.projects}")
     private int projectsFetchDelay;
     
+    @Autowired
+    public ProjectModificationListener(ProjectsAware projectsAware) {
+        this.projectsAware = projectsAware;
+    }
+
     @PostConstruct
     public void init() {
         showInfo();

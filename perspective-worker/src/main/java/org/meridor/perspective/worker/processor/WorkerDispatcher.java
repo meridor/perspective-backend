@@ -17,10 +17,14 @@ public class WorkerDispatcher implements Dispatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerDispatcher.class);
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     
     private final Map<Class<?>, Processor> processorsMap = new HashMap<>();
+
+    @Autowired
+    public WorkerDispatcher(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public Optional<Message> dispatch(Message message) {

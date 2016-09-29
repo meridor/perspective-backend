@@ -125,14 +125,18 @@ public class InstanceFSM {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstanceFSM.class);
 
-    @Autowired
-    private OperationProcessor operationProcessor;
+    private final OperationProcessor operationProcessor;
+
+    private final CloudConfigurationProvider cloudConfigurationProvider;
+
+    private final InstancesAware instancesAware;
 
     @Autowired
-    private CloudConfigurationProvider cloudConfigurationProvider;
-
-    @Autowired
-    private InstancesAware instancesAware;
+    public InstanceFSM(OperationProcessor operationProcessor, InstancesAware instancesAware, CloudConfigurationProvider cloudConfigurationProvider) {
+        this.operationProcessor = operationProcessor;
+        this.cloudConfigurationProvider = cloudConfigurationProvider;
+        this.instancesAware = instancesAware;
+    }
 
     @BeforeTransit
     public void beforeTransit(InstanceEvent instanceEvent) {

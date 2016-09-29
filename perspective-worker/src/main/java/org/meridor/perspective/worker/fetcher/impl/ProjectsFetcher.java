@@ -33,18 +33,22 @@ public class ProjectsFetcher extends BaseFetcher {
     @Destination(READ_TASKS)
     private Producer producer;
 
-    @Autowired
-    private OperationProcessor operationProcessor;
+    private final OperationProcessor operationProcessor;
 
-    @Autowired
-    private WorkerMetadata workerMetadata;
+    private final WorkerMetadata workerMetadata;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
     
     @Value("${perspective.fetch.delay.projects}")
     private int fullSyncDelay;
     
+    @Autowired
+    public ProjectsFetcher(OperationProcessor operationProcessor, ApplicationContext applicationContext, WorkerMetadata workerMetadata) {
+        this.operationProcessor = operationProcessor;
+        this.applicationContext = applicationContext;
+        this.workerMetadata = workerMetadata;
+    }
+
     @IfNotLocked(lockName = "all")
     @Override
     public void fetch(Cloud cloud) {

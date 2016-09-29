@@ -33,17 +33,21 @@ public class ImagesFetcher extends BaseFetcher {
     @Destination(READ_TASKS)
     private Producer producer;
 
-    @Autowired
-    private OperationProcessor operationProcessor;
+    private final OperationProcessor operationProcessor;
 
-    @Autowired
-    private WorkerMetadata workerMetadata;
-    
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final WorkerMetadata workerMetadata;
+
+    private final ApplicationContext applicationContext;
     
     @Value("${perspective.fetch.delay.images}")
     private int fullSyncDelay;
+
+    @Autowired
+    public ImagesFetcher(WorkerMetadata workerMetadata, OperationProcessor operationProcessor, ApplicationContext applicationContext) {
+        this.workerMetadata = workerMetadata;
+        this.operationProcessor = operationProcessor;
+        this.applicationContext = applicationContext;
+    }
 
     @IfNotLocked(lockName = "all")
     @Override

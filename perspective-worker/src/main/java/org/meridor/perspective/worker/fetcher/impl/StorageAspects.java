@@ -24,13 +24,17 @@ public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageAspects.class);
 
-    @Autowired
-    private Storage storage;
-    
-    @Autowired
-    private WorkerMetadata workerMetadata;
+    private final Storage storage;
+
+    private final WorkerMetadata workerMetadata;
 
     private boolean isApplicationRunning = true;
+
+    @Autowired
+    public StorageAspects(Storage storage, WorkerMetadata workerMetadata) {
+        this.storage = storage;
+        this.workerMetadata = workerMetadata;
+    }
 
     @Around("@within(org.meridor.perspective.framework.messaging.IfNotLocked) || execution(@org.meridor.perspective.framework.messaging.IfNotLocked * *(..))")
     public Object ifNotLocked(ProceedingJoinPoint joinPoint) throws Throwable {

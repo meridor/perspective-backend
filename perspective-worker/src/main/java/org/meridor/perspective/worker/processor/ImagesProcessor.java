@@ -19,11 +19,16 @@ public class ImagesProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImagesProcessor.class);
 
-    @Autowired
-    private ImagesAware storage;
+    private final FSMBuilderAware fsmBuilderAware;
+
+    private final ImagesAware imagesAware;
 
     @Autowired
-    private FSMBuilderAware fsmBuilderAware;
+    public ImagesProcessor(FSMBuilderAware fsmBuilderAware, ImagesAware imagesAware) {
+        this.imagesAware = imagesAware;
+        this.fsmBuilderAware = fsmBuilderAware;
+    }
+
 
     @Override
     public void process(Message message) {
@@ -38,7 +43,7 @@ public class ImagesProcessor implements Processor {
 
     private void processImages(ImageEvent event) {
         Image imageFromEvent = event.getImage();
-        Optional<Image> imageOrEmpty = storage.getImage(imageFromEvent.getId());
+        Optional<Image> imageOrEmpty = imagesAware.getImage(imageFromEvent.getId());
         if (imageOrEmpty.isPresent()) {
             Image image = imageOrEmpty.get();
             ImageEvent currentState = imageToEvent(image);
@@ -51,7 +56,7 @@ public class ImagesProcessor implements Processor {
                     event.getClass().getSimpleName()
             );
             fsm.fire(event);
-        } else if (event.isSync() && !storage.isImageDeleted(imageFromEvent.getId())) {
+        } else if (event.isSync() && !imagesAware.isImageDeleted(imageFromEvent.getId())) {
             LOG.debug(
                     "Syncing image {} ({}) with state = {} for the first time",
                     event.getImage().getName(),

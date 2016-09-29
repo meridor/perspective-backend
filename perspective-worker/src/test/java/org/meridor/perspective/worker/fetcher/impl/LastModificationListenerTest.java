@@ -82,8 +82,8 @@ public class LastModificationListenerTest {
     }
     
     private static class ModifiableObject {
-        
-        private Instant lastModified = Instant.now();
+
+        private final Instant lastModified = Instant.now();
         
         String getId() {
             return ENTITY_ID;
