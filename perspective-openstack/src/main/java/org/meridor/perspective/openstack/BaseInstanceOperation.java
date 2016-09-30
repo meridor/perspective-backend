@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 @Component
@@ -35,16 +35,21 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
                 region = project.getMetadata().get(MetadataKey.REGION);
             }
             Api api = apiProvider.getApi(cloud, region);
-            getAction().accept(api, instance);
-            LOG.debug(getSuccessMessage(instance));
-            return true;
+            Boolean success = getAction().apply(api, instance);
+            if (success) {
+                LOG.debug(getSuccessMessage(instance));
+                return true;
+            } else {
+                LOG.error(getErrorMessage(instance));
+                return false;
+            }
         } catch (Exception e) {
             LOG.error(getErrorMessage(instance), e);
             return false;
         }
     }
 
-    protected abstract BiConsumer<Api, Instance> getAction();
+    protected abstract BiFunction<Api, Instance, Boolean> getAction();
 
     protected abstract String getSuccessMessage(Instance instance);
 

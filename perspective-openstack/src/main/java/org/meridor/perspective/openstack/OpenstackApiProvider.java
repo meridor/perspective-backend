@@ -38,7 +38,7 @@ public class OpenstackApiProvider {
 
     public void forEachComputeRegion(Cloud cloud, BiConsumer<String, Api> action) {
         Api api = getApi(cloud);
-        Set<String> computeRegions = api.getComputeRegions();
+        Set<String> computeRegions = api.listComputeRegions();
         computeRegions.forEach(cr -> action.accept(cr, new ApiImpl(cloud, cr)));
     }
 
@@ -79,7 +79,7 @@ public class OpenstackApiProvider {
         }
 
         @Override
-        public Set<String> getComputeRegions() {
+        public Set<String> listComputeRegions() {
             return getRegions(ServiceType.COMPUTE);
         }
 
@@ -128,71 +128,71 @@ public class OpenstackApiProvider {
         }
 
         @Override
-        public void deleteInstance(String instanceId) {
-            api.compute().servers().delete(instanceId);
+        public boolean deleteInstance(String instanceId) {
+            return api.compute().servers().delete(instanceId).isSuccess();
         }
 
         @Override
-        public void startInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.START);
+        public boolean startInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.START).isSuccess();
         }
 
         @Override
-        public void shutdownInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.STOP);
+        public boolean shutdownInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.STOP).isSuccess();
         }
 
         @Override
-        public void rebootInstance(String instanceId) {
-            api.compute().servers().reboot(instanceId, RebootType.SOFT);
+        public boolean rebootInstance(String instanceId) {
+            return api.compute().servers().reboot(instanceId, RebootType.SOFT).isSuccess();
         }
 
         @Override
-        public void hardRebootInstance(String instanceId) {
-            api.compute().servers().reboot(instanceId, RebootType.HARD);
+        public boolean hardRebootInstance(String instanceId) {
+            return api.compute().servers().reboot(instanceId, RebootType.HARD).isSuccess();
         }
 
         @Override
-        public void resizeInstance(String instanceId, String flavorId) {
-            api.compute().servers().resize(instanceId, flavorId);
+        public boolean resizeInstance(String instanceId, String flavorId) {
+            return api.compute().servers().resize(instanceId, flavorId).isSuccess();
         }
 
         @Override
-        public void confirmInstanceResize(String instanceId) {
-            api.compute().servers().confirmResize(instanceId);
+        public boolean confirmInstanceResize(String instanceId) {
+            return api.compute().servers().confirmResize(instanceId).isSuccess();
         }
 
         @Override
-        public void revertInstanceResize(String instanceId) {
-            api.compute().servers().revertResize(instanceId);
+        public boolean revertInstanceResize(String instanceId) {
+            return api.compute().servers().revertResize(instanceId).isSuccess();
         }
 
         @Override
-        public void rebuildInstance(String instanceId, String imageId) {
-            api.compute().servers().rebuild(
+        public boolean rebuildInstance(String instanceId, String imageId) {
+            return api.compute().servers().rebuild(
                     instanceId,
                     RebuildOptions.create().image(imageId)
-            );
+            ).isSuccess();
         }
 
         @Override
-        public void pauseInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.PAUSE);
+        public boolean pauseInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.PAUSE).isSuccess();
         }
 
         @Override
-        public void unpauseInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.UNPAUSE);
+        public boolean unpauseInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.UNPAUSE).isSuccess();
         }
 
         @Override
-        public void suspendInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.SUSPEND);
+        public boolean suspendInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.SUSPEND).isSuccess();
         }
 
         @Override
-        public void resumeInstance(String instanceId) {
-            api.compute().servers().action(instanceId, Action.RESUME);
+        public boolean resumeInstance(String instanceId) {
+            return api.compute().servers().action(instanceId, Action.RESUME).isSuccess();
         }
 
         @Override

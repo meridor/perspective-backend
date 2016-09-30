@@ -4,7 +4,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.OperationType;
 import org.springframework.stereotype.Component;
 
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import static org.meridor.perspective.config.OperationType.REBUILD_INSTANCE;
 
@@ -12,7 +12,7 @@ import static org.meridor.perspective.config.OperationType.REBUILD_INSTANCE;
 public class RebuildInstanceOperation extends BaseInstanceOperation {
 
     @Override
-    protected BiConsumer<Api, Instance> getAction() {
+    protected BiFunction<Api, Instance, Boolean> getAction() {
         return (api, instance) -> api.rebuildInstance(instance.getRealId(), instance.getImage().getRealId());
     }
 

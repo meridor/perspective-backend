@@ -12,7 +12,7 @@ public interface Api {
 
     // Project operations
 
-    Set<String> getComputeRegions();
+    Set<String> listComputeRegions();
 
     List<? extends Flavor> listFlavors();
 
@@ -28,31 +28,31 @@ public interface Api {
 
     String addInstance(ServerCreate serverConfig);
 
-    void deleteInstance(String instanceId);
+    boolean deleteInstance(String instanceId);
 
-    void startInstance(String instanceId);
+    boolean startInstance(String instanceId);
 
-    void shutdownInstance(String instanceId);
+    boolean shutdownInstance(String instanceId);
 
-    void rebootInstance(String instanceId);
+    boolean rebootInstance(String instanceId);
 
-    void hardRebootInstance(String instanceId);
+    boolean hardRebootInstance(String instanceId);
 
-    void resizeInstance(String instanceId, String flavorId);
+    boolean resizeInstance(String instanceId, String flavorId);
     
-    void confirmInstanceResize(String instanceId);
+    boolean confirmInstanceResize(String instanceId);
     
-    void revertInstanceResize(String instanceId);
+    boolean revertInstanceResize(String instanceId);
 
-    void rebuildInstance(String instanceId, String imageId);
+    boolean rebuildInstance(String instanceId, String imageId);
 
-    void pauseInstance(String instanceId);
+    boolean pauseInstance(String instanceId);
     
-    void unpauseInstance(String instanceId);
+    boolean unpauseInstance(String instanceId);
+    
+    boolean suspendInstance(String instanceId);
 
-    void suspendInstance(String instanceId);
-
-    void resumeInstance(String instanceId);
+    boolean resumeInstance(String instanceId);
 
     List<? extends Server> listInstances();
 
