@@ -8,6 +8,8 @@ import com.hazelcast.map.listener.*;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +19,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import javax.annotation.PostConstruct;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -32,12 +32,14 @@ import java.util.function.Supplier;
 import static org.meridor.perspective.framework.storage.impl.StorageKey.*;
 
 @Component
-public class StorageImpl implements ApplicationListener<ContextClosedEvent>, InstancesAware, ProjectsAware, ImagesAware, Storage {
+public class StorageImpl implements ApplicationListener<ContextClosedEvent>, InstancesAware, ProjectsAware, ImagesAware, Storage, OperationsRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageImpl.class);
 
     private final HazelcastInstance hazelcastInstance;
-    
+
+    private final Map<CloudType, Set<OperationType>> supportedOperations = new HashMap<>();
+
     @Value("${perspective.storage.lock.timeout:5000}")
     private long lockTimeout;
 
@@ -46,6 +48,11 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
     @Autowired
     public StorageImpl(HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
+    }
+
+    @PostConstruct
+    public void init() {
+        getSupportedOperationsMap().addEntryListener(new OperationsListener(), true);
     }
 
     @Override
@@ -277,10 +284,27 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
         return getMap(DELETED_IMAGES);
     }
 
+    private IMap<CloudType, Set<OperationType>> getSupportedOperationsMap() {
+        return getMap(SUPPORTED_OPERATIONS);
+    }
+
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
         LOG.debug("Marking storage as not available because application context is stopping");
         isAvailable = false;
+    }
+
+    @Override
+    public Set<OperationType> getOperationTypes(CloudType cloudType) {
+        return supportedOperations.getOrDefault(cloudType, Collections.emptySet());
+    }
+
+    @Override
+    public void addOperation(CloudType cloudType, OperationType operationType) {
+        IMap<CloudType, Set<OperationType>> supportedOperationsMap = getSupportedOperationsMap();
+        Set<OperationType> operationTypes = supportedOperationsMap.getOrDefault(cloudType, new HashSet<>());
+        operationTypes.add(operationType);
+        supportedOperationsMap.put(cloudType, operationTypes);
     }
 
     private static class EntryListenerImpl<T> implements 
@@ -323,6 +347,19 @@ public class StorageImpl implements ApplicationListener<ContextClosedEvent>, Ins
             LOG.trace("Modified entity {} in map {}", entity, event.getName());
             listener.onEvent(entity, oldEntity, StorageEvent.MODIFIED);
         }
-    
+
+    }
+
+    private class OperationsListener implements EntryUpdatedListener<CloudType, Set<OperationType>>, EntryAddedListener<CloudType, Set<OperationType>> {
+
+        @Override
+        public void entryUpdated(EntryEvent<CloudType, Set<OperationType>> event) {
+            supportedOperations.putAll(getSupportedOperationsMap());
+        }
+
+        @Override
+        public void entryAdded(EntryEvent<CloudType, Set<OperationType>> event) {
+            supportedOperations.putAll(getSupportedOperationsMap());
+        }
     }
 }

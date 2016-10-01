@@ -7,5 +7,6 @@ public final class StorageKey {
     static final String IMAGES_BY_ID = "images_by_id";
     static final String DELETED_INSTANCES = "deleted-instances";
     static final String DELETED_IMAGES = "deleted-images";
+    static final String SUPPORTED_OPERATIONS = "supported_operations";
 
 }

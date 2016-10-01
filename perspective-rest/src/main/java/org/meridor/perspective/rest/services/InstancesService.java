@@ -1,11 +1,13 @@
 package org.meridor.perspective.rest.services;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
 import org.meridor.perspective.framework.messaging.Destination;
 import org.meridor.perspective.framework.messaging.Producer;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.OperationsRegistry;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +19,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 import static org.meridor.perspective.beans.InstanceState.*;
-import static org.meridor.perspective.config.OperationType.RESUME_INSTANCE;
-import static org.meridor.perspective.config.OperationType.UNPAUSE_INSTANCE;
+import static org.meridor.perspective.config.OperationType.*;
 import static org.meridor.perspective.events.EventFactory.*;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
@@ -36,6 +38,8 @@ public class InstancesService {
 
     private final ProjectsAware projectsAware;
 
+    private final OperationsRegistry operationsRegistry;
+
     @Destination(WRITE_TASKS)
     private Producer producer;
     
@@ -46,11 +50,13 @@ public class InstancesService {
     public InstancesService(
             InstancesAware instancesAware,
             ImagesAware imagesAware,
-            ProjectsAware projectsAware
+            ProjectsAware projectsAware,
+            OperationsRegistry operationsRegistry
     ) {
         this.instancesAware = instancesAware;
         this.imagesAware = imagesAware;
         this.projectsAware = projectsAware;
+        this.operationsRegistry = operationsRegistry;
     }
 
     public Optional<Instance> getInstanceById(String instanceId) {
@@ -86,6 +92,7 @@ public class InstancesService {
     public void startInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                ADD_INSTANCE,
                 i -> {
                     i.setState(STARTING);
                     return i;
@@ -100,6 +107,7 @@ public class InstancesService {
     public void shutdownInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                SHUTDOWN_INSTANCE,
                 i -> {
                     i.setState(SHUTTING_DOWN);
                     return i;
@@ -114,6 +122,7 @@ public class InstancesService {
     public void rebootInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                REBOOT_INSTANCE,
                 i -> {
                     i.setState(REBOOTING);
                     return i;
@@ -128,6 +137,7 @@ public class InstancesService {
     public void hardRebootInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                HARD_REBOOT_INSTANCE,
                 i -> {
                     i.setState(HARD_REBOOTING);
                     return i;
@@ -143,6 +153,7 @@ public class InstancesService {
         return ifImageExists(imageId, image -> instanceIds.forEach(
                 instanceId -> whenInstanceExists(
                         instanceId,
+                        REBOOT_INSTANCE,
                         i -> {
                             i.setImage(image);
                             i.setState(REBUILDING);
@@ -160,6 +171,7 @@ public class InstancesService {
         return ifFlavorExists(flavorId, flavor -> instanceIds.forEach(
                 instanceId -> whenInstanceExists(
                         instanceId,
+                        RESIZE_INSTANCE,
                         i -> {
                             i.setFlavor(flavor);
                             i.setState(RESIZING);
@@ -176,6 +188,7 @@ public class InstancesService {
     public void pauseInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                PAUSE_INSTANCE,
                 i -> {
                     i.setState(PAUSING);
                     return i;
@@ -190,6 +203,7 @@ public class InstancesService {
     public void resumeInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                RESUME_INSTANCE,
                 i -> {
                     i.setState(RESUMING);
                     return i;
@@ -209,6 +223,7 @@ public class InstancesService {
     public void suspendInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                SUSPEND_INSTANCE,
                 i -> {
                     i.setState(SUSPENDING);
                     return i;
@@ -223,6 +238,7 @@ public class InstancesService {
     public void deleteInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
+                DELETE_INSTANCE,
                 i -> {
                     i.setState(DELETING);
                     return i;
@@ -234,14 +250,24 @@ public class InstancesService {
         ));
     }
 
-    private void whenInstanceExists(String instanceId, Function<Instance, Instance> instanceProcessor, Function<Instance, InstanceEvent> eventProvider) {
+    private void whenInstanceExists(String instanceId, OperationType operationType, Function<Instance, Instance> instanceProcessor, Function<Instance, InstanceEvent> eventProvider) {
         Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
         if (instanceCandidate.isPresent()) {
             Instance instance = instanceCandidate.get();
-            InstanceEvent event = eventProvider.apply(instance);
-            Instance updatedInstance = instanceProcessor.apply(instance);
-            instancesAware.saveInstance(updatedInstance);
-            producer.produce(message(instance.getCloudType(), event, maxRetries));
+            Predicate<Instance> instancePredicate = getOperationPredicate(operationType);
+            if (instancePredicate.test(instance)) {
+                InstanceEvent event = eventProvider.apply(instance);
+                Instance updatedInstance = instanceProcessor.apply(instance);
+                instancesAware.saveInstance(updatedInstance);
+                producer.produce(message(instance.getCloudType(), event, maxRetries));
+            } else {
+                LOG.warn(
+                        "Skipping instance {} as \"{}\" operation is not supported for cloud {}",
+                        instanceId,
+                        operationType.value(),
+                        instance.getCloudType()
+                );
+            }
         } else {
             LOG.info("Instance {} not found", instanceId);
         }
@@ -270,6 +296,10 @@ public class InstancesService {
             LOG.info("Flavor {} not found", flavorId);
             return false;
         }
+    }
+
+    private Predicate<Instance> getOperationPredicate(OperationType operationType) {
+        return instance -> operationsRegistry.getOperationTypes(instance.getCloudType()).contains(operationType);
     }
 
 }

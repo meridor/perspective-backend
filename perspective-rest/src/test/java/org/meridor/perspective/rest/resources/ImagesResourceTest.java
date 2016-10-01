@@ -6,8 +6,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.client.ImagesApi;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.framework.storage.OperationsRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,10 +17,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import retrofit2.Response;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @ContextConfiguration(locations = "/META-INF/spring/integration-test-context.xml")
@@ -28,10 +32,15 @@ public class ImagesResourceTest extends BaseResourceTest<ImagesApi> {
 
     @Autowired
     private ImagesAware imagesAware;
-    
+
+    @Autowired
+    private OperationsRegistry operationsRegistry;
+
     @Before
     public void before() {
         imagesAware.saveImage(EntityGenerator.getImage());
+        Arrays.stream(OperationType.values())
+                .forEach(ot -> operationsRegistry.addOperation(MOCK, ot));
     }
     
     @Test

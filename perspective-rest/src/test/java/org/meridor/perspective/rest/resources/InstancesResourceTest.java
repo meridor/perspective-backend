@@ -6,9 +6,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.client.InstancesApi;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.framework.storage.ImagesAware;
 import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.framework.storage.OperationsRegistry;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -18,12 +20,14 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @ContextConfiguration(locations = "/META-INF/spring/integration-test-context.xml")
@@ -39,12 +43,17 @@ public class InstancesResourceTest extends BaseResourceTest<InstancesApi> {
 
     @Autowired
     private ProjectsAware projectsAware;
+
+    @Autowired
+    private OperationsRegistry operationsRegistry;
     
     @Before
     public void before() {
         instancesAware.saveInstance(EntityGenerator.getInstance());
         imagesAware.saveImage(EntityGenerator.getImage());
         projectsAware.saveProject(EntityGenerator.getProject());
+        Arrays.stream(OperationType.values())
+                .forEach(ot -> operationsRegistry.addOperation(MOCK, ot));
     }
     
     @Test

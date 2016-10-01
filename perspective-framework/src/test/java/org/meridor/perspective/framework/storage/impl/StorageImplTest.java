@@ -6,10 +6,7 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.framework.EntityGenerator;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.ProjectsAware;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.framework.storage.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,6 +19,8 @@ import java.util.concurrent.locks.Lock;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.config.CloudType.MOCK;
+import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static org.meridor.perspective.framework.storage.StorageEvent.*;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
@@ -41,7 +40,10 @@ public class StorageImplTest {
     
     @Autowired
     private Storage storage;
-    
+
+    @Autowired
+    private OperationsRegistry operationsRegistry;
+
     @Test
     public void testIsAvailable() {
         assertThat(storage.isAvailable(), is(true));
@@ -150,6 +152,14 @@ public class StorageImplTest {
         assertThat(listener.getEntities(), contains(testProject, anotherProject));
         assertThat(listener.getPreviousEntities(), contains(null, testProject));
         assertThat(listener.getEvents(), contains(ADDED, MODIFIED));
+    }
+
+    @Test
+    public void testOperationsRegistry() throws Exception {
+        assertThat(operationsRegistry.getOperationTypes(MOCK), is(empty()));
+        operationsRegistry.addOperation(MOCK, ADD_IMAGE);
+        Thread.sleep(1000);
+        assertThat(operationsRegistry.getOperationTypes(MOCK), contains(ADD_IMAGE));
     }
     
 }

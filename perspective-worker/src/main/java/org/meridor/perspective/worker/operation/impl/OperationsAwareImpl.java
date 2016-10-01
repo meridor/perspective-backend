@@ -1,6 +1,8 @@
 package org.meridor.perspective.worker.operation.impl;
 
 import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.framework.storage.OperationsRegistry;
+import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.Operation;
 import org.meridor.perspective.worker.operation.OperationsAware;
 import org.slf4j.Logger;
@@ -23,12 +25,18 @@ public class OperationsAwareImpl implements OperationsAware {
     private static final Logger LOG = LoggerFactory.getLogger(OperationsAwareImpl.class);
 
     private final ApplicationContext applicationContext;
+    
+    private final OperationsRegistry operationsRegistry;
+    
+    private final WorkerMetadata workerMetadata;
 
     private final Map<OperationType, Operation> operationInstances = new HashMap<>();
 
     @Autowired
-    public OperationsAwareImpl(ApplicationContext applicationContext) {
+    public OperationsAwareImpl(ApplicationContext applicationContext, OperationsRegistry operationsRegistry, WorkerMetadata workerMetadata) {
         this.applicationContext = applicationContext;
+        this.operationsRegistry = operationsRegistry;
+        this.workerMetadata = workerMetadata;
     }
 
     @PostConstruct
@@ -38,6 +46,7 @@ public class OperationsAwareImpl implements OperationsAware {
             final Operation realBean = getRealBean(bean);
             Arrays.stream(realBean.getTypes()).forEach(t -> {
                 operationInstances.put(t, realBean);
+                operationsRegistry.addOperation(workerMetadata.getCloudType(), t);
                 LOG.debug(
                         "Added operation class {} with operation type = {}",
                         realBean.getClass().getCanonicalName(),

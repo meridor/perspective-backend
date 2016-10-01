@@ -3,6 +3,8 @@ package org.meridor.perspective.framework.messaging;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.*;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 import static org.meridor.perspective.framework.storage.StorageEvent.*;
 
 @Component
-public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, Storage {
+public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, Storage, OperationsRegistry {
 
     private volatile Map<String, Lock> locks = new ConcurrentHashMap<>();
     private volatile Map<String, BlockingQueue<?>> queues = new ConcurrentHashMap<>();
@@ -32,6 +34,7 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
     private List<EntityListener<Project>> projectListeners = new ArrayList<>();
     private List<EntityListener<Image>> imageListeners = new ArrayList<>();
     private List<EntityListener<Instance>> instanceListeners = new ArrayList<>();
+    private Map<CloudType, Set<OperationType>> operations = new HashMap<>();
     
     @Override
     public boolean imageExists(String imageId) {
@@ -221,4 +224,14 @@ public class TestStorage implements InstancesAware, ProjectsAware, ImagesAware, 
         return function.apply(map);
     }
 
+    @Override
+    public Set<OperationType> getOperationTypes(CloudType cloudType) {
+        return operations.getOrDefault(cloudType, Collections.emptySet());
+    }
+
+    @Override
+    public void addOperation(CloudType cloudType, OperationType operationType) {
+        operations.putIfAbsent(cloudType, new HashSet<>());
+        operations.get(cloudType).add(operationType);
+    }
 }
