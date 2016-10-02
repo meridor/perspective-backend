@@ -31,6 +31,7 @@
         <yatomata.version>1.7</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
         <undertow.version>1.4.0.Final</undertow.version>
+        <digitalocean-api-client.version>2.7</digitalocean-api-client.version>
     </properties>
 
     <modules>
@@ -45,6 +46,7 @@
         <module>perspective-docker</module>
         <module>perspective-shell</module>
         <module>perspective-api-common</module>
+        <module>perspective-digital-ocean</module>
     </modules>
 
     <dependencyManagement>
