@@ -4,6 +4,8 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.Network;
+import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.*;
 import org.meridor.perspective.shell.common.request.*;
@@ -14,9 +16,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.meridor.perspective.config.CloudType.MOCK;
+import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
-public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository {
+public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository, ServiceRepository {
 
     private static final String ONE = "one";
     private static final String TWO = "two";
@@ -301,5 +305,10 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
                 setData(data);
             }
         };
+    }
+
+    @Override
+    public Map<CloudType, Set<OperationType>> getSupportedOperations() {
+        return Collections.singletonMap(MOCK, Collections.singleton(ADD_IMAGE));
     }
 }

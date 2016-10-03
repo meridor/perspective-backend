@@ -1,9 +1,6 @@
 package org.meridor.perspective.shell.common.repository.impl;
 
-import org.meridor.perspective.client.ApiAware;
-import org.meridor.perspective.client.ImagesApi;
-import org.meridor.perspective.client.InstancesApi;
-import org.meridor.perspective.client.QueryApi;
+import org.meridor.perspective.client.*;
 import org.meridor.perspective.shell.common.misc.HumanReadableException;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.shell.common.repository.SettingsAware;
@@ -38,6 +35,11 @@ public class ApiProviderImpl implements ApiProvider {
     @Override
     public QueryApi getQueryApi() {
         return getApiOrException(() -> ApiAware.withUrl(getBaseUri()).get(QueryApi.class));
+    }
+
+    @Override
+    public ServiceApi getServiceApi() {
+        return getApiOrException(() -> ApiAware.withUrl(getBaseUri()).get(ServiceApi.class));
     }
 
     private <T> T getApiOrException(Callable<T> apiSupplier) {

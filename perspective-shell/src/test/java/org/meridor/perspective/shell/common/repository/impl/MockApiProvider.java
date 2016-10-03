@@ -7,6 +7,9 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.client.ImagesApi;
 import org.meridor.perspective.client.InstancesApi;
 import org.meridor.perspective.client.QueryApi;
+import org.meridor.perspective.client.ServiceApi;
+import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.sql.QueryResult;
@@ -14,9 +17,10 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Path;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
+import static org.meridor.perspective.config.CloudType.MOCK;
+import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static retrofit2.Response.success;
 
 public class MockApiProvider implements ApiProvider {
@@ -114,6 +118,26 @@ public class MockApiProvider implements ApiProvider {
     @Override
     public QueryApi getQueryApi() {
         return queries -> new MockCall<>(success(queryResults));
+    }
+
+    @Override
+    public ServiceApi getServiceApi() {
+        return new ServiceApi() {
+            @Override
+            public Call<String> version() {
+                return ok("devel");
+            }
+
+            @Override
+            public Call<ResponseBody> ping() {
+                return ok();
+            }
+
+            @Override
+            public Call<Map<CloudType, Set<OperationType>>> getSupportedOperations() {
+                return ok(Collections.singletonMap(MOCK, Collections.singleton(ADD_IMAGE)));
+            }
+        };
     }
 
     @Override

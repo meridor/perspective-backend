@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.common.repository;
 import org.meridor.perspective.client.ImagesApi;
 import org.meridor.perspective.client.InstancesApi;
 import org.meridor.perspective.client.QueryApi;
+import org.meridor.perspective.client.ServiceApi;
 import org.meridor.perspective.shell.common.misc.HumanReadableException;
 
 import java.util.concurrent.Callable;
@@ -16,6 +17,8 @@ public interface ApiProvider {
     ImagesApi getImagesApi();
 
     QueryApi getQueryApi();
+    
+    ServiceApi getServiceApi();
 
     String getBaseUri();
 
