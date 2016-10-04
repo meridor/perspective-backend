@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.common.validator.impl;
 import org.meridor.perspective.shell.common.validator.FilterProcessor;
 import org.meridor.perspective.shell.common.validator.ObjectValidator;
 import org.meridor.perspective.shell.common.validator.Validator;
+import org.meridor.perspective.shell.common.validator.annotation.Name;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -55,18 +56,20 @@ public class ObjectValidatorImpl implements ObjectValidator {
     
     private Set<String> validateField(Validator v, Object object, Object value, java.lang.reflect.Field f) {
         Set<String> errors = new HashSet<>();
-        String filterName = f.getName();
+        String fieldName = f.isAnnotationPresent(Name.class) ?
+                f.getAnnotation(Name.class).value() :
+                f.getName();
         Annotation annotation = f.getAnnotation(v.getAnnotationClass());
         if (value != null && isSet(value.getClass())) {
             Set<?> set = Set.class.cast(value);
             set.forEach(val -> {
                 if (!v.validate(object, annotation, val)) {
-                    errors.add(v.getMessage(annotation, filterName, value));
+                    errors.add(v.getMessage(annotation, fieldName, value));
                 }
             });
         } else {
             if (!v.validate(object, annotation, value)) {
-                errors.add(v.getMessage(annotation, filterName, value));
+                errors.add(v.getMessage(annotation, fieldName, value));
             }
         }
         return errors;

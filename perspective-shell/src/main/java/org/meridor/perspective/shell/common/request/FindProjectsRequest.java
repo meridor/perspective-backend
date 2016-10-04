@@ -19,29 +19,29 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Component
 @Scope(SCOPE_PROTOTYPE)
 public class FindProjectsRequest implements Request<Query> {
-    
-    private Set<String> ids;
+
+    private Set<String> id;
     
     @Pattern
     @Filter(PROJECTS)
-    private Set<String> names;
+    private Set<String> name;
     
     @SupportedCloud
     @Filter(CLOUDS)
-    private Set<String> clouds;
+    private Set<String> cloud;
 
     public FindProjectsRequest withNames(String names) {
-        this.names = parseEnumeration(names);
+        this.name = parseEnumeration(names);
         return this;
     }
     
     public FindProjectsRequest withIds(String ids) {
-        this.ids = parseEnumeration(ids);
+        this.id = parseEnumeration(ids);
         return this;
     }
     
     public FindProjectsRequest withClouds(String clouds) {
-        this.clouds = parseEnumeration(clouds);
+        this.cloud = parseEnumeration(clouds);
         return this;
     }
 
@@ -51,9 +51,9 @@ public class FindProjectsRequest implements Request<Query> {
     }
 
     private Query getQuery() {
-        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
-        Optional<Set<String>> names = Optional.ofNullable(this.names);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
+        Optional<Set<String>> ids = Optional.ofNullable(this.id);
+        Optional<Set<String>> names = Optional.ofNullable(this.name);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
         JoinClause joinClause = new SelectQuery()
                 .all()
                 .from()

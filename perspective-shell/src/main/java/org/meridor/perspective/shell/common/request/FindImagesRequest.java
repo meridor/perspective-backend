@@ -24,19 +24,19 @@ public class FindImagesRequest implements Request<Query> {
     
     @Pattern
     @Filter(IMAGE_NAMES)
-    private Set<String> names;
+    private Set<String> name;
 
     @SupportedImageState
     @Filter(IMAGE_STATES)
-    private Set<String> states;
+    private Set<String> state;
 
     @SupportedCloud
     @Filter(CLOUDS)
-    private Set<String> clouds;
+    private Set<String> cloud;
 
     @Pattern
     @Filter(PROJECTS)
-    private Set<String> projects;
+    private Set<String> project;
     
     public FindImagesRequest withIds(String imageIds) {
         this.ids = parseEnumeration(imageIds);
@@ -44,22 +44,22 @@ public class FindImagesRequest implements Request<Query> {
     }
     
     public FindImagesRequest withNames(String names) {
-        this.names = parseEnumeration(names);
+        this.name = parseEnumeration(names);
         return this;
     }
 
     public FindImagesRequest withStates(String states) {
-        this.states = parseEnumeration(states);
+        this.state = parseEnumeration(states);
         return this;
     }
 
     public FindImagesRequest withClouds(String cloudNames) {
-        this.clouds = parseEnumeration(cloudNames);
+        this.cloud = parseEnumeration(cloudNames);
         return this;
     }
 
     public FindImagesRequest withProjects(String projectNames) {
-        this.projects = parseEnumeration(projectNames);
+        this.project = parseEnumeration(projectNames);
         return this;
     }
 
@@ -70,10 +70,10 @@ public class FindImagesRequest implements Request<Query> {
 
     private Query getQuery() {
         Optional<Set<String>> ids = Optional.ofNullable(this.ids);
-        Optional<Set<String>> names = Optional.ofNullable(this.names);
-        Optional<Set<String>> states = Optional.ofNullable(this.states);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
-        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
+        Optional<Set<String>> names = Optional.ofNullable(this.name);
+        Optional<Set<String>> states = Optional.ofNullable(this.state);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
+        Optional<Set<String>> projects = Optional.ofNullable(this.project);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "images.id",

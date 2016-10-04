@@ -26,65 +26,65 @@ public class FindInstancesRequest implements Request<Query> {
 
     @Autowired
     private SettingsAware settingsAware;
-    
-    private Set<String> ids;
+
+    private Set<String> id;
 
     @Pattern
     @Filter(INSTANCE_NAMES)
-    private Set<String> names;
+    private Set<String> name;
     
     @Pattern
     @Filter(FLAVOR_NAMES)
-    private Set<String> flavors;
+    private Set<String> flavor;
     
     @Pattern
     @Filter(IMAGE_NAMES)
-    private Set<String> images;
+    private Set<String> image;
     
     @SupportedInstanceState
     @Filter(INSTANCE_STATES)
-    private Set<String> states;
+    private Set<String> state;
     
     @SupportedCloud
     @Filter(CLOUDS)
-    private Set<String> clouds;
+    private Set<String> cloud;
 
     @Pattern
     @Filter(PROJECTS)
-    private Set<String> projects;
+    private Set<String> project;
     
     public FindInstancesRequest withIds(String ids) {
-        this.ids = parseEnumeration(ids);
+        this.id = parseEnumeration(ids);
         return this;
     }
     
     public FindInstancesRequest withNames(String names) {
-        this.names = parseEnumeration(names);
+        this.name = parseEnumeration(names);
         return this;
     }
     
     public FindInstancesRequest withClouds(String clouds) {
-        this.clouds = parseEnumeration(clouds);
+        this.cloud = parseEnumeration(clouds);
         return this;
     }
     
     public FindInstancesRequest withProjectNames(String projects) {
-        this.projects = parseEnumeration(projects);
+        this.project = parseEnumeration(projects);
         return this;
     }
     
     public FindInstancesRequest withImages(String images) {
-        this.images = parseEnumeration(images);
+        this.image = parseEnumeration(images);
         return this;
     }
     
     public FindInstancesRequest withFlavors(String flavors) {
-        this.flavors = parseEnumeration(flavors);
+        this.flavor = parseEnumeration(flavors);
         return this;
     }
     
     public FindInstancesRequest withStates(String states) {
-        this.states = parseEnumeration(states);
+        this.state = parseEnumeration(states);
         return this;
     }
 
@@ -101,13 +101,13 @@ public class FindInstancesRequest implements Request<Query> {
     }
     
     private Query getQuery() {
-        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
-        Optional<Collection<String>> names = Optional.ofNullable(removeSuffixes(this.names, getInstanceSuffixes()));
-        Optional<Set<String>> flavors = Optional.ofNullable(this.flavors);
-        Optional<Set<String>> images = Optional.ofNullable(this.images);
-        Optional<Set<String>> states = Optional.ofNullable(this.states);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
-        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
+        Optional<Set<String>> ids = Optional.ofNullable(this.id);
+        Optional<Collection<String>> names = Optional.ofNullable(removeSuffixes(this.name, getInstanceSuffixes()));
+        Optional<Set<String>> flavors = Optional.ofNullable(this.flavor);
+        Optional<Set<String>> images = Optional.ofNullable(this.image);
+        Optional<Set<String>> states = Optional.ofNullable(this.state);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
+        Optional<Set<String>> projects = Optional.ofNullable(this.project);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "instances.id",

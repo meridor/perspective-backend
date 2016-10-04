@@ -6,12 +6,15 @@ import org.meridor.perspective.beans.BooleanRelation;
 import org.meridor.perspective.shell.common.validator.Field;
 import org.meridor.perspective.shell.common.validator.ObjectValidator;
 import org.meridor.perspective.shell.common.validator.annotation.Filter;
+import org.meridor.perspective.shell.common.validator.annotation.Name;
 import org.meridor.perspective.shell.common.validator.annotation.RelativeToNumber;
 import org.meridor.perspective.shell.common.validator.annotation.Required;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +40,9 @@ public class ObjectValidatorImplTest {
     @Test
     public void testInvalidObject() throws Exception {
         ObjectToValidate validObject = new ObjectToValidate();
-        assertThat(objectValidator.validate(validObject), hasSize(1));
+        List<String> errors = new ArrayList<>(objectValidator.validate(validObject));
+        assertThat(errors, hasSize(1));
+        assertThat(errors.get(0).contains("customName"), is(true));
     }
 
     @Test
@@ -71,6 +76,7 @@ public class ObjectValidatorImplTest {
 
     private static class ObjectToValidate {
 
+        @Name("customName")
         @Required
         private String requiredField;
 

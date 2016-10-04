@@ -21,28 +21,28 @@ public class FindNetworksRequest implements Request<Query> {
     
     @Pattern
     @Filter(NETWORK_NAMES)
-    private Set<String> names;
+    private Set<String> name;
 
     @SupportedCloud
     @Filter(CLOUDS)
-    private Set<String> clouds;
+    private Set<String> cloud;
 
     @Pattern
     @Filter(PROJECTS)
-    private Set<String> projects;
+    private Set<String> project;
 
     public FindNetworksRequest withNames(String name) {
-        this.names = parseEnumeration(name);
+        this.name = parseEnumeration(name);
         return this;
     }
 
     public FindNetworksRequest withProjects(String projects) {
-        this.projects = parseEnumeration(projects);
+        this.project = parseEnumeration(projects);
         return this;
     }
 
     public FindNetworksRequest withClouds(String clouds) {
-        this.clouds = parseEnumeration(clouds);
+        this.cloud = parseEnumeration(clouds);
         return this;
     }
 
@@ -52,9 +52,9 @@ public class FindNetworksRequest implements Request<Query> {
     }
 
     private Query getQuery() {
-        Optional<Set<String>> names = Optional.ofNullable(this.names);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.clouds);
-        Optional<Set<String>> projects = Optional.ofNullable(this.projects);
+        Optional<Set<String>> names = Optional.ofNullable(this.name);
+        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
+        Optional<Set<String>> projects = Optional.ofNullable(this.project);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "networks.id",

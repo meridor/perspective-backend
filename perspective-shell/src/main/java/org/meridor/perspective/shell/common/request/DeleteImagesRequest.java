@@ -28,7 +28,7 @@ public class DeleteImagesRequest implements Request<List<String>> {
     
     @Filter(Field.CLOUDS)
     @SupportedCloud
-    private String clouds;
+    private String cloud;
 
     @Autowired
     private RequestProvider requestProvider;
@@ -39,7 +39,7 @@ public class DeleteImagesRequest implements Request<List<String>> {
     }
     
     public DeleteImagesRequest withClouds(String clouds) {
-        this.clouds = clouds;
+        this.cloud = clouds;
         return this;
     }
 
@@ -47,7 +47,7 @@ public class DeleteImagesRequest implements Request<List<String>> {
     public List<String> getPayload() {
         return imagesRepository.findImages(requestProvider.get(FindImagesRequest.class)
                     .withNames(names)
-                    .withClouds(clouds))
+                .withClouds(cloud))
                 .stream().map(FindImagesResult::getId)
                 .collect(Collectors.toList());
     }

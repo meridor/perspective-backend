@@ -6,12 +6,16 @@ import org.meridor.perspective.shell.common.misc.DateUtils;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.impl.Placeholder;
 import org.meridor.perspective.shell.common.result.FindInstancesResult;
+import org.meridor.perspective.shell.common.validator.annotation.Name;
 import org.meridor.perspective.shell.common.validator.annotation.Required;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.meridor.perspective.events.EventFactory.now;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.replacePlaceholders;
@@ -21,9 +25,11 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class AddImagesRequest implements Request<List<Image>> {
 
+    @Name("instances")
     @Required
     private String instanceNames;
     
+    @Name("name")
     @Required
     private String imageName;
     
