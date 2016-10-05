@@ -60,7 +60,7 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
+                        <artifactId>maven-assembly-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <groupId>com.spotify</groupId>
