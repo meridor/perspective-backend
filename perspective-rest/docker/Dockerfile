@@ -6,7 +6,7 @@ ENV LANG en_US.UTF-8
 
 EXPOSE 8080
 
-COPY lib /usr/share/perspective/perspective-rest
+COPY lib /usr/share/perspective/perspective-rest/lib
 COPY ${project.build.finalName}.jar usr/share/perspective/perspective-rest
 
 COPY entrypoint.sh /

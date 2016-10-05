@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 GC_OPTS=${GC_OPTS:-"-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled"}
 MEMORY_OPTS=${MEMORY_OPTS:-"-Xmx256m"}
@@ -7,4 +7,4 @@ MISC_OPTS=${MISC_OPTS:-""}
 
 JAVA_ARGS="$GC_OPTS $MEMORY_OPTS $NETWORK_OPTS $MISC_OPTS"
 
-java $JAVA_ARGS -jar /usr/share/perspective/perspective-docker/${project.build.finalName}.jar >> /var/log/perspective/perspective-docker.log 2>&1
+java $JAVA_ARGS -jar /usr/share/perspective/perspective-docker/${project.build.finalName}.jar >> /var/log/perspective-docker.log 2>&1

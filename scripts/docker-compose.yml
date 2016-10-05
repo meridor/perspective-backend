@@ -3,13 +3,13 @@ services:
   storage:
     image: meridor/perspective-storage:${VERSION}
     volumes:
-      - /var/log/perspective/perspective-storage.log:/var/log/perspective/perspective-storage.log
+      - /var/log/perspective-storage.log:/var/log/perspective/perspective-storage.log
   rest:
     image: meridor/perspective-rest:${VERSION}
     ports:
      - "8080:8080"    
     volumes:
-      - /var/log/perspective/perspective-rest.log:/var/log/perspective/perspective-rest.log
+      - /var/log/perspective-rest.log:/var/log/perspective/perspective-rest.log
     links:
       - storage
     environment:
@@ -17,7 +17,7 @@ services:
   openstack:
     image: meridor/perspective-openstack:${VERSION}
     volumes:
-      - /var/log/perspective/perspective-openstack.log:/var/log/perspective/perspective-openstack.log
+      - /var/log/perspective-openstack.log:/var/log/perspective/perspective-openstack.log
     links:
       - storage
     environment:
@@ -27,7 +27,7 @@ services:
   docker:
     image: meridor/perspective-docker:${VERSION}
     volumes:
-      - /var/log/perspective/perspective-docker.log:/var/log/perspective/perspective-docker.log
+      - /var/log/perspective-docker.log:/var/log/perspective/perspective-docker.log
     links:
       - storage
     environment:
