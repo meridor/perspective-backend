@@ -20,7 +20,7 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
     private static final Logger LOG = LoggerFactory.getLogger(BaseInstanceOperation.class);
 
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
 
     @Autowired
     private ProjectsAware projectsAware;

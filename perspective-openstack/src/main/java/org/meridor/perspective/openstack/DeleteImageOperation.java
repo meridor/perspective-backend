@@ -19,10 +19,10 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
 
-    private final OpenstackApiProvider apiProvider;
+    private final ApiProvider apiProvider;
 
     @Autowired
-    public DeleteImageOperation(OpenstackApiProvider apiProvider) {
+    public DeleteImageOperation(ApiProvider apiProvider) {
         this.apiProvider = apiProvider;
     }
 

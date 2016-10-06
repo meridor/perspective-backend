@@ -34,7 +34,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     private static final String OFF = "off"; 
 
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private IdGenerator idGenerator;

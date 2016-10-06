@@ -26,7 +26,7 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
     private static final Logger LOG = LoggerFactory.getLogger(AddImageOperation.class);
     
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
 
     @Autowired
     private IdGenerator idGenerator;

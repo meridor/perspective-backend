@@ -27,7 +27,7 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
     private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private ProjectsAware projectsAware;

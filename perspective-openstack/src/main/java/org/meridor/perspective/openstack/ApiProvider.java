@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Component
-public class OpenstackApiProvider {
+public class ApiProvider {
 
 
     public Api getApi(Cloud cloud, String region) {

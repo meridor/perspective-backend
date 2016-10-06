@@ -31,7 +31,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     private IdGenerator idGenerator;
     
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private ImagesAware imagesAware;

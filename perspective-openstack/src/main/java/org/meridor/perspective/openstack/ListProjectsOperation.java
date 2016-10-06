@@ -28,7 +28,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
     @Autowired
-    private OpenstackApiProvider apiProvider;
+    private ApiProvider apiProvider;
     
     @Autowired
     private IdGenerator idGenerator;
