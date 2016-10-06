@@ -54,7 +54,7 @@ public class DeleteCommands extends BaseCommands {
     }
     
     @CliCommand(value = "delete images", help = "Delete images")
-    public void set(
+    public void deleteImages(
             @CliOption(key = "", mandatory = true, help = "Comma separated instances names or patterns to match against instance name") String patterns,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {

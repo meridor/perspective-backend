@@ -1,10 +1,13 @@
 package org.meridor.perspective.shell.interactive;
 
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.shell.common.validator.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.CommandResult;
 import org.springframework.shell.core.Shell;
@@ -15,10 +18,12 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.meridor.perspective.config.CloudType.MOCK;
 
 @RunWith(Parameterized.class)
 @ContextConfiguration(locations = "/META-INF/spring/commands-context.xml")
@@ -69,10 +74,20 @@ public class CommandsTest {
     @Autowired
     private TestLogger testLogger;
 
+    @Autowired
+    private TestRepository testRepository;
+
     private final String command;
 
     public CommandsTest(String command) {
         this.command = command;
+    }
+
+    @Before
+    public void before() {
+        // All operations are supported
+        Arrays.stream(OperationType.values())
+                .forEach(ot -> testRepository.addSupportedOperations(MOCK, Collections.singleton(ot)));
     }
 
     @Test

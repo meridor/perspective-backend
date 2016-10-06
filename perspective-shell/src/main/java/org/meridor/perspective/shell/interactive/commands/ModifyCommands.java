@@ -1,9 +1,12 @@
 package org.meridor.perspective.shell.interactive.commands;
 
+import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.shell.common.misc.CommandExecutor;
+import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
+import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.meridor.perspective.shell.common.request.FindFlavorsRequest;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;
@@ -23,6 +26,8 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.meridor.perspective.config.OperationType.*;
 
 @Component
 public class ModifyCommands extends BaseCommands {
@@ -69,6 +74,9 @@ public class ModifyCommands extends BaseCommands {
     @Autowired
     private CommandExecutor commandExecutor;
 
+    @Autowired
+    private OperationSupportChecker operationSupportChecker;
+
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
             @CliOption(key = "", mandatory = true, help = NAMES_HELP) String names,
@@ -80,7 +88,8 @@ public class ModifyCommands extends BaseCommands {
             executeSimpleModificationCommand(
                     names,
                     size -> String.format("Going to reboot %d instances.", size),
-                    instancesRepository::rebootInstances
+                    instancesRepository::rebootInstances,
+                    REBOOT_INSTANCE
             );
         }
     }
@@ -92,7 +101,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to hard reboot %d instances.", size),
-                instancesRepository::hardRebootInstances
+                instancesRepository::hardRebootInstances,
+                HARD_REBOOT_INSTANCE
         );
     }
 
@@ -103,7 +113,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to start %d instances.", size),
-                instancesRepository::startInstances
+                instancesRepository::startInstances,
+                START_INSTANCE
         );
     }
 
@@ -114,7 +125,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to shutdown %d instances.", size),
-                instancesRepository::shutdownInstances
+                instancesRepository::shutdownInstances,
+                SHUTDOWN_INSTANCE
         );
     }
 
@@ -125,7 +137,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to pause %d instances.", size),
-                instancesRepository::pauseInstances
+                instancesRepository::pauseInstances,
+                PAUSE_INSTANCE
         );
     }
 
@@ -136,7 +149,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to suspend %d instances.", size),
-                instancesRepository::suspendInstances
+                instancesRepository::suspendInstances,
+                SUSPEND_INSTANCE
         );
     }
 
@@ -147,7 +161,8 @@ public class ModifyCommands extends BaseCommands {
         executeSimpleModificationCommand(
                 names,
                 size -> String.format("Going to resume %d instances.", size),
-                instancesRepository::resumeInstances
+                instancesRepository::resumeInstances,
+                RESUME_INSTANCE
         );
     }
 
@@ -240,17 +255,45 @@ public class ModifyCommands extends BaseCommands {
         }
     }
 
-    private void executeSimpleModificationCommand(String names, Function<Integer, String> confirmationMessageProvider, Function<Set<String>, Set<String>> action) {
+    private void executeSimpleModificationCommand(
+            String names,
+            Function<Integer, String> confirmationMessageProvider,
+            Function<Set<String>, Set<String>> action,
+            OperationType operationType
+    ) {
         FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(names);
         validateConfirmExecuteShowStatus(
                 findInstancesRequest,
-                instancesRepository::findInstances,
+                r -> findAndFilterInstances(r, operationType),
                 instances -> confirmationMessageProvider.apply(instances.size()),
                 INSTANCE_CONFIRMATION_COLUMNS_PROVIDER,
                 INSTANCE_CONFIRMATION_ROWS_PROVIDER,
                 INSTANCES_TASK_DATA_PROVIDER,
                 action
         );
+    }
+
+    private List<FindInstancesResult> findAndFilterInstances(FindInstancesRequest r, OperationType operationType) {
+        Set<FindInstancesResult> instances = new HashSet<>(instancesRepository.findInstances(r));
+        Collection<FindInstancesResult> matchedInstances = operationSupportChecker.filter(
+                instances,
+                FindInstancesResult::getCloudType,
+                operationType
+        );
+        instances.removeAll(matchedInstances);
+        if (instances.size() > 0) {
+            String instanceNames = TextUtils.enumerateValues(
+                    instances.stream()
+                            .map(FindInstancesResult::getName)
+                            .collect(Collectors.toList())
+            ); //We may probably want to limit total count of shown instance names
+            warn(String.format(
+                    "This operation is not supported for the following %d matched instances: %s",
+                    instances.size(),
+                    instanceNames
+            ));
+        }
+        return new ArrayList<>(matchedInstances);
     }
 
     private static class RebuildingInstances {

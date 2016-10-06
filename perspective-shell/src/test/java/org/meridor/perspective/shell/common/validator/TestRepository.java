@@ -16,14 +16,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.meridor.perspective.config.CloudType.MOCK;
-import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
 public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository, ServiceRepository {
 
     private static final String ONE = "one";
     private static final String TWO = "two";
+
+    private final Map<CloudType, Set<OperationType>> supportedOperations = new HashMap<>();
 
     @Override
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
@@ -307,8 +307,13 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
         };
     }
 
+    public void addSupportedOperations(CloudType cloudType, Set<OperationType> operationTypes) {
+        supportedOperations.putIfAbsent(cloudType, new HashSet<>());
+        supportedOperations.get(cloudType).addAll(operationTypes);
+    }
+
     @Override
     public Map<CloudType, Set<OperationType>> getSupportedOperations() {
-        return Collections.singletonMap(MOCK, Collections.singleton(ADD_IMAGE));
+        return supportedOperations;
     }
 }
