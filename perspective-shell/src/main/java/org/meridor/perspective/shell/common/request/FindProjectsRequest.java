@@ -61,7 +61,7 @@ public class FindProjectsRequest implements Request<Query> {
                 .innerJoin()
                 .table("project_quota")
                 .on()
-                .equal("projects.project_id", "project_quota.project_id");
+                .equal("projects.id", "project_quota.project_id");
         Map<String, Collection<String>> whereMap = new HashMap<>();
         if (ids.isPresent()) {
             whereMap.put("id", ids.get());
