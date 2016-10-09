@@ -40,7 +40,7 @@ public class ProjectsRepositoryImpl implements ProjectsRepository {
                             vf.getString("name"),
                             vf.getString("cloud_id"),
                             vf.getString("cloud_type"),
-                            vf.getString(new HashMap<String, String>() {
+                            vf.getString(new LinkedHashMap<String, String>() {
                                 {
                                     put("instances", "Instances");
                                     put("vcpus", "Vcpus");

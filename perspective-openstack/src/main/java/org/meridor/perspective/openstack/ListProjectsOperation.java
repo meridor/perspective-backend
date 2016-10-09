@@ -5,6 +5,7 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
+import org.meridor.perspective.worker.misc.impl.ValueUtils;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.model.compute.AbsoluteLimit;
 import org.slf4j.Logger;
@@ -203,34 +204,17 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Quota quota = new Quota();
         try {
             AbsoluteLimit limits = api.getQuota();
-            quota.setInstances(formatQuota(limits.getTotalInstancesUsed(), limits.getMaxTotalInstances()));
-            quota.setVcpus(formatQuota(limits.getTotalCoresUsed(), limits.getMaxTotalCores()));
-            quota.setRam(formatQuota(limits.getTotalRAMUsed(), limits.getMaxTotalRAMSize()));
-            quota.setIps(formatQuota(limits.getTotalFloatingIpsUsed(), limits.getMaxTotalFloatingIps()));
-            quota.setSecurityGroups(formatQuota(limits.getTotalSecurityGroupsUsed(), limits.getMaxSecurityGroups()));
-            quota.setVolumes(formatQuota(limits.getMaxTotalVolumes(), limits.getMaxTotalVolumeGigabytes()));
-            quota.setKeypairs(formatQuota(limits.getTotalKeyPairsUsed(), limits.getMaxTotalKeypairs()));
+            quota.setInstances(ValueUtils.formatQuota(limits.getTotalInstancesUsed(), limits.getMaxTotalInstances()));
+            quota.setVcpus(ValueUtils.formatQuota(limits.getTotalCoresUsed(), limits.getMaxTotalCores()));
+            quota.setRam(ValueUtils.formatQuota(limits.getTotalRAMUsed(), limits.getMaxTotalRAMSize()));
+            quota.setIps(ValueUtils.formatQuota(limits.getTotalFloatingIpsUsed(), limits.getMaxTotalFloatingIps()));
+            quota.setSecurityGroups(ValueUtils.formatQuota(limits.getTotalSecurityGroupsUsed(), limits.getMaxSecurityGroups()));
+            quota.setVolumes(ValueUtils.formatQuota(limits.getMaxTotalVolumes(), limits.getMaxTotalVolumeGigabytes()));
+            quota.setKeypairs(ValueUtils.formatQuota(limits.getTotalKeyPairsUsed(), limits.getMaxTotalKeypairs()));
         } catch (Exception e) {
             LOG.debug("Failed to fetch quota information for cloud = {}, region = {}", cloud.getName(), region);
         }
         project.setQuota(quota);
-    }
-    
-    private String formatQuota(Integer currentValue, Integer maxValue) {
-        if (currentValue == null && maxValue == null) {
-            return null;
-        }
-        return String.format("%s/%s", formatValue(currentValue), formatValue(maxValue));
-    }
-    
-    private String formatValue(Integer value){
-        if (value == null) {
-            return "?";
-        }
-        if (value != -1) {
-            return "inf";
-        }
-        return String.valueOf(value);
     }
 
 }
