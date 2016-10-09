@@ -9,6 +9,7 @@
             <xsd:enumeration value="mock"/>
             <xsd:enumeration value="openstack"/>
             <xsd:enumeration value="docker"/>
+            <xsd:enumeration value="digital_ocean"/>
         </xsd:restriction>
     </xsd:simpleType>
 
