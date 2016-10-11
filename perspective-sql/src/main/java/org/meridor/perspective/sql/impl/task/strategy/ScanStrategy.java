@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.sql.impl.expression.ExpressionUtils.columnsToCondition;
+import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.TABLE_SCAN;
 import static org.meridor.perspective.sql.impl.parser.DataSourceUtils.crossProduct;
 
 @Component
@@ -24,7 +25,9 @@ public abstract class ScanStrategy implements DataSourceStrategy {
     protected DataContainer join(DataContainer left, DataSource rightDataSource, DataContainer right) {
         JoinType joinType = rightDataSource.getJoinType().get();
         List<String> joinColumns = rightDataSource.getColumns();
-        Optional<BooleanExpression> joinCondition = rightDataSource.getCondition();
+        Optional<BooleanExpression> joinCondition = 
+                rightDataSource.getType() == TABLE_SCAN ?
+                        rightDataSource.getCondition() : Optional.empty();
         boolean isNaturalJoin = rightDataSource.isNaturalJoin();
         if (isNaturalJoin) {
             List<String> similarColumns = getSimilarColumns(left, right);
@@ -84,7 +87,7 @@ public abstract class ScanStrategy implements DataSourceStrategy {
     }
 
     //Based on http://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists
-    DataContainer crossJoin(DataContainer left, DataContainer right, Optional<BooleanExpression> joinCondition, JoinType joinType) {
+    private DataContainer crossJoin(DataContainer left, DataContainer right, Optional<BooleanExpression> joinCondition, JoinType joinType) {
         final List<DataRow> leftRows = left.getRows();
         final List<DataRow> rightRows = right.getRows();
         final Set<Integer> matchedIndexes = new HashSet<>();

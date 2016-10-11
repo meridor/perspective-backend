@@ -315,6 +315,24 @@ public class QueryProcessorTest {
         assertThat(queryResult.getMessage(), is(notNullValue()));
     }
 
+    @Test
+    public void testJoinIndexScanDataSources() {
+        Query query = new Query();
+        query.setSql("select images.name, projects.id from images " +
+                "inner join project_images on images.id = project_images.image_id " +
+                "inner join projects on projects.id = project_images.project_id " +
+                "where projects.id = 'test-project'");
+        List<QueryResult> queryResults = queryProcessor.process(query);
+        assertThat(queryResults, hasSize(1));
+        QueryResult queryResult = queryResults.get(0);
+        assertThat(queryResult.getStatus(), equalTo(QueryStatus.SUCCESS));
+        assertThat(queryResult.getData().getColumnNames(), contains("images.name", "projects.id"));
+        List<DataRow> rows = fromData(queryResult.getData()).getRows();
+        assertThat(rows, hasSize(2));
+        assertThat(rows.get(0).getValues(), contains("second-image", "test-project"));
+        assertThat(rows.get(1).getValues(), contains("test-image", "test-project"));
+    }
+    
     private static DataContainer fromData(Data data) {
         DataContainer dataContainer = new DataContainer(data.getColumnNames());
         data.getRows().forEach(r -> dataContainer.addRow(r.getValues()));
