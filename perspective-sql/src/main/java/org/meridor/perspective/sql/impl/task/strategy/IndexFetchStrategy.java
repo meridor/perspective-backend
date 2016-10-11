@@ -15,11 +15,12 @@ import java.util.stream.IntStream;
 @Component
 public class IndexFetchStrategy implements DataSourceStrategy {
     
+    private final IndexStorage indexStorage;
+
     @Autowired
-    private TablesAware tablesAware;
-    
-    @Autowired
-    private IndexStorage indexStorage;
+    public IndexFetchStrategy(IndexStorage indexStorage) {
+        this.indexStorage = indexStorage;
+    }
     
     @Override
     public DataContainer process(DataSource dataSource, Map<String, String> tableAliases) {

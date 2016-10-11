@@ -11,8 +11,12 @@ import java.util.Map;
 @Component
 public class ParentStrategy extends ScanStrategy {
 
+    private final ApplicationContext applicationContext;
+
     @Autowired
-    private ApplicationContext applicationContext;
+    public ParentStrategy(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public DataContainer process(DataSource dataSource, Map<String, String> tableAliases) {

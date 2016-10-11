@@ -24,8 +24,12 @@ public class DataFetcherImpl implements DataFetcher {
 
     private final Map<String, TableFetcher> tableFetchers = new HashMap<>();
 
+    private final ApplicationContext applicationContext;
+
     @Autowired
-    private ApplicationContext applicationContext;
+    public DataFetcherImpl(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @PostConstruct
     public void init() {
