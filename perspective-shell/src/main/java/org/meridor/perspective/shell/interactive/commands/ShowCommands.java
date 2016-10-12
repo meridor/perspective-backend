@@ -39,12 +39,13 @@ public class ShowCommands extends BaseCommands {
     public void showProjects(
             @CliOption(key = "id", help = "Project id") String id,
             @CliOption(key = "name", help = "Project name") String name,
+            @CliOption(key = "", help = "Project name") String inlineName,
             @CliOption(key = "cloud", help = "Cloud types") String cloud
     ) {
         FindProjectsRequest findProjectsRequest = requestProvider.get(FindProjectsRequest.class)
                 .withIds(id)
                 .withClouds(cloud)
-                .withNames(name);
+                .withNames(inlineName != null ? inlineName : name);
         validateExecuteShowResult(
                 findProjectsRequest,
                 new String[]{"Name", "Cloud", "Quota"},
@@ -60,11 +61,12 @@ public class ShowCommands extends BaseCommands {
     @CliCommand(value = "show flavors", help = "Show available flavors")
     public void showFlavors(
             @CliOption(key = "name", help = "Flavor name") String name,
+            @CliOption(key = "", help = "Flavor name") String inlineName,
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         FindFlavorsRequest findFlavorsRequest = requestProvider.get(FindFlavorsRequest.class)
-                .withNames(name)
+                .withNames(inlineName != null ? inlineName : name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
@@ -89,10 +91,12 @@ public class ShowCommands extends BaseCommands {
     @CliCommand(value = "show networks", help = "Show available networks")
     public void showNetworks(
             @CliOption(key = "name", help = "Network name") String name,
+            @CliOption(key = "", help = "Network name") String inlineName,
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindNetworksRequest findNetworksRequest = requestProvider.get(FindNetworksRequest.class).withNames(name)
+        FindNetworksRequest findNetworksRequest = requestProvider.get(FindNetworksRequest.class)
+                .withNames(inlineName != null ? inlineName : name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
@@ -116,10 +120,12 @@ public class ShowCommands extends BaseCommands {
     @CliCommand(value = "show keypairs", help = "Show available keypairs")
     public void showKeypairs(
             @CliOption(key = "name", help = "Keypair name") String name,
+            @CliOption(key = "", help = "Keypair name") String inlineName,
             @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
-        FindKeypairsRequest findKeypairsRequest = requestProvider.get(FindKeypairsRequest.class).withNames(name)
+        FindKeypairsRequest findKeypairsRequest = requestProvider.get(FindKeypairsRequest.class)
+                .withNames(inlineName != null ? inlineName : name)
                 .withProjects(project)
                 .withClouds(cloud);
         validateExecuteShowResult(
@@ -138,6 +144,7 @@ public class ShowCommands extends BaseCommands {
     public void showInstances(
             @CliOption(key = "id", help = "Instance id") String id,
             @CliOption(key = "name", help = "Instance name") String name,
+            @CliOption(key = "", help = "Instance name") String inlineName,
             @CliOption(key = "flavor", help = "Flavor name") String flavor,
             @CliOption(key = "image", help = "Image name") String image,
             @CliOption(key = "state", help = "Instance state") String state,
@@ -146,7 +153,7 @@ public class ShowCommands extends BaseCommands {
     ) {
         FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
                 .withIds(id)
-                .withNames(name)
+                .withNames(inlineName != null ? inlineName : name)
                 .withFlavors(flavor)
                 .withImages(image)
                 .withStates(state)
@@ -176,12 +183,13 @@ public class ShowCommands extends BaseCommands {
     public void showImages(
             @CliOption(key = "id", help = "Image id") String id,
             @CliOption(key = "name", help = "Image name") String name,
+            @CliOption(key = "", help = "Image name") String inlineName,
             @CliOption(key = "state", help = "Image state") String state,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class)
                 .withIds(id)
-                .withNames(name)
+                .withNames(inlineName != null ? inlineName : name)
                 .withStates(state)
                 .withClouds(cloud);
         validateExecuteShowResult(
