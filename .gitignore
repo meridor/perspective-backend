@@ -4,6 +4,6 @@ target
 
 *.log
 
-clouds.xml
+*-clouds.xml
 
 .DS_Store
