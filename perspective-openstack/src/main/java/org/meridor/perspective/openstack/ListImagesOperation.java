@@ -142,7 +142,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
                 ZoneId.systemDefault()
         );
         image.setCreated(created);
-        image.setState(stateFromStatus(openstackImage.getStatus()));
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(
                 openstackImage.getUpdatedAt().toInstant(),
                 ZoneId.systemDefault()

@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
 import static org.meridor.perspective.events.EventFactory.now;
+import static org.meridor.perspective.worker.misc.impl.ValueUtils.getProjectName;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
@@ -118,10 +119,6 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return project;
     }
 
-    private String getProjectName(Cloud cloud, String region) {
-        return String.format("%s_%s", cloud.getName(), region);
-    }
-
     private void addFlavors(Project project, Api api) {
         for (org.openstack4j.model.compute.Flavor flavor : api.listFlavors()) {
             Flavor flavorToAdd = new org.meridor.perspective.beans.Flavor();
@@ -196,6 +193,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             Keypair keypair = new Keypair();
             keypair.setName(keyPair.getName());
             keypair.setFingerprint(keyPair.getFingerprint());
+            keypair.setPublicKey(keyPair.getPublicKey());
             project.getKeypairs().add(keypair);
         }
     }

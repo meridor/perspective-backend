@@ -1,9 +1,6 @@
 package org.meridor.perspective.digitalocean;
 
-import com.myjeeva.digitalocean.pojo.Droplet;
-import com.myjeeva.digitalocean.pojo.Image;
-import com.myjeeva.digitalocean.pojo.Region;
-import com.myjeeva.digitalocean.pojo.Size;
+import com.myjeeva.digitalocean.pojo.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +13,8 @@ public interface Api {
     
     List<Size> listSizes() throws Exception;
     
+    List<Key> listKeys() throws Exception;
+
     // Instance operations
     
     List<Droplet> listDroplets() throws Exception;
@@ -41,6 +40,8 @@ public interface Api {
     // Image operations
     
     List<Image> listImages() throws Exception;
+
+    Optional<Image> getImageById(Integer imageId) throws Exception;
     
     Integer addImage(Integer dropletId, String imageName) throws Exception;
     

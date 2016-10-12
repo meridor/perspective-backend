@@ -1,6 +1,12 @@
 package org.meridor.perspective.worker.misc.impl;
 
+import org.meridor.perspective.config.Cloud;
+
 public final class ValueUtils {
+    
+    public static String getProjectName(Cloud cloud, String region) {
+        return String.format("%s_%s", cloud.getName(), region);
+    }
     
     public static String formatQuota(Integer currentValue, Integer maxValue) {
         if (isMeaningless(currentValue, maxValue)) {

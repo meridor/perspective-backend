@@ -151,7 +151,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
 
     private void addProject(Cloud cloud, Instance instance, Droplet droplet) {
-        String projectId = idGenerator.getProjectId(cloud);
+        String region = droplet.getRegion().getName();
+        String projectId = idGenerator.getProjectId(cloud, region);
         Optional<Project> projectCandidate = projectsAware.getProject(projectId);
         if (projectCandidate.isPresent()) {
             instance.setProjectId(projectId);

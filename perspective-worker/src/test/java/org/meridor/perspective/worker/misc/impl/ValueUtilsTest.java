@@ -1,12 +1,21 @@
 package org.meridor.perspective.worker.misc.impl;
 
 import org.junit.Test;
+import org.meridor.perspective.config.Cloud;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.worker.misc.impl.ValueUtils.formatQuota;
+import static org.meridor.perspective.worker.misc.impl.ValueUtils.getProjectName;
 
 public class ValueUtilsTest {
+    
+    @Test
+    public void testGetProjectName() {
+        Cloud cloud = new Cloud();
+        cloud.setName("cloud");
+        assertThat(getProjectName(cloud, "region"), equalTo("cloud_region"));
+    }
     
     @Test
     public void testFormatQuota() {
