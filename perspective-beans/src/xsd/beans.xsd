@@ -270,7 +270,7 @@
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="flavor" type="tns:flavor"/>
             <xsd:element name="image" type="tns:image"/>
-            <xsd:element name="keypair" type="tns:keypair"/>
+            <xsd:element name="keypairs" type="tns:keypairs"/>
             <xsd:element name="addresses">
                 <xsd:complexType>
                     <xsd:sequence>

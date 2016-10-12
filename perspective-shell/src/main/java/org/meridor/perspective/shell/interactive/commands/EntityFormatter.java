@@ -2,9 +2,11 @@ package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.Keypair;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
+import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;
 import org.meridor.perspective.shell.common.request.FindProjectsRequest;
 import org.meridor.perspective.shell.common.request.RequestProvider;
@@ -83,8 +85,15 @@ public class EntityFormatter {
                             .collect(Collectors.toList()))
             ));
         }
-        if (instance.getKeypair() != null) {
-            additionalProperties.add(String.format("Keypair: %s", instance.getKeypair().getName()));
+        if (instance.getKeypairs() != null && !instance.getKeypairs().isEmpty()) {
+            additionalProperties.add(String.format(
+                    "Keypairs: %s",
+                    TextUtils.enumerateValues(
+                            instance.getKeypairs().stream()
+                                    .map(Keypair::getName)
+                                    .collect(Collectors.toList())
+                    )
+            ));
         }
         return additionalProperties.isEmpty() ? DASH : joinLines(additionalProperties);
     }

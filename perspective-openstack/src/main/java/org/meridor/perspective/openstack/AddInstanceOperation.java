@@ -62,9 +62,8 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
                 .flavor(instance.getFlavor().getId())
                 .image(instance.getImage().getRealId());
         
-        Optional<Keypair> keypairCandidate = Optional.ofNullable(instance.getKeypair());
-        if (keypairCandidate.isPresent()) {
-            builder = builder.keypairName(keypairCandidate.get().getName());
+        if (!instance.getKeypairs().isEmpty()) {
+            builder = builder.keypairName(instance.getKeypairs().get(0).getName());
         }
 
         if (!instance.getNetworks().isEmpty()) {

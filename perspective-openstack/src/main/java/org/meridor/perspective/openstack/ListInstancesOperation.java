@@ -150,7 +150,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         
         Keypair keypair = new Keypair();
         keypair.setName(server.getKeyName());
-        instance.setKeypair(keypair);
+        instance.setKeypairs(Collections.singletonList(keypair));
         
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 server.getCreated().toInstant(),

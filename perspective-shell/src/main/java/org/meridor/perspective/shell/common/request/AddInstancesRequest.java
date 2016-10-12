@@ -5,8 +5,8 @@ import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
 import org.meridor.perspective.shell.common.repository.impl.Placeholder;
 import org.meridor.perspective.shell.common.repository.impl.TextUtils;
-import org.meridor.perspective.shell.common.result.FindImagesResult;
 import org.meridor.perspective.shell.common.result.FindFlavorsResult;
+import org.meridor.perspective.shell.common.result.FindImagesResult;
 import org.meridor.perspective.shell.common.result.FindNetworksResult;
 import org.meridor.perspective.shell.common.result.FindProjectsResult;
 import org.meridor.perspective.shell.common.validator.annotation.*;
@@ -176,7 +176,7 @@ public class AddInstancesRequest implements Request<List<Instance>> {
         if (keypairName !=  null) {
             Keypair keypair = new Keypair();
             keypair.setName(keypairName);
-            instance.setKeypair(keypair);
+            instance.setKeypairs(Collections.singletonList(keypair));
         }
 
         MetadataMap metadataMap = new MetadataMap();

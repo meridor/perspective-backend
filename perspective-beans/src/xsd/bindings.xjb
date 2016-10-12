@@ -82,7 +82,7 @@
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='keypair']">
+                <jaxb:bindings node="./xsd:element[@name='keypairs']">
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>

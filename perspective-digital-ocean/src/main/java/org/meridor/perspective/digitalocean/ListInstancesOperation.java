@@ -18,11 +18,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_INSTANCES;
 
@@ -108,6 +106,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         addProject(cloud, instance, droplet);
         addImage(cloud, instance, droplet);
         addFlavor(cloud, instance, droplet);
+        addAddresses(instance, droplet);
+        addKeypairs(instance, droplet);
         //TODO: somehow save kernel info
         return instance;
     }
@@ -139,7 +139,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         
         return instance;
     }
-    
+
     private static InstanceState createState(DropletStatus dropletStatus) {
         switch (dropletStatus) {
             case NEW: return InstanceState.QUEUED;
@@ -170,6 +170,24 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     private void addFlavor(Cloud cloud, Instance instance, Droplet droplet) {
         //TODO: to be implemented. Should consider disk size, size and kernel..
+    }
+
+    private void addAddresses(Instance instance, Droplet droplet) {
+        List<String> ipAddresses = new ArrayList<>();
+        droplet.getNetworks().getVersion6Networks().forEach(n -> ipAddresses.add(n.getIpAddress()));
+        droplet.getNetworks().getVersion4Networks().forEach(n -> ipAddresses.add(n.getIpAddress()));
+        instance.setAddresses(ipAddresses);
+    }
+
+    private void addKeypairs(Instance instance, Droplet droplet) {
+        List<Keypair> keypairs = droplet.getKeys().stream()
+                .map(k -> {
+                    Keypair keypair = new Keypair();
+                    keypair.setName(k.getName());
+                    return keypair;
+                })
+                .collect(Collectors.toList());
+        instance.setKeypairs(keypairs);
     }
     
 }

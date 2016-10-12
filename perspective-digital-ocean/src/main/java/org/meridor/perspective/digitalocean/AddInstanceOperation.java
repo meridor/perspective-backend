@@ -18,8 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.ADD_INSTANCE;
 
@@ -68,11 +70,14 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
 
         //TODO: specify flavor (i.e. size, kernel and so on...)
 
-        Optional<Keypair> keypairCandidate = Optional.ofNullable(instance.getKeypair());
-        if (keypairCandidate.isPresent()) {
-            Key key = new Key();
-            key.setName(keypairCandidate.get().getName());
-            droplet.setKeys(Collections.singletonList(key));
+        List<Keypair> keypairs = instance.getKeypairs();
+        if (!keypairs.isEmpty()) {
+            List<Key> keys = keypairs.stream().map(kp -> {
+                Key key = new Key();
+                key.setName(kp.getName());
+                return key;
+            }).collect(Collectors.toList());
+            droplet.setKeys(keys);
         }
 
         return droplet;
