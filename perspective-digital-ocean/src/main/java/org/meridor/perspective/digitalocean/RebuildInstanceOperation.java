@@ -29,8 +29,8 @@ public class RebuildInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to rebuild instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to rebuild instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

@@ -29,8 +29,8 @@ public class ResizeInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to resize instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to resize instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

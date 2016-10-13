@@ -29,8 +29,8 @@ public class ShutdownInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to shut down instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to shut down instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

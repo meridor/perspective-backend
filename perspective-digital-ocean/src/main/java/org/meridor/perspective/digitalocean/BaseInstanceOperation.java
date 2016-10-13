@@ -21,19 +21,19 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
+        Instance instance = supplier.get();
         try {
-            Instance instance = supplier.get();
             Api api = apiProvider.getApi(cloud);
             boolean success = getAction().apply(api, instance);
             if (success) {
                 LOG.debug(getSuccessMessage(instance));
                 return true;
             } else {
-                LOG.error(getErrorMessage());
+                LOG.error(getErrorMessage(instance));
                 return false;
             }
         } catch (Exception e) {
-            LOG.error(getErrorMessage(), e);
+            LOG.error(getErrorMessage(instance), e);
             return false;
         }
     }
@@ -42,6 +42,6 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
 
     protected abstract String getSuccessMessage(Instance instance);
 
-    protected abstract String getErrorMessage();
+    protected abstract String getErrorMessage(Instance instance);
     
 }

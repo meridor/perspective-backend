@@ -29,8 +29,8 @@ public class HardRebootInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to hard reboot instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to hard reboot instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

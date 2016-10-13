@@ -29,8 +29,8 @@ public class RebootInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to reboot instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to reboot instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override
