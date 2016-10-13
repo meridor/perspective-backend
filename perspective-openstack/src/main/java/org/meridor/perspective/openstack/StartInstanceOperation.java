@@ -22,8 +22,8 @@ public class StartInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to start instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to start instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

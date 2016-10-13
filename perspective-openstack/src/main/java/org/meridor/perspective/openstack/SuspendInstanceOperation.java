@@ -22,8 +22,8 @@ public class SuspendInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to suspend instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to suspend instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

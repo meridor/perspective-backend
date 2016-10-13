@@ -22,8 +22,8 @@ public class PauseInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to pause instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to pause instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

@@ -20,8 +20,8 @@ public class DeleteInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to delete instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to delete instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override

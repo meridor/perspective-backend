@@ -27,8 +27,8 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
+        Instance instance = supplier.get();
         try {
-            Instance instance = supplier.get();
             String region = instance.getMetadata().get(MetadataKey.REGION);
             if (region == null) {
                 Project project = projectsAware.getProject(instance.getProjectId()).get();
@@ -39,7 +39,7 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
             LOG.debug(getSuccessMessage(instance));
             return true;
         } catch (Exception e) {
-            LOG.error(getErrorMessage(), e);
+            LOG.error(getErrorMessage(instance), e);
             return false;
         }
     }
@@ -48,6 +48,6 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
 
     protected abstract String getSuccessMessage(Instance instance);
 
-    protected abstract String getErrorMessage();
+    protected abstract String getErrorMessage(Instance instance);
     
 }

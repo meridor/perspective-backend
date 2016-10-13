@@ -22,8 +22,8 @@ public class ResumeInstanceOperation extends BaseInstanceOperation {
     }
 
     @Override
-    protected String getErrorMessage() {
-        return "Failed to resume instance";
+    protected String getErrorMessage(Instance instance) {
+        return String.format("Failed to resume instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override
