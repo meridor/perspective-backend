@@ -22,6 +22,10 @@ public interface Api {
     Optional<Droplet> getDropletById(Integer dropletId) throws Exception;
     
     Integer addDroplet(Droplet droplet) throws Exception;
+    
+    String addAddress(Integer dropletId) throws Exception;
+    
+    void addAddress(Integer dropletId, String address) throws Exception;
 
     void deleteDroplet(Integer dropletId) throws Exception;
 

@@ -97,6 +97,16 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public String addAddress(Integer dropletId) throws Exception {
+            return api.createFloatingIP(dropletId).getIp();
+        }
+
+        @Override
+        public void addAddress(Integer dropletId, String address) throws Exception {
+            api.assignFloatingIP(dropletId, address);
+        }
+
+        @Override
         public void deleteDroplet(Integer dropletId) throws Exception {
             api.deleteDroplet(dropletId);
         }

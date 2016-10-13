@@ -18,7 +18,9 @@
             <xsd:enumeration value="listProjects"/>
             
             <xsd:enumeration value="addInstance"/>
+            <xsd:enumeration value="addAddress"/>
             <xsd:enumeration value="deleteInstance"/>
+            <xsd:enumeration value="deleteAddress"/>
             <xsd:enumeration value="hardRebootInstance"/>
             <xsd:enumeration value="listInstances"/>
             <xsd:enumeration value="migrateInstance"/>
