@@ -161,6 +161,12 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:complexType name="instanceStartingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instanceEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:complexType name="instanceSuspendingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>

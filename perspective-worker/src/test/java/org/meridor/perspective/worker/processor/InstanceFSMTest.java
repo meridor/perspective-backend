@@ -150,6 +150,11 @@ public class InstanceFSMTest {
     }
 
     @Test
+    public void testOnInstanceStartingSync() {
+        testOnInstanceSyncEvent(InstanceStartingEvent.class, STARTING);
+    }
+
+    @Test
     public void testOnInstanceDeleting() {
         Instance instance = EntityGenerator.getInstance();
         instancesAware.saveInstance(instance);

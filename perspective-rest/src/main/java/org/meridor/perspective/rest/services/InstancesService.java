@@ -84,12 +84,12 @@ public class InstancesService {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
                 i -> {
-                    i.setState(LAUNCHING);
+                    i.setState(STARTING);
                     return i;
                 },
                 i -> {
                     LOG.info("Queuing instance {} for start", instanceId);
-                    return instanceEvent(InstanceLaunchingEvent.class, i);
+                    return instanceEvent(InstanceStartingEvent.class, i);
                 }
         ));
     }

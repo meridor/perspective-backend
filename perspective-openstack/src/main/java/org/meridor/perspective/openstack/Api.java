@@ -43,6 +43,8 @@ public interface Api {
     void rebuildInstance(String instanceId, String imageId);
 
     void pauseInstance(String instanceId);
+    
+    void unpauseInstance(String instanceId);
 
     void suspendInstance(String instanceId);
 

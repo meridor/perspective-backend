@@ -40,13 +40,13 @@ public final class EventFactory {
                 return new InstanceErrorEvent();
             case HARD_REBOOTING:
                 return new InstanceHardRebootingEvent();
+            default:
             case LAUNCHED:
                 return new InstanceLaunchedEvent();
             case LAUNCHING:
                 return new InstanceLaunchingEvent();
             case MIGRATING:
                 return new InstanceMigratingEvent();
-            default:
             case PAUSED:
                 return new InstancePausedEvent();
             case PAUSING:
@@ -65,6 +65,8 @@ public final class EventFactory {
                 return new InstanceShuttingDownEvent();
             case SNAPSHOTTING:
                 return new InstanceSnapshottingEvent();
+            case STARTING:
+                return new InstanceStartingEvent();
             case SUSPENDING:
                 return new InstanceSuspendingEvent();
             case SUSPENDED:

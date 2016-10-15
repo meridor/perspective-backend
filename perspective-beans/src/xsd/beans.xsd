@@ -244,6 +244,7 @@
             <xsd:enumeration value="shutoff"/>
             <xsd:enumeration value="shutting_down"/>
             <xsd:enumeration value="snapshotting"/>
+            <xsd:enumeration value="starting"/>
             <xsd:enumeration value="suspending"/>
             <xsd:enumeration value="suspended"/>
         </xsd:restriction>

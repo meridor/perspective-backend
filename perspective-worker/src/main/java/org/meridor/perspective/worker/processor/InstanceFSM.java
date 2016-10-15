@@ -32,6 +32,7 @@ import java.util.Optional;
         @Transit(from = InstanceNotAvailableEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
+        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
         @Transit(from = InstanceNotAvailableEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
@@ -48,7 +49,8 @@ import java.util.Optional;
         @Transit(from = InstanceErrorEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstancePausingEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
         @Transit(from = InstancePausedEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
+        @Transit(from = InstanceResumingEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
+        @Transit(from = InstanceStartingEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
         @Transit(from = InstanceSnapshottingEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
         @Transit(from = InstanceRebuildingEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
         @Transit(from = InstanceResizingEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
@@ -76,14 +78,14 @@ import java.util.Optional;
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
+        @Transit(from = InstanceShutOffEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
         @Transit(from = InstanceShutOffEvent.class, on = InstanceDeletingEvent.class, stop = true),
 
         //Instance suspend
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
         @Transit(from = InstanceSuspendingEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
         @Transit(from = InstanceSuspendingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceSuspendedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
+        @Transit(from = InstanceSuspendedEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
         @Transit(from = InstanceSuspendedEvent.class, on = InstanceDeletingEvent.class, stop = true),
 
         //Instance pause
@@ -299,6 +301,20 @@ public class InstanceFSM {
             instance.setState(InstanceState.RESIZING);
         } else {
             instance.setErrorReason("Failed to resize");
+        }
+        instancesAware.saveInstance(instance);
+    }
+
+    @OnTransit
+    public void onInstanceStarting(InstanceStartingEvent event) {
+        Instance instance = event.getInstance();
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        LOG.info("Starting instance {} ({})", instance.getName(), instance.getId());
+        if (event.isSync() || operationProcessor.supply(cloud, OperationType.START_INSTANCE, () -> instance)) {
+            instance.setState(InstanceState.STARTING);
+        } else {
+            instance.setErrorReason("Failed to start");
         }
         instancesAware.saveInstance(instance);
     }

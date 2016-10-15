@@ -70,6 +70,7 @@ public class EventFactoryTest {
         testInstanceToEvent(RESIZING, InstanceResizingEvent.class);
         testInstanceToEvent(SHUTOFF, InstanceShutOffEvent.class);
         testInstanceToEvent(SHUTTING_DOWN, InstanceShuttingDownEvent.class);
+        testInstanceToEvent(STARTING, InstanceStartingEvent.class);
         testInstanceToEvent(SUSPENDING, InstanceSuspendingEvent.class);
         testInstanceToEvent(SUSPENDED, InstanceSuspendedEvent.class);
     }

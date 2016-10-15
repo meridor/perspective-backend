@@ -13,7 +13,13 @@ public class ResumeInstanceOperation extends BaseInstanceOperation {
 
     @Override
     protected BiConsumer<Api, Instance> getAction() {
-        return (api, instance) -> api.resumeInstance(instance.getRealId());
+        return (api, instance) -> {
+            switch (instance.getState()) {
+                case PAUSED: api.unpauseInstance(instance.getRealId());
+                default:
+                case SUSPENDED: api.resumeInstance(instance.getRealId()); 
+            }
+        };
     }
 
     @Override

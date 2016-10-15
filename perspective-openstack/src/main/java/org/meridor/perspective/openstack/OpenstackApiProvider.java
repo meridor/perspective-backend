@@ -171,6 +171,11 @@ public class OpenstackApiProvider {
         }
 
         @Override
+        public void unpauseInstance(String instanceId) {
+            api.compute().servers().action(instanceId, Action.UNPAUSE);
+        }
+
+        @Override
         public void suspendInstance(String instanceId) {
             api.compute().servers().action(instanceId, Action.SUSPEND);
         }
