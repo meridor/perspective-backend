@@ -140,7 +140,7 @@ public class ModifyCommands extends BaseCommands {
         );
     }
 
-    @CliCommand(value = "resume", help = "Suspend instances")
+    @CliCommand(value = "resume", help = "Resume instances")
     public void resumeInstances(
             @CliOption(key = "", mandatory = true, help = NAMES_HELP) String names
     ) {
@@ -153,13 +153,17 @@ public class ModifyCommands extends BaseCommands {
 
     @CliCommand(value = "resize", help = "Resize instances")
     public void resizeInstances(
+            @CliOption(key = "project", help = "Name of the project to resize instances in") String projectName,
             @CliOption(key = "instances", help = NAMES_HELP) String instanceNames,
             @CliOption(key = "flavor", help = "Flavor name") String flavorName
-
     ) {
-        if (instanceNames != null && flavorName != null) {
-            FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(instanceNames);
-            FindFlavorsRequest findFlavorsRequest = requestProvider.get(FindFlavorsRequest.class).withNames(flavorName);
+        if (projectName != null && instanceNames != null && flavorName != null) {
+            FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
+                    .withProjectNames(projectName)
+                    .withNames(instanceNames);
+            FindFlavorsRequest findFlavorsRequest = requestProvider.get(FindFlavorsRequest.class)
+                    .withProjects(projectName)
+                    .withNames(flavorName);
             validateConfirmExecuteShowStatus(
                     findFlavorsRequest,
                     request -> {
@@ -194,13 +198,17 @@ public class ModifyCommands extends BaseCommands {
 
     @CliCommand(value = "rebuild", help = "Rebuild instances")
     public void rebuildInstances(
+            @CliOption(key = "project", help = "Name of the project to rebuild instances in") String projectName,
             @CliOption(key = "instances", help = NAMES_HELP) String instanceNames,
             @CliOption(key = "image", help = "Image name") String imageName
-
     ) {
-        if (instanceNames != null && imageName != null) {
-            FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(instanceNames);
-            FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class).withNames(imageName);
+        if (projectName != null && instanceNames != null && imageName != null) {
+            FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
+                    .withProjectNames(projectName)
+                    .withNames(instanceNames);
+            FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class)
+                    .withProjects(projectName)
+                    .withNames(imageName);
             validateConfirmExecuteShowStatus(
                     findImagesRequest,
                     request -> {
@@ -288,6 +296,7 @@ public class ModifyCommands extends BaseCommands {
         }
 
         public FindFlavorsResult getFlavor() {
+            Assert.isTrue(flavor != null, "Flavor for resize operation can't be null");
             return flavor;
         }
     }

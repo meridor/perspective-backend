@@ -50,8 +50,8 @@ public class CommandsTest {
                 {"pause test-instance"},
                 {"suspend test-instance"},
                 {"resume test-instance"},
-                {"resize --flavor test-flavor --instances test-instance"},
-                {"rebuild --image test-image --instances test-instance"},
+                {"resize --project test-project --flavor test-flavor --instances test-instance"},
+                {"rebuild --project test-project --image test-image --instances test-instance"},
                 {"select 1 + 1"},
                 {"explain select 1 + 1"},
         });

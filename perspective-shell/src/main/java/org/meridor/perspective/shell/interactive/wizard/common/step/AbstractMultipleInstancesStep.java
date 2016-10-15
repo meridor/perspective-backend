@@ -20,9 +20,17 @@ public abstract class AbstractMultipleInstancesStep extends MultipleChoicesStep 
     @Autowired
     private RequestProvider requestProvider;
 
+    private String projectName;
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
     @Override
     protected List<String> getPossibleChoices() {
-        return instancesRepository.findInstances(requestProvider.get(FindInstancesRequest.class)).stream()
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
+                .withProjectNames(projectName);
+        return instancesRepository.findInstances(findInstancesRequest).stream()
                 .map(FindInstancesResult::getName)
                 .collect(Collectors.toList());
     }

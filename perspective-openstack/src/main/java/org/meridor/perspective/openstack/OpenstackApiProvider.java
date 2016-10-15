@@ -158,6 +158,16 @@ public class OpenstackApiProvider {
         }
 
         @Override
+        public void confirmInstanceResize(String instanceId) {
+            api.compute().servers().confirmResize(instanceId);
+        }
+
+        @Override
+        public void revertInstanceResize(String instanceId) {
+            api.compute().servers().revertResize(instanceId);
+        }
+
+        @Override
         public void rebuildInstance(String instanceId, String imageId) {
             api.compute().servers().rebuild(
                     instanceId,

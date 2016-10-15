@@ -13,12 +13,12 @@ public class RebuildInstanceOperation extends BaseInstanceOperation {
 
     @Override
     protected BiConsumer<Api, Instance> getAction() {
-        return (api, instance) -> api.rebuildInstance(instance.getRealId(), instance.getImage().getId());
+        return (api, instance) -> api.rebuildInstance(instance.getRealId(), instance.getImage().getRealId());
     }
 
     @Override
     protected String getSuccessMessage(Instance instance) {
-        return String.format("Started instance %s (%s) rebuild to image %s", instance.getName(), instance.getId(), instance.getImage().getName());
+        return String.format("Started rebuilding instance %s (%s) to image %s", instance.getName(), instance.getId(), instance.getImage().getName());
     }
 
     @Override

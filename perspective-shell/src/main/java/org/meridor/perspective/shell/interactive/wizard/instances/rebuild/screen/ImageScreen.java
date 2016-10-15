@@ -3,6 +3,7 @@ package org.meridor.perspective.shell.interactive.wizard.instances.rebuild.scree
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
 import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step.ImageStep;
+import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step.ProjectStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,8 @@ public class ImageScreen implements WizardScreen {
 
     @Override
     public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+        String projectName = previousAnswers.get(ProjectStep.class);
+        imageStep.setProjectName(projectName);
         return imageStep;
     }
 

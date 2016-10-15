@@ -39,6 +39,10 @@ public interface Api {
     void hardRebootInstance(String instanceId);
 
     void resizeInstance(String instanceId, String flavorId);
+    
+    void confirmInstanceResize(String instanceId);
+    
+    void revertInstanceResize(String instanceId);
 
     void rebuildInstance(String instanceId, String imageId);
 

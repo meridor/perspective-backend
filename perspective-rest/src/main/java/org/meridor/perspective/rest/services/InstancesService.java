@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
@@ -137,15 +138,16 @@ public class InstancesService {
     }
 
     public boolean rebuildInstances(String imageId, List<String> instanceIds) {
-        return ifImageExists(imageId, () -> instanceIds.forEach(
+        return ifImageExists(imageId, image -> instanceIds.forEach(
                 instanceId -> whenInstanceExists(
                         instanceId,
                         i -> {
+                            i.setImage(image);
                             i.setState(REBUILDING);
                             return i;
                         },
                         i -> {
-                            LOG.info("Queuing instance {} for rebuild", instanceId);
+                            LOG.info("Queuing instance {} for rebuild to image {}", instanceId, imageId);
                             return instanceEvent(InstanceRebuildingEvent.class, i);
                         }
                 )
@@ -153,15 +155,16 @@ public class InstancesService {
     }
 
     public boolean resizeInstances(String flavorId, List<String> instanceIds) {
-        return ifFlavorExists(flavorId, () -> instanceIds.forEach(
+        return ifFlavorExists(flavorId, flavor -> instanceIds.forEach(
                 instanceId -> whenInstanceExists(
                         instanceId,
                         i -> {
+                            i.setFlavor(flavor);
                             i.setState(RESIZING);
                             return i;
                         },
                         i -> {
-                            LOG.info("Queuing instance {} for resize", instanceId);
+                            LOG.info("Queuing instance {} for resize to flavor {}", instanceId, flavorId);
                             return instanceEvent(InstanceResizingEvent.class, i);
                         }
                 )
@@ -237,10 +240,10 @@ public class InstancesService {
         }
     }
 
-    private boolean ifImageExists(String imageId, Runnable action) {
+    private boolean ifImageExists(String imageId, Consumer<Image> action) {
         Optional<Image> imageCandidate = imagesAware.getImage(imageId);
         if (imageCandidate.isPresent()) {
-            action.run();
+            action.accept(imageCandidate.get());
             return true;
         } else {
             LOG.info("Image {} not found", imageId);
@@ -248,13 +251,13 @@ public class InstancesService {
         }
     }
 
-    private boolean ifFlavorExists(String flavorId, Runnable action) {
+    private boolean ifFlavorExists(String flavorId, Consumer<Flavor> action) {
         Optional<Flavor> flavorCandidate = projectsAware.getProjects().stream()
                 .flatMap(p -> p.getFlavors().stream())
                 .filter(f -> flavorId.equals(f.getId()))
                 .findFirst();
         if (flavorCandidate.isPresent()) {
-            action.run();
+            action.accept(flavorCandidate.get());
             return true;
         } else {
             LOG.info("Flavor {} not found", flavorId);
