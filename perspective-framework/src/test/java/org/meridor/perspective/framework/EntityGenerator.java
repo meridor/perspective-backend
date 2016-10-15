@@ -117,6 +117,7 @@ public class EntityGenerator {
         instance.setFlavor(getFlavor());
         instance.getNetworks().add(getNetwork());
         instance.getAddresses().add("5.255.210.3");
+        instance.setFqdn("test-instance.example.com");
         instance.setImage(getImage());
         instance.setState(InstanceState.LAUNCHED);
         instance.setAvailabilityZone(getAvailabilityZone());

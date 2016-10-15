@@ -77,6 +77,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setRealId(realId);
         String containerName = trimLeadingSlashIfNeeded(container.name());
         instance.setName(containerName);
+        instance.setFqdn(containerName);
         instance.setCloudId(cloud.getId());
         instance.setCloudType(CloudType.DOCKER);
 

@@ -119,6 +119,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setId(instanceId);
         instance.setRealId(realId);
         instance.setName(droplet.getName());
+        instance.setFqdn(droplet.getName()); //TODO: change this to real FQDN is possible
         instance.setCloudId(cloud.getId());
         instance.setCloudType(CloudType.DIGITAL_OCEAN);
 

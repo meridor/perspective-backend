@@ -278,6 +278,7 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
+            <xsd:element name="fqdn" type="xsd:string"/>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="state" type="tns:instanceState" minOccurs="1"/>
             <xsd:element name="errorReason" type="xsd:string"/>

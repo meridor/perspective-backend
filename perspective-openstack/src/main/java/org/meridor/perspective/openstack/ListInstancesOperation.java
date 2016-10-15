@@ -31,7 +31,9 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
     
-    private static final String OFF = "off"; 
+    private static final String OFF = "off";
+    
+    private static final String DOT = "."; 
 
     @Autowired
     private ApiProvider apiProvider;
@@ -50,6 +52,10 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Value("${perspective.openstack.console.type:off}")
     private String consoleType;
+    
+    @Value("${perspective.openstack.default.domain}")
+    private String defaultDomain;
+    
     
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
@@ -196,6 +202,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 }
             });
             instance.setNetworks(networks);
+            String fqdn = getFQDN(server.getName());
+            instance.setFqdn(fqdn);
         }
         
         if (server.getImage() != null) {
@@ -209,6 +217,14 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         return instance;
     }
 
+    private String getFQDN(String instanceName) {
+        if (instanceName.contains(DOT)) {
+            return instanceName;
+        }
+        return defaultDomain != null ?
+                String.format("%s.%s", instanceName, defaultDomain) : instanceName;
+    }
+    
     private void addConsoleUrl(Instance instance, Api api) {
         try {
             String consoleUrl = api.getInstanceConsoleUrl(instance.getRealId(), consoleType);
