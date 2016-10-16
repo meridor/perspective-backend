@@ -20,6 +20,8 @@ import java.util.function.Function;
 
 import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 import static org.meridor.perspective.beans.InstanceState.*;
+import static org.meridor.perspective.config.OperationType.RESUME_INSTANCE;
+import static org.meridor.perspective.config.OperationType.UNPAUSE_INSTANCE;
 import static org.meridor.perspective.events.EventFactory.*;
 import static org.meridor.perspective.framework.messaging.MessageUtils.message;
 
@@ -194,7 +196,12 @@ public class InstancesService {
                 },
                 i -> {
                     LOG.info("Queuing instance {} for resume", instanceId);
-                    return instanceEvent(InstanceResumingEvent.class, i);
+                    //The main idea is to use the same resume command to restore suspended, paused or shelved instance
+                    InstanceResumingEvent instanceResumingEvent = instanceEvent(InstanceResumingEvent.class, i);
+                    instanceResumingEvent.setOperationType(
+                            i.getState() == PAUSED ? UNPAUSE_INSTANCE : RESUME_INSTANCE
+                    );
+                    return instanceResumingEvent;
                 }
         ));
     }

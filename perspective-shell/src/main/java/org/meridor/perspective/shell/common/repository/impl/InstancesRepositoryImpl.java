@@ -156,7 +156,7 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     @Override
     public Set<String> pauseInstances(Collection<String> instanceIds) {
         return executeAction(
-                (apiProvider, ids) -> apiProvider.getInstancesApi().reboot(ids),
+                (apiProvider, ids) -> apiProvider.getInstancesApi().pause(ids),
                 instanceIds
         );
     }

@@ -6,29 +6,29 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.BiConsumer;
 
-import static org.meridor.perspective.config.OperationType.RESUME_INSTANCE;
+import static org.meridor.perspective.config.OperationType.UNPAUSE_INSTANCE;
 
 @Component
-public class ResumeInstanceOperation extends BaseInstanceOperation {
+public class UnpauseInstanceOperation extends BaseInstanceOperation {
 
     @Override
     protected BiConsumer<Api, Instance> getAction() {
-        return (api, instance) -> api.resumeInstance(instance.getRealId());
+        return (api, instance) -> api.unpauseInstance(instance.getRealId());
     }
 
     @Override
     protected String getSuccessMessage(Instance instance) {
-        return String.format("Resumed instance %s (%s)", instance.getName(), instance.getId());
+        return String.format("Unpaused instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override
     protected String getErrorMessage(Instance instance) {
-        return String.format("Failed to resume instance %s (%s)", instance.getName(), instance.getId());
+        return String.format("Failed to unpause instance %s (%s)", instance.getName(), instance.getId());
     }
 
     @Override
     public OperationType[] getTypes() {
-        return new OperationType[]{RESUME_INSTANCE};
+        return new OperationType[]{UNPAUSE_INSTANCE};
     }
-    
+
 }

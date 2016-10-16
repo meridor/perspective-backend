@@ -51,6 +51,8 @@ import java.util.Optional;
         @Transit(from = InstancePausedEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
         @Transit(from = InstanceResumingEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
         @Transit(from = InstanceStartingEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
+        @Transit(from = InstanceSuspendingEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
+        @Transit(from = InstanceSuspendedEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
         @Transit(from = InstanceSnapshottingEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
         @Transit(from = InstanceRebuildingEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
         @Transit(from = InstanceResizingEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
@@ -269,7 +271,9 @@ public class InstanceFSM {
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
         LOG.info("Resuming instance {} ({})", instance.getName(), instance.getId());
-        if (event.isSync() || operationProcessor.supply(cloud, OperationType.RESUME_INSTANCE, () -> instance)) {
+        OperationType operationType = event.getOperationType() != null ?
+                event.getOperationType() : OperationType.RESUME_INSTANCE;
+        if (event.isSync() || operationProcessor.supply(cloud, operationType, () -> instance)) {
             instance.setState(InstanceState.RESUMING);
         } else {
             instance.setErrorReason("Failed to resume");

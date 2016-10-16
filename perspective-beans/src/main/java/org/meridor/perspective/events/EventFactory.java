@@ -59,6 +59,8 @@ public final class EventFactory {
                 return new InstanceRebuildingEvent();
             case RESIZING:
                 return new InstanceResizingEvent();
+            case RESUMING:
+                return new InstanceResumingEvent();
             case SHUTOFF:
                 return new InstanceShutOffEvent();
             case SHUTTING_DOWN:

@@ -29,6 +29,7 @@
             <xsd:enumeration value="startInstance"/>
             <xsd:enumeration value="shutdownInstance"/>
             <xsd:enumeration value="suspendInstance"/>
+            <xsd:enumeration value="unpauseInstance"/>
             
             <xsd:enumeration value="addImage"/>
             <xsd:enumeration value="deleteImage"/>
