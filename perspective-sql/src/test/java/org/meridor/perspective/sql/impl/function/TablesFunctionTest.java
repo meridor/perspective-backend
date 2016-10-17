@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -35,5 +38,12 @@ public class TablesFunctionTest {
         assertThat(data.getColumnNames(), contains("table_name"));
         assertThat(data.getRows(), hasSize(tablesAware.getTables().size()));
         
+        List<String> tableNames = data.getRows().stream()
+                .map(dr -> String.valueOf(dr.get("table_name")))
+                .collect(Collectors.toList());
+        List<String> sortedTablesNames = new ArrayList<>(tableNames);
+        Collections.sort(sortedTablesNames);
+        //List should be sorted, i.e. equal to itself sorted again
+        assertThat(tableNames, equalTo(sortedTablesNames));
     }
 }

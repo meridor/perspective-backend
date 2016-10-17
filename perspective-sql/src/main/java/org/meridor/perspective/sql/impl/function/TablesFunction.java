@@ -13,8 +13,12 @@ public class TablesFunction implements Function<DataContainer> {
     
     private static final String TABLE_NAME = "table_name";
     
+    private final TablesAware tablesAware;
+
     @Autowired
-    private TablesAware tablesAware;
+    public TablesFunction(TablesAware tablesAware) {
+        this.tablesAware = tablesAware;
+    }
     
     @Override
     public Class<DataContainer> getReturnType() {
@@ -29,7 +33,10 @@ public class TablesFunction implements Function<DataContainer> {
     @Override
     public DataContainer apply(List<Object> objects) {
         DataContainer dataContainer = new DataContainer(Collections.singleton(TABLE_NAME));
-        tablesAware.getTables().forEach(t -> dataContainer.addRow(Collections.singletonList(t)));
+        tablesAware.getTables()
+                .stream()
+                .sorted()
+                .forEach(t -> dataContainer.addRow(Collections.singletonList(t)));
         return dataContainer;
     }
     
