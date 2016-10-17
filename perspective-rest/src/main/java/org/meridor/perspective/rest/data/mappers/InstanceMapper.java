@@ -28,6 +28,7 @@ public class InstanceMapper extends BaseObjectMapper<Instance> {
                 put("created", i -> i.getCreated().format(DATE_FORMATTER));
                 put("availability_zone", i -> (i.getAvailabilityZone() != null) ? i.getAvailabilityZone().getName() : null);
                 put("addresses", i -> i.getAddresses().stream().collect(Collectors.joining("\n")));
+                put("fqdn", Instance::getFqdn);
             }
         };
     }

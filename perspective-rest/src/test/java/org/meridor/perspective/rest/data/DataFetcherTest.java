@@ -258,6 +258,7 @@ public class DataFetcherTest {
             {
                 put("id", "test-instance");
                 put("state", "launched");
+                put("fqdn", "test-instance.example.com");
             }
         });
     }

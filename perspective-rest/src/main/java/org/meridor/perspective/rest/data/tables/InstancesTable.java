@@ -30,6 +30,7 @@ public class InstancesTable implements Table {
     public String created;
     public String availability_zone;
     public String addresses; //Networks are provided via instance_networks table
+    public String fqdn;
     
     @Override
     public String getName() {
