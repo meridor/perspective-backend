@@ -593,7 +593,7 @@ public class QueryPlannerImpl implements QueryPlanner {
 
         private static Consumer<BooleanExpression> getFixedValuesConsumer(Map<String, Map<String, Set<Object>>> fixedValuesConditions) {
             return be -> be.getTableAliases().forEach(ta -> {
-                Map<String, Set<Object>> fvc = be.getFixedValueConditions(ta);
+                Map<String, Set<Object>> fvc = new HashMap<>(be.getFixedValueConditions(ta));
                 if (!fvc.isEmpty()) {
                     fixedValuesConditions.put(ta, fvc);
                 }

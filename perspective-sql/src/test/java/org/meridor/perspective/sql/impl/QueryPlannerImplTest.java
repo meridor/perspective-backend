@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.impl.expression.*;
@@ -21,6 +22,7 @@ import java.util.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.beans.BooleanRelation.EQUAL;
+import static org.meridor.perspective.beans.BooleanRelation.REGEXP;
 import static org.meridor.perspective.sql.impl.expression.BinaryBooleanOperator.OR;
 import static org.meridor.perspective.sql.impl.parser.DataSource.DataSourceType.*;
 import static org.meridor.perspective.sql.impl.parser.JoinType.INNER;
@@ -359,4 +361,31 @@ public class QueryPlannerImplTest {
         assertThat(fixedValueCondition.keySet(), contains(PROJECT_NAME));
         assertThat(fixedValueCondition.get(PROJECT_NAME), containsInAnyOrder(VALUE, ANOTHER_VALUE));
     }
+    
+    @Test
+    public void testOptimizeIndexedInCondition() throws Exception {
+        DataSource leftDataSource = new DataSource(INSTANCES);
+        Set<Object> values = new HashSet<>(Arrays.asList(VALUE, ANOTHER_VALUE));
+        BooleanExpression whereCondition = new InExpression(
+                new ColumnExpression(NAME, INSTANCES),
+                values
+        );
+        queryParser.setSelectQueryAware(new MockSelectQueryAware(){
+            {
+                getSelectionMap().put(ANY_COLUMN, new ColumnExpression());
+                setDataSource(leftDataSource);
+                getTableAliases().put(INSTANCES, INSTANCES);
+                setWhereExpression(whereCondition);
+            }
+        });
+        List<Task> tasks = new ArrayList<>(plan());
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
+        DataSource dataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
+        Optional<BooleanExpression> conditionCandidate = dataSource.getCondition();
+        assertThat(conditionCandidate.isPresent(), is(true));
+        BooleanExpression condition = conditionCandidate.get();
+        assertThat(condition, is(instanceOf(IndexBooleanExpression.class)));
+        assertThat(condition.getFixedValueConditions(INSTANCES), equalTo(Collections.singletonMap(NAME, values)));
+    }
+    
 }
