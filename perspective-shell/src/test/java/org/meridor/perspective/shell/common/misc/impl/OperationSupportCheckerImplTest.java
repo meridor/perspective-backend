@@ -8,6 +8,7 @@ import org.meridor.perspective.framework.EntityGenerator;
 import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.validator.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -26,6 +27,7 @@ import static org.meridor.perspective.config.OperationType.ADD_INSTANCE;
 
 @ContextConfiguration(locations = "/META-INF/spring/commands-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class OperationSupportCheckerImplTest {
 
     @Autowired
