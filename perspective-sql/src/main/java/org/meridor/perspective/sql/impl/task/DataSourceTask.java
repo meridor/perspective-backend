@@ -65,9 +65,9 @@ public class DataSourceTask implements Task {
 
     @Override
     public String toString() {
-        return "DataSourceTask{" +
-                "dataSource=" + dataSource +
-                ", tableAliases=" + tableAliases +
-                '}';
+        return "DataSourceTask{\n" +
+            String.format("\tdataSource=%s,\n", String.valueOf(dataSource).replace("\n", "\n\t")) +
+            String.format("\ttableAliases=%s\n", tableAliases) +
+        "}";
     }
 }
