@@ -133,7 +133,7 @@ public class BinaryBooleanExpression implements BooleanExpression {
             return Optional.empty();
         }
         return (restOfExpressions.size() == 2) ?
-                Optional.of(new BinaryBooleanExpression(restOfExpressions.get(0), BinaryBooleanOperator.AND, restOfExpressions.get(1))) :
+                Optional.of(new BinaryBooleanExpression(restOfExpressions.get(0), binaryBooleanOperator, restOfExpressions.get(1))) :
                 Optional.of(restOfExpressions.get(0));
     }
 }

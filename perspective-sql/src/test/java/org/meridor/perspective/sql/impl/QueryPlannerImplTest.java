@@ -1,6 +1,5 @@
 package org.meridor.perspective.sql.impl;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.impl.expression.*;
@@ -386,6 +385,34 @@ public class QueryPlannerImplTest {
         BooleanExpression condition = conditionCandidate.get();
         assertThat(condition, is(instanceOf(IndexBooleanExpression.class)));
         assertThat(condition.getFixedValueConditions(INSTANCES), equalTo(Collections.singletonMap(NAME, values)));
+    }
+    
+    @Test
+    public void testOptimizeMultipleRegexConditions() throws Exception {
+        DataSource leftDataSource = new DataSource(INSTANCES);
+        BooleanExpression whereCondition = new BinaryBooleanExpression(
+                new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES), REGEXP, VALUE),
+                OR,
+                new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES), REGEXP, ANOTHER_VALUE)
+        );
+        queryParser.setSelectQueryAware(new MockSelectQueryAware(){
+            {
+                getSelectionMap().put(NAME, new ColumnExpression(NAME, INSTANCES));
+                setDataSource(leftDataSource);
+                getTableAliases().put(INSTANCES, INSTANCES);
+                setWhereExpression(whereCondition);
+            }
+        });
+        List<Task> tasks = new ArrayList<>(plan());
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks, Arrays.asList(DataSourceTask.class, FilterTask.class, SelectTask.class));
+        doOptimizedLeftDataSourceAssertions(dataSourceTask);
+        FilterTask filterTask = (FilterTask) tasks.get(1);
+        assertThat(filterTask.getCondition().isPresent(), is(true));
+        BooleanExpression optimizedCondition = filterTask.getCondition().get();
+        assertThat(optimizedCondition.getTableAliases(), contains(INSTANCES));
+        assertThat(optimizedCondition.getFixedValueConditions(INSTANCES).keySet(), is(empty()));
+        assertThat(optimizedCondition.getColumnRelations(), is(empty()));
+        assertThat(optimizedCondition.getRestOfExpression(), is(equalTo(Optional.of(whereCondition))));
     }
     
 }
