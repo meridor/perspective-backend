@@ -1,10 +1,10 @@
-# Perspective Backend
+# Perspective
 
 [![Build Status](https://travis-ci.org/meridor/perspective-backend.svg?branch=master)](https://travis-ci.org/meridor/perspective-backend)
 [![maven](https://img.shields.io/maven-central/v/org.meridor.perspective/perspective-backend.svg)](http://mvnrepository.com/artifact/org.meridor.perspective/perspective-backend)
 [![Coverage](https://codecov.io/github/meridor/perspective-backend/coverage.svg)](https://codecov.io/gh/meridor/perspective-backend)
 
-This repository contains source code for Perspective backend products including shell and API.
+This repository contains source code for Perspective API and shell.
 
 ## What is this for
 Perspective is a scalable multi-cloud management API and related tools. If you're simultaneously using multiple cloud technologies like Amazon, Openstack, Docker and so on then this product was created right for you.
