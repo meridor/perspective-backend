@@ -410,7 +410,8 @@ public class QueryPlannerImpl implements QueryPlanner {
         if (hasFixedValuesConditions) {
             Map<String, Set<Object>> tableFixedValuesConditions = fixedValuesConditions.get(tableAlias);
             Map<String, Set<Object>> matchingFixedValuesConditions = new HashMap<>();
-            for (String columnName : tableFixedValuesConditions.keySet()) {
+            HashSet<String> columnNames = new HashSet<>(tableFixedValuesConditions.keySet());
+            for (String columnName : columnNames) {
                 Optional<Column> columnCandidate = tablesAware.getColumn(tableName, columnName);
                 Assert.isTrue(columnCandidate.isPresent(), String.format("Column %s should be present in table %s", columnName, tableName));
                 Column column = columnCandidate.get();
