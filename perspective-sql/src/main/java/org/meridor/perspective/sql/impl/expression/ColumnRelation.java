@@ -134,7 +134,7 @@ public class ColumnRelation {
     @Override
     public String toString() {
         return String.format(
-                "ColumnRelation{%s.%s = %s.%s}",
+                "%s.%s = %s.%s",
                 leftTableAlias, leftColumn, rightTableAlias, rightColumn
         );
     }
