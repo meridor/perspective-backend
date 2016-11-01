@@ -3,10 +3,8 @@ package org.meridor.perspective.digitalocean;
 import com.myjeeva.digitalocean.pojo.Droplet;
 import com.myjeeva.digitalocean.pojo.Image;
 import com.myjeeva.digitalocean.pojo.Key;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.Keypair;
-import org.meridor.perspective.beans.MetadataKey;
-import org.meridor.perspective.beans.Project;
+import com.myjeeva.digitalocean.pojo.Region;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
@@ -17,9 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -47,7 +43,8 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         try {
             String region = project.getMetadata().get(MetadataKey.REGION);
             Api api = apiProvider.getApi(cloud);
-            String realId = String.valueOf(api.addDroplet(getDroplet(instance)));
+            Droplet droplet = createDroplet(instance, region);
+            String realId = String.valueOf(api.addDroplet(droplet));
             instance.getMetadata().put(MetadataKey.REGION, region);
             instance.setRealId(realId);
             String instanceId = idGenerator.getInstanceId(cloud, realId);
@@ -60,15 +57,20 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
         }
     }
 
-    private static Droplet getDroplet(Instance instance) {
+    private static Droplet createDroplet(Instance instance, String region) {
         Droplet droplet = new Droplet();
         droplet.setName(instance.getName());
 
+        Region rgn = new Region();
+        rgn.setSlug(region);
+        droplet.setRegion(rgn);
+        
         Image image = new Image();
         image.setId(Integer.valueOf(instance.getImage().getRealId()));
         droplet.setImage(image);
 
-        //TODO: specify flavor (i.e. size, kernel and so on...)
+        Flavor flavor = instance.getFlavor();
+        droplet.setSize(flavor.getId());
 
         List<Keypair> keypairs = instance.getKeypairs();
         if (!keypairs.isEmpty()) {

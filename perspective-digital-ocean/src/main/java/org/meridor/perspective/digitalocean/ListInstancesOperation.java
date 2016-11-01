@@ -108,7 +108,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         addFlavor(cloud, instance, droplet);
         addAddresses(instance, droplet);
         addKeypairs(instance, droplet);
-        //TODO: somehow save kernel info
         return instance;
     }
     
@@ -119,7 +118,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setId(instanceId);
         instance.setRealId(realId);
         instance.setName(droplet.getName());
-        instance.setFqdn(droplet.getName()); //TODO: change this to real FQDN is possible
         instance.setCloudId(cloud.getId());
         instance.setCloudType(CloudType.DIGITAL_OCEAN);
 
@@ -135,10 +133,16 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         instance.setIsLocked(droplet.isLocked());
         
         MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.REGION, droplet.getRegion().getName());
+        metadata.put(MetadataKey.REGION, droplet.getRegion().getSlug());
+        metadata.put(MetadataKey.CONSOLE_URL, getConsoleUrl(droplet.getId()));
         instance.setMetadata(metadata);
         
         return instance;
+    }
+    
+    private static String getConsoleUrl(Integer dropletId) {
+        //Don't know how to get this from the API, so just hard-coded URL
+        return String.format("https://cloud.digitalocean.com/droplets/%d/console?no_layout=true", dropletId);
     }
 
     private static InstanceState createState(DropletStatus dropletStatus) {
@@ -152,7 +156,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
 
     private void addProject(Cloud cloud, Instance instance, Droplet droplet) {
-        String region = droplet.getRegion().getName();
+        String region = droplet.getRegion().getSlug();
         String projectId = idGenerator.getProjectId(cloud, region);
         Optional<Project> projectCandidate = projectsAware.getProject(projectId);
         if (projectCandidate.isPresent()) {
@@ -170,7 +174,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
     
     private void addFlavor(Cloud cloud, Instance instance, Droplet droplet) {
-        //TODO: to be implemented. Should consider disk size, size and kernel..
+        String region = droplet.getRegion().getSlug();
+        String projectId = idGenerator.getProjectId(cloud, region);
+        Optional<Project> projectCandidate = projectsAware.getProject(projectId);
+        if (projectCandidate.isPresent()) {
+            Project project = projectCandidate.get();
+            String flavorId = droplet.getSize();
+            if (flavorId != null) {
+                Optional<Flavor> matchingFlavor = project.getFlavors().stream()
+                        .filter(f -> flavorId.equals(f.getId()))
+                        .findFirst();
+                if (!matchingFlavor.isPresent()) {
+                    instance.setFlavor(matchingFlavor.get());
+                }
+            }
+        }
     }
 
     private void addAddresses(Instance instance, Droplet droplet) {

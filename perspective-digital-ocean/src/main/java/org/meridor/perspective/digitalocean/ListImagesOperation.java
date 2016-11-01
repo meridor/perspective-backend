@@ -118,6 +118,8 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         Image image = new Image();
         image.setId(imageId);
         image.setRealId(String.valueOf(digitalOceanImage.getId()));
+        String imageName = String.format("%s %s", digitalOceanImage.getDistribution(), digitalOceanImage.getName());
+        image.setName(imageName);
         image.setProjectIds(projectIds);
         image.setState(ImageState.SAVED);
         ZonedDateTime created = ZonedDateTime.ofInstant(

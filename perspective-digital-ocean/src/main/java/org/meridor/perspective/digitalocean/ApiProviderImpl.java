@@ -15,7 +15,7 @@ import java.util.function.Function;
 @Component
 public class ApiProviderImpl implements ApiProvider {
 
-    private static final Integer PER_PAGE = 25;
+    private static final Integer PER_PAGE = 100;
 
     @Override
     public Api getApi(Cloud cloud) {
@@ -25,8 +25,7 @@ public class ApiProviderImpl implements ApiProvider {
     @Override
     public void forEachRegion(Cloud cloud, BiConsumer<String, Api> action) throws Exception {
         Api api = getApi(cloud);
-        api.listRegions().forEach(cr -> action.accept(cr.getName(), new ApiImpl(cloud)));
-
+        api.listRegions().forEach(cr -> action.accept(cr.getSlug(), new ApiImpl(cloud)));
     }
 
     private class ApiImpl implements Api {
@@ -43,36 +42,17 @@ public class ApiProviderImpl implements ApiProvider {
 
         @Override
         public List<Region> listRegions() throws Exception {
-            return listImpl(pn -> {
-                try {
-                    return api.getAvailableRegions(pn).getRegions();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            return api.getAvailableRegions(1).getRegions();
         }
 
         @Override
         public List<Size> listSizes() throws Exception {
-            return listImpl(pn -> {
-                try {
-                    return api.getAvailableSizes(pn).getSizes();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            return api.getAvailableSizes(1).getSizes();
         }
 
         @Override
         public List<Key> listKeys() throws Exception {
-            return listImpl(pn -> {
-                try {
-                    return api.getAvailableKeys(pn).getKeys();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
+            return api.getAvailableKeys(1).getKeys();
         }
 
         @Override
@@ -113,7 +93,6 @@ public class ApiProviderImpl implements ApiProvider {
 
         @Override
         public void startDroplet(Integer dropletId) throws Exception {
-            //TODO: what is the right API method?
             api.powerOnDroplet(dropletId);
         }
 
@@ -123,13 +102,18 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public void powerOffDroplet(Integer dropletId) throws Exception {
+            api.powerOffDroplet(dropletId);
+        }
+
+        @Override
         public void rebootDroplet(Integer dropletId) throws Exception {
             api.rebootDroplet(dropletId);
         }
 
         @Override
         public void hardRebootDroplet(Integer dropletId) throws Exception {
-            api.powerCycleDroplet(dropletId); //TODO: is this correct?
+            api.powerCycleDroplet(dropletId);
         }
 
         @Override
@@ -174,7 +158,10 @@ public class ApiProviderImpl implements ApiProvider {
 
         private <T> List<T> listImpl(int pageNo, Function<Integer, List<T>> action, List<T> alreadyFetchedEntities) {
             try {
-                alreadyFetchedEntities.addAll(action.apply(pageNo));
+                List<T> newEntities = action.apply(pageNo);
+                if (newEntities.isEmpty()) {
+                    return alreadyFetchedEntities;
+                }
                 return listImpl(pageNo + 1, action, alreadyFetchedEntities);
             } catch (Exception e) {
                 return alreadyFetchedEntities;

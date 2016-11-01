@@ -32,6 +32,8 @@ public interface Api {
     void startDroplet(Integer dropletId) throws Exception;
 
     void shutdownDroplet(Integer dropletId) throws Exception;
+    
+    void powerOffDroplet(Integer dropletId) throws Exception;
 
     void rebootDroplet(Integer dropletId) throws Exception;
 

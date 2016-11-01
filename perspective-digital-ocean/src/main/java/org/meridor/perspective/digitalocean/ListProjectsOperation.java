@@ -1,10 +1,8 @@
 package org.meridor.perspective.digitalocean;
 
 import com.myjeeva.digitalocean.pojo.Key;
-import org.meridor.perspective.beans.Keypair;
-import org.meridor.perspective.beans.MetadataKey;
-import org.meridor.perspective.beans.MetadataMap;
-import org.meridor.perspective.beans.Project;
+import com.myjeeva.digitalocean.pojo.Size;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.storage.ProjectsAware;
@@ -108,7 +106,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private Project processProject(Cloud cloud, String region, Api api) throws Exception {
         Project project = createProject(cloud, region);
-        //TODO: add information about flavors, sizes, keys and so on
+        addFlavors(project, api);
         addKeyPairs(project, api);
         return project;
     }
@@ -126,6 +124,29 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return project;
     }
 
+    private void addFlavors(Project project, Api api) throws Exception {
+        for (Size size : api.listSizes()) {
+            Flavor flavor = new Flavor();
+            flavor.setId(size.getSlug());
+            flavor.setVcpus(size.getVirutalCpuCount());
+            flavor.setRam(size.getMemorySizeInMb());
+            flavor.setRootDisk(size.getDiskSize());
+            flavor.setEphemeralDisk(0);
+            flavor.setHasSwap(false);
+            flavor.setIsPublic(true);
+            String flavorName = String.format(
+                    "c%d-m%d-d%d-n%d-p%s",
+                    size.getVirutalCpuCount(),
+                    size.getMemorySizeInMb(),
+                    size.getDiskSize(),
+                    size.getTransfer(),
+                    String.valueOf(size.getPriceMonthly())
+            );
+            flavor.setName(flavorName);
+            project.getFlavors().add(flavor);
+        }
+    }
+    
     private void addKeyPairs(Project project, Api api) throws Exception {
         for (Key key : api.listKeys()) {
             Keypair keypair = new Keypair();
