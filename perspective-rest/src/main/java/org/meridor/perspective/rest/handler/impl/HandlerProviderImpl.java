@@ -16,6 +16,7 @@ import org.meridor.perspective.rest.handler.HandlerProvider;
 import org.meridor.perspective.rest.handler.Response;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -205,6 +206,9 @@ public class HandlerProviderImpl implements HandlerProvider {
     }
 
     private Optional<String> getSupportedContentType(String contentTypeCandidate, List<String> supportedContentTypes) {
+        if (MediaType.WILDCARD.equals(contentTypeCandidate) && !supportedContentTypes.isEmpty()) {
+            return Optional.of(supportedContentTypes.get(0));
+        }
         return supportedContentTypes.stream()
                 .filter(contentTypeCandidate::contains)
                 .findFirst();
