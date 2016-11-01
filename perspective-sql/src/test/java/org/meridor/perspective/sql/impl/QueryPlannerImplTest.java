@@ -1,5 +1,6 @@
 package org.meridor.perspective.sql.impl;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.sql.impl.expression.*;
@@ -283,6 +284,32 @@ public class QueryPlannerImplTest {
         assertThat(columnRelation.getRightTableAlias(), equalTo(PROJECTS_ALIAS));
         assertThat(columnRelation.getRightColumn(), equalTo(ID));
 
+    }
+    
+    @Ignore
+    @Test
+    public void testIndexScanStrategyOrCondition() throws Exception {
+        DataSource leftDataSource = new DataSource(INSTANCES_ALIAS);
+        queryParser.setSelectQueryAware(new MockSelectQueryAware(){
+            {
+                getSelectionMap().put(ANY_COLUMN, new ColumnExpression());
+                setDataSource(leftDataSource);
+                BooleanExpression whereCondition = new BinaryBooleanExpression(
+                        new SimpleBooleanExpression(new ColumnExpression(NAME, INSTANCES_ALIAS), EQUAL, VALUE),
+                        OR,
+                        new SimpleBooleanExpression(new ColumnExpression(ID, INSTANCES_ALIAS), EQUAL, VALUE)
+                );
+                setWhereExpression(whereCondition);
+                getTableAliases().put(INSTANCES_ALIAS, INSTANCES);
+            }
+        });
+        List<Task> tasks = new ArrayList<>(plan());
+        DataSourceTask dataSourceTask = doCommonTaskAssertions(tasks);
+        DataSource optimizedLeftDataSource = doOptimizedLeftDataSourceAssertions(dataSourceTask);
+        assertThat(optimizedLeftDataSource.getTableAlias().isPresent(), is(true));
+        
+        //TODO: to be continued...
+        
     }
     
     @Test
