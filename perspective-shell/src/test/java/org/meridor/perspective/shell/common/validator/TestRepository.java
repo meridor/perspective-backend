@@ -3,7 +3,7 @@ package org.meridor.perspective.shell.common.validator;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.*;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.*;

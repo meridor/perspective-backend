@@ -3,12 +3,12 @@ package org.meridor.perspective.rest.services;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.framework.messaging.Destination;
-import org.meridor.perspective.framework.messaging.Producer;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.OperationsRegistry;
-import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.backend.messaging.Destination;
+import org.meridor.perspective.backend.messaging.Producer;
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.OperationsRegistry;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 import static org.meridor.perspective.beans.InstanceState.*;
 import static org.meridor.perspective.config.OperationType.*;
 import static org.meridor.perspective.events.EventFactory.*;
-import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @Service
 public class InstancesService {

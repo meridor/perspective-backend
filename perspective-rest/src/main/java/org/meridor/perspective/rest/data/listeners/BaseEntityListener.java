@@ -1,7 +1,7 @@
 package org.meridor.perspective.rest.data.listeners;
 
-import org.meridor.perspective.framework.storage.EntityListener;
-import org.meridor.perspective.framework.storage.StorageEvent;
+import org.meridor.perspective.backend.storage.EntityListener;
+import org.meridor.perspective.backend.storage.StorageEvent;
 import org.meridor.perspective.sql.impl.index.Indexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

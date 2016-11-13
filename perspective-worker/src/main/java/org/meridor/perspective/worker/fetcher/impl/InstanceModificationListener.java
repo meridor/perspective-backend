@@ -1,7 +1,7 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

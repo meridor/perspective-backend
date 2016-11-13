@@ -11,7 +11,7 @@
         <context:exclude-filter type="regex" expression="org\.meridor\.perspective\.sql\.impl\.MockQueryPlanner"/>
     </context:component-scan>
 
-    <bean class="org.meridor.perspective.framework.messaging.TestStorage"/>
+    <bean class="org.meridor.perspective.backend.messaging.TestStorage"/>
     <bean name="dataFetcher"
           class="org.meridor.perspective.sql.impl.storage.impl.DataFetcherImpl"/>
 

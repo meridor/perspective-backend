@@ -2,7 +2,7 @@ package org.meridor.perspective.worker.processor;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.framework.messaging.Message;
+import org.meridor.perspective.backend.messaging.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.config.CloudType.MOCK;
-import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @ContextConfiguration(locations = "/META-INF/spring/dispatcher-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)

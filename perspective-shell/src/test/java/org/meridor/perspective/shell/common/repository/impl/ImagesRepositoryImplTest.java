@@ -6,7 +6,7 @@ import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.request.AddImagesRequest;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;

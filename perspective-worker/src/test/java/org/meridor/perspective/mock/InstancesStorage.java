@@ -1,7 +1,7 @@
 package org.meridor.perspective.mock;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;

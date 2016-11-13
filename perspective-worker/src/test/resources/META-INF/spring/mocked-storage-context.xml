@@ -12,8 +12,8 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective">
         <!-- We exclude production storage implementation -->
-        <context:exclude-filter expression="org\.meridor\.perspective\.framework\.storage\.impl\.StorageImpl" type="regex" />
-        <context:exclude-filter expression="org\.meridor\.perspective\.framework\.messaging\.TestDispatcher" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.backend\.storage\.impl\.StorageImpl" type="regex" />
+        <context:exclude-filter expression="org\.meridor\.perspective\.backend\.messaging\.TestDispatcher" type="regex" />
     </context:component-scan>
     <aop:aspectj-autoproxy/>
 

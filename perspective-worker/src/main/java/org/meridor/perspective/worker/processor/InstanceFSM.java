@@ -5,7 +5,7 @@ import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;

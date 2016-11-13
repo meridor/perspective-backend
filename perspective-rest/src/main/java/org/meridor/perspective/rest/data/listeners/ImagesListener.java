@@ -1,8 +1,8 @@
 package org.meridor.perspective.rest.data.listeners;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.StorageEvent;
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.StorageEvent;
 import org.meridor.perspective.rest.data.converters.ImageConverters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

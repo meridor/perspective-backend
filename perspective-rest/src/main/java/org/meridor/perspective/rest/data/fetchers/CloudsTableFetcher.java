@@ -1,6 +1,6 @@
 package org.meridor.perspective.rest.data.fetchers;
 
-import org.meridor.perspective.framework.storage.ProjectsAware;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.rest.data.TableName;
 import org.meridor.perspective.rest.data.beans.Cloud;
 import org.meridor.perspective.rest.data.converters.ProjectConverters;

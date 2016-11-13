@@ -1,7 +1,7 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
-import org.meridor.perspective.framework.storage.EntityListener;
-import org.meridor.perspective.framework.storage.StorageEvent;
+import org.meridor.perspective.backend.storage.EntityListener;
+import org.meridor.perspective.backend.storage.StorageEvent;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.meridor.perspective.framework.storage.StorageEvent.ADDED;
-import static org.meridor.perspective.framework.storage.StorageEvent.MODIFIED;
+import static org.meridor.perspective.backend.storage.StorageEvent.ADDED;
+import static org.meridor.perspective.backend.storage.StorageEvent.MODIFIED;
 import static org.meridor.perspective.worker.fetcher.impl.LastModified.*;
 import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.getMomentsAgoLimit;
 import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.getSomeTimeAgoLimit;

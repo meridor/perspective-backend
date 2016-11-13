@@ -1,8 +1,8 @@
 package org.meridor.perspective.rest.data.listeners;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.framework.storage.InstancesAware;
-import org.meridor.perspective.framework.storage.StorageEvent;
+import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.StorageEvent;
 import org.meridor.perspective.rest.data.converters.InstanceConverters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

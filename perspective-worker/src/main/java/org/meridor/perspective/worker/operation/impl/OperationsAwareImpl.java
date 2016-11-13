@@ -1,7 +1,7 @@
 package org.meridor.perspective.worker.operation.impl;
 
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.storage.OperationsRegistry;
+import org.meridor.perspective.backend.storage.OperationsRegistry;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.Operation;
 import org.meridor.perspective.worker.operation.OperationsAware;

@@ -1,7 +1,7 @@
 package org.meridor.perspective.rest.data.fetchers;
 
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.framework.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.sql.impl.storage.impl.DerivedTableFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

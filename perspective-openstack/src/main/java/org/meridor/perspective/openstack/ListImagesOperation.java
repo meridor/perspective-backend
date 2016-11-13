@@ -6,7 +6,7 @@ import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;

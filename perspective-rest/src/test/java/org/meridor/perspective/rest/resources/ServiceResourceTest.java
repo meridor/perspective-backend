@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.meridor.perspective.client.ServiceApi;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.storage.OperationsRegistry;
+import org.meridor.perspective.backend.storage.OperationsRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

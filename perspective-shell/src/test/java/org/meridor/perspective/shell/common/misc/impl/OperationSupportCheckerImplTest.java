@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.validator.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;

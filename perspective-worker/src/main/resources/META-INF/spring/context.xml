@@ -24,7 +24,7 @@
     </bean>
 
     <!-- Settings provider -->
-    <bean id="settingsProvider" class="org.meridor.perspective.framework.config.impl.PropertiesSettingsProvider">
+    <bean id="settingsProvider" class="org.meridor.perspective.backend.config.impl.PropertiesSettingsProvider">
         <constructor-arg ref="properties"/>
     </bean>
 

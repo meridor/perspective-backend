@@ -2,8 +2,8 @@ package org.meridor.perspective.worker.processor;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.events.ImageEvent;
-import org.meridor.perspective.framework.messaging.Message;
-import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.backend.messaging.Message;
+import org.meridor.perspective.backend.storage.ImagesAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,8 +2,8 @@ package org.meridor.perspective.rest.resources;
 
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.storage.OperationsRegistry;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.backend.storage.OperationsRegistry;
+import org.meridor.perspective.backend.storage.Storage;
 import org.meridor.perspective.rest.handler.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

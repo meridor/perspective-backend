@@ -5,9 +5,9 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.InstanceEvent;
-import org.meridor.perspective.framework.messaging.Destination;
-import org.meridor.perspective.framework.messaging.IfNotLocked;
-import org.meridor.perspective.framework.messaging.Producer;
+import org.meridor.perspective.backend.messaging.Destination;
+import org.meridor.perspective.backend.messaging.IfNotLocked;
+import org.meridor.perspective.backend.messaging.Producer;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 import static org.meridor.perspective.beans.DestinationName.READ_TASKS;
 import static org.meridor.perspective.events.EventFactory.instanceToEvent;
-import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @Component
 public class InstancesFetcher extends BaseFetcher {

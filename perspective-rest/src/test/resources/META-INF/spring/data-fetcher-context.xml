@@ -8,7 +8,7 @@
     <context:annotation-config/>
     <context:component-scan base-package="org.meridor.perspective.rest.data"/>
 
-    <bean class="org.meridor.perspective.framework.messaging.TestStorage"/>
+    <bean class="org.meridor.perspective.backend.messaging.TestStorage"/>
     <bean name="dataFetcher"
           class="org.meridor.perspective.sql.impl.storage.impl.DataFetcherImpl"/>
     <bean class="org.meridor.perspective.sql.impl.table.TablesAwareImpl"/>

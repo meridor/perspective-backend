@@ -3,7 +3,7 @@ package org.meridor.perspective.mock;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package org.meridor.perspective.worker.processor;
 
-import org.meridor.perspective.framework.messaging.Message;
+import org.meridor.perspective.backend.messaging.Message;
 
 public class AlwaysSucceedingProcessor implements Processor {
     

@@ -3,7 +3,7 @@ package org.meridor.perspective.shell.common.repository.impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.*;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.request.AddInstancesRequest;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;

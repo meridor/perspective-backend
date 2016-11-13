@@ -5,10 +5,10 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.ImageDeletingEvent;
 import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.events.ImageSavingEvent;
-import org.meridor.perspective.framework.messaging.Destination;
-import org.meridor.perspective.framework.messaging.Producer;
-import org.meridor.perspective.framework.storage.ImagesAware;
-import org.meridor.perspective.framework.storage.OperationsRegistry;
+import org.meridor.perspective.backend.messaging.Destination;
+import org.meridor.perspective.backend.messaging.Producer;
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.OperationsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import static org.meridor.perspective.beans.ImageState.DELETING;
 import static org.meridor.perspective.beans.ImageState.QUEUED;
 import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static org.meridor.perspective.events.EventFactory.*;
-import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @Service
 public class ImagesService {

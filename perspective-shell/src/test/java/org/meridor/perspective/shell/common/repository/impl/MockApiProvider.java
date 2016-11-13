@@ -10,7 +10,7 @@ import org.meridor.perspective.client.QueryApi;
 import org.meridor.perspective.client.ServiceApi;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.sql.QueryResult;
 import retrofit2.Call;

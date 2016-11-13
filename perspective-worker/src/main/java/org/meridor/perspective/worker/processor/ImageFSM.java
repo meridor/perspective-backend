@@ -5,7 +5,7 @@ import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.framework.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;

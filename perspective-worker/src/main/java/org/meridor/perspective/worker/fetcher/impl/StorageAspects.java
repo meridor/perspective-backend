@@ -4,8 +4,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.meridor.perspective.framework.messaging.IfNotLocked;
-import org.meridor.perspective.framework.storage.Storage;
+import org.meridor.perspective.backend.messaging.IfNotLocked;
+import org.meridor.perspective.backend.storage.Storage;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class StorageAspects implements ApplicationListener<ContextClosedEvent> {
         this.workerMetadata = workerMetadata;
     }
 
-    @Around("@within(org.meridor.perspective.framework.messaging.IfNotLocked) || execution(@org.meridor.perspective.framework.messaging.IfNotLocked * *(..))")
+    @Around("@within(org.meridor.perspective.backend.messaging.IfNotLocked) || execution(@org.meridor.perspective.backend.messaging.IfNotLocked * *(..))")
     public Object ifNotLocked(ProceedingJoinPoint joinPoint) throws Throwable {
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

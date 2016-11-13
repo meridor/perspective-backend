@@ -8,7 +8,7 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.meridor.perspective.framework.storage.StorageEvent.*;
+import static org.meridor.perspective.backend.storage.StorageEvent.*;
 
 public class LastModificationListenerTest {
 

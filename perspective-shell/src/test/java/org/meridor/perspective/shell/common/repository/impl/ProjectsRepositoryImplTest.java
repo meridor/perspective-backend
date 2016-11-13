@@ -6,7 +6,7 @@ import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Keypair;
 import org.meridor.perspective.beans.Network;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.framework.EntityGenerator;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.FindFlavorsResult;

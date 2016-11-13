@@ -17,7 +17,7 @@ import java.util.Collection;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.meridor.perspective.framework.EntityGenerator.*;
+import static org.meridor.perspective.backend.EntityGenerator.*;
 import static org.meridor.perspective.shell.common.validator.Entity.*;
 
 @ContextConfiguration(locations = "/META-INF/spring/validator-context.xml")

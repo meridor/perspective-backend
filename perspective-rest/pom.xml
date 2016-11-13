@@ -76,7 +76,7 @@
         <!-- Modules -->
         <dependency>
             <groupId>org.meridor.perspective</groupId>
-            <artifactId>perspective-framework</artifactId>
+            <artifactId>perspective-backend-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
@@ -123,7 +123,7 @@
         </dependency>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
-            <artifactId>perspective-framework</artifactId>
+            <artifactId>perspective-backend-common</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
             <scope>test</scope>

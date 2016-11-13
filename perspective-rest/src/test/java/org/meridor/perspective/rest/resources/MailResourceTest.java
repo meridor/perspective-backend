@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 import org.meridor.perspective.beans.DestinationName;
 import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.client.ApiAware;
-import org.meridor.perspective.framework.messaging.Destination;
-import org.meridor.perspective.framework.messaging.Producer;
+import org.meridor.perspective.backend.messaging.Destination;
+import org.meridor.perspective.backend.messaging.Producer;
 import org.meridor.perspective.rest.Server;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.api.SerializationUtils.unserialize;
-import static org.meridor.perspective.framework.messaging.MessageUtils.message;
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @ContextConfiguration(locations = "/META-INF/spring/integration-test-context.xml")
