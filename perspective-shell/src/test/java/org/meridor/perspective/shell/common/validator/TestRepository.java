@@ -1,9 +1,6 @@
 package org.meridor.perspective.shell.common.validator;
 
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.beans.MetadataKey;
-import org.meridor.perspective.beans.Network;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.framework.EntityGenerator;
@@ -18,12 +15,14 @@ import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
-public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository, ServiceRepository {
+public class TestRepository implements ProjectsRepository, ImagesRepository, InstancesRepository, SettingsRepository, FiltersAware, SettingsAware, QueryRepository, ServiceRepository, MailRepository {
 
     private static final String ONE = "one";
     private static final String TWO = "two";
 
     private final Map<CloudType, Set<OperationType>> supportedOperations = new HashMap<>();
+
+    private Map<String, Letter> letters = new HashMap<>();
 
     @Override
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
@@ -315,5 +314,19 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     @Override
     public Map<CloudType, Set<OperationType>> getSupportedOperations() {
         return supportedOperations;
+    }
+
+    public void addLetter(Letter letter) {
+        letters.put(letter.getId(), letter);
+    }
+
+    @Override
+    public List<Letter> getLetters() {
+        return new ArrayList<>(letters.values());
+    }
+
+    @Override
+    public void deleteLetter(String id) {
+        letters.remove(id);
     }
 }

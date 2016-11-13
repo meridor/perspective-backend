@@ -25,7 +25,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseConsumer.class);
 
-    @Value("${perspective.messaging.shutdown.timeout}")
+    @Value("${perspective.messaging.shutdown.timeout:30000}")
     private int shutdownTimeout;
 
     @Value("${perspective.messaging.polling.delay:1000}")
@@ -37,9 +37,6 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     @Autowired
     private Storage storage;
 
-    @Autowired
-    private Dispatcher dispatcher;
-
     private ExecutorService executorService;
 
     private volatile boolean canExecute = true;
@@ -47,6 +44,8 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
     protected abstract String getStorageKey();
     
     protected abstract int getParallelConsumers();
+    
+    protected abstract Dispatcher getDispatcher();
 
     private Runnable getRunnable() {
         return () -> {
@@ -67,7 +66,7 @@ public abstract class BaseConsumer implements ApplicationListener<ContextRefresh
                             }
                             Message message = (Message) item;
                             LOG.trace("Consumed message {} from queue = {}", message, storageKey);
-                            Optional<Message> notProcessedMessage = dispatcher.dispatch(message);
+                            Optional<Message> notProcessedMessage = getDispatcher().dispatch(message);
                             if (notProcessedMessage.isPresent()) {
                                 Optional<Message> nextRetry = retry(notProcessedMessage.get());
                                 if (nextRetry.isPresent()) {

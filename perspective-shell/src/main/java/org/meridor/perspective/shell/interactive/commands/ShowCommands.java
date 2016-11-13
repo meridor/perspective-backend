@@ -1,8 +1,10 @@
 package org.meridor.perspective.shell.interactive.commands;
 
+import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
+import org.meridor.perspective.shell.common.repository.MailRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.*;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.humanizedDuration;
 
 @Component
 public class ShowCommands extends BaseCommands {
@@ -32,6 +35,9 @@ public class ShowCommands extends BaseCommands {
     @Autowired
     private ImagesRepository imagesRepository;
     
+    @Autowired
+    private MailRepository mailRepository;
+
     @Autowired
     private RequestProvider requestProvider;
     
@@ -245,6 +251,21 @@ public class ShowCommands extends BaseCommands {
                     });
                 }
         );
+    }
+
+
+    @CliCommand(value = "show mail", help = "Show notifications coming from the API")
+    public void showMail() {
+        List<Letter> letters = mailRepository.getLetters();
+        List<String[]> rows = letters.stream()
+                .map(l -> new String[]{
+                        String.valueOf(letters.indexOf(l) + 1),
+                        humanizedDuration(l.getTimestamp()),
+                        l.getText()
+                })
+                .collect(Collectors.toList());
+        letters.forEach(l -> mailRepository.deleteLetter(l.getId()));
+        tableOrNothing(new String[]{"Number", "Date", "Text"}, rows);
     }
 
 }

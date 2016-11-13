@@ -1,6 +1,7 @@
 package org.meridor.perspective.worker.messaging;
 
 import org.meridor.perspective.beans.DestinationName;
+import org.meridor.perspective.framework.messaging.Dispatcher;
 import org.meridor.perspective.framework.messaging.impl.BaseConsumer;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,19 +13,27 @@ import static org.meridor.perspective.framework.messaging.MessageUtils.getRealQu
 @Component
 public class ReadTasksConsumer extends BaseConsumer {
 
-    @Value("${perspective.messaging.read.consumers}")
+    @Value("${perspective.messaging.read.consumers:2}")
     private int parallelConsumers;
 
+    private final Dispatcher dispatcher;
+    
     private final WorkerMetadata workerMetadata;
 
     @Autowired
-    public ReadTasksConsumer(WorkerMetadata workerMetadata) {
+    public ReadTasksConsumer(WorkerMetadata workerMetadata, Dispatcher dispatcher) {
         this.workerMetadata = workerMetadata;
+        this.dispatcher = dispatcher;
     }
 
     @Override
     protected int getParallelConsumers() {
         return parallelConsumers;
+    }
+
+    @Override
+    protected Dispatcher getDispatcher() {
+        return dispatcher;
     }
 
     @Override

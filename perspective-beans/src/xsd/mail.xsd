@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:beans.perspective.meridor.org"
+            targetNamespace="urn:beans.perspective.meridor.org"
+            elementFormDefault="qualified">
+
+    <xsd:complexType name="letter">
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="type" type="tns:letterType" default="ok"/>
+        <xsd:attribute name="text" type="xsd:string"/>
+        <xsd:attribute name="timestamp" type="xsd:dateTime"/>
+        <xsd:attribute name="payload" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="letterType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ok"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

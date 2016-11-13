@@ -47,7 +47,7 @@ public class Server {
 
     public String getBaseUrl() {
         Undertow.ListenerInfo listenerInfo = server.getListenerInfo().get(0);
-        return String.format("%s://%s/", listenerInfo.getProtcol(), listenerInfo.getAddress());
+        return String.format("%s://%s/", listenerInfo.getProtcol(), String.valueOf(listenerInfo.getAddress()).replace("/", ""));
     }
 
     private HttpHandler createHandler() {

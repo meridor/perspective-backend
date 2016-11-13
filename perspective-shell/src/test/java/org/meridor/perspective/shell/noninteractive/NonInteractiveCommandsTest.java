@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.meridor.perspective.api.ObjectMapperFactory;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.QueryResult;
 import org.meridor.perspective.sql.QueryStatus;
@@ -21,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import static org.meridor.perspective.api.SerializationUtils.createDefaultMapper;
 import static org.meridor.perspective.shell.common.repository.ApiProvider.API_SYSTEM_PROPERTY;
 
 @RunWith(Parameterized.class)
@@ -73,7 +73,7 @@ public class NonInteractiveCommandsTest {
     }
 
     private MockResponse responseFromObject(Serializable object) throws JsonProcessingException {
-        ObjectWriter ow = ObjectMapperFactory.createDefaultMapper()
+        ObjectWriter ow = createDefaultMapper()
                 .writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(object);
         MockResponse mockResponse = new MockResponse();
@@ -88,6 +88,7 @@ public class NonInteractiveCommandsTest {
     public void before() throws IOException {
         if (needsServer) {
             server = new MockWebServer();
+            server.enqueue(response); //For mail endpoint
             server.enqueue(response);
             server.start();
             String serverUrl = server.url("/").url().toString();

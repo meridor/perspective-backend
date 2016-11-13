@@ -4,20 +4,26 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.Handlers;
 import io.undertow.io.Receiver;
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.PathHandler;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HttpString;
 import io.undertow.util.Methods;
-import org.meridor.perspective.api.ObjectMapperFactory;
+import io.undertow.websockets.core.AbstractReceiveListener;
+import io.undertow.websockets.core.BufferedTextMessage;
+import io.undertow.websockets.core.StreamSourceFrameChannel;
+import io.undertow.websockets.core.WebSocketChannel;
 import org.meridor.perspective.rest.handler.HandlerProvider;
 import org.meridor.perspective.rest.handler.Response;
+import org.meridor.perspective.rest.handler.WebsocketResource;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -33,6 +39,8 @@ import static io.undertow.util.Headers.ACCEPT;
 import static io.undertow.util.Headers.CONTENT_TYPE;
 import static io.undertow.util.StatusCodes.UNSUPPORTED_MEDIA_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.meridor.perspective.api.SerializationUtils.createDefaultMapper;
+import static org.meridor.perspective.api.SerializationUtils.serialize;
 
 public class HandlerProviderImpl implements HandlerProvider {
 
@@ -44,25 +52,82 @@ public class HandlerProviderImpl implements HandlerProvider {
         return provideImpl(beans);
     }
 
-    private HttpHandler provideImpl(Collection<Object> beans) {
-        RoutingHandler root = Handlers.routing();
+    private static HttpHandler provideImpl(Collection<Object> beans) {
+        RoutingHandler routingHandler = Handlers.routing();
+        Map<String, WebsocketResource> websocketResources = new HashMap<>();
         beans.forEach(bean -> {
             Class<?> cls = bean.getClass();
             String rootPath = cls.isAnnotationPresent(Path.class) ?
                     cls.getAnnotation(Path.class).value()
                     : SLASH;
-            Arrays.stream(cls.getMethods()).forEach(m -> {
-                HttpString method = getHttpMethod(m);
-                HttpHandler handler = getHandler(bean, m);
-                String template = getTemplate(m);
-                String fullTemplate = getFullTemplate(rootPath, template);
-                root.add(method, fullTemplate, handler);
-            });
+            if (bean instanceof WebsocketResource) {
+                websocketResources.put(rootPath, (WebsocketResource) bean);
+            } else {
+                addHttpHandler(routingHandler, rootPath, bean);
+            }
         });
-        return root;
+        return Handlers.predicate(
+                createWebsocketPredicate(websocketResources.keySet()),
+                createGlobalWebsocketHandler(websocketResources),
+                routingHandler
+        );
     }
 
-    private String getFullTemplate(String rootPath, String template) {
+    private static Predicate createWebsocketPredicate(Collection<String> websocketRootPaths) {
+        List<Predicate> predicates = websocketRootPaths.stream()
+                .map(Predicates::path)
+                .collect(Collectors.toList());
+        return Predicates.or(predicates.toArray(new Predicate[predicates.size()]));
+    }
+
+    private static HttpHandler createGlobalWebsocketHandler(Map<String, WebsocketResource> websocketResources) {
+        PathHandler handler = Handlers.path();
+        websocketResources.keySet()
+                .forEach(rootPath ->
+                        handler.addExactPath(
+                                rootPath,
+                                createWebsocketHandler(websocketResources.get(rootPath))
+                        )
+                );
+        return handler;
+    }
+
+    private static HttpHandler createWebsocketHandler(WebsocketResource websocketResource) {
+        return Handlers.websocket((exchange, channel) -> {
+            websocketResource.onOpen(channel);
+            channel.getReceiveSetter().set(new AbstractReceiveListener() {
+
+                @Override
+                protected void onClose(WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel) throws IOException {
+                    websocketResource.onClose(webSocketChannel);
+                }
+
+                @Override
+                protected void onError(WebSocketChannel channel, Throwable error) {
+                    websocketResource.onError(channel, error);
+                }
+
+                @Override
+                protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
+                    websocketResource.onMessage(message.getData(), channel);
+                }
+
+            });
+            channel.resumeReceives();
+        });
+    }
+
+    private static void addHttpHandler(RoutingHandler routingHandler, String rootPath, Object bean) {
+        Arrays.stream(bean.getClass().getMethods()).forEach(m -> {
+            HttpString method = getHttpMethod(m);
+            HttpHandler handler = getHandler(bean, m);
+            String template = getTemplate(m);
+            String fullTemplate = getFullTemplate(rootPath, template);
+            routingHandler.add(method, fullTemplate, handler);
+        });
+    }
+
+    private static String getFullTemplate(String rootPath, String template) {
         if (SLASH.equals(template)) {
             return rootPath;
         }
@@ -72,7 +137,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         return rootPath + template;
     }
 
-    private HttpString getHttpMethod(Method method) {
+    private static HttpString getHttpMethod(Method method) {
         if (method.isAnnotationPresent(POST.class)) {
             return Methods.POST;
         } else if (method.isAnnotationPresent(PUT.class)) {
@@ -88,13 +153,13 @@ public class HandlerProviderImpl implements HandlerProvider {
         }
     }
 
-    private String getTemplate(Method method) {
+    private static String getTemplate(Method method) {
         return method.isAnnotationPresent(Path.class) ?
                 method.getAnnotation(Path.class).value()
                 : SLASH;
     }
 
-    private HttpHandler getHandler(Object bean, Method method) {
+    private static HttpHandler getHandler(Object bean, Method method) {
         List<String> inputMediaTypes = getMediaTypes(method, Consumes.class, Consumes::value);
         List<String> outputMediaTypes = getMediaTypes(method, Produces.class, Produces::value);
         return exchange -> {
@@ -125,7 +190,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         };
     }
 
-    private JavaType getBodyType(ObjectMapper objectMapper, Method method) {
+    private static JavaType getBodyType(ObjectMapper objectMapper, Method method) {
         Optional<Parameter> bodyParameterCandidate = Arrays.stream(method.getParameters())
                 .filter(p -> p.getAnnotations().length == 0)
                 .findFirst();
@@ -147,7 +212,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         return objectMapper.getTypeFactory().constructType(type);
     }
 
-    private Object getParameterValue(Parameter parameter, Object body, HttpServerExchange exchange) {
+    private static Object getParameterValue(Parameter parameter, Object body, HttpServerExchange exchange) {
         if (parameter.isAnnotationPresent(PathParam.class)) {
             return getPathParameterValue(parameter, exchange);
         } else if (parameter.isAnnotationPresent(QueryParam.class)) {
@@ -163,7 +228,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         }
     }
 
-    private Object getPathParameterValue(Parameter parameter, HttpServerExchange exchange) {
+    private static Object getPathParameterValue(Parameter parameter, HttpServerExchange exchange) {
         String parameterName = parameter.getAnnotation(PathParam.class).value();
         //This is strange but path parameters in RoutingHandler in fact go to exchange query parameters  
         Map<String, Deque<String>> pathParameters = exchange.getQueryParameters();
@@ -171,41 +236,41 @@ public class HandlerProviderImpl implements HandlerProvider {
                 pathParameters.get(parameterName).getFirst() : null;
     }
 
-    private Object getQueryParameterValue(Parameter parameter, HttpServerExchange exchange) {
+    private static Object getQueryParameterValue(Parameter parameter, HttpServerExchange exchange) {
         String parameterName = parameter.getAnnotation(QueryParam.class).value();
         Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
         return (queryParameters.containsKey(parameterName)) ?
                 queryParameters.get(parameterName).getFirst() : null;
     }
 
-    private Object getHeaderParameterValue(Parameter parameter, HttpServerExchange exchange) {
+    private static Object getHeaderParameterValue(Parameter parameter, HttpServerExchange exchange) {
         String parameterName = parameter.getAnnotation(HeaderParam.class).value();
         Map<String, Deque<String>> headerParameters = exchange.getQueryParameters();
         return (headerParameters.containsKey(parameterName)) ?
                 headerParameters.get(parameterName).getFirst() : null;
     }
 
-    private Object getCookieParameterValue(Parameter parameter, HttpServerExchange exchange) {
+    private static Object getCookieParameterValue(Parameter parameter, HttpServerExchange exchange) {
         String parameterName = parameter.getAnnotation(CookieParam.class).value();
         Map<String, Cookie> cookiesMap = exchange.getRequestCookies();
         return (cookiesMap.containsKey(parameterName)) ?
                 cookiesMap.get(parameterName).getValue() : null;
     }
 
-    private <T extends Annotation> List<String> getMediaTypes(Method method, Class<T> cls, Function<T, String[]> mediaTypeProvider) {
+    private static <T extends Annotation> List<String> getMediaTypes(Method method, Class<T> cls, Function<T, String[]> mediaTypeProvider) {
         return method.isAnnotationPresent(cls) ?
                 Arrays.asList(mediaTypeProvider.apply(method.getAnnotation(cls))) :
                 Collections.singletonList(DEFAULT_CONTENT_TYPE);
     }
 
-    private Optional<String> getSupportedContentType(HttpServerExchange exchange, HttpString header, List<String> supportedContentTypes) {
+    private static Optional<String> getSupportedContentType(HttpServerExchange exchange, HttpString header, List<String> supportedContentTypes) {
         Optional<String> contentTypeCandidate = getHeader(exchange, header);
         return contentTypeCandidate.isPresent() ?
                 getSupportedContentType(contentTypeCandidate.get(), supportedContentTypes) :
                 Optional.ofNullable(supportedContentTypes.get(0));
     }
 
-    private Optional<String> getSupportedContentType(String contentTypeCandidate, List<String> supportedContentTypes) {
+    private static Optional<String> getSupportedContentType(String contentTypeCandidate, List<String> supportedContentTypes) {
         if (MediaType.WILDCARD.equals(contentTypeCandidate) && !supportedContentTypes.isEmpty()) {
             return Optional.of(supportedContentTypes.get(0));
         }
@@ -214,19 +279,19 @@ public class HandlerProviderImpl implements HandlerProvider {
                 .findFirst();
     }
 
-    private Optional<String> getHeader(HttpServerExchange exchange, HttpString headerName) {
+    private static Optional<String> getHeader(HttpServerExchange exchange, HttpString headerName) {
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         return requestHeaders.contains(headerName) ?
                 Optional.ofNullable(requestHeaders.get(headerName).getFirst()) :
                 Optional.empty();
     }
 
-    private void getBody(HttpServerExchange exchange, Method method, Consumer<Object> consumer) {
+    private static void getBody(HttpServerExchange exchange, Method method, Consumer<Object> consumer) {
         Receiver requestReceiver = exchange.getRequestReceiver();
         requestReceiver.receiveFullBytes(
                 (exc, bytes) -> {
                     try {
-                        ObjectMapper objectMapper = ObjectMapperFactory.createDefaultMapper();
+                        ObjectMapper objectMapper = createDefaultMapper();
                         JavaType bodyType = getBodyType(objectMapper, method);
                         Object body = (bytes.length > 0) ?
                                 objectMapper.readValue(bytes, bodyType) : null;
@@ -238,7 +303,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         );
     }
 
-    private void writeResultIfNeeded(
+    private static void writeResultIfNeeded(
             HttpServerExchange exchange, Class<?> returnType, Object result) {
         try {
             if (Response.class.isAssignableFrom(returnType)) {
@@ -261,10 +326,7 @@ public class HandlerProviderImpl implements HandlerProvider {
         }
     }
 
-    private void write(Object body, HttpServerExchange exchange) throws IOException {
-        ObjectMapper objectMapper = ObjectMapperFactory.createDefaultMapper();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, body);
-        exchange.getResponseSender().send(new String(outputStream.toByteArray()));
+    private static void write(Object body, HttpServerExchange exchange) throws IOException {
+        exchange.getResponseSender().send(serialize(body));
     }
 }

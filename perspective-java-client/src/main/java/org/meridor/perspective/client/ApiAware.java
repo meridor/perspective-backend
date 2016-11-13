@@ -3,11 +3,14 @@ package org.meridor.perspective.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.meridor.perspective.api.ObjectMapperFactory;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
+import static org.meridor.perspective.api.SerializationUtils.createDefaultMapper;
 
 public final class ApiAware {
     
@@ -24,13 +27,24 @@ public final class ApiAware {
     }
 
     public <S> S get(Class<S> serviceClass) {
-        ObjectMapper objectMapper = ObjectMapperFactory.createDefaultMapper();
+        ObjectMapper objectMapper = createDefaultMapper();
         Retrofit retrofit =
                 new Retrofit.Builder()
                         .baseUrl(baseUrl)
                         .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                         .client(httpClient).build();
         return retrofit.create(serviceClass);
+    }
+
+    public String getWebSocketUrl(String endpoint) {
+        try {
+            URL url = new URL(baseUrl);
+            return url.getPort() != -1 ?
+                    String.format("ws://%s:%d/%s", url.getHost(), url.getPort(), endpoint) :
+                    String.format("ws://%s/%s", url.getHost(), endpoint);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     private OkHttpClient createClient() {

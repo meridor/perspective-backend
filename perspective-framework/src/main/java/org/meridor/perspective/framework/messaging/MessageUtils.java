@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public final class MessageUtils {
 
+    private static final int DEFAULT_TTL = 1;
+    
     public static Optional<Message> retry(Message message) {
         int ttl = message.getTtl();
         if (ttl > 1) {
@@ -17,18 +19,20 @@ public final class MessageUtils {
     }
     
     public static Message message(CloudType cloudType, Serializable payload, int ttl) {
-        if (cloudType == null) {
-            throw new IllegalArgumentException("Cloud type can't be null");
-        }
         return new MessageImpl(cloudType, payload, ttl);
     }
     
     public static Message message(CloudType cloudType, Serializable payload) {
-        return message(cloudType, payload, 1);
+        return message(cloudType, payload, DEFAULT_TTL);
+    }
+
+    public static Message message(Serializable payload) {
+        return message(null, payload);
     }
 
     public static String getRealQueueName(String queueName, CloudType cloudType) {
-        return String.format("%s_%s", cloudType.value(), queueName);
+        return cloudType != null ? 
+                String.format("%s_%s", cloudType.value(), queueName) : queueName;
     }
 
 }

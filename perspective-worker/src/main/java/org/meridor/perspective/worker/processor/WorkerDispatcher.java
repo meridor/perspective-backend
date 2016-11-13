@@ -38,6 +38,7 @@ public class WorkerDispatcher implements Dispatcher {
             try {
                 processorCandidate.get().process(message);
             } catch (Exception e) {
+                //TODO: notify all event handlers that implement MessageEventHandler interface. Get beans implementing it from ApplicationContext.
                 return Optional.of(message);
             }
         } else {

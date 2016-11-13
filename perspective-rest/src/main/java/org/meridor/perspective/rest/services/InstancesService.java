@@ -42,8 +42,8 @@ public class InstancesService {
 
     @Destination(WRITE_TASKS)
     private Producer producer;
-    
-    @Value("${perspective.messaging.max.retries}")
+
+    @Value("${perspective.messaging.max.retries:5}")
     private int maxRetries;
 
     @Autowired

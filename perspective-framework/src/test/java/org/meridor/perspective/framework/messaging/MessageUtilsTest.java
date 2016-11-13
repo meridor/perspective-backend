@@ -26,7 +26,7 @@ public class MessageUtilsTest {
     }
     
     @Test
-    public void testMessage() {
+    public void testMessageWithCloud() {
         String payload = "payload";
         Message message = message(MOCK, payload, 5);
         assertThat(message.getId(), is(notNullValue()));
@@ -35,13 +35,19 @@ public class MessageUtilsTest {
         assertThat(message.getTtl(), equalTo(5));
     }
     
-    @Test(expected = IllegalArgumentException.class)
-    public void testIncorrectCloudTypeMessage() {
-        message(null, null);
+    @Test
+    public void testMessageWithNoCloud() {
+        String payload = "payload";
+        Message message = message(payload);
+        assertThat(message.getId(), is(notNullValue()));
+        assertThat(message.getCloudType(), is(nullValue()));
+        assertThat(message.getPayload(), equalTo(payload));
+        assertThat(message.getTtl(), equalTo(1));
     }
 
     @Test
     public void testGetRealQueueName() {
         assertThat(getRealQueueName("test", MOCK), equalTo("mock_test"));
+        assertThat(getRealQueueName("test", null), equalTo("test"));
     }
 }

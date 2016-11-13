@@ -255,6 +255,7 @@
             <xsd:enumeration value="undefined"/>
             <xsd:enumeration value="read_tasks"/>
             <xsd:enumeration value="write_tasks"/>
+            <xsd:enumeration value="mail"/>
         </xsd:restriction>
     </xsd:simpleType>
 

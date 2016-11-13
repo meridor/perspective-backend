@@ -23,5 +23,6 @@
     <bean class="org.meridor.perspective.shell.common.repository.impl.MockApiProvider"/>
     <bean class="org.meridor.perspective.shell.common.misc.DateUtils"/>
     <bean class="org.meridor.perspective.shell.common.repository.impl.AlwaysPassingExistingEntityValidator"/>
+    <bean class="org.meridor.perspective.shell.interactive.TestLogger"/>
     
 </beans>

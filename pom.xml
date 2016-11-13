@@ -32,6 +32,7 @@
         <openstack4j.version>3.0.0</openstack4j.version>
         <undertow.version>1.4.0.Final</undertow.version>
         <digitalocean-api-client.version>2.7</digitalocean-api-client.version>
+        <tyrus.version>1.13</tyrus.version>
     </properties>
 
     <modules>
@@ -130,6 +131,17 @@
                 <artifactId>yatomata</artifactId>
                 <version>${yatomata.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-client</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-container-grizzly-client</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+
 
             <!-- Testing -->
             <dependency>
