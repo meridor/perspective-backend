@@ -58,6 +58,7 @@ public class CommandsTest {
                 {"show images"},
                 {"show images --name test-image"},
                 {"show images test-image"},
+                {"show mail"},
                 {"delete instances test-instance"},
                 {"delete images test-image"},
                 {"reboot test-instance"},
