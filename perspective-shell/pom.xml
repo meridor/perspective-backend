@@ -88,6 +88,10 @@
         </dependency>
         <dependency>
             <groupId>org.meridor.perspective</groupId>
+            <artifactId>perspective-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.meridor.perspective</groupId>
             <artifactId>perspective-backend-common</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>

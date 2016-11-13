@@ -1,18 +1,13 @@
-package org.meridor.perspective.shell.common.events.impl;
+package org.meridor.perspective.common.events.impl;
 
-import org.meridor.perspective.shell.common.events.EventBus;
-import org.meridor.perspective.shell.common.events.EventListener;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.common.events.EventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class EventBusImpl implements EventBus {
     
     private final Map<Class<?>, List<EventListener<Object>>> recipients = new HashMap<>();

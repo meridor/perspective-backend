@@ -1,6 +1,6 @@
 package org.meridor.perspective.shell.common.repository.impl;
 
-import org.meridor.perspective.shell.common.events.EventBus;
+import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.meridor.perspective.shell.common.repository.FiltersAware;
 import org.meridor.perspective.shell.common.repository.SettingsAware;

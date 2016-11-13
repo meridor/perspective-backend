@@ -48,6 +48,7 @@
         <module>perspective-shell</module>
         <module>perspective-api-common</module>
         <module>perspective-digital-ocean</module>
+        <module>perspective-common</module>
     </modules>
 
     <dependencyManagement>
@@ -87,6 +88,11 @@
             <dependency>
                 <groupId>org.meridor.perspective</groupId>
                 <artifactId>perspective-api-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.meridor.perspective</groupId>
+                <artifactId>perspective-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

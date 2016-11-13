@@ -2,7 +2,7 @@ package org.meridor.perspective.shell.interactive;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.shell.common.events.EventBus;
+import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.plugin.PromptProvider;

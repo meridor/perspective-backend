@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.common.events;
+package org.meridor.perspective.common.events;
 
 public interface EventListener<T> {
     

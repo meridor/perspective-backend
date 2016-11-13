@@ -1,8 +1,8 @@
-package org.meridor.perspective.shell.common.events.impl;
+package org.meridor.perspective.common.events.impl;
 
 import org.junit.Test;
-import org.meridor.perspective.shell.common.events.EventBus;
-import org.meridor.perspective.shell.common.events.EventListener;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.common.events.EventListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

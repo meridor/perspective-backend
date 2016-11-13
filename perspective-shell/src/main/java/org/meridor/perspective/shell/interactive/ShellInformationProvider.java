@@ -1,7 +1,7 @@
 package org.meridor.perspective.shell.interactive;
 
-import org.meridor.perspective.shell.common.events.EventBus;
-import org.meridor.perspective.shell.common.events.EventListener;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.common.events.EventListener;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,12 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
     
     private String prompt;
     
+    private final EventBus eventBus;
+
     @Autowired
-    private EventBus eventBus;
+    public ShellInformationProvider(EventBus eventBus) {
+        this.eventBus = eventBus;
+    }
     
     @PostConstruct
     public void init() {
