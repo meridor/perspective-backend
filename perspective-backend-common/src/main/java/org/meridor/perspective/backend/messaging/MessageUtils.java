@@ -1,7 +1,7 @@
 package org.meridor.perspective.backend.messaging;
 
-import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.backend.messaging.impl.MessageImpl;
+import org.meridor.perspective.config.CloudType;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -11,11 +11,14 @@ public final class MessageUtils {
     private static final int DEFAULT_TTL = 1;
     
     public static Optional<Message> retry(Message message) {
-        int ttl = message.getTtl();
-        if (ttl > 1) {
-            return Optional.of(message(message.getCloudType(), message.getPayload(), ttl - 1));
+        if (canRetry(message)) {
+            return Optional.of(message(message.getCloudType(), message.getPayload(), message.getTtl() - 1));
         }
         return Optional.empty();
+    }
+    
+    public static boolean canRetry(Message message) {
+        return message.getTtl() > 1;
     }
     
     public static Message message(CloudType cloudType, Serializable payload, int ttl) {

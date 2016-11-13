@@ -1,11 +1,11 @@
 package org.meridor.perspective.worker.processor;
 
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
@@ -202,7 +202,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.REBOOT_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.REBOOTING);
         } else {
-            instance.setErrorReason("Failed to reboot");
+            throw new RuntimeException(String.format("Failed to reboot %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -216,7 +216,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.HARD_REBOOT_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.HARD_REBOOTING);
         } else {
-            instance.setErrorReason("Failed to hard reboot");
+            throw new RuntimeException(String.format("Failed to hard reboot %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -230,7 +230,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.SHUTDOWN_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.SHUTTING_DOWN);
         } else {
-            instance.setErrorReason("Failed to shut down");
+            throw new RuntimeException(String.format("Failed to shut down %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -254,7 +254,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.PAUSE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.PAUSING);
         } else {
-            instance.setErrorReason("Failed to pause");
+            throw new RuntimeException(String.format("Failed to pause %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -280,7 +280,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, operationType, () -> instance)) {
             instance.setState(InstanceState.RESUMING);
         } else {
-            instance.setErrorReason("Failed to resume");
+            throw new RuntimeException(String.format("Failed to resume %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -294,7 +294,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.REBUILD_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.REBUILDING);
         } else {
-            instance.setErrorReason("Failed to rebuild");
+            throw new RuntimeException(String.format("Failed to rebuild %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -308,7 +308,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.RESIZE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.RESIZING);
         } else {
-            instance.setErrorReason("Failed to resize");
+            throw new RuntimeException(String.format("Failed to resize %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -322,7 +322,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.START_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.STARTING);
         } else {
-            instance.setErrorReason("Failed to start");
+            throw new RuntimeException(String.format("Failed to start %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -336,7 +336,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.SUSPEND_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.SUSPENDING);
         } else {
-            instance.setErrorReason("Failed to suspend");
+            throw new RuntimeException(String.format("Failed to suspend %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -360,7 +360,7 @@ public class InstanceFSM {
         if (event.isSync() || operationProcessor.supply(cloud, OperationType.MIGRATE_INSTANCE, () -> instance)) {
             instance.setState(InstanceState.MIGRATING);
         } else {
-            instance.setErrorReason("Failed to migrate");
+            throw new RuntimeException(String.format("Failed to migrate %s", instance));
         }
         instancesAware.saveInstance(instance);
     }
@@ -401,7 +401,6 @@ public class InstanceFSM {
         Instance instance = event.getInstance();
         LOG.info("Changing instance {} ({}) status to error with reason = {}", instance.getName(), instance.getId(), event.getErrorReason());
         instance.setState(InstanceState.ERROR);
-        instance.setErrorReason(event.getErrorReason());
         instancesAware.saveInstance(instance);
     }
 

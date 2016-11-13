@@ -62,10 +62,6 @@
                     <equals:ignored/>
                     <hashCode:ignored/>
                 </jaxb:bindings>
-                <jaxb:bindings node="./xsd:element[@name='errorReason']">
-                    <equals:ignored/>
-                    <hashCode:ignored/>
-                </jaxb:bindings>
                 <jaxb:bindings node="./xsd:element[@name='state']">
                     <equals:ignored/>
                     <hashCode:ignored/>

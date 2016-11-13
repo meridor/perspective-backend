@@ -1,11 +1,11 @@
 package org.meridor.perspective.worker.processor;
 
+import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
@@ -136,7 +136,6 @@ public class ImageFSM {
         Image image = event.getImage();
         LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId(), event.getErrorReason());
         image.setState(ImageState.ERROR);
-        image.setErrorReason(event.getErrorReason());
         imagesAware.saveImage(image);
     }
 

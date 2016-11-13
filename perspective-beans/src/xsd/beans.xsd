@@ -129,7 +129,6 @@
             <xsd:element name="name" type="xsd:string"/>
             <xsd:element name="state" type="tns:imageState"/>
             <xsd:element name="checksum" type="tns:checksum"/>
-            <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="metadata" type="tns:metadata"/>
         </xsd:all>
     </xsd:complexType>
@@ -282,7 +281,6 @@
             <xsd:element name="fqdn" type="xsd:string"/>
             <xsd:element name="networks" type="tns:networks"/>
             <xsd:element name="state" type="tns:instanceState" minOccurs="1"/>
-            <xsd:element name="errorReason" type="xsd:string"/>
             <xsd:element name="isLocked" type="xsd:boolean"/>
             <xsd:element name="availabilityZone" type="tns:availabilityZone"/>
             <xsd:element name="metadata" type="tns:metadata"/>

@@ -2,6 +2,9 @@ package org.meridor.perspective.worker.processor;
 
 import org.meridor.perspective.backend.messaging.Dispatcher;
 import org.meridor.perspective.backend.messaging.Message;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.worker.processor.event.MessageNotProcessedEvent;
+import org.meridor.perspective.worker.processor.event.MessageProcessedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +24,12 @@ public class WorkerDispatcher implements Dispatcher {
     
     private final Map<Class<?>, Processor> processorsMap = new HashMap<>();
 
+    private final EventBus eventBus;
+    
     @Autowired
-    public WorkerDispatcher(ApplicationContext applicationContext) {
+    public WorkerDispatcher(ApplicationContext applicationContext, EventBus eventBus) {
         this.applicationContext = applicationContext;
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -37,8 +43,9 @@ public class WorkerDispatcher implements Dispatcher {
         if (processorCandidate.isPresent()) {
             try {
                 processorCandidate.get().process(message);
+                eventBus.fire(new MessageProcessedEvent(message));
             } catch (Exception e) {
-                //TODO: notify all event handlers that implement MessageEventHandler interface. Get beans implementing it from ApplicationContext.
+                eventBus.fire(new MessageNotProcessedEvent(message));
                 return Optional.of(message);
             }
         } else {

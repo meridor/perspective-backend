@@ -6,8 +6,8 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.backend.messaging.MessageUtils.*;
+import static org.meridor.perspective.config.CloudType.MOCK;
 
 public class MessageUtilsTest {
 
@@ -23,6 +23,13 @@ public class MessageUtilsTest {
         assertThat(retryMessage.getCloudType(), equalTo(initialMessage.getCloudType()));
         assertThat(retryMessage.getPayload(), equalTo(initialMessage.getPayload()));
         assertThat(retryMessage.getTtl(), equalTo(initialMessage.getTtl() - 1));
+    }
+    
+    @Test
+    public void testCanRetry() {
+        String payload = "payload";
+        assertThat(canRetry(message(MOCK, payload, 2)), equalTo(true));
+        assertThat(canRetry(message(MOCK, payload, 1)), equalTo(false));
     }
     
     @Test
