@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.meridor.perspective.shell.common.repository.impl.ConsoleUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -34,7 +33,7 @@ public abstract class AbstractWizardTest<T extends Wizard> {
         for (WizardScreen wizardScreen : wizard) {
             try {
                 String answer = answers.remove(0);
-                Step step = wizardScreen.getStep(Collections.emptyMap());
+                Step step = wizardScreen.getStep(new AnswersStorage());
                 if (step instanceof AbstractStep) {
                     ((AbstractStep) step).setConsoleReader(ConsoleUtils.mockConsoleReader(answer + "\n"));
                 }

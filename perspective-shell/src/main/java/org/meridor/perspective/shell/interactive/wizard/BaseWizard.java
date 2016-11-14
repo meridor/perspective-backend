@@ -1,22 +1,19 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
-import org.meridor.perspective.shell.common.misc.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Component
 public abstract class BaseWizard implements Wizard {
-    
-    private final Map<Class<? extends Step>, String> answers = new HashMap<>(); 
-    
+
+    private final AnswersStorage answers = new AnswersStorage();
+
     private WizardScreen currentScreen;
     
     private boolean isFirstScreen = true;
-    
-    @Autowired
-    private Logger logger;
     
     @Override
     public boolean runSteps() {
@@ -28,7 +25,7 @@ public abstract class BaseWizard implements Wizard {
             Optional<String> answer = Optional.ofNullable(currentStep.getAnswer());
             if (answer.isPresent()) {
                 Class<? extends Step> stepClass = currentStep.getClass();
-                getAnswers().put(stepClass, answer.get());
+                getAnswers().putAnswer(stepClass, answer.get());
             }
         }
         return true;
@@ -36,12 +33,12 @@ public abstract class BaseWizard implements Wizard {
 
     protected abstract WizardScreen getFirstScreen();
 
-    private Map<Class<? extends Step>, String> getAnswers() {
+    private AnswersStorage getAnswers() {
         return answers;
     }
     
     protected Optional<String> getAnswer(Class<? extends Step> cls) {
-        return Optional.ofNullable(getAnswers().get(cls));
+        return Optional.ofNullable(getAnswers().getAnswer(cls));
     }
 
     @Override

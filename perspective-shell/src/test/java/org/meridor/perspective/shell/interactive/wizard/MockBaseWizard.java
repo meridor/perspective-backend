@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.meridor.perspective.shell.common.repository.impl.ConsoleUtils.mockConsoleReader;
@@ -52,12 +51,12 @@ public class MockBaseWizard extends BaseWizard {
         }
 
         @Override
-        public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+        public Step getStep(AnswersStorage previousAnswers) {
             return mockSingleChoiceStep;
         }
 
         @Override
-        public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
+        public Optional<WizardScreen> getNextScreen(AnswersStorage previousAnswers) {
             return Optional.of(new SecondScreen());
         }
     }
@@ -75,12 +74,12 @@ public class MockBaseWizard extends BaseWizard {
         }
 
         @Override
-        public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+        public Step getStep(AnswersStorage previousAnswers) {
             return mockYesNoStep;
         }
 
         @Override
-        public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
+        public Optional<WizardScreen> getNextScreen(AnswersStorage previousAnswers) {
             return Optional.empty();
         }
     }

@@ -4,6 +4,7 @@ import org.meridor.perspective.shell.common.repository.ProjectsRepository;
 import org.meridor.perspective.shell.common.request.FindProjectsRequest;
 import org.meridor.perspective.shell.common.request.RequestProvider;
 import org.meridor.perspective.shell.common.result.FindProjectsResult;
+import org.meridor.perspective.shell.interactive.wizard.AnswersStorage;
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
 import org.meridor.perspective.shell.interactive.wizard.instances.add.step.ImageStep;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Component("addInstancesImageScreen")
@@ -34,19 +34,21 @@ public class ImageScreen implements WizardScreen {
     private RequestProvider requestProvider;
 
     @Override
-    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
-        String projectName = previousAnswers.get(ProjectStep.class);
+    public Step getStep(AnswersStorage previousAnswers) {
+        String projectName = previousAnswers.getAnswer(ProjectStep.class);
         imageStep.setProjectName(projectName);
         return imageStep;
     }
 
     @Override
-    public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
-        String projectName = previousAnswers.get(ProjectStep.class);
+    public Optional<WizardScreen> getNextScreen(AnswersStorage previousAnswers) {
+        String projectName = previousAnswers.getAnswer(ProjectStep.class);
         Optional<FindProjectsResult> projectCandidate = getProject(projectName);
         if (projectCandidate.isPresent()) {
             switch (projectCandidate.get().getCloudType()) {
-                case OPENSTACK: return Optional.of(flavorScreen);
+                case OPENSTACK:
+                case DIGITAL_OCEAN:
+                    return Optional.of(flavorScreen);
                 case DOCKER: return Optional.of(commandScreen);
                 default: return Optional.empty();
             }

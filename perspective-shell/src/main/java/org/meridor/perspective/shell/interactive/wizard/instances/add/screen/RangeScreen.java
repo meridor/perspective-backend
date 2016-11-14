@@ -1,12 +1,12 @@
 package org.meridor.perspective.shell.interactive.wizard.instances.add.screen;
 
+import org.meridor.perspective.shell.interactive.wizard.AnswersStorage;
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
 import org.meridor.perspective.shell.interactive.wizard.instances.add.step.RangeStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Component("addInstancesRangeScreen")
@@ -23,12 +23,12 @@ public class RangeScreen implements WizardScreen {
     }
 
     @Override
-    public Step getStep(Map<Class<? extends Step>, String> previousAnswers) {
+    public Step getStep(AnswersStorage previousAnswers) {
         return rangeStep;
     }
 
     @Override
-    public Optional<WizardScreen> getNextScreen(Map<Class<? extends Step>, String> previousAnswers) {
+    public Optional<WizardScreen> getNextScreen(AnswersStorage previousAnswers) {
         return Optional.of(imageScreen);
     }
 }
