@@ -1,13 +1,12 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
-import jline.console.ConsoleReader;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class MockBaseChoiceStep extends BaseChoiceStep {
+public class MockBaseChoiceStep extends BaseChoiceStep<String> {
 
     public static final String TEST_MESSAGE = "test-message";
     public static final String TEST_PROMPT = "test-prompt";
@@ -20,6 +19,8 @@ public class MockBaseChoiceStep extends BaseChoiceStep {
     private String valueToSave;
 
     private List<String> possibleChoices;
+
+    private String additionalData;
 
     @Override
     public String getMessage() {
@@ -41,7 +42,7 @@ public class MockBaseChoiceStep extends BaseChoiceStep {
     }
 
     @Override
-    protected String getValueToSave(Map<Integer, String> choicesMap, String answer) {
+    protected String getAnswerToSave(ChoicesStorage<String> choicesStorage, String answer) {
         return valueToSave;
     }
 
@@ -72,4 +73,12 @@ public class MockBaseChoiceStep extends BaseChoiceStep {
         this.validAnswers = validAnswers;
     }
 
+    @Override
+    protected void saveAdditionalData(AnswersStorage answersStorage, ChoicesStorage<String> choicesStorage, String answer) {
+        additionalData = "additional_data";
+    }
+
+    public String getAdditionalData() {
+        return additionalData;
+    }
 }

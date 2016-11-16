@@ -7,11 +7,11 @@ import java.util.Map;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 
 @Component
-public abstract class SingleChoiceStep extends BaseChoiceStep {
+public abstract class SingleChoiceStep<T> extends BaseChoiceStep<T> {
     
     @Override
-    protected String getValueToSave(Map<Integer, String> choicesMap, String answer) {
-        return getAsExactMatch(choicesMap.get(Integer.parseUnsignedInt(answer)));
+    protected String getAnswerToSave(ChoicesStorage<T> choicesStorage, String answer) {
+        return getAsExactMatch(choicesStorage.getAnswersMap().get(Integer.parseUnsignedInt(answer)));
     }
 
     @Override

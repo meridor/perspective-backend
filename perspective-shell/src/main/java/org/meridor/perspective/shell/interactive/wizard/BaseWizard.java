@@ -1,5 +1,6 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
@@ -9,7 +10,8 @@ import java.util.Optional;
 @Component
 public abstract class BaseWizard implements Wizard {
 
-    private final AnswersStorage answers = new AnswersStorage();
+    @Autowired
+    private AnswersStorage answers;
 
     private WizardScreen currentScreen;
     

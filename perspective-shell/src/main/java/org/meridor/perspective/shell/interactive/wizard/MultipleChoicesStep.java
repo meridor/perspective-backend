@@ -10,14 +10,15 @@ import java.util.stream.Collectors;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.*;
 
 @Component
-public abstract class MultipleChoicesStep extends BaseChoiceStep {
+public abstract class MultipleChoicesStep<T> extends BaseChoiceStep<T> {
     
     @Override
-    protected String getValueToSave(Map<Integer, String> choicesMap, String answer) {
+    protected String getAnswerToSave(ChoicesStorage<T> choicesStorage, String answer) {
+        Map<Integer, String> answersMap = choicesStorage.getAnswersMap();
         Set<Integer> range = parseRange(answer);
         return enumerateValues(
                 range.stream()
-                .map(i -> getAsExactMatch(choicesMap.get(i)))
+                        .map(i -> getAsExactMatch(answersMap.get(i)))
                 .collect(Collectors.toList())
         );
     }

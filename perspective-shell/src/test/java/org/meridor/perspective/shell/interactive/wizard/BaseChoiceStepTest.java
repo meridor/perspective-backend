@@ -45,6 +45,7 @@ public class BaseChoiceStepTest {
         assertThat(choicesTable.contains("one"), is(true));
         assertThat(choicesTable.contains("two"), is(true));
         assertThat(logger.getOkMessages().get(2), equalTo(TEST_PROMPT));
+        assertThat(mockBaseChoiceStep.getAdditionalData(), equalTo("additional_data"));
     }
 
     @Test

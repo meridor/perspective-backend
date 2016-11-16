@@ -1,8 +1,11 @@
 package org.meridor.perspective.shell.interactive.wizard;
 
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class AnswersStorage {
 
     private final Map<Class<? extends Step>, Map<AnswersStorageKey, Object>> storage = new HashMap<>();
@@ -34,7 +37,7 @@ public class AnswersStorage {
 
     public enum AnswersStorageKey {
         ANSWER,
-        CLOUD_TYPE
+        PROJECT
     }
 
 }
