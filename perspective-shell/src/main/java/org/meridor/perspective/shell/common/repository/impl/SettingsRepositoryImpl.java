@@ -39,7 +39,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
                     } else if (Field.contains(enumName)) {
                         Field field = Field.valueOf(enumName);
                         filtersAware.setFilter(field, value);
-                        changePromptIfNeeded();
+                        requestPromptRefresh();
                     } else if (Setting.contains(enumName)) {
                         Setting setting = Setting.valueOf(enumName);
                         settingsAware.setSetting(setting, value);
@@ -60,7 +60,7 @@ public class SettingsRepositoryImpl implements SettingsRepository {
                     if (Field.contains(enumName)) {
                         Field field = Field.valueOf(enumName);
                         filtersAware.unsetFilter(field);
-                        changePromptIfNeeded();
+                        requestPromptRefresh();
                     } else if (Setting.contains(enumName)) {
                         Setting setting = Setting.valueOf(enumName);
                         settingsAware.unsetSetting(setting);
@@ -72,12 +72,8 @@ public class SettingsRepositoryImpl implements SettingsRepository {
         return errors;
     }
     
-    private void changePromptIfNeeded() {
-        if (filtersAware.getFilters(false).isEmpty()) {
-            eventBus.fire(new PromptChangedEvent());
-        } else {
-            eventBus.fire(new PromptChangedEvent("perspective*>"));
-        }
+    private void requestPromptRefresh() {
+        eventBus.fire(new PromptChangedEvent());
     }
     
     @Override public Map<String, String> showSettings(boolean all) {

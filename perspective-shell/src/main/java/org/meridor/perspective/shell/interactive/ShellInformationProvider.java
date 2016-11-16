@@ -3,6 +3,8 @@ package org.meridor.perspective.shell.interactive;
 import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.common.events.EventListener;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
+import org.meridor.perspective.shell.common.repository.FiltersAware;
+import org.meridor.perspective.shell.common.repository.MailRepository;
 import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -16,27 +18,31 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 import static org.meridor.perspective.shell.interactive.PathUtils.getConfigurationDirectoryPath;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ShellInformationProvider implements BannerProvider, HistoryFileNameProvider, PromptProvider, PromptManager, EventListener<PromptChangedEvent> {
-    
-    private static final String DEFAULT_PROMPT = "perspective>";
-    
+public class ShellInformationProvider implements BannerProvider, HistoryFileNameProvider, PromptProvider, EventListener<PromptChangedEvent> {
+
     private String prompt;
     
     private final EventBus eventBus;
 
+    private final FiltersAware filtersAware;
+    
+    private final MailRepository mailRepository;
+
     @Autowired
-    public ShellInformationProvider(EventBus eventBus) {
+    public ShellInformationProvider(EventBus eventBus, MailRepository mailRepository, FiltersAware filtersAware) {
         this.eventBus = eventBus;
+        this.mailRepository = mailRepository;
+        this.filtersAware = filtersAware;
     }
     
     @PostConstruct
     public void init() {
+        refreshPrompt();
         eventBus.addListener(PromptChangedEvent.class, this);
     }
     
@@ -79,28 +85,28 @@ public class ShellInformationProvider implements BannerProvider, HistoryFileName
 
     @Override
     public String getPrompt() {
-        Optional<String> promptCandidate = Optional.ofNullable(prompt);
-        return promptCandidate.isPresent() ? promptCandidate.get() : DEFAULT_PROMPT;
-    }
-
-    @Override
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
-    }
-
-    @Override
-    public void resetPrompt() {
-        this.prompt = null;
+        return prompt;
     }
 
     @Override
     public void onEvent(PromptChangedEvent event) {
-        Optional<String> newPromptCandidate = event.getNewPrompt();
-        if (newPromptCandidate.isPresent()) {
-            setPrompt(newPromptCandidate.get());
-        } else {
-            resetPrompt();
+        refreshPrompt();
+    }
+
+    private void refreshPrompt() {
+        this.prompt = createPrompt();
+    }
+    
+    private String createPrompt() {
+        StringBuilder sb = new StringBuilder("perspective");
+        if (!filtersAware.getFilters(false).isEmpty()) {
+            sb.append("[*]");
         }
+        if (mailRepository.getLetters().size() > 0) {
+            sb.append(String.format("[%d]", mailRepository.getLetters().size()));
+        }
+        sb.append(">");
+        return sb.toString();
     }
     
 }

@@ -3,6 +3,8 @@ package org.meridor.perspective.shell.common.repository.impl;
 import org.glassfish.tyrus.client.ClientManager;
 import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.client.ApiAware;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.meridor.perspective.shell.common.misc.Logger;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.shell.common.repository.MailRepository;
@@ -34,10 +36,13 @@ public class MailRepositoryImpl implements MailRepository {
 
     private final Logger logger;
 
+    private final EventBus eventBus;
+    
     @Autowired
-    public MailRepositoryImpl(ApiProvider apiProvider, Logger logger) {
+    public MailRepositoryImpl(ApiProvider apiProvider, Logger logger, EventBus eventBus) {
         this.apiProvider = apiProvider;
         this.logger = logger;
+        this.eventBus = eventBus;
     }
 
     @PostConstruct
@@ -68,6 +73,7 @@ public class MailRepositoryImpl implements MailRepository {
         try {
             Letter letter = unserialize(message, Letter.class);
             letters.put(letter.getId(), letter);
+            eventBus.fire(new PromptChangedEvent());
         } catch (IOException e) {
             logger.error(String.format("Failed to receive mail from the API: %s", e.getMessage()));
         }

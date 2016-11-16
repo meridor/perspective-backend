@@ -137,4 +137,12 @@ public class EntityGenerator {
         return instance;
     }
 
+    public static Letter getLetter() {
+        Letter letter = new Letter();
+        letter.setId("test-letter");
+        letter.setText("test-message");
+        letter.setTimestamp(ZonedDateTime.now());
+        return letter;
+    }
+    
 }

@@ -2,8 +2,10 @@ package org.meridor.perspective.shell.interactive;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
+import org.meridor.perspective.shell.common.validator.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.plugin.PromptProvider;
 import org.springframework.test.annotation.DirtiesContext;
@@ -25,12 +27,14 @@ public class ShellInformationProviderTest {
     @Autowired
     private PromptProvider promptProvider;
     
+    @Autowired
+    private TestRepository testRepository;
+    
     @Test
     public void testPromptChange(){
-        eventBus.fire(new PromptChangedEvent("new-prompt"));
-        assertThat(promptProvider.getPrompt(), equalTo("new-prompt"));
+        testRepository.addLetter(EntityGenerator.getLetter());
         eventBus.fire(new PromptChangedEvent());
-        assertThat(promptProvider.getPrompt(), equalTo("perspective>"));
+        assertThat(promptProvider.getPrompt(), equalTo("perspective[*][1]>"));
     }
     
 }
