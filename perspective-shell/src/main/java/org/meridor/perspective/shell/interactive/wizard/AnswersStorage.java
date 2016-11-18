@@ -37,6 +37,11 @@ public class AnswersStorage {
 
     public enum AnswersStorageKey {
         ANSWER,
+        FLAVOR,
+        IMAGE,
+        INSTANCES,
+        KEYPAIR,
+        NETWORK,
         PROJECT
     }
 

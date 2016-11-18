@@ -13,22 +13,22 @@ import java.util.Optional;
 @Component("addInstancesCountOrRangeScreen")
 public class CountOrRangeScreen implements WizardScreen {
 
-    private final CountOrRangeStep countOrNumberStep;
+    private final CountOrRangeStep countOrRangeStep;
 
     private final RangeScreen rangeScreen;
 
     private final CountScreen countScreen;
 
     @Autowired
-    public CountOrRangeScreen(CountOrRangeStep countOrNumberStep, CountScreen countScreen, RangeScreen rangeScreen) {
-        this.countOrNumberStep = countOrNumberStep;
+    public CountOrRangeScreen(CountOrRangeStep countOrRangeStep, CountScreen countScreen, RangeScreen rangeScreen) {
+        this.countOrRangeStep = countOrRangeStep;
         this.countScreen = countScreen;
         this.rangeScreen = rangeScreen;
     }
 
     @Override
     public Step getStep(AnswersStorage previousAnswers) {
-        return countOrNumberStep;
+        return countOrRangeStep;
     }
 
     @Override

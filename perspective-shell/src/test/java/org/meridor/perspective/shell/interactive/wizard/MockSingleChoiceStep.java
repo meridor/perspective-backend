@@ -19,7 +19,7 @@ public class MockSingleChoiceStep extends SingleChoiceStep {
     }
 
     @Override
-    protected List<String> getPossibleChoices() {
+    protected List<String> getPossibleChoices(AnswersStorage previousAnswers) {
         return possibleChoices;
     }
 

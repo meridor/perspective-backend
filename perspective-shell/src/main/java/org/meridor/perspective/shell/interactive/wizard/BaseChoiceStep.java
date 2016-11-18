@@ -32,9 +32,9 @@ public abstract class BaseChoiceStep<T> extends AbstractStep {
     public boolean run() {
         answer = null;
         printMessageWithDefaultAnswer();
-        ChoicesStorage<T> choicesStorage = new ChoicesStorage<>(getAnswerProvider(), getPossibleChoices());
+        ChoicesStorage<T> choicesStorage = new ChoicesStorage<>(getAnswerProvider(), getPossibleChoices(answersStorage));
         Map<Integer, String> answersMap = choicesStorage.getAnswersMap();
-        Optional<Boolean> returnValue = processZeroOrOneAnswer(answersMap);
+        Optional<Boolean> returnValue = processZeroOrOneAnswer(choicesStorage);
         if (returnValue.isPresent()) {
             return returnValue.get();
         }
@@ -72,7 +72,7 @@ public abstract class BaseChoiceStep<T> extends AbstractStep {
         return Optional.of(answer);
     }
 
-    protected abstract List<T> getPossibleChoices();
+    protected abstract List<T> getPossibleChoices(AnswersStorage previousAnswers);
 
     protected Function<T, String> getAnswerProvider() {
         return String::valueOf;
@@ -92,14 +92,15 @@ public abstract class BaseChoiceStep<T> extends AbstractStep {
     
     protected abstract boolean validateAnswer(Map<Integer, String> choicesMap, String answer);
 
-    protected void printPossibleChoices(Map<Integer, String> possibleChoices) {
+    private void printPossibleChoices(Map<Integer, String> possibleChoices) {
         List<String[]> choicesRows = possibleChoices.keySet().stream()
                 .map(k -> new String[]{k.toString(), possibleChoices.get(k)})
                 .collect(Collectors.toList());
         pager.page(new String[]{"Number", "Name"}, choicesRows);
     }
 
-    protected Optional<Boolean> processZeroOrOneAnswer(Map<Integer, String> answersMap) {
+    private Optional<Boolean> processZeroOrOneAnswer(ChoicesStorage<T> choicesStorage) {
+        Map<Integer, String> answersMap = choicesStorage.getAnswersMap();
         if (answersMap.size() == 0) {
             if (answerRequired()) {
                 logger.error("We're sorry but no possible answers exist. Exiting.");
@@ -113,6 +114,7 @@ public abstract class BaseChoiceStep<T> extends AbstractStep {
             Integer singleKey = answersMap.keySet().toArray(new Integer[answersMap.keySet().size()])[0];
             String singleAnswer = answersMap.get(singleKey);
             logger.ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
+            saveAdditionalData(answersStorage, choicesStorage, String.valueOf(singleKey));
             this.answer = singleAnswer;
             return Optional.of(true);
         }

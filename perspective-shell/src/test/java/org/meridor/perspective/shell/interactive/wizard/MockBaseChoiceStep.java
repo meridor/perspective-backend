@@ -28,7 +28,7 @@ public class MockBaseChoiceStep extends BaseChoiceStep<String> {
     }
 
     @Override
-    protected List<String> getPossibleChoices() {
+    protected List<String> getPossibleChoices(AnswersStorage previousAnswers) {
         return possibleChoices;
     }
 

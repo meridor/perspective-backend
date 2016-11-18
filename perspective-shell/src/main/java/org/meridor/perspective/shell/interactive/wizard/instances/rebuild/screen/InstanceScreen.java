@@ -4,7 +4,6 @@ import org.meridor.perspective.shell.interactive.wizard.AnswersStorage;
 import org.meridor.perspective.shell.interactive.wizard.Step;
 import org.meridor.perspective.shell.interactive.wizard.WizardScreen;
 import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step.InstanceStep;
-import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.step.ProjectStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +24,6 @@ public class InstanceScreen implements WizardScreen {
 
     @Override
     public Step getStep(AnswersStorage previousAnswers) {
-        String projectName = previousAnswers.getAnswer(ProjectStep.class);
-        instanceStep.setProjectName(projectName);
         return instanceStep;
     }
 
