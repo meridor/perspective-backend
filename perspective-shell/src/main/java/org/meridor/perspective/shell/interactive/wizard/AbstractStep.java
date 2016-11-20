@@ -21,7 +21,7 @@ public abstract class AbstractStep implements Step {
 
     private ConsoleReader consoleReader;
 
-    protected ConsoleReader getConsoleReader() throws IOException {
+    private ConsoleReader getConsoleReader() throws IOException {
         return consoleReader != null ? consoleReader : new ConsoleReader();
     }
 

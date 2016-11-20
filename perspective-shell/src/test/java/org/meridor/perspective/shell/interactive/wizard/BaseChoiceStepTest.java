@@ -71,6 +71,7 @@ public class BaseChoiceStepTest {
         mockBaseChoiceStep.setConsoleReader(mockConsoleReader("y\n"));
         mockBaseChoiceStep.setPossibleChoices(Collections.singletonList("single"));
         mockBaseChoiceStep.setAnswerRequired(true);
+        mockBaseChoiceStep.setValueToSave("single");
         assertThat(mockBaseChoiceStep.run(), is(true));
         assertThat(mockBaseChoiceStep.getAnswer(), equalTo("single"));
         assertThat(logger.getOkMessages(), hasSize(2));

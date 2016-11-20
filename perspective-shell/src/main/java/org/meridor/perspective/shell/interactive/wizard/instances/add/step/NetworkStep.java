@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.function.Function;
 
 import static org.meridor.perspective.shell.interactive.wizard.AnswersStorage.AnswersStorageKey.NETWORK;
 import static org.meridor.perspective.shell.interactive.wizard.AnswersStorageUtils.getProjectName;
@@ -28,6 +29,11 @@ public class NetworkStep extends SingleChoiceStep<FindNetworksResult> {
     protected List<FindNetworksResult> getPossibleChoices(AnswersStorage previousAnswers) {
         return projectsRepository.findNetworks(requestProvider.get(FindNetworksRequest.class)
                 .withProjects(getProjectName(previousAnswers)));
+    }
+
+    @Override
+    protected Function<FindNetworksResult, String> getAnswerProvider() {
+        return FindNetworksResult::getName;
     }
 
     @Override

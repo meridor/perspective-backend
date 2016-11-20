@@ -16,14 +16,18 @@ import static org.meridor.perspective.shell.interactive.wizard.AnswersStorage.An
 @Component("addInstancesImageScreen")
 public class ImageScreen implements WizardScreen {
     
-    @Autowired
-    private ImageStep imageStep;
+    private final ImageStep imageStep;
     
-    @Autowired
-    private FlavorScreen flavorScreen;
+    private final FlavorScreen flavorScreen;
     
+    private final CommandScreen commandScreen;
+
     @Autowired
-    private CommandScreen commandScreen;
+    public ImageScreen(ImageStep imageStep, FlavorScreen flavorScreen, CommandScreen commandScreen) {
+        this.imageStep = imageStep;
+        this.flavorScreen = flavorScreen;
+        this.commandScreen = commandScreen;
+    }
 
     @Override
     public Step getStep(AnswersStorage previousAnswers) {
@@ -46,7 +50,6 @@ public class ImageScreen implements WizardScreen {
                 case DIGITAL_OCEAN:
                     return Optional.of(flavorScreen);
                 case DOCKER: return Optional.of(commandScreen);
-                default: return Optional.empty();
             }
         }
         return Optional.empty();

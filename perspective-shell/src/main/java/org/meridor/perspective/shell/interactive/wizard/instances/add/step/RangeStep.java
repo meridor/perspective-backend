@@ -17,6 +17,6 @@ public class RangeStep extends FreeInputStep {
 
     @Override
     public String getMessage() {
-        return "Specify instance numbers range (e.g. 2-4,5-7,15):";
+        return "Specify instance numbers range (e.g. 2-4,6-8,15):";
     }
 }

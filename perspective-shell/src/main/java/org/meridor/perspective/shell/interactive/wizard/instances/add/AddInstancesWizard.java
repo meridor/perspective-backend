@@ -15,9 +15,13 @@ import static org.meridor.perspective.shell.interactive.commands.CommandArgument
 @Component
 public class AddInstancesWizard extends BaseWizard {
     
+    private final ProjectScreen projectScreen;
+
     @Autowired
-    private ProjectScreen projectScreen;
-    
+    public AddInstancesWizard(ProjectScreen projectScreen) {
+        this.projectScreen = projectScreen;
+    }
+
     @Override
     protected WizardScreen getFirstScreen() {
         return projectScreen;

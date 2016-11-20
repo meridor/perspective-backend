@@ -1,9 +1,9 @@
 package org.meridor.perspective.shell.common.validator;
 
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.*;
 import org.meridor.perspective.shell.common.request.*;
 import org.meridor.perspective.shell.common.result.*;
@@ -23,6 +23,8 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     private final Map<CloudType, Set<OperationType>> supportedOperations = new HashMap<>();
 
     private Map<String, Letter> letters = new HashMap<>();
+    
+    private CloudType cloudType = EntityGenerator.getProject().getCloudType();
 
     @Override
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
@@ -30,7 +32,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
                 EntityGenerator.getImage().getId(),
                 EntityGenerator.getImage().getRealId(),
                 EntityGenerator.getImage().getName(),
-                EntityGenerator.getImage().getCloudType().value(),
+                cloudType.value(),
                 EntityGenerator.getImage().getState().value(),
                 EntityGenerator.getImage().getTimestamp().format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
         );
@@ -58,7 +60,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
                 EntityGenerator.getProject().getId(),
                 EntityGenerator.getProject().getName(),
                 EntityGenerator.getInstance().getCloudId(),
-                EntityGenerator.getInstance().getCloudType().value(),
+                cloudType.value(),
                 EntityGenerator.getImage().getName(),
                 EntityGenerator.getFlavor().getName(),
                 enumerateValues(EntityGenerator.getInstance().getAddresses()),
@@ -133,9 +135,13 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
                 EntityGenerator.getProject().getId(),
                 EntityGenerator.getProject().getName(),
                 EntityGenerator.getProject().getCloudId(),
-                EntityGenerator.getProject().getCloudType().value(),
+                cloudType.value(),
                 EntityGenerator.getQuota().getInstances()
         ));
+    }
+
+    public void setCloudType(CloudType cloudType) {
+        this.cloudType = cloudType;
     }
 
     @Override

@@ -19,7 +19,7 @@ public class ResizeInstancesWizardTest extends AbstractWizardTest<ResizeInstance
         super(
                 Arrays.asList("1", "1", "1"),
                 true,
-                "resize --project 'test-project - test-region' --instances test-instance --flavor test-flavor"
+                "resize --project '^test-project - test-region$' --instances ^test-instance$ --flavor ^test-flavor$"
         );
     }
 

@@ -12,12 +12,16 @@ import java.util.Optional;
 @Component("addInstancesNetworkScreen")
 public class NetworkScreen implements WizardScreen {
     
-    @Autowired
-    private NetworkStep networkStep;
+    private final NetworkStep networkStep;
     
+    private final KeypairScreen keypairScreen;
+
     @Autowired
-    private KeypairScreen keypairScreen;
-    
+    public NetworkScreen(KeypairScreen keypairScreen, NetworkStep networkStep) {
+        this.keypairScreen = keypairScreen;
+        this.networkStep = networkStep;
+    }
+
     @Override
     public Step getStep(AnswersStorage previousAnswers) {
         return networkStep;

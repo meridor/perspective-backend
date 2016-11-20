@@ -19,7 +19,7 @@ public class RebuildInstancesWizardTest extends AbstractWizardTest<RebuildInstan
         super(
                 Arrays.asList("1", "1", "1"),
                 true,
-                "rebuild --project 'test-project - test-region' --instances test-instance --image test-image"
+                "rebuild --project '^test-project - test-region$' --instances ^test-instance$ --image ^test-image$"
         );
 
     }

@@ -115,7 +115,7 @@ public abstract class BaseChoiceStep<T> extends AbstractStep {
             String singleAnswer = answersMap.get(singleKey);
             logger.ok(String.format("Automatically selecting the only possible answer: %s", singleAnswer));
             saveAdditionalData(answersStorage, choicesStorage, String.valueOf(singleKey));
-            this.answer = singleAnswer;
+            this.answer = getAnswerToSave(choicesStorage, String.valueOf(singleKey));
             return Optional.of(true);
         }
         return Optional.empty();

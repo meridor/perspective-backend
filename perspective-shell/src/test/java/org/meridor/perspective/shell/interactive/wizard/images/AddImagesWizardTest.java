@@ -19,7 +19,7 @@ public class AddImagesWizardTest extends AbstractWizardTest<AddImagesWizard> {
         super(
                 Arrays.asList("1", "test-image"),
                 true,
-                "add images --instances test-instance --name test-image"
+                "add images --instances ^test-instance$ --name test-image"
         );
     }
 

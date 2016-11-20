@@ -10,6 +10,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.enumerateValues;
 
 public abstract class AbstractWizardTest<T extends Wizard> {
 
@@ -29,8 +30,10 @@ public abstract class AbstractWizardTest<T extends Wizard> {
 
     @Before
     public void injectMockConsoleReader() {
+        beforeInjectingAnswers();
         T wizard = getWizard();
         for (WizardScreen wizardScreen : wizard) {
+            beforeInjectingAnswer(wizardScreen.getClass());
             try {
                 String answer = answers.remove(0);
                 Step step = wizardScreen.getStep(new AnswersStorage());
@@ -44,8 +47,23 @@ public abstract class AbstractWizardTest<T extends Wizard> {
                 ), e);
             }
         }
+        if (!answers.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "%d answers were not used to test this wizard: %s. This is a bug in test.",
+                    answers.size(),
+                    enumerateValues(answers)
+            ));
+        }
     }
 
+    protected void beforeInjectingAnswers() {
+        // By default we do nothing...
+    }
+    
+    protected void beforeInjectingAnswer(Class<? extends WizardScreen> cls) {
+        // Do nothing...
+    }
+    
     @Test
     public void testWizard() {
         T wizard = getWizard();
