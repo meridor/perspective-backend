@@ -34,7 +34,7 @@ public class SetCommands extends BaseCommands {
         Set<String> errors = new LinkedHashSet<>();
         if (filters) {
             settingsRepository.showFilters(false).keySet()
-                    .forEach(k -> settingsRepository.unset(k));
+                    .forEach(settingsRepository::unset);
         } else if (data == null) {
             errors.add("Please specify a filter or setting to unset");
         } else {

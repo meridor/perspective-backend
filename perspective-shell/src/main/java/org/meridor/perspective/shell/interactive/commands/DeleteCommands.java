@@ -34,7 +34,7 @@ public class DeleteCommands extends BaseCommands {
         FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class).withNames(names).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findInstancesRequest,
-                r -> instancesRepository.findInstances(r),
+                instancesRepository::findInstances,
                 instances -> String.format("Going to delete %d instances.", instances.size()),
                 instances -> new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},
                 instances -> instances.stream()
@@ -61,7 +61,7 @@ public class DeleteCommands extends BaseCommands {
         FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class).withNames(patterns).withClouds(cloud);
         validateConfirmExecuteShowStatus(
                 findImagesRequest,
-                r -> imagesRepository.findImages(r),
+                imagesRepository::findImages,
                 images -> String.format("Going to delete %d images.", images.size()),
                 images -> new String[]{"Name", "Cloud", "State", "Last modified"},
                 images -> images.stream()
