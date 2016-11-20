@@ -41,6 +41,11 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public Account getAccountInfo() throws Exception {
+            return api.getAccountInfo();
+        }
+
+        @Override
         public List<Region> listRegions() throws Exception {
             return api.getAvailableRegions(1).getRegions();
         }

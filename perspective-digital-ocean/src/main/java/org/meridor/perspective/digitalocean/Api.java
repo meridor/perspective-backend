@@ -7,6 +7,10 @@ import java.util.Optional;
 
 public interface Api {
     
+    // Account operations
+    
+    Account getAccountInfo() throws Exception;
+    
     // Project operations
     
     List<Region> listRegions() throws Exception;

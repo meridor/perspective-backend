@@ -1,11 +1,12 @@
 package org.meridor.perspective.digitalocean;
 
+import com.myjeeva.digitalocean.pojo.Account;
 import com.myjeeva.digitalocean.pojo.Key;
 import com.myjeeva.digitalocean.pojo.Size;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -108,6 +109,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         Project project = createProject(cloud, region);
         addFlavors(project, api);
         addKeyPairs(project, api);
+        addQuota(project, api);
         return project;
     }
 
@@ -155,6 +157,18 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
             keypair.setFingerprint(key.getFingerprint());
             project.getKeypairs().add(keypair);
         }
+    }
+    
+    private void addQuota(Project project, Api api) throws Exception {
+        Account accountInfo = api.getAccountInfo();
+        Quota quota = new Quota();
+        if (accountInfo.getDropletLimit() != null) {
+            quota.setInstances(String.valueOf(accountInfo.getDropletLimit()));
+        }
+        if (accountInfo.getFloatingIPLimit() != null) {
+            quota.setIps(String.valueOf(accountInfo.getFloatingIPLimit()));
+        }
+        project.setQuota(quota);
     }
 
 }
