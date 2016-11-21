@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.interactive;
 
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.shell.common.events.ShellStartedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ShellStatus;
@@ -27,6 +29,9 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
     
     @Autowired
     private Shell shell;
+    
+    @Autowired
+    private EventBus eventBus;
     
     @PostConstruct
     public void init() {
@@ -67,6 +72,7 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
             } else {
                 LOG.fine(String.format("Shell configuration file [%s] does not exist", rcFilePath.toAbsolutePath()));
             }
+            eventBus.fire(new ShellStartedEvent());
         }
     }
 

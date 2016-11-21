@@ -4,7 +4,9 @@ import org.glassfish.tyrus.client.ClientManager;
 import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.client.ApiAware;
 import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.common.events.EventListener;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
+import org.meridor.perspective.shell.common.events.ShellStartedEvent;
 import org.meridor.perspective.shell.common.misc.Logger;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.shell.common.repository.MailRepository;
@@ -21,16 +23,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.meridor.perspective.api.SerializationUtils.unserialize;
 
 @Component
 @ClientEndpoint
-public class MailRepositoryImpl implements MailRepository {
+public class MailRepositoryImpl implements MailRepository, EventListener<ShellStartedEvent> {
 
     private final Map<String, Letter> letters = new LinkedHashMap<>();
 
     private CountDownLatch countDownLatch;
+    
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final ApiProvider apiProvider;
 
@@ -47,13 +53,25 @@ public class MailRepositoryImpl implements MailRepository {
 
     @PostConstruct
     public void init() {
-        countDownLatch = new CountDownLatch(1);
-        new MailThread().run();
+        eventBus.addListener(ShellStartedEvent.class, this);
+    }
+    
+    @Override
+    public void onEvent(ShellStartedEvent event) {
+        connect();
     }
 
+    private void connect() {
+        countDownLatch = new CountDownLatch(1);
+        executorService.submit(new MailRunnable());
+    }
+    
     @PreDestroy
     public void destroy() {
         countDownLatch.countDown();
+        if (!executorService.isShutdown()) {
+            executorService.shutdownNow();
+        }
     }
 
     @Override
@@ -82,17 +100,20 @@ public class MailRepositoryImpl implements MailRepository {
     @OnClose
     public void onClose(Session session, CloseReason closeReason) {
         countDownLatch.countDown();
-        init(); //Trying to reconnect
+        if (!executorService.isShutdown()) {
+            connect(); //Trying to reconnect
+        }
     }
 
-    private class MailThread extends Thread {
+    private class MailRunnable implements Runnable {
         @Override
         public void run() {
+            ClientManager client = ClientManager.createClient();
             try {
-                ClientManager client = ClientManager.createClient();
                 URI endpoint = new URI(ApiAware.withUrl(apiProvider.getBaseUri()).getWebSocketUrl("mail"));
                 client.connectToServer(MailRepositoryImpl.class, endpoint);
                 countDownLatch.await();
+                client.shutdown();
             } catch (Exception e) {
                 logger.warn(String.format(
                         "Failed to connect to mail endpoint. Mail functionality is disabled. Error is: %s",
