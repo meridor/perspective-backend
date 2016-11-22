@@ -6,11 +6,11 @@ import com.myjeeva.digitalocean.pojo.*;
 import org.meridor.perspective.config.Cloud;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+
+import static org.meridor.perspective.digitalocean.ApiUtils.list;
 
 @Component
 public class ApiProviderImpl implements ApiProvider {
@@ -62,7 +62,7 @@ public class ApiProviderImpl implements ApiProvider {
 
         @Override
         public List<Droplet> listDroplets() throws Exception {
-            return listImpl(pn -> {
+            return list(pn -> {
                 try {
                     return api.getAvailableDroplets(pn, PER_PAGE).getDroplets();
                 } catch (Exception e) {
@@ -133,7 +133,7 @@ public class ApiProviderImpl implements ApiProvider {
 
         @Override
         public List<Image> listImages() throws Exception {
-            return listImpl(pn -> {
+            return list(pn -> {
                 try {
                     return api.getAvailableImages(pn, PER_PAGE).getImages();
                 } catch (Exception e) {
@@ -157,20 +157,5 @@ public class ApiProviderImpl implements ApiProvider {
             api.deleteImage(imageId);
         }
 
-        private <T> List<T> listImpl(Function<Integer, List<T>> action) {
-            return listImpl(1, action, new ArrayList<>());
-        }
-
-        private <T> List<T> listImpl(int pageNo, Function<Integer, List<T>> action, List<T> alreadyFetchedEntities) {
-            try {
-                List<T> newEntities = action.apply(pageNo);
-                if (newEntities.isEmpty()) {
-                    return alreadyFetchedEntities;
-                }
-                return listImpl(pageNo + 1, action, alreadyFetchedEntities);
-            } catch (Exception e) {
-                return alreadyFetchedEntities;
-            }
-        }
     }
 }
