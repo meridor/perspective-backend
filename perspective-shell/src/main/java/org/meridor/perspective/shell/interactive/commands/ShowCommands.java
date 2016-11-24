@@ -154,8 +154,8 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "flavor", help = "Flavor name") String flavor,
             @CliOption(key = "image", help = "Image name") String image,
             @CliOption(key = "state", help = "Instance state") String state,
-            @CliOption(key = "cloud", help = "Cloud type") String cloud,
-            @CliOption(key = "project", help = "Project names") String project
+            @CliOption(key = "project", help = "Project names") String project,
+            @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
                 .withIds(id)
@@ -191,13 +191,15 @@ public class ShowCommands extends BaseCommands {
             @CliOption(key = "name", help = "Image name") String name,
             @CliOption(key = "", help = "Image name") String inlineName,
             @CliOption(key = "state", help = "Image state") String state,
+            @CliOption(key = "project", help = "Project name") String project,
             @CliOption(key = "cloud", help = "Cloud type") String cloud
     ) {
         FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class)
                 .withIds(id)
                 .withNames(inlineName != null ? inlineName : name)
                 .withStates(state)
-                .withClouds(cloud);
+                .withClouds(cloud)
+                .withProjects(project);
         validateExecuteShowResult(
                 findImagesRequest,
                 new String[]{"Name", "Projects", "State", "Last modified"},
