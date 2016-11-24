@@ -2,10 +2,9 @@ package org.meridor.perspective.worker.fetcher.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.backend.storage.InstancesAware;
-import org.meridor.perspective.worker.misc.impl.MockCloud;
+import org.meridor.perspective.beans.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -26,8 +25,8 @@ public class InstanceModificationListenerTest {
     
     @Autowired
     private InstanceModificationListener instanceModificationListener;
-    
-    private static final String CLOUD_ID = new MockCloud().getId();
+
+    private static final String CLOUD_ID = EntityGenerator.getCloud().getId();
     
     @Test
     public void testListen() {

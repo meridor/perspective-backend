@@ -1,9 +1,9 @@
 package org.meridor.perspective.worker.processor;
 
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
-import org.meridor.perspective.worker.misc.impl.MockCloud;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 
 import java.util.Collection;
@@ -17,12 +17,12 @@ public class AlwaysSucceedingOperationProcessor implements OperationProcessor, C
     
     @Override
     public Cloud getCloud(String cloudId) {
-        return new MockCloud();
+        return EntityGenerator.getCloud();
     }
 
     @Override
     public Collection<Cloud> getClouds() {
-        return Collections.singletonList(new MockCloud());
+        return Collections.singletonList(EntityGenerator.getCloud());
     }
 
     @Override

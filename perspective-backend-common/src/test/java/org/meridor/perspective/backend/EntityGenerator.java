@@ -1,6 +1,7 @@
 package org.meridor.perspective.backend;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 
 import java.time.ZonedDateTime;
@@ -10,6 +11,19 @@ import static org.meridor.perspective.events.EventFactory.now;
 
 public class EntityGenerator {
 
+    public static Cloud getCloud() {
+        return new Cloud() {
+            {
+                setId("test-id");
+                setName("test-name");
+                setEndpoint("endpoint");
+                setIdentity("identity");
+                setCredential("credential");
+                setEnabled(true);
+            }
+        };
+    }
+    
     public static Project getProject() {
         Project project = new Project();
         project.setName("test-project - test-region");

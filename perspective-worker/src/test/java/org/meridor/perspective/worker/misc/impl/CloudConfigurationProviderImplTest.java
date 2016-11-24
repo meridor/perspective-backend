@@ -2,6 +2,7 @@ package org.meridor.perspective.worker.misc.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ public class CloudConfigurationProviderImplTest {
 
     @Autowired
     private CloudConfigurationProvider cloudConfigurationProvider;
-    
-    private static final Cloud CLOUD = new MockCloud();
+
+    private static final Cloud CLOUD = EntityGenerator.getCloud();
     
     @Test
     public void testGetCloud() throws Exception {

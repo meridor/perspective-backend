@@ -114,7 +114,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     }
 
     private Project createProject(Cloud cloud, String region) {
-        String projectId = idGenerator.getProjectId(cloud);
+        String projectId = idGenerator.getProjectId(cloud, region);
         Project project = new Project();
         project.setId(projectId);
         project.setName(getProjectName(cloud, region));

@@ -2,8 +2,8 @@ package org.meridor.perspective.worker.operation.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.worker.misc.impl.MockCloud;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,7 +23,7 @@ import static org.meridor.perspective.worker.operation.impl.MockOperationsAware.
 @RunWith(SpringJUnit4ClassRunner.class)
 public class OperationProcessorImplTest {
 
-    private static final Cloud CLOUD = new MockCloud();
+    private static final Cloud CLOUD = EntityGenerator.getCloud();
     
     @Autowired
     private OperationProcessor operationProcessor;
