@@ -5,7 +5,7 @@ import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.worker.operation.ConsumingOperation;
+import org.meridor.perspective.worker.operation.AbstractInstanceOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 @Component
-public abstract class BaseInstanceOperation implements ConsumingOperation<Instance> {
+public abstract class BaseInstanceOperation extends AbstractInstanceOperation<Api> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseInstanceOperation.class);
 
