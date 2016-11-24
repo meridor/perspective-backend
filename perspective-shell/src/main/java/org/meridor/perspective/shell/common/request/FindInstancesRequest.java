@@ -67,8 +67,8 @@ public class FindInstancesRequest implements Request<Query> {
         this.cloud = parseEnumeration(clouds);
         return this;
     }
-    
-    public FindInstancesRequest withProjectNames(String projects) {
+
+    public FindInstancesRequest withProjects(String projects) {
         this.project = parseEnumeration(projects);
         return this;
     }

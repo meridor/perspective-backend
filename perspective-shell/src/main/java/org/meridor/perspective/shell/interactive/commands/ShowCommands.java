@@ -164,7 +164,7 @@ public class ShowCommands extends BaseCommands {
                 .withImages(image)
                 .withStates(state)
                 .withClouds(cloud)
-                .withProjectNames(project);
+                .withProjects(project);
         validateExecuteShowResult(
                 findInstancesRequest,
                 new String[]{"Name", "Project", "Image", "Flavor", "Network", "State", "Last modified"},

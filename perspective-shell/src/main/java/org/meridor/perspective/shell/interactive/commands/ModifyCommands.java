@@ -174,7 +174,7 @@ public class ModifyCommands extends BaseCommands {
     ) {
         if (projectName != null && instanceNames != null && flavorName != null) {
             FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
-                    .withProjectNames(projectName)
+                    .withProjects(projectName)
                     .withNames(instanceNames);
             FindFlavorsRequest findFlavorsRequest = requestProvider.get(FindFlavorsRequest.class)
                     .withProjects(projectName)
@@ -219,7 +219,7 @@ public class ModifyCommands extends BaseCommands {
     ) {
         if (projectName != null && instanceNames != null && imageName != null) {
             FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
-                    .withProjectNames(projectName)
+                    .withProjects(projectName)
                     .withNames(instanceNames);
             FindImagesRequest findImagesRequest = requestProvider.get(FindImagesRequest.class)
                     .withProjects(projectName)
