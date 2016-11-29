@@ -75,10 +75,10 @@ public class EntityFormatter {
 
     private static String formatInstanceAdditionalProperties(Instance instance) {
         List<String> additionalProperties = new ArrayList<>();
-        if (instance.getMetadata() != null) {
+        if (instance.getMetadata() != null && !instance.getMetadata().isEmpty()) {
             additionalProperties.add(String.format("Metadata: %s", instance.getMetadata().toString()));
         }
-        if (instance.getNetworks() != null) {
+        if (instance.getNetworks() != null && !instance.getNetworks().isEmpty()) {
             additionalProperties.add(String.format("Networks: %s", enumerateValues(
                     instance.getNetworks().stream()
                             .map(Network::getName)
