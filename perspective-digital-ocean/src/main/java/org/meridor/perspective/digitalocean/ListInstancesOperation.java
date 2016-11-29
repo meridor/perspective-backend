@@ -2,13 +2,13 @@ package org.meridor.perspective.digitalocean;
 
 import com.myjeeva.digitalocean.common.DropletStatus;
 import com.myjeeva.digitalocean.pojo.Droplet;
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ImagesAware;
-import org.meridor.perspective.backend.storage.InstancesAware;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -89,9 +89,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         Set<String> realIds = new HashSet<>();
         ids.forEach(id -> {
             Optional<Instance> instanceCandidate = instancesAware.getInstance(id);
-            if (instanceCandidate.isPresent()) {
-                realIds.add(instanceCandidate.get().getRealId());
-            }
+            instanceCandidate.ifPresent(instance -> realIds.add(instance.getRealId()));
         });
         return realIds;
     }
@@ -159,18 +157,14 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         String region = droplet.getRegion().getSlug();
         String projectId = idGenerator.getProjectId(cloud, region);
         Optional<Project> projectCandidate = projectsAware.getProject(projectId);
-        if (projectCandidate.isPresent()) {
-            instance.setProjectId(projectId);
-        }
+        projectCandidate.ifPresent(project -> instance.setProjectId(projectId));
     }
 
     private void addImage(Cloud cloud, Instance instance, Droplet droplet) {
         String realImageId = String.valueOf(droplet.getImage().getId());
         String imageId = idGenerator.getImageId(cloud, realImageId);
         Optional<Image> imageCandidate = imagesAware.getImage(imageId);
-        if (imageCandidate.isPresent()) {
-            instance.setImage(imageCandidate.get());
-        }
+        imageCandidate.ifPresent(instance::setImage);
     }
     
     private void addFlavor(Cloud cloud, Instance instance, Droplet droplet) {
@@ -199,13 +193,14 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     }
 
     private void addKeypairs(Instance instance, Droplet droplet) {
-        List<Keypair> keypairs = droplet.getKeys().stream()
+        List<Keypair> keypairs = droplet.getKeys() != null ?
+                droplet.getKeys().stream()
                 .map(k -> {
                     Keypair keypair = new Keypair();
                     keypair.setName(k.getName());
                     return keypair;
                 })
-                .collect(Collectors.toList());
+                        .collect(Collectors.toList()) : Collections.emptyList();
         instance.setKeypairs(keypairs);
     }
     
