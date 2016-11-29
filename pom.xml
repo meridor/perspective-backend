@@ -26,7 +26,7 @@
         <stecker.version>1.0.1</stecker.version>
         <spring.version>4.3.3.RELEASE</spring.version>
         <spring-shell.version>1.2.0.RELEASE</spring-shell.version>
-        <hazelcast.version>3.7.1</hazelcast.version>
+        <hazelcast.version>3.7.3</hazelcast.version>
         <aspectj.version>1.8.9</aspectj.version>
         <yatomata.version>1.7</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
