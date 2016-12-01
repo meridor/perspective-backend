@@ -19,5 +19,6 @@
     <bean class="org.meridor.perspective.worker.processor.ImagesProcessor"/>
     <bean class="org.meridor.perspective.worker.processor.InstanceFSM"/>
     <bean class="org.meridor.perspective.worker.processor.ImageFSM"/>
+    <bean class="org.meridor.perspective.common.events.impl.EventBusImpl"/>
 
 </beans>

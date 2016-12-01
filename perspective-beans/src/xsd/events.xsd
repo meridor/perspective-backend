@@ -41,6 +41,12 @@
             <xsd:extension base="events:projectEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
+    <xsd:complexType name="needProjectSyncEvent">
+        <xsd:sequence>
+            <xsd:element name="projectId" type="xsd:string"/>
+            <xsd:element name="cloud" type="config:cloud"/>
+        </xsd:sequence>
+    </xsd:complexType>
 
     <!-- Instances events -->
     <xsd:complexType name="instanceEvent" abstract="true">

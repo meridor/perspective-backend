@@ -3,6 +3,7 @@ package org.meridor.perspective.worker.processor;
 import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
+import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
@@ -134,11 +135,14 @@ public class InstanceFSM {
 
     private final InstancesAware instancesAware;
 
+    private final EventBus eventBus;
+
     @Autowired
-    public InstanceFSM(OperationProcessor operationProcessor, InstancesAware instancesAware, CloudConfigurationProvider cloudConfigurationProvider) {
+    public InstanceFSM(OperationProcessor operationProcessor, InstancesAware instancesAware, CloudConfigurationProvider cloudConfigurationProvider, EventBus eventBus) {
         this.operationProcessor = operationProcessor;
         this.cloudConfigurationProvider = cloudConfigurationProvider;
         this.instancesAware = instancesAware;
+        this.eventBus = eventBus;
     }
 
     @BeforeTransit
@@ -183,9 +187,17 @@ public class InstanceFSM {
                 instancesAware.deleteInstance(temporaryInstanceId);
             }
             instancesAware.saveInstance(updatedInstance);
+            triggerProjectSync(cloud, updatedInstance.getProjectId());
         }
     }
 
+    private void triggerProjectSync(Cloud cloud, String projectId) {
+        NeedProjectSyncEvent needProjectSyncEvent = new NeedProjectSyncEvent();
+        needProjectSyncEvent.setCloud(cloud);
+        needProjectSyncEvent.setProjectId(projectId);
+        eventBus.fire(needProjectSyncEvent);
+    }
+    
     @OnTransit
     public void onInstanceLaunched(InstanceLaunchedEvent event) {
         if (event.isSync()) {
@@ -314,6 +326,7 @@ public class InstanceFSM {
             throw new RuntimeException(String.format("Failed to resize %s", instance));
         }
         instancesAware.saveInstance(instance);
+        triggerProjectSync(cloud, instance.getProjectId());
     }
 
     @OnTransit
@@ -381,6 +394,7 @@ public class InstanceFSM {
             if (operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
                 LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
                 instancesAware.deleteInstance(instance.getId());
+                triggerProjectSync(cloud, instance.getProjectId());
             } else {
                 throw new RuntimeException(String.format("Failed to delete %s", instance));
             }

@@ -1,13 +1,15 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
-import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.config.CloudType;
-import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.events.ProjectSyncEvent;
 import org.meridor.perspective.backend.messaging.Destination;
 import org.meridor.perspective.backend.messaging.IfNotLocked;
 import org.meridor.perspective.backend.messaging.Producer;
+import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.common.events.EventListener;
+import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.config.CloudType;
+import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.events.NeedProjectSyncEvent;
+import org.meridor.perspective.events.ProjectSyncEvent;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
@@ -18,15 +20,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.meridor.perspective.beans.DestinationName.READ_TASKS;
 import static org.meridor.perspective.events.EventFactory.projectEvent;
-import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @Component
-public class ProjectsFetcher extends BaseFetcher {
+public class ProjectsFetcher extends BaseFetcher implements EventListener<NeedProjectSyncEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectsFetcher.class);
 
@@ -104,4 +107,10 @@ public class ProjectsFetcher extends BaseFetcher {
         };
     }
 
+    @Override
+    public void onEvent(NeedProjectSyncEvent event) {
+        String projectId = event.getProjectId();
+        Cloud cloud = event.getCloud();
+        fetch(cloud, Collections.singleton(projectId));
+    }
 }
