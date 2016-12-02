@@ -1,13 +1,15 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
+import org.meridor.perspective.backend.messaging.Destination;
+import org.meridor.perspective.backend.messaging.IfNotLocked;
+import org.meridor.perspective.backend.messaging.Producer;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.ImageEvent;
-import org.meridor.perspective.backend.messaging.Destination;
-import org.meridor.perspective.backend.messaging.IfNotLocked;
-import org.meridor.perspective.backend.messaging.Producer;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
@@ -18,12 +20,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.meridor.perspective.beans.DestinationName.READ_TASKS;
 import static org.meridor.perspective.events.EventFactory.imageToEvent;
-import static org.meridor.perspective.backend.messaging.MessageUtils.message;
+import static org.meridor.perspective.worker.processor.event.EventUtils.requestProjectSync;
 
 @Component
 public class ImagesFetcher extends BaseFetcher {
@@ -38,15 +42,21 @@ public class ImagesFetcher extends BaseFetcher {
     private final WorkerMetadata workerMetadata;
 
     private final ApplicationContext applicationContext;
+
+    private final ProjectsAware projectsAware;
+
+    private final EventBus eventBus;
     
     @Value("${perspective.fetch.delay.images}")
     private int fullSyncDelay;
 
     @Autowired
-    public ImagesFetcher(WorkerMetadata workerMetadata, OperationProcessor operationProcessor, ApplicationContext applicationContext) {
+    public ImagesFetcher(WorkerMetadata workerMetadata, OperationProcessor operationProcessor, ApplicationContext applicationContext, ProjectsAware projectsAware, EventBus eventBus) {
         this.workerMetadata = workerMetadata;
         this.operationProcessor = operationProcessor;
         this.applicationContext = applicationContext;
+        this.projectsAware = projectsAware;
+        this.eventBus = eventBus;
     }
 
     @IfNotLocked(lockName = "all")
@@ -96,13 +106,18 @@ public class ImagesFetcher extends BaseFetcher {
     private Consumer<Set<Image>> getConsumer(Cloud cloud) {
         return images -> {
             CloudType cloudType = workerMetadata.getCloudType();
+            Set<String> allProjectIds = new HashSet<>();
             for (Image image : images) {
                 image.setCloudType(cloudType);
                 image.setCloudId(cloud.getId());
+                allProjectIds.addAll(image.getProjectIds());
                 ImageEvent event = imageToEvent(image);
                 event.setSync(true);
                 producer.produce(message(cloudType, event));
             }
+            allProjectIds.stream()
+                    .filter(projectId -> !projectsAware.projectExists(projectId))
+                    .forEach(projectId -> requestProjectSync(eventBus, cloud, projectId));
             LOG.debug("Saved {} fetched images for cloud = {} to queue", images.size(), cloud.getName());
         };
     }

@@ -17,6 +17,8 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
 
+import static org.meridor.perspective.worker.processor.event.EventUtils.requestProjectSync;
+
 @Component
 @FSM(start = InstanceNotAvailableEvent.class)
 @Transitions({
@@ -187,17 +189,10 @@ public class InstanceFSM {
                 instancesAware.deleteInstance(temporaryInstanceId);
             }
             instancesAware.saveInstance(updatedInstance);
-            triggerProjectSync(cloud, updatedInstance.getProjectId());
+            requestProjectSync(eventBus, cloud, updatedInstance.getProjectId());
         }
     }
 
-    private void triggerProjectSync(Cloud cloud, String projectId) {
-        NeedProjectSyncEvent needProjectSyncEvent = new NeedProjectSyncEvent();
-        needProjectSyncEvent.setCloud(cloud);
-        needProjectSyncEvent.setProjectId(projectId);
-        eventBus.fire(needProjectSyncEvent);
-    }
-    
     @OnTransit
     public void onInstanceLaunched(InstanceLaunchedEvent event) {
         if (event.isSync()) {
@@ -326,7 +321,7 @@ public class InstanceFSM {
             throw new RuntimeException(String.format("Failed to resize %s", instance));
         }
         instancesAware.saveInstance(instance);
-        triggerProjectSync(cloud, instance.getProjectId());
+        requestProjectSync(eventBus, cloud, instance.getProjectId());
     }
 
     @OnTransit
@@ -394,7 +389,7 @@ public class InstanceFSM {
             if (operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
                 LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
                 instancesAware.deleteInstance(instance.getId());
-                triggerProjectSync(cloud, instance.getProjectId());
+                requestProjectSync(eventBus, cloud, instance.getProjectId());
             } else {
                 throw new RuntimeException(String.format("Failed to delete %s", instance));
             }

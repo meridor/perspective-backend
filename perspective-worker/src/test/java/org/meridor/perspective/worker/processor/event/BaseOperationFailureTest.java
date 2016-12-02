@@ -15,8 +15,10 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
@@ -38,10 +40,16 @@ public abstract class BaseOperationFailureTest {
     private TestStorage storage;
 
     void assertListenerWorks(Message notProcessedMessage) throws Exception {
+        //Here's how we wait for event to propagate to listeners
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        eventBus.addListener(MessageNotProcessedEvent.class, event -> countDownLatch.countDown());
+        
         eventBus.fire(new MessageNotProcessedEvent(notProcessedMessage));
+        countDownLatch.await(1, SECONDS);
+        
         BlockingQueue<Object> queue = storage.getQueue(DestinationName.MAIL.value());
         assertThat(queue, hasSize(1));
-        Object messageWithLetterObject = queue.poll(100, TimeUnit.MILLISECONDS);
+        Object messageWithLetterObject = queue.poll(100, MILLISECONDS);
         assertThat(messageWithLetterObject, is(instanceOf(Message.class)));
         Message messageWithLetter = (Message) messageWithLetterObject;
         assertThat(messageWithLetter.getCloudType(), is(nullValue()));
