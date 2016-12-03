@@ -183,9 +183,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 Optional<Flavor> matchingFlavor = project.getFlavors().stream()
                         .filter(f -> flavorId.equals(f.getId()))
                         .findFirst();
-                if (!matchingFlavor.isPresent()) {
-                    instance.setFlavor(matchingFlavor.get());
-                }
+                matchingFlavor.ifPresent(instance::setFlavor);
             }
         }
     }
