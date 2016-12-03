@@ -15,7 +15,7 @@ public class RebuildInstanceOperation extends BaseInstanceOperation {
     protected BiFunction<Api, Instance, Boolean> getAction() {
         return (api, instance) -> {
             try {
-                api.rebuildDroplet(Integer.valueOf(instance.getRealId()), Integer.valueOf(instance.getImage().getId()));
+                api.rebuildDroplet(Integer.valueOf(instance.getRealId()), Integer.valueOf(instance.getImage().getRealId()));
                 return true;
             } catch (Exception e) {
                 throw new RuntimeException(e);
