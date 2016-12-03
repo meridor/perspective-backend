@@ -1,12 +1,12 @@
 package org.meridor.perspective.openstack;
 
+import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.ImageState;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -97,9 +97,12 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
             Optional<Image> imageCandidate = imagesAware.getImage(id);
             if (imageCandidate.isPresent()) {
                 Image image = imageCandidate.get();
-                String region = image.getMetadata().get(MetadataKey.REGION);
-                ret.putIfAbsent(region, new HashSet<>());
-                ret.get(region).add(image.getRealId());
+                String realId = image.getRealId();
+                if (realId != null) {
+                    String region = image.getMetadata().get(MetadataKey.REGION);
+                    ret.putIfAbsent(region, new HashSet<>());
+                    ret.get(region).add(realId);
+                }
             }
         });
         return ret;

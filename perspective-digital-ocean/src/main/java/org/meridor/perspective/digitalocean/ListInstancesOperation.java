@@ -89,7 +89,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         Set<String> realIds = new HashSet<>();
         ids.forEach(id -> {
             Optional<Instance> instanceCandidate = instancesAware.getInstance(id);
-            instanceCandidate.ifPresent(instance -> realIds.add(instance.getRealId()));
+            instanceCandidate.ifPresent(instance -> {
+                String realId = instance.getRealId();
+                if (realId != null) {
+                    realIds.add(realId);
+                }
+            });
         });
         return realIds;
     }

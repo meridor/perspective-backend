@@ -27,6 +27,9 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
             Api api = apiProvider.getApi(cloud);
             Image image = supplier.get();
             String imageId = image.getRealId();
+            if (imageId == null) {
+                return false;
+            }
             api.deleteImage(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;

@@ -24,7 +24,11 @@ public class DeleteInstanceOperation implements ConsumingOperation<Instance> {
         try {
             Api api = apiProvider.getApi(cloud);
             Instance instance = supplier.get();
-            api.deleteContainer(instance.getRealId());
+            String instanceId = instance.getRealId();
+            if (instanceId == null) {
+                return false;
+            }
+            api.deleteContainer(instanceId);
             LOG.debug("Deleted instance {} ({})", instance.getName(), instance.getId());
             return true;
         } catch (Exception e) {

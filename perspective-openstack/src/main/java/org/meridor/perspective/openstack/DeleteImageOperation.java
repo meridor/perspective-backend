@@ -30,9 +30,12 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
     public boolean perform(Cloud cloud, Supplier<Image> supplier) {
         try {
             Image image = supplier.get();
+            String imageId = image.getRealId();
+            if (imageId == null) {
+                return false;
+            }
             String region = image.getMetadata().get(MetadataKey.REGION);
             Api api = apiProvider.getApi(cloud, region);
-            String imageId = image.getRealId();
             api.deleteImage(imageId);
             LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
             return true;

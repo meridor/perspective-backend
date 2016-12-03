@@ -83,15 +83,11 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
         String projectId = idGenerator.getProjectId(cloud);
         Optional<Project> projectCandidate = projects.getProject(projectId);
-        if (projectCandidate.isPresent()) {
-            instance.setProjectId(projectId);
-        }
+        projectCandidate.ifPresent(project -> instance.setProjectId(projectId));
         
         String imageId = idGenerator.getImageId(cloud, container.image());
         Optional<Image> imageCandidate = images.getImage(imageId);
-        if (imageCandidate.isPresent()) {
-            instance.setImage(imageCandidate.get());
-        }
+        imageCandidate.ifPresent(instance::setImage);
 
         ZonedDateTime created = ZonedDateTime.ofInstant(
                 container.created().toInstant(),

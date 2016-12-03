@@ -1,12 +1,12 @@
 package org.meridor.perspective.openstack;
 
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ImagesAware;
-import org.meridor.perspective.backend.storage.InstancesAware;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.model.compute.Address;
@@ -121,9 +121,12 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             Optional<Instance> instanceCandidate = instancesAware.getInstance(id);
             if (instanceCandidate.isPresent()) {
                 Instance instance = instanceCandidate.get();
-                String region = instance.getMetadata().get(MetadataKey.REGION);
-                ret.putIfAbsent(region, new HashSet<>());
-                ret.get(region).add(instance.getRealId());
+                String realId = instance.getRealId();
+                if (realId != null) {
+                    String region = instance.getMetadata().get(MetadataKey.REGION);
+                    ret.putIfAbsent(region, new HashSet<>());
+                    ret.get(region).add(realId);
+                }
             }
         });
         return ret;

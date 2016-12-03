@@ -1,10 +1,10 @@
 package org.meridor.perspective.openstack;
 
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.MetadataKey;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.operation.ConsumingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,9 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
         Instance instance = supplier.get();
+        if (instance.getRealId() == null) {
+            return false;
+        }
         try {
             String region = instance.getMetadata().get(MetadataKey.REGION);
             if (region == null) {

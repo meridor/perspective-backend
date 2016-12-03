@@ -22,6 +22,9 @@ public abstract class BaseInstanceOperation implements ConsumingOperation<Instan
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
         Instance instance = supplier.get();
+        if (instance.getRealId() == null) {
+            return false;
+        }
         try {
             Api api = apiProvider.getApi(cloud);
             boolean success = getAction().apply(api, instance);
