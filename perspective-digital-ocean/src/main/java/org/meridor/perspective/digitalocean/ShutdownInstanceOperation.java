@@ -35,10 +35,10 @@ public class ShutdownInstanceOperation extends BaseInstanceOperation {
             }
         };
     }
-    
-    private static boolean waitForGracefulShutdown(Api api, Integer dropletId) throws Exception {
+
+    private boolean waitForGracefulShutdown(Api api, Integer dropletId) throws Exception {
         int totalWaitingMs = 0;
-        while (totalWaitingMs < CHECK_DELAY) {
+        while (totalWaitingMs < instanceShutdownTimeout) {
             Optional<Droplet> dropletCandidate = api.getDropletById(dropletId);
             if (!dropletCandidate.isPresent()) {
                 break;
@@ -46,6 +46,7 @@ public class ShutdownInstanceOperation extends BaseInstanceOperation {
             if (dropletCandidate.get().getStatus() == DropletStatus.OFF) {
                 return true;
             }
+            totalWaitingMs += CHECK_DELAY;
             Thread.sleep(CHECK_DELAY);
         }
         return false;

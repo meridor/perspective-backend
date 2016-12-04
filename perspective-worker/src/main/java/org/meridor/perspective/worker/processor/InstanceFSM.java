@@ -81,6 +81,8 @@ import java.util.Optional;
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceShutOffEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
+        @Transit(from = InstanceStartingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
+        @Transit(from = InstanceStartingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceShutOffEvent.class, on = InstanceDeletingEvent.class, stop = true),
 
         //Instance suspend
