@@ -29,14 +29,10 @@ public class AddImagesWizard extends BaseWizard {
     public String getCommand() {
         CommandBuilder commandBuilder = new CommandBuilder("add images");
         Optional<String> instancesCandidate = getAnswer(InstanceStep.class);
-        if (instancesCandidate.isPresent()) {
-            commandBuilder.addArgument(INSTANCES, instancesCandidate.get());
-        }
+        instancesCandidate.ifPresent(ic -> commandBuilder.addArgument(INSTANCES, ic));
         
         Optional<String> nameCandidate = getAnswer(NameStep.class);
-        if (nameCandidate.isPresent()) {
-            commandBuilder.addArgument(NAME, nameCandidate.get());
-        }
+        nameCandidate.ifPresent(nc -> commandBuilder.addArgument(NAME, nc));
         return commandBuilder.getCommand();
     }
 }

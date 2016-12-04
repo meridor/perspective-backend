@@ -32,8 +32,12 @@ public abstract class AbstractMultipleInstancesStep extends MultipleChoicesStep<
     protected List<FindInstancesResult> getPossibleChoices(AnswersStorage previousAnswers) {
         return instancesRepository.findInstances(
                 requestProvider.get(FindInstancesRequest.class)
-                        .withProjectNames(getProjectName(previousAnswers))
+                        .withProjectNames(getProjectName(getProjectStepClass(), previousAnswers))
         );
+    }
+
+    protected Class<? extends AbstractProjectStep> getProjectStepClass() {
+        return null;
     }
 
     @Override

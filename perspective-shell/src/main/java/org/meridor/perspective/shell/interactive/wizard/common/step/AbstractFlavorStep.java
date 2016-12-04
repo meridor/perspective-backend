@@ -27,9 +27,12 @@ public abstract class AbstractFlavorStep extends SingleChoiceStep<FindFlavorsRes
 
     @Override
     protected List<FindFlavorsResult> getPossibleChoices(AnswersStorage previousAnswers) {
-        return projectsRepository.findFlavors(requestProvider.get(FindFlavorsRequest.class)
-                .withProjects(getProjectName(previousAnswers)));
+        return projectsRepository.findFlavors(
+                requestProvider.get(FindFlavorsRequest.class).withProjects(getProjectName(getProjectStepClass(), previousAnswers))
+        );
     }
+
+    protected abstract Class<? extends AbstractProjectStep> getProjectStepClass();
 
     @Override
     protected Function<FindFlavorsResult, String> getAnswerProvider() {

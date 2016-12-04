@@ -28,9 +28,11 @@ public abstract class AbstractImageStep extends SingleChoiceStep<FindImagesResul
     @Override
     protected List<FindImagesResult> getPossibleChoices(AnswersStorage previousAnswers) {
         return imagesRepository.findImages(
-                requestProvider.get(FindImagesRequest.class).withProjects(getProjectName(previousAnswers))
+                requestProvider.get(FindImagesRequest.class).withProjects(getProjectName(getProjectStepClass(), previousAnswers))
         );
     }
+
+    protected abstract Class<? extends AbstractProjectStep> getProjectStepClass();
 
     @Override
     protected Function<FindImagesResult, String> getAnswerProvider() {

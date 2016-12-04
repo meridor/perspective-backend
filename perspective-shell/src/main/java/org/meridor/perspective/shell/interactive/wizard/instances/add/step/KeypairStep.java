@@ -28,7 +28,7 @@ public class KeypairStep extends SingleChoiceStep<FindKeypairsResult> {
     @Override
     protected List<FindKeypairsResult> getPossibleChoices(AnswersStorage previousAnswers) {
         return projectsRepository.findKeypairs(requestProvider.get(FindKeypairsRequest.class)
-                .withProjects(getProjectName(previousAnswers)));
+                .withProjects(getProjectName(ProjectStep.class, previousAnswers)));
     }
 
     @Override

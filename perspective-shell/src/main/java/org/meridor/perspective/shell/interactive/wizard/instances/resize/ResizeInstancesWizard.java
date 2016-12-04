@@ -34,17 +34,11 @@ public class ResizeInstancesWizard extends BaseWizard {
         CommandBuilder commandBuilder = new CommandBuilder("resize");
 
         Optional<String> projectCandidate = getAnswer(ProjectStep.class);
-        if (projectCandidate.isPresent()) {
-            commandBuilder.addArgument(PROJECT, projectCandidate.get());
-        }
+        projectCandidate.ifPresent(pc -> commandBuilder.addArgument(PROJECT, pc));
         Optional<String> instancesCandidate = getAnswer(InstanceStep.class);
-        if (instancesCandidate.isPresent()) {
-            commandBuilder.addArgument(INSTANCES, instancesCandidate.get());
-        }
+        instancesCandidate.ifPresent(ic -> commandBuilder.addArgument(INSTANCES, ic));
         Optional<String> flavorCandidate = getAnswer(FlavorStep.class);
-        if (flavorCandidate.isPresent()) {
-            commandBuilder.addArgument(FLAVOR, flavorCandidate.get());
-        }
+        flavorCandidate.ifPresent(fc -> commandBuilder.addArgument(FLAVOR, fc));
 
         return commandBuilder.getCommand();
     }

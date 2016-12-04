@@ -28,7 +28,7 @@ public class NetworkStep extends SingleChoiceStep<FindNetworksResult> {
     @Override
     protected List<FindNetworksResult> getPossibleChoices(AnswersStorage previousAnswers) {
         return projectsRepository.findNetworks(requestProvider.get(FindNetworksRequest.class)
-                .withProjects(getProjectName(previousAnswers)));
+                .withProjects(getProjectName(ProjectStep.class, previousAnswers)));
     }
 
     @Override

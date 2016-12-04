@@ -34,17 +34,11 @@ public class RebuildInstancesWizard extends BaseWizard {
         CommandBuilder commandBuilder = new CommandBuilder("rebuild");
 
         Optional<String> projectCandidate = getAnswer(ProjectStep.class);
-        if (projectCandidate.isPresent()) {
-            commandBuilder.addArgument(PROJECT, projectCandidate.get());
-        }
+        projectCandidate.ifPresent(pc -> commandBuilder.addArgument(PROJECT, pc));
         Optional<String> instancesCandidate = getAnswer(InstanceStep.class);
-        if (instancesCandidate.isPresent()) {
-            commandBuilder.addArgument(INSTANCES, instancesCandidate.get());
-        }
+        instancesCandidate.ifPresent(ic -> commandBuilder.addArgument(INSTANCES, ic));
         Optional<String> imageCandidate = getAnswer(ImageStep.class);
-        if (imageCandidate.isPresent()) {
-            commandBuilder.addArgument(IMAGE, imageCandidate.get());
-        }
+        imageCandidate.ifPresent(fc -> commandBuilder.addArgument(IMAGE, fc));
 
         return commandBuilder.getCommand();
     }
