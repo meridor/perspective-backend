@@ -148,8 +148,8 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
-        public Integer addImage(Integer dropletId, String imageName) throws Exception {
-            return api.takeDropletSnapshot(dropletId, imageName).getId();
+        public void addImage(Integer dropletId, String imageName) throws Exception {
+            api.takeDropletSnapshot(dropletId, imageName);
         }
 
         @Override

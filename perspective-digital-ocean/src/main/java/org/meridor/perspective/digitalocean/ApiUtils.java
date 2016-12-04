@@ -1,5 +1,8 @@
 package org.meridor.perspective.digitalocean;
 
+import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.worker.misc.IdGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -21,6 +24,10 @@ final class ApiUtils {
         } catch (Exception e) {
             return alreadyFetchedEntities;
         }
+    }
+
+    static String createFakeImageId(IdGenerator idGenerator, Cloud cloud, String imageName) {
+        return idGenerator.getImageId(cloud, imageName);
     }
     
 }

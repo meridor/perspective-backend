@@ -124,8 +124,8 @@ public class TestApiProvider implements ApiProvider {
         }
 
         @Override
-        public Integer addImage(Integer dropletId, String imageName) throws Exception {
-            return getRandomInteger();
+        public void addImage(Integer dropletId, String imageName) throws Exception {
+            
         }
 
         @Override

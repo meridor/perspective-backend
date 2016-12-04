@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.LIST_IMAGES;
+import static org.meridor.perspective.digitalocean.ApiUtils.createFakeImageId;
 
 @Component
 public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
@@ -114,7 +115,15 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         List<String> projectIds = digitalOceanImage.getRegions().stream()
                 .map(r -> idGenerator.getProjectId(cloud, r))
                 .collect(Collectors.toList());
-        return createImage(digitalOceanImage, imageId, projectIds);
+        Image image = createImage(digitalOceanImage, imageId, projectIds);
+
+        // Deleting fake image before saving real one, see AddImageOperation for more details.
+        String fakeImageId = createFakeImageId(idGenerator, cloud, image.getName());
+        if (imagesAware.imageExists(fakeImageId)) {
+            imagesAware.deleteImage(fakeImageId);
+        }
+
+        return image;
     }
 
     private Image createImage(com.myjeeva.digitalocean.pojo.Image digitalOceanImage, String imageId, List<String> projectIds) {

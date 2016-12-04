@@ -52,8 +52,8 @@ public interface Api {
     List<Image> listImages() throws Exception;
 
     Optional<Image> getImageById(Integer imageId) throws Exception;
-    
-    Integer addImage(Integer dropletId, String imageName) throws Exception;
+
+    void addImage(Integer dropletId, String imageName) throws Exception;
     
     void deleteImage(Integer imageId) throws Exception;
 }
