@@ -9,12 +9,13 @@ import java.util.function.BiFunction;
 import static org.meridor.perspective.config.OperationType.RESIZE_INSTANCE;
 
 @Component
-public class ResizeInstanceOperation extends BaseInstanceOperation {
+public class ResizeInstanceOperation extends ShutdownInstanceOperation {
 
     @Override
     protected BiFunction<Api, Instance, Boolean> getAction() {
         return (api, instance) -> {
             try {
+                shutdown(api, instance);
                 api.resizeDroplet(Integer.valueOf(instance.getRealId()), instance.getFlavor().getId());
                 return true;
             } catch (Exception e) {

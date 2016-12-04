@@ -23,17 +23,21 @@ public class ShutdownInstanceOperation extends BaseInstanceOperation {
     @Override
     protected BiFunction<Api, Instance, Boolean> getAction() {
         return (api, instance) -> {
-            try {
-                Integer dropletId = Integer.valueOf(instance.getRealId());
-                api.shutdownDroplet(dropletId);
-                if (!waitForGracefulShutdown(api, dropletId)){
-                    api.powerOffDroplet(dropletId);
-                }
-                return true;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            shutdown(api, instance);
+            return true;
         };
+    }
+
+    void shutdown(Api api, Instance instance) {
+        try {
+            Integer dropletId = Integer.valueOf(instance.getRealId());
+            api.shutdownDroplet(dropletId);
+            if (!waitForGracefulShutdown(api, dropletId)){
+                api.powerOffDroplet(dropletId);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean waitForGracefulShutdown(Api api, Integer dropletId) throws Exception {
