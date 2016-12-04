@@ -78,6 +78,7 @@ import java.util.Optional;
 
         //Instance shut off
         @Transit(from = InstanceLaunchedEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
+        @Transit(from = InstanceLaunchedEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
         @Transit(from = InstanceShuttingDownEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
         @Transit(from = InstanceShutOffEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
