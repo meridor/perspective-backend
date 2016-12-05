@@ -17,6 +17,9 @@ public abstract class AbstractInstanceOperation<T> implements ConsumingOperation
     @Override
     public boolean perform(Cloud cloud, Supplier<Instance> supplier) {
         Instance instance = supplier.get();
+        if (instance.getRealId() == null) {
+            return false;
+        }
         try {
             T api = getApi(cloud, instance);
             boolean success = getAction().apply(api, instance);
