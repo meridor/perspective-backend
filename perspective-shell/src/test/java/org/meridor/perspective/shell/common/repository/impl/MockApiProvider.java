@@ -2,6 +2,7 @@ package org.meridor.perspective.shell.common.repository.impl;
 
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.client.ImagesApi;
@@ -10,7 +11,6 @@ import org.meridor.perspective.client.QueryApi;
 import org.meridor.perspective.client.ServiceApi;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ApiProvider;
 import org.meridor.perspective.sql.QueryResult;
 import retrofit2.Call;
@@ -28,6 +28,8 @@ public class MockApiProvider implements ApiProvider {
     private static final MediaType MEDIA_TYPE = MediaType.parse("application/json");
 
     private final Collection<QueryResult> queryResults = new ArrayList<>();
+
+    private String baseUri;
 
     @Override
     public InstancesApi getInstancesApi() {
@@ -142,7 +144,11 @@ public class MockApiProvider implements ApiProvider {
 
     @Override
     public String getBaseUri() {
-        return "http://localhost:8080/";
+        return baseUri != null ? baseUri : "http://localhost:8080/";
+    }
+
+    void setBaseUri(String baseUri) {
+        this.baseUri = baseUri;
     }
 
     public Collection<QueryResult> getQueryResults() {

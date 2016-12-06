@@ -147,6 +147,12 @@
                 <artifactId>tyrus-container-grizzly-client</artifactId>
                 <version>${tyrus.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus.tests</groupId>
+                <artifactId>tyrus-test-tools</artifactId>
+                <version>${tyrus.version}</version>
+                <scope>test</scope>
+            </dependency>
 
 
             <!-- Testing -->

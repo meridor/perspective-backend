@@ -1,10 +1,12 @@
 package org.meridor.perspective.shell.common.repository.impl;
 
 import org.glassfish.tyrus.client.ClientManager;
+import org.glassfish.tyrus.client.ClientProperties;
 import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.client.ApiAware;
 import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.common.events.EventListener;
+import org.meridor.perspective.shell.common.events.MailReceivedEvent;
 import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.meridor.perspective.shell.common.events.ShellStartedEvent;
 import org.meridor.perspective.shell.common.misc.Logger;
@@ -34,7 +36,7 @@ public class MailRepositoryImpl implements MailRepository, EventListener<ShellSt
 
     private final Map<String, Letter> letters = new LinkedHashMap<>();
 
-    private CountDownLatch countDownLatch;
+    private CountDownLatch countDownLatch = new CountDownLatch(1);
     
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -62,7 +64,6 @@ public class MailRepositoryImpl implements MailRepository, EventListener<ShellSt
     }
 
     private void connect() {
-        countDownLatch = new CountDownLatch(1);
         executorService.submit(new MailRunnable());
     }
     
@@ -86,32 +87,18 @@ public class MailRepositoryImpl implements MailRepository, EventListener<ShellSt
         }
     }
 
-    @OnMessage
-    public void onMessage(String message, Session session) {
-        try {
-            Letter letter = unserialize(message, Letter.class);
-            letters.put(letter.getId(), letter);
-            eventBus.fire(new PromptChangedEvent());
-        } catch (IOException e) {
-            logger.error(String.format("Failed to receive mail from the API: %s", e.getMessage()));
-        }
-    }
-
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
-        countDownLatch.countDown();
-        if (!executorService.isShutdown()) {
-            connect(); //Trying to reconnect
-        }
-    }
-
     private class MailRunnable implements Runnable {
         @Override
         public void run() {
             ClientManager client = ClientManager.createClient();
             try {
-                URI endpoint = new URI(ApiAware.withUrl(apiProvider.getBaseUri()).getWebSocketUrl("mail"));
-                client.connectToServer(MailRepositoryImpl.class, endpoint);
+                URI uri = new URI(ApiAware.withUrl(apiProvider.getBaseUri()).getWebSocketUrl("mail"));
+                client.getProperties().put(ClientProperties.RECONNECT_HANDLER, new ReconnectHandler());
+                client.connectToServer(
+                        new MailClientEndpoint(),
+                        ClientEndpointConfig.Builder.create().build(),
+                        uri
+                );
                 countDownLatch.await();
                 client.shutdown();
             } catch (Exception e) {
@@ -120,6 +107,45 @@ public class MailRepositoryImpl implements MailRepository, EventListener<ShellSt
                         e.getMessage()
                 ));
             }
+        }
+    }
+
+    private class MailClientEndpoint extends Endpoint {
+
+        @Override
+        public void onOpen(Session session, EndpointConfig config) {
+            session.addMessageHandler(String.class, message -> {
+                try {
+                    Letter letter = unserialize(message, Letter.class);
+                    letters.put(letter.getId(), letter);
+                    eventBus.fire(new PromptChangedEvent());
+                    eventBus.fire(new MailReceivedEvent());
+                } catch (IOException e) {
+                    logger.error(String.format("Failed to receive mail from the API: %s", e.getMessage()));
+                }
+            });
+        }
+
+    }
+
+    private class ReconnectHandler extends ClientManager.ReconnectHandler {
+
+        private Double reconnectDelay = 2d;
+
+        @Override
+        public boolean onDisconnect(CloseReason closeReason) {
+            return true;
+        }
+
+        @Override
+        public boolean onConnectFailure(Exception exception) {
+            reconnectDelay *= 1.02; //Slowly increasing function
+            return true;
+        }
+
+        @Override
+        public long getDelay() {
+            return reconnectDelay.longValue();
         }
     }
 }

@@ -3,11 +3,11 @@ package org.meridor.perspective.rest.resources;
 import io.undertow.websockets.core.WebSocketCallback;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
-import org.meridor.perspective.beans.DestinationName;
-import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.backend.messaging.Dispatcher;
 import org.meridor.perspective.backend.messaging.Message;
 import org.meridor.perspective.backend.messaging.impl.BaseConsumer;
+import org.meridor.perspective.beans.DestinationName;
+import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.rest.handler.WebsocketResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.meridor.perspective.api.SerializationUtils.serialize;
 
@@ -37,19 +39,21 @@ public class MailResource extends BaseConsumer implements Dispatcher, WebsocketR
 
     private final List<Letter> cache = new ArrayList<>();
 
-    private WebSocketChannel channel;
+    private final Set<WebSocketChannel> channels = ConcurrentHashMap.newKeySet();
 
     @Override
     public Optional<Message> dispatch(Message message) {
         Object payload = message.getPayload();
         if (payload instanceof Letter) {
             Letter letter = (Letter) payload;
-            if (channel != null) {
-                while (cache.size() > 0) {
-                    Letter letterFromCache = cache.remove(0);
-                    sendLetter(letterFromCache, channel);
-                }
-                sendLetter(letter, channel);
+            if (channels.size() > 0) {
+                channels.forEach(ch -> {
+                    while (cache.size() > 0) {
+                        Letter letterFromCache = cache.remove(0);
+                        sendLetter(letterFromCache, ch);
+                    }
+                    sendLetter(letter, ch);
+                });
             } else {
                 if (maxCacheSize > 0 && cache.size() >= maxCacheSize) {
                     cache.remove(0);
@@ -97,6 +101,11 @@ public class MailResource extends BaseConsumer implements Dispatcher, WebsocketR
 
     @Override
     public void onOpen(WebSocketChannel channel) {
-        this.channel = channel;
+        channels.addAll(channel.getPeerConnections());
+    }
+
+    @Override
+    public void onClose(WebSocketChannel channel) {
+        channels.remove(channel);
     }
 }
