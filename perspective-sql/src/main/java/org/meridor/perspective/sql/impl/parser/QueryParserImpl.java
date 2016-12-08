@@ -59,9 +59,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             super(msg);
         }
     }
-    
-    @Autowired
-    private TablesAware tablesAware;
+
+    private final TablesAware tablesAware;
 
     private SQLParser.Select_clauseContext selectClauseContext;
     private SQLParser.From_clauseContext fromClauseContext;
@@ -83,6 +82,11 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     private BooleanExpression havingExpression;
     private Integer limitCount;
     private Integer limitOffset;
+
+    @Autowired
+    public QueryParserImpl(TablesAware tablesAware) {
+        this.tablesAware = tablesAware;
+    }
 
     @Override
     public void parse(String sql) throws SQLSyntaxErrorException {
@@ -152,23 +156,23 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private void processWhereClause() {
-        Optional<SQLParser.Where_clauseContext> whereClauseContext = Optional.ofNullable(this.whereClauseContext);
-        if (whereClauseContext.isPresent()) {
-            this.whereExpression = processComplexBooleanExpression(whereClauseContext.get().complex_boolean_expression());
+        if (whereClauseContext != null) {
+            whereExpression = processComplexBooleanExpression(whereClauseContext.complex_boolean_expression());
         }
     }
 
     private void processGroupByClause() {
-        Optional<SQLParser.Group_clauseContext> groupByClauseContext = Optional.ofNullable(this.groupByClauseContext);
-        if (groupByClauseContext.isPresent()) {
-            foreachExpression(groupByClauseContext.get().expressions().expression(), p -> this.groupByExpressions.add(p.getExpression()));
+        if (groupByClauseContext != null) {
+            foreachExpression(
+                    groupByClauseContext.expressions().expression(),
+                    p -> groupByExpressions.add(p.getExpression())
+            );
         }
     }
 
     private void processOrderByClause() {
-        Optional<SQLParser.Order_clauseContext> orderByClauseContext =  Optional.ofNullable(this.orderByClauseContext);
-        if (orderByClauseContext.isPresent()) {
-            orderByClauseContext.get().order_expressions().order_expression().forEach(oe -> {
+        if (orderByClauseContext != null) {
+            orderByClauseContext.order_expressions().order_expression().forEach(oe -> {
                 Object expression = processExpression(oe.expression()).getExpression();
                 OrderDirection orderDirection = (oe.DESC() != null) ? OrderDirection.DESC : OrderDirection.ASC;
                 this.orderByExpressions.add(new OrderExpression(expression, orderDirection));
@@ -177,9 +181,8 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
     
     private void processHavingClause() {
-        Optional<SQLParser.Having_clauseContext> havingClauseContext = Optional.ofNullable(this.havingClauseContext);
-        if (havingClauseContext.isPresent()) {
-            this.havingExpression = processComplexBooleanExpression(havingClauseContext.get().complex_boolean_expression());
+        if (havingClauseContext != null) {
+            havingExpression = processComplexBooleanExpression(havingClauseContext.complex_boolean_expression());
         }
     }
     
@@ -192,31 +195,31 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             return processSimpleBooleanExpression(complexBooleanExpression.simple_boolean_expression());
         } else if (complexBooleanExpression.binary_boolean_operator(0) != null && complexBooleanExpression.complex_boolean_expression(1) != null) {
             return processComplexBooleanExpressionsList(
-                    Optional.empty(),
+                    null,
                     complexBooleanExpression.complex_boolean_expression(),
                     complexBooleanExpression.binary_boolean_operator()
             );
         } else if (complexBooleanExpression.LPAREN() != null && complexBooleanExpression.complex_boolean_expression(0) != null) {
             return processComplexBooleanExpression(complexBooleanExpression.complex_boolean_expression(0));
         }
-        throw new ParseException(String.format("Unknown boolean expression: \'%s\'", complexBooleanExpression.getText()));
+        throw new ParseException(String.format("Unknown boolean expression: \'%s\'", complexBooleanExpression));
     }
     
     private BinaryBooleanExpression processComplexBooleanExpressionsList(
-            Optional<BinaryBooleanExpression> previousExpression,
+            BinaryBooleanExpression previousExpression,
             List<SQLParser.Complex_boolean_expressionContext> remainingExpressions,
             List<SQLParser.Binary_boolean_operatorContext> remainingOperators
     ) {
         if (remainingExpressions.isEmpty() || remainingOperators.isEmpty()) {
-            return previousExpression.get();
+            return previousExpression;
         }
         BinaryBooleanOperator binaryBooleanOperator = processBinaryBooleanOperator(remainingOperators.remove(0));
-        Object left = previousExpression.isPresent() ?
-                previousExpression.get() :
+        Object left = previousExpression != null ?
+                previousExpression :
                 processComplexBooleanExpression(remainingExpressions.remove(0));
         Object right = processComplexBooleanExpression(remainingExpressions.remove(0)); //First remove call shifts indexes to the left
         BinaryBooleanExpression binaryBooleanExpression = new BinaryBooleanExpression(left, binaryBooleanOperator, right);
-        return processComplexBooleanExpressionsList(Optional.of(binaryBooleanExpression), remainingExpressions, remainingOperators);
+        return processComplexBooleanExpressionsList(binaryBooleanExpression, remainingExpressions, remainingOperators);
     }
     
     private UnaryBooleanOperator processUnaryBooleanOperator(SQLParser.Unary_boolean_operatorContext unaryBooleanOperator) {
@@ -234,7 +237,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (binaryBooleanOperator.XOR() != null) {
             return BinaryBooleanOperator.XOR;
         }
-        throw new ParseException(String.format("Unknown binary boolean operator: \'%s\'", binaryBooleanOperator.getText()));
+        throw new ParseException(String.format("Unknown binary boolean operator: \'%s\'", binaryBooleanOperator));
     }
     
     private BooleanExpression processSimpleBooleanExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression) {
@@ -255,7 +258,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (simpleBooleanExpression.FALSE() != null) {
             return new LiteralBooleanExpression(false);
         }
-        throw new ParseException(String.format("Unsupported simple boolean expression: \'%s\'", simpleBooleanExpression.getText()));
+        throw new ParseException(String.format("Unsupported simple boolean expression: \'%s\'", simpleBooleanExpression));
     }
 
     private Object getExpression(SQLParser.Simple_boolean_expressionContext simpleBooleanExpression, int pos) {
@@ -334,53 +337,51 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (relationalOperator.NOT_EQ() != null) {
             return NOT_EQUAL;
         }
-        throw new ParseException(String.format("Unknown relational operator: \'%s\'", relationalOperator.getText()));
+        throw new ParseException(String.format("Unknown relational operator: \'%s\'", relationalOperator));
     }
 
     private void processFromClause() {
         Optional<SQLParser.From_clauseContext> fromClauseContext = Optional.ofNullable(this.fromClauseContext);
         if (fromClauseContext.isPresent()) {
             SQLParser.Table_referencesContext tableReferencesContext = fromClauseContext.get().table_references();
-            Optional<DataSource> dataSourceCandidate = processTableReferences(tableReferencesContext);
+            DataSource dataSource = processTableReferences(tableReferencesContext);
             //Clearing initially available columns used in from clause checks 
             // and preparing more precise available columns map
             getAvailableColumns().clear();
-            Map<String, List<String>> availableColumns = getAvailableColumns(dataSourceCandidate, Collections.emptyMap());
+            Map<String, List<String>> availableColumns = getAvailableColumns(dataSource, Collections.emptyMap());
             getAvailableColumns().putAll(availableColumns);
-            if (dataSourceCandidate.isPresent()) {
-                this.dataSource = dataSourceCandidate.get();
+            if (dataSource != null) {
+                this.dataSource = dataSource;
             }
         }
     }
 
-    private Optional<DataSource> processTableReferences(SQLParser.Table_referencesContext tableReferencesContext) {
+    private DataSource processTableReferences(SQLParser.Table_referencesContext tableReferencesContext) {
         List<DataSource> dataSources = tableReferencesContext.table_reference().stream()
                 .map(this::processTableReference)
                 .collect(Collectors.toList());
         return dataSources.size() > 1 ?
-                chainDataSources(Optional.empty(), dataSources) :
-                Optional.of(dataSources.get(0));
+                chainDataSources(null, dataSources) :
+                dataSources.get(0);
     }
-    
-    private Optional<DataSource> chainDataSources(Optional<DataSource> previousDataSourceCandidate, List<DataSource> remainingDataSources) {
+
+    private DataSource chainDataSources(DataSource previousDataSource, List<DataSource> remainingDataSources) {
         if (remainingDataSources.isEmpty()) {
-            return previousDataSourceCandidate;
+            return previousDataSource;
         }
         DataSource currentDataSource = remainingDataSources.remove(remainingDataSources.size() - 1); //Removing from the tail
         DataSource currentDataSourceTail = DataSourceUtils.getTail(currentDataSource);
-        if (previousDataSourceCandidate.isPresent()) {
-            DataSource previousDataSource = previousDataSourceCandidate.get();
+        if (previousDataSource != null) {
             previousDataSource.setJoinType(JoinType.INNER);
             currentDataSourceTail.setRightDataSource(previousDataSource);
         }
-        return chainDataSources(Optional.of(currentDataSource), remainingDataSources);
+        return chainDataSources(currentDataSource, remainingDataSources);
     }
 
-    private Map<String, List<String>> getAvailableColumns(Optional<DataSource> currentDataSourceCandidate, Map<String, List<String>> availableColumns) {
-        if (!currentDataSourceCandidate.isPresent()) {
+    private Map<String, List<String>> getAvailableColumns(DataSource currentDataSource, Map<String, List<String>> availableColumns) {
+        if (currentDataSource == null) {
             return availableColumns;
         }
-        DataSource currentDataSource = currentDataSourceCandidate.get();
         Optional<String> tableAliasCandidate = currentDataSource.getTableAlias();
         Optional<DataSource> dataSourceCandidate = currentDataSource.getLeftDataSource();
         final Map<String, List<String>> currentlyAvailableColumns = new HashMap<>();
@@ -392,20 +393,23 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
             }
             List<String> columnNames = columnsToNames(tablesAware.getColumns(tableName));
             currentlyAvailableColumns.putAll(createAvailableColumns(tableAlias, columnNames));
-        } else if (dataSourceCandidate.isPresent()) {
-            currentlyAvailableColumns.putAll(getAvailableColumns(dataSourceCandidate, Collections.emptyMap()));
+        } else {
+            dataSourceCandidate.ifPresent(
+                    ds -> currentlyAvailableColumns.putAll(getAvailableColumns(ds, Collections.emptyMap()))
+            );
         }
+        DataSource rightDataSource = currentDataSource.getRightDataSource().orElse(null);
         if (currentDataSource.getJoinType().isPresent()) {
             Map<String, List<String>> previouslyAvailableColumns = new HashMap<>(availableColumns);
             return getAvailableColumns(
-                    currentDataSource.getRightDataSource(),
+                    rightDataSource,
                     mergeAvailableColumns(
                             previouslyAvailableColumns,
                             currentlyAvailableColumns
                     )
             );
         } else {
-            return getAvailableColumns(currentDataSource.getRightDataSource(), currentlyAvailableColumns);
+            return getAvailableColumns(rightDataSource, currentlyAvailableColumns);
         }
     }
     
@@ -443,7 +447,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (tableReferenceContext.table_join() != null) {
             return processTableJoin(tableReferenceContext.table_join());
         }
-        throw new ParseException(String.format("Unsupported table reference type: \'%s\'", tableReferenceContext.getText()));
+        throw new ParseException(String.format("Unsupported table reference type: \'%s\'", tableReferenceContext));
     }
 
     private DataSource processTableJoin(SQLParser.Table_joinContext tableJoinContext) {
@@ -452,7 +456,7 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         
         //We need to process table names before we process join conditions, otherwise table aliases are unknown
         Map<SQLParser.Table_atomContext, DataSource> tableAtoms = getTableAtoms(joinClauseContexts);
-        return appendJoinClauses(tableAtoms, firstDataSource, Optional.empty(), joinClauseContexts);
+        return appendJoinClauses(tableAtoms, firstDataSource, null, joinClauseContexts);
     }
 
     private Map<SQLParser.Table_atomContext, DataSource> getTableAtoms(List<SQLParser.Join_clauseContext> joinClauseContexts) {
@@ -465,22 +469,22 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     } else if (jc.natural_join_clause() != null) {
                         return jc.natural_join_clause().table_atom();
                     }
-                    throw new ParseException(String.format("Unknown join clause type: %s", jc.getText()));
+                    throw new ParseException(String.format("Unknown join clause type: %s", jc));
                 })
                 .collect(Collectors.toMap(Function.identity(), this::processTableAtom));
     }
 
-    private DataSource appendJoinClauses(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, DataSource firstDataSource, Optional<DataSource> previousDataSourceCandidate, List<SQLParser.Join_clauseContext> remainingJoinClauseContexts) {
+    private DataSource appendJoinClauses(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, DataSource firstDataSource, DataSource previousDataSource, List<SQLParser.Join_clauseContext> remainingJoinClauseContexts) {
         if (remainingJoinClauseContexts.isEmpty()) {
-            firstDataSource.setRightDataSource(previousDataSourceCandidate.get());
+            firstDataSource.setRightDataSource(previousDataSource);
             return firstDataSource;
         }
         SQLParser.Join_clauseContext currentJoinClauseContext = remainingJoinClauseContexts.remove(remainingJoinClauseContexts.size() - 1);
         DataSource currentDataSource = processJoinClause(tableAtoms, currentJoinClauseContext);
-        if (previousDataSourceCandidate.isPresent()) {
-            currentDataSource.setRightDataSource(previousDataSourceCandidate.get());
+        if (previousDataSource != null) {
+            currentDataSource.setRightDataSource(previousDataSource);
         }
-        return appendJoinClauses(tableAtoms, firstDataSource, Optional.of(currentDataSource), remainingJoinClauseContexts);
+        return appendJoinClauses(tableAtoms, firstDataSource, currentDataSource, remainingJoinClauseContexts);
     }
 
     private DataSource processJoinClause(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Join_clauseContext joinClauseContext) {
@@ -491,18 +495,18 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (joinClauseContext.natural_join_clause() != null) {
             return processNaturalJoinClause(tableAtoms, joinClauseContext.natural_join_clause());
         }
-        throw new ParseException(String.format("Unknown join clause type: \'%s\'", joinClauseContext.getText()));
+        throw new ParseException(String.format("Unknown join clause type: \'%s\'", joinClauseContext));
     }
 
     private DataSource processInnerJoinClause(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Inner_join_clauseContext innerJoinClauseContext) {
-        return joinClauseToDataSource(tableAtoms, innerJoinClauseContext.table_atom(), JoinType.INNER, Optional.ofNullable(innerJoinClauseContext.join_condition()));
+        return joinClauseToDataSource(tableAtoms, innerJoinClauseContext.table_atom(), JoinType.INNER, innerJoinClauseContext.join_condition());
     }
 
     private DataSource processOuterJoinClause(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Outer_join_clauseContext outerJoinClauseContext) {
         JoinType joinType = outerJoinClauseContext.LEFT() != null ?
                 JoinType.LEFT :
                 JoinType.RIGHT;
-        return joinClauseToDataSource(tableAtoms, outerJoinClauseContext.table_atom(), joinType, Optional.of(outerJoinClauseContext.join_condition()));
+        return joinClauseToDataSource(tableAtoms, outerJoinClauseContext.table_atom(), joinType, outerJoinClauseContext.join_condition());
     }
 
     private DataSource processNaturalJoinClause(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Natural_join_clauseContext naturalJoinClauseContext) {
@@ -512,16 +516,16 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         } else if (naturalJoinClauseContext.RIGHT() != null) {
             joinType = JoinType.RIGHT;
         }
-        DataSource dataSource = joinClauseToDataSource(tableAtoms, naturalJoinClauseContext.table_atom(), joinType, Optional.empty());
+        DataSource dataSource = joinClauseToDataSource(tableAtoms, naturalJoinClauseContext.table_atom(), joinType, null);
         dataSource.setNaturalJoin(true);
         return dataSource;
     }
 
-    private DataSource joinClauseToDataSource(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Table_atomContext tableAtom, JoinType joinType, Optional<SQLParser.Join_conditionContext> joinConditionContextCandidate) {
+    private DataSource joinClauseToDataSource(Map<SQLParser.Table_atomContext, DataSource> tableAtoms, SQLParser.Table_atomContext tableAtom, JoinType joinType, SQLParser.Join_conditionContext joinConditionContext) {
         DataSource dataSource = tableAtoms.get(tableAtom);
         dataSource.setJoinType(joinType);
-        if (joinConditionContextCandidate.isPresent()) {
-            processJoinCondition(dataSource, joinConditionContextCandidate.get());
+        if (joinConditionContext != null) {
+            processJoinCondition(dataSource, joinConditionContext);
         }
         return dataSource;
     }
@@ -538,23 +542,23 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
                     .collect(Collectors.toList());
             dataSource.getColumns().addAll(joinColumns);
         } else {
-            throw new ParseException(String.format("Unsupported join condition type: \'%s\'", joinConditionContext.getText()));
+            throw new ParseException(String.format("Unsupported join condition type: \'%s\'", joinConditionContext));
         }
     }
 
     private DataSource processTableAtom(SQLParser.Table_atomContext tableAtom) {
         if (tableAtom.table_name() != null) {
-            return processTable(tableAtom.table_name(), Optional.ofNullable(tableAtom.alias_clause()));
+            return processTable(tableAtom.table_name(), tableAtom.alias_clause());
         } else if (tableAtom.LPAREN() != null) {
-            return processTableReferences(tableAtom.table_references()).get();
+            return processTableReferences(tableAtom.table_references());
         }
-        throw new ParseException(String.format("Unsupported table atom type: \'%s\'", tableAtom.getText()));
+        throw new ParseException(String.format("Unsupported table atom type: \'%s\'", tableAtom));
     }
 
-    private DataSource processTable(SQLParser.Table_nameContext tableNameContext, Optional<SQLParser.Alias_clauseContext> aliasClauseContextCandidate) {
+    private DataSource processTable(SQLParser.Table_nameContext tableNameContext, SQLParser.Alias_clauseContext aliasClauseContext) {
         String tableName = tableNameContext.ID().getText();
-        String alias = aliasClauseContextCandidate.isPresent() ?
-                aliasClauseContextCandidate.get().alias().ID().getText() :
+        String alias = aliasClauseContext != null ?
+                aliasClauseContext.alias().ID().getText() :
                 tableName;
         if (!tableAliases.containsKey(alias)) {
             tableAliases.put(alias, tableName);
@@ -564,16 +568,15 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
         
         //Preparing available columns for the first time
         DataSource dataSource = new DataSource(alias);
-        Map<String, List<String>> availableColumns = mergeAvailableColumns(getAvailableColumns(), getAvailableColumns(Optional.of(dataSource), Collections.emptyMap()));
+        Map<String, List<String>> availableColumns = mergeAvailableColumns(getAvailableColumns(), getAvailableColumns(dataSource, Collections.emptyMap()));
         getAvailableColumns().clear();
         getAvailableColumns().putAll(availableColumns);
         return new DataSource(alias);
     }
 
     private void processSelectClause() {
-        Optional<SQLParser.Select_clauseContext> selectClauseContext = Optional.ofNullable(this.selectClauseContext);
-        if (selectClauseContext.isPresent()) {
-            selectClauseContext.get().select_expression().aliased_expression().forEach(ae -> {
+        if (selectClauseContext != null) {
+            selectClauseContext.select_expression().aliased_expression().forEach(ae -> {
                 AliasExpressionPair pair = processAliasedExpression(ae);
                 selectionMap.put(pair.getAlias(), pair.getExpression());
             });
@@ -581,15 +584,14 @@ public class QueryParserImpl extends SQLParserBaseListener implements QueryParse
     }
 
     private AliasExpressionPair processAliasedExpression(SQLParser.Aliased_expressionContext ctx) {
-        Optional<SQLParser.Alias_clauseContext> aliasCtxCandidate = Optional.ofNullable(ctx.alias_clause());
         SQLParser.ExpressionContext expressionCtx = ctx.expression();
         AliasExpressionPair defaultAliasExpressionPair = processExpression(expressionCtx, true);
-        String alias = getAliasOr(aliasCtxCandidate, defaultAliasExpressionPair.getAlias());
+        String alias = getAliasOrValue(ctx.alias_clause(), defaultAliasExpressionPair.getAlias());
         return pair(alias, defaultAliasExpressionPair.getExpression());
     }
 
-    private String getAliasOr(Optional<SQLParser.Alias_clauseContext> ctxCandidate, String value) {
-        return ctxCandidate.isPresent() ? ctxCandidate.get().alias().getText() : value;
+    private String getAliasOrValue(SQLParser.Alias_clauseContext ctx, String value) {
+        return ctx != null ? ctx.alias().getText() : value;
     }
 
     private AliasExpressionPair processExpression(SQLParser.ExpressionContext expression) {
