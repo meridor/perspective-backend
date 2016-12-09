@@ -131,32 +131,29 @@ public class DataSource {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DataSource{\n");
+        StringBuilder sb = new StringBuilder("DataSource{");
         if (tableAlias != null) {
-            sb.append(String.format("\ttableAlias='%s',\n", String.valueOf(tableAlias)));
+            sb.append(String.format("tableAlias='%s',", String.valueOf(tableAlias)));
         }
         if (leftDataSource != null) {
-            sb.append(String.format("\tleftDataSource=%s,\n", String.valueOf(leftDataSource).replace("\n", "\n\t")));
+            sb.append(String.format("leftDataSource=%s,", String.valueOf(leftDataSource)));
         }
         if (isNaturalJoin) {
-            sb.append("\tnaturalJoin=true,\n");
+            sb.append("naturalJoin=true,");
         }
         if (joinType != null) {
-            sb.append(String.format("\tjoinType=%s,\n", String.valueOf(joinType)));
+            sb.append(String.format("joinType=%s,", String.valueOf(joinType)));
         }
         if (condition != null) {
-            sb.append(String.format("\tcondition=%s,\n", String.valueOf(condition)));
+            sb.append(String.format("condition=%s,", String.valueOf(condition)));
         }
         if (!columns.isEmpty()) {
-            sb.append(String.format("\tcolumns=%s,\n", columns));
+            sb.append(String.format("columns=%s,", columns));
         }
         if (rightDatasource != null) {
-            sb.append(String.format(
-                    "\trightDatasource=%s,\n",
-                    String.valueOf(rightDatasource).replace("\n", "\n\t")
-            ));
+            sb.append(String.format("rightDatasource=%s,", String.valueOf(rightDatasource)));
         }
-        sb.append(String.format("\ttype=%s\n", String.valueOf(type)));
+        sb.append(String.format("type=%s", String.valueOf(type)));
         sb.append("}");
         return sb.toString();
     }
