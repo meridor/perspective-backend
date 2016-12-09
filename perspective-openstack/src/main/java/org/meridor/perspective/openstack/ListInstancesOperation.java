@@ -52,8 +52,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     
     @Value("${perspective.openstack.console.type:off}")
     private String consoleType;
-    
-    @Value("${perspective.openstack.default.domain}")
+
+    @Value("${perspective.openstack.default.domain:}") //Default is empty string
     private String defaultDomain;
     
     
@@ -200,9 +200,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
                 Optional<Network> networkCandidate = project.getNetworks().stream()
                         .filter(n -> n.getName().equals(networkName))
                         .findFirst();
-                if (networkCandidate.isPresent()) {
-                    networks.add(networkCandidate.get());
-                }
+                networkCandidate.ifPresent(networks::add);
             });
             instance.setNetworks(networks);
             String fqdn = getFQDN(server.getName());
@@ -212,9 +210,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         if (server.getImage() != null) {
             String imageId = idGenerator.getImageId(cloud, server.getImage().getId());
             Optional<Image> imageCandidate = imagesAware.getImage(imageId);
-            if (imageCandidate.isPresent()) {
-                instance.setImage(imageCandidate.get());
-            }
+            imageCandidate.ifPresent(instance::setImage);
         }
         
         return instance;
@@ -224,8 +220,8 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
         if (instanceName.contains(DOT)) {
             return instanceName;
         }
-        return defaultDomain != null ?
-                String.format("%s.%s", instanceName, defaultDomain) : instanceName;
+        return defaultDomain.isEmpty() ?
+                instanceName : String.format("%s.%s", instanceName, defaultDomain);
     }
     
     private void addConsoleUrl(Instance instance, Api api) {
