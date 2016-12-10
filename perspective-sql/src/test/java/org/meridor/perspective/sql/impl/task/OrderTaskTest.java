@@ -42,6 +42,7 @@ public class OrderTaskTest {
         dataContainer.addRow(createRow("b", 2));
         dataContainer.addRow(createRow("a", 4));
         dataContainer.addRow(createRow("a", 3));
+        dataContainer.addRow(createRow(null, 3));
         input.setData(dataContainer);
         return input;
     }

@@ -24,8 +24,12 @@ public class GroupTask implements Task {
 
     private final List<Object> expressions = new ArrayList<>();
 
+    private final ExpressionEvaluator expressionEvaluator;
+
     @Autowired
-    private ExpressionEvaluator expressionEvaluator;
+    public GroupTask(ExpressionEvaluator expressionEvaluator) {
+        this.expressionEvaluator = expressionEvaluator;
+    }
 
     public void addExpression(Object expression) {
         this.expressions.add(expression);
@@ -65,10 +69,16 @@ public class GroupTask implements Task {
         Map<List<Object>, List<DataRow>> newData = new HashMap<>();
         previousData.keySet().forEach(k -> {
             List<DataRow> currentKeyData = previousData.get(k);
-            Map<Object, List<DataRow>> groupedData = currentKeyData.stream()
-                    .collect(Collectors.groupingBy( //Here we group by current expression
-                            dr -> expressionEvaluator.evaluate(currentExpression, dr)
-                    ));
+            Map<Object, List<DataRow>> groupedData = new HashMap<>();
+            try {
+                groupedData.putAll(currentKeyData.stream()
+                        .collect(Collectors.groupingBy( //Here we group by current expression
+                                dr -> expressionEvaluator.evaluate(currentExpression, dr)
+                        )));
+            } catch (NullPointerException e) {
+                //NPE occurs only when expression return NULL
+                throw new RuntimeException("Can not group by NULL column values");
+            }
             groupedData.keySet().forEach(gk -> {
                 List<Object> newKey = new ArrayList<Object>(){
                     {

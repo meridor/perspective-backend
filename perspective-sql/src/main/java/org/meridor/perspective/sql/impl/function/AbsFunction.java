@@ -21,7 +21,10 @@ public class AbsFunction implements Function<Double> {
                 firstArg instanceof Integer ||
                 firstArg instanceof Long 
         )){
-            return Collections.singleton(String.format("Function argument should be a number but a %s is given", firstArg.getClass().getCanonicalName()));
+            return Collections.singleton(String.format(
+                    "Function argument should be a number but a %s is given",
+                    firstArg != null ? firstArg.getClass().getCanonicalName() : "NULL"
+            ));
         }
         return Collections.emptySet();
     }
