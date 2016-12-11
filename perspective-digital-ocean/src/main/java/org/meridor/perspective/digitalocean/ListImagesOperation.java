@@ -130,8 +130,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         Image image = new Image();
         image.setId(imageId);
         image.setRealId(String.valueOf(digitalOceanImage.getId()));
-        String imageName =
-                digitalOceanImage.isSnapshot() || digitalOceanImage.isBackup() ?
+        String imageName = shouldHideImageDistribution(digitalOceanImage) ? 
                         digitalOceanImage.getName() :
                         String.format("%s %s", digitalOceanImage.getDistribution(), digitalOceanImage.getName());
         image.setName(imageName);
@@ -148,4 +147,10 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         return image;
     }
 
+    private boolean shouldHideImageDistribution(com.myjeeva.digitalocean.pojo.Image digitalOceanImage) {
+        return
+                digitalOceanImage.getDistribution() == null ||
+                        (!digitalOceanImage.isAvailablePublic() && (digitalOceanImage.isSnapshot() || digitalOceanImage.isBackup()));
+    }
+    
 }
