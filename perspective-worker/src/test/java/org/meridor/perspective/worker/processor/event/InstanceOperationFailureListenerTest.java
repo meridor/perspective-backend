@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.meridor.perspective.backend.messaging.Message;
 import org.meridor.perspective.events.*;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,8 +14,10 @@ import static org.meridor.perspective.backend.EntityGenerator.getInstance;
 import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.events.EventFactory.instanceEvent;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @RunWith(Parameterized.class)
+@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 public class InstanceOperationFailureListenerTest extends BaseOperationFailureTest {
 
     @Parameterized.Parameters(name = "Failing \"{0}\" should be processed")

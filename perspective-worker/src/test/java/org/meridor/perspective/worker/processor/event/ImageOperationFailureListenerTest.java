@@ -8,6 +8,7 @@ import org.meridor.perspective.events.ImageDeletingEvent;
 import org.meridor.perspective.events.ImageErrorEvent;
 import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.events.ImageSavingEvent;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,8 +17,10 @@ import static org.meridor.perspective.backend.EntityGenerator.getImage;
 import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.events.EventFactory.imageEvent;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @RunWith(Parameterized.class)
+@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 public class ImageOperationFailureListenerTest extends BaseOperationFailureTest {
 
     @Parameterized.Parameters(name = "Failing \"{0}\" should be processed")
