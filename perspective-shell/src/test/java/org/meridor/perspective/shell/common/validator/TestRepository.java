@@ -20,6 +20,8 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     private static final String ONE = "one";
     private static final String TWO = "two";
 
+    private boolean fail;
+    
     private final Map<CloudType, Set<OperationType>> supportedOperations = new HashMap<>();
 
     private Map<String, Letter> letters = new HashMap<>();
@@ -319,7 +321,11 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
 
     @Override
     public Map<CloudType, Set<OperationType>> getSupportedOperations() {
-        return supportedOperations;
+        return fail ? null : supportedOperations;
+    }
+
+    public void setFail(boolean fail) {
+        this.fail = fail;
     }
 
     public void addLetter(Letter letter) {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,9 +26,10 @@ public class ServiceRepositoryImpl implements ServiceRepository {
 
     @Override
     public Map<CloudType, Set<OperationType>> getSupportedOperations() {
-        return processRequestOrException(() -> {
+        Map<CloudType, Set<OperationType>> ret = processRequestOrException(() -> {
             Call<Map<CloudType, Set<OperationType>>> call = apiProvider.getServiceApi().getSupportedOperations();
             return call.execute().body();
         });
+        return ret != null ? ret : Collections.emptyMap();
     }
 }

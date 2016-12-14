@@ -3,8 +3,8 @@ package org.meridor.perspective.shell.common.misc.impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.backend.EntityGenerator;
+import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.validator.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,11 @@ import static org.meridor.perspective.config.CloudType.DOCKER;
 import static org.meridor.perspective.config.CloudType.MOCK;
 import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 import static org.meridor.perspective.config.OperationType.ADD_INSTANCE;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @ContextConfiguration(locations = "/META-INF/spring/commands-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 public class OperationSupportCheckerImplTest {
 
     @Autowired
@@ -66,4 +67,11 @@ public class OperationSupportCheckerImplTest {
         assertThat(filteredInstances, contains(firstInstance));
     }
 
+    @Test
+    public void testRepositoryFailure() {
+        testRepository.setFail(true);
+        //There should be no exception
+        assertThat(operationSupportChecker.isOperationSupported(MOCK, ADD_IMAGE), is(false));
+    }
+    
 }

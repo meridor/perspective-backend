@@ -29,7 +29,9 @@ public class OperationSupportCheckerImpl implements OperationSupportChecker {
                     new CacheLoader<CloudType, Set<OperationType>>() {
                         public Set<OperationType> load(CloudType cloudType) throws Exception {
                             Map<CloudType, Set<OperationType>> supportedOperations = serviceRepository.getSupportedOperations();
-                            return supportedOperations.getOrDefault(cloudType, Collections.emptySet());
+                            return supportedOperations != null ?
+                                    supportedOperations.getOrDefault(cloudType, Collections.emptySet()) :
+                                    Collections.emptySet();
                         }
                     }
             );
