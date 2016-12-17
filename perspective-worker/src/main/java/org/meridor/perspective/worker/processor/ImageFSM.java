@@ -134,7 +134,7 @@ public class ImageFSM {
     @OnTransit
     public void onImageError(ImageErrorEvent event) {
         Image image = event.getImage();
-        LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId(), event.getErrorReason());
+        LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId());
         image.setState(ImageState.ERROR);
         imagesAware.saveImage(image);
     }

@@ -67,11 +67,7 @@
 
     <xsd:complexType name="instanceErrorEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:instanceEvent">
-                <xsd:sequence>
-                    <xsd:element name="errorReason" type="xsd:string"/>
-                </xsd:sequence>
-            </xsd:extension>
+            <xsd:extension base="events:instanceEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
 
@@ -210,11 +206,7 @@
 
     <xsd:complexType name="imageErrorEvent">
         <xsd:complexContent>
-            <xsd:extension base="events:imageEvent">
-                <xsd:sequence>
-                    <xsd:element name="errorReason" type="xsd:string"/>
-                </xsd:sequence>
-            </xsd:extension>
+            <xsd:extension base="events:imageEvent"/>
         </xsd:complexContent>
     </xsd:complexType>
 

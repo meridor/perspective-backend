@@ -436,7 +436,7 @@ public class InstanceFSM {
     @OnTransit
     public void onInstanceError(InstanceErrorEvent event) {
         Instance instance = event.getInstance();
-        LOG.info("Changing instance {} ({}) status to error with reason = {}", instance.getName(), instance.getId(), event.getErrorReason());
+        LOG.info("Changing instance {} ({}) status to error with reason = {}", instance.getName(), instance.getId());
         instance.setState(InstanceState.ERROR);
         instancesAware.saveInstance(instance);
     }
