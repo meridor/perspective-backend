@@ -118,8 +118,8 @@ public class MailRepositoryImpl implements MailRepository, EventListener<ShellSt
                 try {
                     Letter letter = unserialize(message, Letter.class);
                     letters.put(letter.getId(), letter);
-                    eventBus.fire(new PromptChangedEvent());
-                    eventBus.fire(new MailReceivedEvent());
+                    eventBus.fireAsync(new PromptChangedEvent());
+                    eventBus.fireAsync(new MailReceivedEvent());
                 } catch (IOException e) {
                     logger.error(String.format("Failed to receive mail from the API: %s", e.getMessage()));
                 }

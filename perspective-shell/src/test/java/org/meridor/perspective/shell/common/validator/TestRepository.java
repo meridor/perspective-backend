@@ -97,6 +97,11 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     }
 
     @Override
+    public Set<String> renameInstances(Map<String, String> newNames) {
+        return Collections.emptySet();
+    }
+
+    @Override
     public Set<String> rebootInstances(Collection<String> instanceIds) {
         return Collections.emptySet();
     }

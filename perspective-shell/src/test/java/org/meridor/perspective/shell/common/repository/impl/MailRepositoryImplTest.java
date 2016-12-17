@@ -52,7 +52,7 @@ public class MailRepositoryImplTest extends TestContainer {
         apiProvider.setBaseUri(String.format("http://localhost:%d/", server1.getPort()));
         CountDownLatch latch1 = new CountDownLatch(1);
         eventBus.addListener(MailReceivedEvent.class, e -> latch1.countDown());
-        eventBus.fire(new ShellStartedEvent());
+        eventBus.fireAsync(new ShellStartedEvent());
         latch1.await();
         stopServer(server1);
         assertThat(mailRepository.getLetters(), contains(LETTER));

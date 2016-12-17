@@ -43,6 +43,8 @@ public interface Api {
 
     void hardRebootDroplet(Integer dropletId) throws Exception;
 
+    void renameDroplet(Integer dropletId, String newName) throws Exception;
+    
     void resizeDroplet(Integer dropletId, String flavorId) throws Exception;
 
     void rebuildDroplet(Integer dropletId, Integer imageId) throws Exception;

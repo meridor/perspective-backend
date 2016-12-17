@@ -72,7 +72,7 @@ public class RuntimeConfigurationProvider implements ShellStatusListener {
             } else {
                 LOG.fine(String.format("Shell configuration file [%s] does not exist", rcFilePath.toAbsolutePath()));
             }
-            eventBus.fire(new ShellStartedEvent());
+            eventBus.fireAsync(new ShellStartedEvent());
         }
     }
 

@@ -39,7 +39,7 @@ public abstract class BaseOperationFailureTest {
     private TestStorage storage;
 
     void assertListenerWorks(Message notProcessedMessage) throws Exception {
-        eventBus.fire(new MessageNotProcessedEvent(notProcessedMessage));
+        eventBus.fireAsync(new MessageNotProcessedEvent(notProcessedMessage));
         
         BlockingQueue<Object> queue = storage.getQueue(DestinationName.MAIL.value());
         Object messageWithLetterObject = queue.take();

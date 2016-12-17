@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 import java.util.Collection;
+import java.util.Map;
 
 public interface InstancesApi {
     
@@ -32,6 +33,9 @@ public interface InstancesApi {
     
     @PUT("/instances/resize/{flavorId}")
     Call<ResponseBody> resize(@Path("flavorId") String flavorId, @Body Collection<String> instanceIds);
+
+    @PUT("/instances/rename")
+    Call<ResponseBody> rename(@Body Map<String, String> newNames);
     
     @PUT("/instances/rebuild/{imageId}")
     Call<ResponseBody> rebuild(@Path("imageId") String imageId, @Body Collection<String> instanceIds);

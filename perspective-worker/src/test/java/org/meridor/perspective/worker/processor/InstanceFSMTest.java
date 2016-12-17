@@ -2,11 +2,11 @@ package org.meridor.perspective.worker.processor;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.backend.EntityGenerator;
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.events.*;
-import org.meridor.perspective.backend.EntityGenerator;
-import org.meridor.perspective.backend.storage.InstancesAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,6 +15,7 @@ import ru.yandex.qatools.fsm.Yatomata;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +55,7 @@ public class InstanceFSMTest {
                 i -> Duration.between(i.getTimestamp(), now).getSeconds() > 5
         ), 100, TimeUnit.MILLISECONDS);
 
-        Thread.sleep(50);
+        Thread.sleep(100);
         Instance instanceTwo = EntityGenerator.getInstance(); //This is the same instance but with more recent timestamp
         instanceTwo.setTimestamp(now);
         InstanceLaunchingEvent eventTwo = EventFactory.instanceEvent(InstanceLaunchingEvent.class, instanceTwo);
@@ -162,6 +163,25 @@ public class InstanceFSMTest {
         assertThat(instancesAware.instanceExists(instanceId), is(true));
         fireEvent(InstanceDeletingEvent.class, instance, false);
         assertThat(instancesAware.instanceExists(instanceId), is(false));
+    }
+
+    @Test
+    public void testOnInstanceRenaming() {
+        Instance instance = EntityGenerator.getInstance();
+        String instanceId = instance.getId();
+        instancesAware.saveInstance(instance);
+
+        Optional<Instance> instanceBeforeRenaming = instancesAware.getInstance(instanceId);
+        assertThat(instanceBeforeRenaming.isPresent(), is(true));
+        assertThat(instanceBeforeRenaming.get().getName(), equalTo(EntityGenerator.getInstance().getName()));
+
+        Instance newInstance = EntityGenerator.getInstance();
+        newInstance.setName("new-name");
+        fireEvent(InstanceRenamingEvent.class, newInstance, false);
+
+        Optional<Instance> instanceAfterRenaming = instancesAware.getInstance(instanceId);
+        assertThat(instanceAfterRenaming.isPresent(), is(true));
+        assertThat(instanceAfterRenaming.get().getName(), equalTo("new-name"));
     }
 
     @Test

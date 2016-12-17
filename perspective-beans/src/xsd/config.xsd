@@ -27,6 +27,7 @@
             <xsd:enumeration value="pauseInstance"/>
             <xsd:enumeration value="rebootInstance"/>
             <xsd:enumeration value="rebuildInstance"/>
+            <xsd:enumeration value="renameInstance"/>
             <xsd:enumeration value="resizeInstance"/>
             <xsd:enumeration value="resumeInstance"/>
             <xsd:enumeration value="startInstance"/>

@@ -23,6 +23,8 @@ public interface InstancesRepository {
 
     Set<String> rebootInstances(Collection<String> instanceIds);
 
+    Set<String> renameInstances(Map<String, String> newNames);
+    
     Set<String> rebuildInstances(String imageId, Collection<String> instanceIds);
 
     Set<String> resizeInstances(String flavorId, Collection<String> instanceIds);

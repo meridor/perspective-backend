@@ -10,6 +10,6 @@ public final class EventUtils {
         NeedProjectSyncEvent event = new NeedProjectSyncEvent();
         event.setCloud(cloud);
         event.setProjectId(projectId);
-        eventBus.fire(event);
+        eventBus.fireAsync(event);
     }
 }

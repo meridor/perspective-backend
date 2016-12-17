@@ -125,7 +125,11 @@ import static org.meridor.perspective.worker.processor.event.EventUtils.requestP
         @Transit(from = InstanceMigratingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
 
         //Instance removal
-        @Transit(from = InstanceErrorEvent.class, on = InstanceDeletingEvent.class, stop = true)
+        @Transit(from = InstanceErrorEvent.class, on = InstanceDeletingEvent.class, stop = true),
+
+        //Instance renaming
+        @Transit(on = InstanceRenamingEvent.class)
+        
 })
 public class InstanceFSM {
 
@@ -386,8 +390,8 @@ public class InstanceFSM {
             instance.setState(InstanceState.DELETING);
             instancesAware.saveInstance(instance);
         } else if (instancesAware.instanceExists(instance.getId())) {
+            LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
             if (operationProcessor.supply(cloud, OperationType.DELETE_INSTANCE, () -> instance)) {
-                LOG.info("Deleting instance {} ({})", instance.getName(), instance.getId());
                 instancesAware.deleteInstance(instance.getId());
                 requestProjectSync(eventBus, cloud, instance.getProjectId());
             } else {
@@ -396,6 +400,27 @@ public class InstanceFSM {
         } else {
             LOG.error("Can't delete instance {} ({}) - not exists", instance.getName(), instance.getId());
         }
+    }
+
+    @OnTransit
+    public void onInstanceRenaming(InstanceRenamingEvent event) {
+        Instance instance = event.getInstance();
+        String cloudId = instance.getCloudId();
+        Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
+        Optional<Instance> instanceCandidate = instancesAware.getInstance(instance.getId());
+        instanceCandidate.ifPresent(i -> {
+            LOG.info("Renaming instance {} ({}) to {}", i.getName(), i.getId(), instance.getName());
+            if (operationProcessor.supply(cloud, OperationType.RENAME_INSTANCE, () -> instance)) {
+                instancesAware.saveInstance(instance);
+            } else {
+                throw new RuntimeException(String.format(
+                        "Can't rename instance %s (%s) to %s",
+                        i.getName(),
+                        i.getId(),
+                        instance.getName()
+                ));
+            }
+        });
     }
 
     @OnTransit

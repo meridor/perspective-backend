@@ -2,10 +2,12 @@ package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.shell.common.misc.CommandExecutor;
+import org.meridor.perspective.shell.common.misc.DateUtils;
 import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.ProjectsRepository;
+import org.meridor.perspective.shell.common.repository.impl.Placeholder;
 import org.meridor.perspective.shell.common.repository.impl.TextUtils;
 import org.meridor.perspective.shell.common.request.FindFlavorsRequest;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;
@@ -22,12 +24,17 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.config.OperationType.*;
+import static org.meridor.perspective.events.EventFactory.now;
+import static org.meridor.perspective.shell.common.repository.impl.Placeholder.DATE;
+import static org.meridor.perspective.shell.common.repository.impl.Placeholder.NAME;
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.replacePlaceholders;
 
 @Component
 public class ModifyCommands extends BaseCommands {
@@ -76,6 +83,9 @@ public class ModifyCommands extends BaseCommands {
 
     @Autowired
     private OperationSupportChecker operationSupportChecker;
+
+    @Autowired
+    private DateUtils dateUtils;
 
     @CliCommand(value = "reboot", help = "Reboot instances")
     public void rebootInstances(
@@ -183,7 +193,7 @@ public class ModifyCommands extends BaseCommands {
                     findFlavorsRequest,
                     request -> {
                         List<FindFlavorsResult> flavors = projectsRepository.findFlavors(request);
-                        List<FindInstancesResult> instances = instancesRepository.findInstances(findInstancesRequest);
+                        List<FindInstancesResult> instances = findAndFilterInstances(findInstancesRequest, RESIZE_INSTANCE);
                         return flavors.size() > 0 ?
                                 new ResizingInstances(flavors.get(0), instances) :
                                 new ResizingInstances();
@@ -228,7 +238,7 @@ public class ModifyCommands extends BaseCommands {
                     findImagesRequest,
                     request -> {
                         List<FindImagesResult> images = imagesRepository.findImages(findImagesRequest);
-                        List<FindInstancesResult> instances = instancesRepository.findInstances(findInstancesRequest);
+                        List<FindInstancesResult> instances = findAndFilterInstances(findInstancesRequest, REBUILD_INSTANCE);
                         return images.size() > 0 ?
                                 new RebuildingInstances(images.get(0), instances) :
                                 new RebuildingInstances();
@@ -255,6 +265,46 @@ public class ModifyCommands extends BaseCommands {
         }
     }
 
+    @CliCommand(value = "rename instances", help = "Rename instances")
+    public void renameInstances(
+            @CliOption(key = "project", help = "Name of the project to rename instances in") String projectName,
+            @CliOption(key = "instances", mandatory = true, help = NAMES_HELP) String names,
+            @CliOption(key = "name", mandatory = true, help = "New name (supports $name and $date placeholders)") String newName
+    ) {
+        FindInstancesRequest findInstancesRequest = requestProvider.get(FindInstancesRequest.class)
+                .withProjects(projectName)
+                .withNames(names);
+        ZonedDateTime now = now();
+
+        validateConfirmExecuteShowStatus(
+                findInstancesRequest,
+                request -> findAndFilterInstances(findInstancesRequest, RENAME_INSTANCE),
+                instances -> String.format("Going to rename %d instances.", instances.size()),
+                instances -> new String[]{"Name", "Project", "New name"},
+                instances -> instances.stream()
+                        .map(i -> new String[]{
+                                i.getName(),
+                                i.getProjectName(),
+                                getNewInstanceName(newName, i.getName(), now)
+                        })
+                        .collect(Collectors.toList()),
+                (r, instances) -> instances.stream().collect(Collectors.toMap(
+                        FindInstancesResult::getId,
+                        i -> getNewInstanceName(newName, i.getName(), now)
+                )),
+                instancesRepository::renameInstances
+        );
+    }
+
+    private String getNewInstanceName(String template, String instanceName, ZonedDateTime now) {
+        return replacePlaceholders(template, new HashMap<Placeholder, String>() {
+            {
+                put(NAME, instanceName);
+                put(DATE, dateUtils.formatDate(now));
+            }
+        });
+    }
+    
     private void executeSimpleModificationCommand(
             String names,
             Function<Integer, String> confirmationMessageProvider,

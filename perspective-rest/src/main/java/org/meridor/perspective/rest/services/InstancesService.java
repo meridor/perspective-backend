@@ -1,14 +1,14 @@
 package org.meridor.perspective.rest.services;
 
-import org.meridor.perspective.beans.*;
-import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.events.*;
 import org.meridor.perspective.backend.messaging.Destination;
 import org.meridor.perspective.backend.messaging.Producer;
 import org.meridor.perspective.backend.storage.ImagesAware;
 import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.backend.storage.OperationsRegistry;
 import org.meridor.perspective.backend.storage.ProjectsAware;
+import org.meridor.perspective.beans.*;
+import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +16,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 import static org.meridor.perspective.beans.DestinationName.WRITE_TASKS;
 import static org.meridor.perspective.beans.InstanceState.*;
 import static org.meridor.perspective.config.OperationType.*;
 import static org.meridor.perspective.events.EventFactory.*;
-import static org.meridor.perspective.backend.messaging.MessageUtils.message;
 
 @Service
 public class InstancesService {
@@ -220,6 +221,19 @@ public class InstancesService {
         ));
     }
 
+    public void renameInstances(Map<String, String> instanceIds) {
+        instanceIds.forEach((instanceId, newName) -> whenInstanceExists(
+                instanceId,
+                RENAME_INSTANCE,
+                Function.identity(),
+                i -> {
+                    LOG.info("Renaming instance {} to {}", instanceId, newName);
+                    i.setName(newName);
+                    return instanceEvent(InstanceRenamingEvent.class, i);
+                }
+        ));
+    }
+
     public void suspendInstances(List<String> instanceIds) {
         instanceIds.forEach(instanceId -> whenInstanceExists(
                 instanceId,
@@ -250,10 +264,8 @@ public class InstancesService {
         ));
     }
 
-    private void whenInstanceExists(String instanceId, OperationType operationType, Function<Instance, Instance> instanceProcessor, Function<Instance, InstanceEvent> eventProvider) {
-        Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
-        if (instanceCandidate.isPresent()) {
-            Instance instance = instanceCandidate.get();
+    private boolean whenInstanceExists(String instanceId, OperationType operationType, Function<Instance, Instance> instanceProcessor, Function<Instance, InstanceEvent> eventProvider) {
+        return ifInstanceExists(instanceId, instance -> {
             Predicate<Instance> instancePredicate = getOperationPredicate(operationType);
             if (instancePredicate.test(instance)) {
                 InstanceEvent event = eventProvider.apply(instance);
@@ -268,8 +280,17 @@ public class InstancesService {
                         instance.getCloudType()
                 );
             }
+        });
+    }
+
+    private boolean ifInstanceExists(String instanceId, Consumer<Instance> action) {
+        Optional<Instance> instanceCandidate = instancesAware.getInstance(instanceId);
+        if (instanceCandidate.isPresent()) {
+            action.accept(instanceCandidate.get());
+            return true;
         } else {
             LOG.info("Instance {} not found", instanceId);
+            return false;
         }
     }
 

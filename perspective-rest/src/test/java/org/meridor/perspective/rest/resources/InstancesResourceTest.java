@@ -130,6 +130,16 @@ public class InstancesResourceTest extends BaseResourceTest<InstancesApi> {
     }
 
     @Test
+    public void testRenameInstance() throws Exception {
+        testResponseIsSuccessful(instancesApi -> instancesApi.rename(
+                Collections.singletonMap(
+                        EntityGenerator.getInstance().getId(),
+                        "some-new-name"
+                )
+        ));
+    }
+
+    @Test
     public void testRebuildInstancesMissingImage() throws Exception {
         Response<ResponseBody> response = getApi().rebuild("missing-id", getInstanceIds()).execute();
         assertThat(response.code(), equalTo(404));

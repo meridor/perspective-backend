@@ -1,10 +1,8 @@
 package org.meridor.perspective.common.events;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
@@ -23,13 +21,22 @@ public abstract class AbstractEventBus implements EventBus {
 
     @Override
     public void fire(Object event) {
+        forEachListener(event, l -> l.onEvent(event));
+    }
+
+    @Override
+    public void fireAsync(Object event) {
+        forEachListener(event, l -> executorService.submit(
+                () -> l.onEvent(event)
+        ));
+    }
+
+    private void forEachListener(Object event, Consumer<EventListener<Object>> action) {
         Class<?> eventClass = event.getClass();
         if (recipients.containsKey(eventClass)) {
             initExecutorServiceIfNeeded();
-            recipients.get(eventClass)
-                    .forEach(l -> executorService.submit(
-                            () -> l.onEvent(event)
-                    ));
+            recipients.getOrDefault(eventClass, Collections.emptyList())
+                    .forEach(action);
         }
     }
 

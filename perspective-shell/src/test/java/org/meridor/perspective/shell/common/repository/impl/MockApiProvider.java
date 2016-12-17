@@ -75,6 +75,11 @@ public class MockApiProvider implements ApiProvider {
             }
 
             @Override
+            public Call<ResponseBody> rename(@Body Map<String, String> newNames) {
+                return ok();
+            }
+
+            @Override
             public Call<ResponseBody> rebuild(@Path("imageId") String imageId, @Body Collection<String> instanceIds) {
                 return ok();
             }

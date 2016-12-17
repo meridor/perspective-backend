@@ -2,8 +2,8 @@ package org.meridor.perspective.shell.common.repository.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.beans.*;
 import org.meridor.perspective.backend.EntityGenerator;
+import org.meridor.perspective.beans.*;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.request.AddInstancesRequest;
 import org.meridor.perspective.shell.common.request.FindInstancesRequest;
@@ -135,6 +135,11 @@ public class InstancesRepositoryImplTest {
     @Test
     public void testResumeInstances() {
         testModificationOperation(instancesRepository::resumeInstances);
+    }
+
+    @Test
+    public void testRenameInstance() {
+        assertThat(instancesRepository.renameInstances(Collections.singletonMap("test-id", "new-name")), is(empty()));
     }
 
     @Test

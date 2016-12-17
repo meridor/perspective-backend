@@ -70,6 +70,7 @@ public class CommandsTest {
                 {"resume test-instance"},
                 {"resize --project test-project --flavor test-flavor --instances test-instance"},
                 {"rebuild --project test-project --image test-image --instances test-instance"},
+                {"rename instances --instances test-instance --name new-name"},
                 {"select 1 + 1"},
                 {"explain select 1 + 1"},
         });

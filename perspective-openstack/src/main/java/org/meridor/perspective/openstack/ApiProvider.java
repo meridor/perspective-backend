@@ -113,6 +113,14 @@ public class ApiProvider {
         }
 
         @Override
+        public String addKeypair(Keypair keypair) {
+            return api.compute().keypairs().create(
+                    keypair.getName(),
+                    keypair.getPublicKey()
+            ).getPrivateKey();
+        }
+
+        @Override
         public List<? extends Keypair> listKeypairs() {
             return api.compute().keypairs().list();
         }
@@ -165,6 +173,15 @@ public class ApiProvider {
         @Override
         public boolean revertInstanceResize(String instanceId) {
             return api.compute().servers().revertResize(instanceId).isSuccess();
+        }
+
+        @Override
+        public boolean renameInstance(String instanceId, String newName) {
+            Server updatedServer = api.compute().servers().update(
+                    instanceId,
+                    ServerUpdateOptions.create().name(newName)
+            );
+            return updatedServer.getName().equals(newName);
         }
 
         @Override

@@ -117,6 +117,11 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public void renameDroplet(Integer dropletId, String newName) throws Exception {
+            api.renameDroplet(dropletId, newName);
+        }
+
+        @Override
         public void hardRebootDroplet(Integer dropletId) throws Exception {
             api.powerCycleDroplet(dropletId);
         }

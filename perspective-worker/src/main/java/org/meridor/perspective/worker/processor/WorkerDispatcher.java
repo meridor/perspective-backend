@@ -43,9 +43,9 @@ public class WorkerDispatcher implements Dispatcher {
         if (processorCandidate.isPresent()) {
             try {
                 processorCandidate.get().process(message);
-                eventBus.fire(new MessageProcessedEvent(message));
+                eventBus.fireAsync(new MessageProcessedEvent(message));
             } catch (Exception e) {
-                eventBus.fire(new MessageNotProcessedEvent(message));
+                eventBus.fireAsync(new MessageNotProcessedEvent(message));
                 return Optional.of(message);
             }
         } else {

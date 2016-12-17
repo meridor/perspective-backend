@@ -133,6 +133,12 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:complexType name="instanceRenamingEvent">
+        <xsd:complexContent>
+            <xsd:extension base="events:instanceEvent"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:complexType name="instanceRebuildingEvent">
         <xsd:complexContent>
             <xsd:extension base="events:instanceEvent"/>

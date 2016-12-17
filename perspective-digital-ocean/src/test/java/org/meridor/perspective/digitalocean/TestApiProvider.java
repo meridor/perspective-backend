@@ -84,6 +84,11 @@ public class TestApiProvider implements ApiProvider {
         }
 
         @Override
+        public void renameDroplet(Integer dropletId, String newName) throws Exception {
+
+        }
+
+        @Override
         public void shutdownDroplet(Integer dropletId) throws Exception {
 
         }

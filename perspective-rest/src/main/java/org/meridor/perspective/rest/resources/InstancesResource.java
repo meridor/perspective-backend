@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -97,6 +98,14 @@ public class InstancesResource {
         boolean imageExists = instancesService.rebuildInstances(imageId, instanceIds);
         return imageExists ?
                 ok() : notFound(String.format("Image %s does not exist", imageId));
+    }
+
+    @PUT
+    @Path("/rename")
+    @Consumes(APPLICATION_JSON)
+    public Response renameInstances(Map<String, String> newNames) {
+        instancesService.renameInstances(newNames);
+        return ok();
     }
 
     @PUT

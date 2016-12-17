@@ -20,6 +20,8 @@ public interface Api {
 
     List<? extends AvailabilityZone> listAvailabilityZones();
 
+    String addKeypair(Keypair keypair);
+    
     List<? extends Keypair> listKeypairs();
 
     AbsoluteLimit getQuota();
@@ -44,6 +46,8 @@ public interface Api {
     
     boolean revertInstanceResize(String instanceId);
 
+    boolean renameInstance(String instanceId, String newName);
+    
     boolean rebuildInstance(String instanceId, String imageId);
 
     boolean pauseInstance(String instanceId);

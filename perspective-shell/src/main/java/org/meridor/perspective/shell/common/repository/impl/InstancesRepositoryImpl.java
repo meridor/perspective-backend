@@ -130,6 +130,14 @@ public class InstancesRepositoryImpl implements InstancesRepository {
     }
 
     @Override
+    public Set<String> renameInstances(Map<String, String> newNames) {
+        return executeAction(
+                (apiProvider, nn) -> apiProvider.getInstancesApi().rename(nn),
+                newNames
+        );
+    }
+
+    @Override
     public Set<String> rebootInstances(Collection<String> instanceIds) {
         return executeAction(
                 (apiProvider, ids) -> apiProvider.getInstancesApi().reboot(ids),
