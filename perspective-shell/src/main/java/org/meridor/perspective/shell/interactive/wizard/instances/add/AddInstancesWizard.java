@@ -43,11 +43,9 @@ public class AddInstancesWizard extends BaseWizard {
         Optional<String> keypairCandidate = getAnswer(KeypairStep.class);
         keypairCandidate.ifPresent(kc -> commandBuilder.addArgument(KEYPAIR, kc));
         Optional<String> countCandidate = getAnswer(CountStep.class);
+        countCandidate.ifPresent(cc -> commandBuilder.addArgument(COUNT, cc));
         Optional<String> rangeCandidate = getAnswer(RangeStep.class);
-        if (countCandidate.isPresent()) {
-            commandBuilder.addArgument(COUNT, countCandidate.get());
-        } else
-            rangeCandidate.ifPresent(rc -> commandBuilder.addArgument(RANGE, rc));
+        rangeCandidate.ifPresent(rc -> commandBuilder.addArgument(RANGE, rc));
 
         Map<String, Set<String>> options = new HashMap<>();
         Optional<String> commandCandidate = getAnswer(CommandStep.class);
