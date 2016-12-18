@@ -19,9 +19,6 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class DeleteImagesRequest implements Request<List<String>> {
 
-    @Autowired
-    private ImagesRepository imagesRepository;
-
     @Filter(Field.IMAGE_NAMES)
     @Required
     private String names;
@@ -30,8 +27,15 @@ public class DeleteImagesRequest implements Request<List<String>> {
     @SupportedCloud
     private String cloud;
 
+    private final ImagesRepository imagesRepository;
+
+    private final RequestProvider requestProvider;
+
     @Autowired
-    private RequestProvider requestProvider;
+    public DeleteImagesRequest(ImagesRepository imagesRepository, RequestProvider requestProvider) {
+        this.imagesRepository = imagesRepository;
+        this.requestProvider = requestProvider;
+    }
 
     public DeleteImagesRequest withNames(String names) {
         this.names = names;

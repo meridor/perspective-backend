@@ -14,9 +14,13 @@ import java.util.Set;
 @Aspect
 @Configurable
 public class RequestValidationAspect {
-    
+
+    private final ObjectValidator objectValidator;
+
     @Autowired
-    private ObjectValidator objectValidator;
+    public RequestValidationAspect(ObjectValidator objectValidator) {
+        this.objectValidator = objectValidator;
+    }
 
     @Around("execution(public * org.meridor.perspective.shell.common.request.Request+.getPayload(..))")
     public Object getPayload(ProceedingJoinPoint joinPoint) throws Throwable {

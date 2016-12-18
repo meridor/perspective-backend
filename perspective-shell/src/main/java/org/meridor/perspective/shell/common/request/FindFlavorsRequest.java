@@ -9,7 +9,10 @@ import org.meridor.perspective.sql.SelectQuery;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.common.validator.Field.*;
@@ -52,9 +55,6 @@ public class FindFlavorsRequest implements Request<Query> {
     }
 
     private Query getQuery() {
-        Optional<Set<String>> names = Optional.ofNullable(this.name);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
-        Optional<Set<String>> projects = Optional.ofNullable(this.project);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "flavors.id",
@@ -72,14 +72,14 @@ public class FindFlavorsRequest implements Request<Query> {
                 .on()
                 .equal("flavors.project_id", "projects.id");
         Map<String, Collection<String>> whereMap = new HashMap<>();
-        if (names.isPresent()) {
-            whereMap.put("flavors.name", names.get());
+        if (name != null) {
+            whereMap.put("flavors.name", name);
         }
-        if (clouds.isPresent()) {
-            whereMap.put("projects.cloud_type", clouds.get());
+        if (cloud != null) {
+            whereMap.put("projects.cloud_type", cloud);
         }
-        if (projects.isPresent()) {
-            whereMap.put("projects.name", projects.get());
+        if (project != null) {
+            whereMap.put("projects.name", project);
         }
         return whereMap.isEmpty() ?
                 joinClause

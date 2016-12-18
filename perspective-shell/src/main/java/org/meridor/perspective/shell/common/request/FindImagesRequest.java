@@ -10,7 +10,10 @@ import org.meridor.perspective.sql.SelectQuery;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.parseEnumeration;
 import static org.meridor.perspective.shell.common.validator.Field.*;
@@ -69,11 +72,6 @@ public class FindImagesRequest implements Request<Query> {
     }
 
     private Query getQuery() {
-        Optional<Set<String>> ids = Optional.ofNullable(this.ids);
-        Optional<Set<String>> names = Optional.ofNullable(this.name);
-        Optional<Set<String>> states = Optional.ofNullable(this.state);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
-        Optional<Set<String>> projects = Optional.ofNullable(this.project);
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "images.id",
@@ -97,21 +95,21 @@ public class FindImagesRequest implements Request<Query> {
                     .equal("projects.id", "project_images.project_id");
         
         Map<String, Collection<String>> whereMap = new HashMap<>();
-        
-        if (ids.isPresent()) {
-            whereMap.put("images.id", ids.get());
+
+        if (ids != null) {
+            whereMap.put("images.id", ids);
         }
-        if (names.isPresent()) {
-            whereMap.put("images.name", names.get());
+        if (name != null) {
+            whereMap.put("images.name", name);
         }
-        if (states.isPresent()) {
-            whereMap.put("images.state", states.get());
+        if (state != null) {
+            whereMap.put("images.state", state);
         }
-        if (clouds.isPresent()) {
-            whereMap.put("images.cloud_type", clouds.get());
+        if (cloud != null) {
+            whereMap.put("images.cloud_type", cloud);
         }
-        if (projects.isPresent()) {
-            whereMap.put("projects.name", projects.get());
+        if (project != null) {
+            whereMap.put("projects.name", project);
         }
         return whereMap.isEmpty() ?
                 joinClause

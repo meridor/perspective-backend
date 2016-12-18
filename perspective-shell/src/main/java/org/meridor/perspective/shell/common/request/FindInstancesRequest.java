@@ -24,8 +24,6 @@ import static org.springframework.beans.factory.config.ConfigurableBeanFactory.S
 @Scope(SCOPE_PROTOTYPE)
 public class FindInstancesRequest implements Request<Query> {
 
-    @Autowired
-    private SettingsAware settingsAware;
 
     private Set<String> id;
 
@@ -52,7 +50,14 @@ public class FindInstancesRequest implements Request<Query> {
     @Pattern
     @Filter(PROJECTS)
     private Set<String> project;
-    
+
+    private final SettingsAware settingsAware;
+
+    @Autowired
+    public FindInstancesRequest(SettingsAware settingsAware) {
+        this.settingsAware = settingsAware;
+    }
+
     public FindInstancesRequest withIds(String ids) {
         this.id = parseEnumeration(ids);
         return this;
@@ -101,13 +106,7 @@ public class FindInstancesRequest implements Request<Query> {
     }
     
     private Query getQuery() {
-        Optional<Set<String>> ids = Optional.ofNullable(this.id);
-        Optional<Collection<String>> names = Optional.ofNullable(removeSuffixes(this.name, getInstanceSuffixes()));
-        Optional<Set<String>> flavors = Optional.ofNullable(this.flavor);
-        Optional<Set<String>> images = Optional.ofNullable(this.image);
-        Optional<Set<String>> states = Optional.ofNullable(this.state);
-        Optional<Set<String>> clouds = Optional.ofNullable(this.cloud);
-        Optional<Set<String>> projects = Optional.ofNullable(this.project);
+        Collection<String> names = removeSuffixes(this.name, getInstanceSuffixes());
         JoinClause joinClause = new SelectQuery()
                 .columns(
                         "instances.id",
@@ -144,26 +143,26 @@ public class FindInstancesRequest implements Request<Query> {
                     .equal("instances.image_id", "images.id");
         
         Map<String, Collection<String>> whereMap = new HashMap<>();
-        if (ids.isPresent()) {
-            whereMap.put("instances.id", ids.get());
+        if (id != null) {
+            whereMap.put("instances.id", id);
         }
-        if (names.isPresent()) {
-            whereMap.put("instances.name", names.get());
+        if (names != null) {
+            whereMap.put("instances.name", names);
         }
-        if (flavors.isPresent()) {
-            whereMap.put("flavors.name", flavors.get());
+        if (flavor != null) {
+            whereMap.put("flavors.name", flavor);
         }
-        if (images.isPresent()) {
-            whereMap.put("images.name", images.get());
+        if (image != null) {
+            whereMap.put("images.name", image);
         }
-        if (states.isPresent()) {
-            whereMap.put("instances.state", states.get());
+        if (state != null) {
+            whereMap.put("instances.state", state);
         }
-        if (clouds.isPresent()) {
-            whereMap.put("instances.cloud_type", clouds.get());
+        if (cloud != null) {
+            whereMap.put("instances.cloud_type", cloud);
         }
-        if (projects.isPresent()) {
-            whereMap.put("projects.name", projects.get());
+        if (project != null) {
+            whereMap.put("projects.name", project);
         }
         return whereMap.isEmpty() ?
                 joinClause

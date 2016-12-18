@@ -32,16 +32,20 @@ public class AddImagesRequest implements Request<List<Image>> {
     @Name("name")
     @Required
     private String imageName;
-    
+
+    private final InstancesRepository instancesRepository;
+
+    private final RequestProvider requestProvider;
+
+    private final DateUtils dateUtils;
+
     @Autowired
-    private InstancesRepository instancesRepository;
-    
-    @Autowired
-    private RequestProvider requestProvider;
-    
-    @Autowired
-    private DateUtils dateUtils;
-    
+    public AddImagesRequest(InstancesRepository instancesRepository, RequestProvider requestProvider, DateUtils dateUtils) {
+        this.instancesRepository = instancesRepository;
+        this.requestProvider = requestProvider;
+        this.dateUtils = dateUtils;
+    }
+
     public AddImagesRequest withInstanceNames(String instanceNames) {
         this.instanceNames = instanceNames;
         return this;

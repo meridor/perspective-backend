@@ -28,8 +28,8 @@ public class ImagesRepositoryImpl implements ImagesRepository {
     
     @Override 
     public List<FindImagesResult> findImages(FindImagesRequest findImagesRequest) {
-        QueryResult networksResult = queryRepository.query(findImagesRequest.getPayload());
-        Data data = networksResult.getData();
+        QueryResult imagesResult = queryRepository.query(findImagesRequest.getPayload());
+        Data data = imagesResult.getData();
         Map<String, FindImagesResult> resultsMap = new LinkedHashMap<>();
         data.getRows().forEach(r -> {
             ValueFormatter vf = new ValueFormatter(data, r);

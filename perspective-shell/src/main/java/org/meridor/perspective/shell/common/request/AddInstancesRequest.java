@@ -57,15 +57,19 @@ public class AddInstancesRequest implements Request<List<Instance>> {
     
     @Metadata
     private Map<String, Set<String>> options;
-    
+
+    private final ProjectsRepository projectsRepository;
+
+    private final ImagesRepository imagesRepository;
+
+    private final RequestProvider requestProvider;
+
     @Autowired
-    private ProjectsRepository projectsRepository;
-    
-    @Autowired
-    private ImagesRepository imagesRepository;
-    
-    @Autowired
-    private RequestProvider requestProvider;
+    public AddInstancesRequest(ProjectsRepository projectsRepository, ImagesRepository imagesRepository, RequestProvider requestProvider) {
+        this.projectsRepository = projectsRepository;
+        this.imagesRepository = imagesRepository;
+        this.requestProvider = requestProvider;
+    }
 
     public AddInstancesRequest withName(String name) {
         this.name = name;
