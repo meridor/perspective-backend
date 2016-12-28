@@ -9,4 +9,5 @@
     <bean class="org.meridor.perspective.backend.messaging.TestStorage"/>
     <bean class="org.meridor.perspective.worker.processor.WorkerEventBus"/>
     <bean class="org.meridor.perspective.backend.messaging.ProduceBeanPostProcessor"/>
+    <bean class="org.meridor.perspective.worker.processor.event.MailSender"/>
 </beans>

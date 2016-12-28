@@ -28,7 +28,7 @@
         <spring-shell.version>1.2.0.RELEASE</spring-shell.version>
         <hazelcast.version>3.7.3</hazelcast.version>
         <aspectj.version>1.8.9</aspectj.version>
-        <yatomata.version>1.7</yatomata.version>
+        <yatomata.version>1.11</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
         <undertow.version>1.4.0.Final</undertow.version>
         <digitalocean-api-client.version>2.7</digitalocean-api-client.version>

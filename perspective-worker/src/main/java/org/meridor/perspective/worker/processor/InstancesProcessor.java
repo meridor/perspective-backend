@@ -1,14 +1,16 @@
 package org.meridor.perspective.worker.processor;
 
-import org.meridor.perspective.beans.Instance;
-import org.meridor.perspective.events.InstanceEvent;
 import org.meridor.perspective.backend.messaging.Message;
 import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.events.InstanceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.Yatomata;
+import ru.yandex.qatools.fsm.impl.FSMBuilder;
 
 import java.util.Optional;
 
@@ -21,12 +23,12 @@ public class InstancesProcessor implements Processor {
 
     private final InstancesAware instancesAware;
 
-    private final FSMBuilderAware fsmBuilderAware;
+    private final ApplicationContext applicationContext;
 
     @Autowired
-    public InstancesProcessor(FSMBuilderAware fsmBuilderAware, InstancesAware instancesAware) {
-        this.fsmBuilderAware = fsmBuilderAware;
+    public InstancesProcessor(InstancesAware instancesAware, ApplicationContext applicationContext) {
         this.instancesAware = instancesAware;
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -43,10 +45,11 @@ public class InstancesProcessor implements Processor {
     private void processInstances(InstanceEvent event) {
         Instance instanceFromEvent = event.getInstance();
         Optional<Instance> instanceOrEmpty = instancesAware.getInstance(instanceFromEvent.getId());
+        InstanceFSM fsmInstance = applicationContext.getBean(InstanceFSM.class);
         if (instanceOrEmpty.isPresent()) {
             Instance instance = instanceOrEmpty.get();
             InstanceEvent currentState = instanceToEvent(instance);
-            Yatomata<InstanceFSM> fsm = fsmBuilderAware.get(InstanceFSM.class).build(currentState);
+            Yatomata<InstanceFSM> fsm = new FSMBuilder<>(fsmInstance).build(currentState);
             LOG.debug(
                     "Updating instance {} ({}) from state = {} to state = {}",
                     instance.getName(),
@@ -62,7 +65,7 @@ public class InstancesProcessor implements Processor {
                     event.getInstance().getId(),
                     event.getClass().getSimpleName()
             );
-            Yatomata<InstanceFSM> fsm = fsmBuilderAware.get(InstanceFSM.class).build();
+            Yatomata<InstanceFSM> fsm = new FSMBuilder<>(fsmInstance).build();
             fsm.fire(event);
         } else {
             LOG.debug(

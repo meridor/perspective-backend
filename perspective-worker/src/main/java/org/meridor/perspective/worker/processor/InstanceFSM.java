@@ -9,6 +9,7 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
+import org.meridor.perspective.worker.processor.event.MailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,117 +18,153 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
 
+import static org.meridor.perspective.events.EventFactory.instanceEventToState;
 import static org.meridor.perspective.worker.processor.event.EventUtils.requestProjectSync;
 
 @Component
 @FSM(start = InstanceNotAvailableEvent.class)
 @Transitions({
         //Instance sync
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceQueuedEvent.class, to = InstanceQueuedEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceRebootingEvent.class, to = InstanceRebootingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceHardRebootingEvent.class, to = InstanceHardRebootingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
-        @Transit(from = InstanceNotAvailableEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
-        @Transit(from = InstanceQueuedEvent.class, on = InstanceQueuedEvent.class, to = InstanceQueuedEvent.class),
-        @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstanceRebootingEvent.class, on = InstanceRebootingEvent.class, to = InstanceRebootingEvent.class),
-        @Transit(from = InstanceHardRebootingEvent.class, on = InstanceHardRebootingEvent.class, to = InstanceHardRebootingEvent.class),
-        @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
-        @Transit(from = InstanceErrorEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstancePausingEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
-        @Transit(from = InstancePausedEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
-        @Transit(from = InstanceResumingEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
-        @Transit(from = InstanceStartingEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
-        @Transit(from = InstanceSuspendingEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
-        @Transit(from = InstanceSuspendedEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
-        @Transit(from = InstanceSnapshottingEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
-        @Transit(from = InstanceRebuildingEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
-        @Transit(from = InstanceMigratingEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
-        @Transit(from = InstanceDeletingEvent.class, on = InstanceDeletingEvent.class, to = InstanceDeletingEvent.class),
-
-        //Instance launch
-        @Transit(from = InstanceQueuedEvent.class, on = InstanceLaunchingEvent.class, to = InstanceLaunchingEvent.class),
-        @Transit(from = InstanceLaunchingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstanceLaunchingEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class), //e.g. for Docker
-        @Transit(from = InstanceLaunchingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceDeletingEvent.class, stop = true),
-
-        //Instance soft reboot
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceRebootingEvent.class, to = InstanceRebootingEvent.class),
-        @Transit(from = InstanceRebootingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceRebootingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance hard reboot
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceHardRebootingEvent.class, to = InstanceHardRebootingEvent.class),
-        @Transit(from = InstanceHardRebootingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceHardRebootingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance shut off
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceShuttingDownEvent.class, to = InstanceShuttingDownEvent.class),
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
-        @Transit(from = InstanceShuttingDownEvent.class, on = InstanceShutOffEvent.class, to = InstanceShutOffEvent.class),
-        @Transit(from = InstanceShuttingDownEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceStartingEvent.class, to = InstanceStartingEvent.class),
-        @Transit(from = InstanceStartingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstanceStartingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceShutOffEvent.class, on = InstanceDeletingEvent.class, stop = true),
-
-        //Instance suspend
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceSuspendingEvent.class, to = InstanceSuspendingEvent.class),
-        @Transit(from = InstanceSuspendingEvent.class, on = InstanceSuspendedEvent.class, to = InstanceSuspendedEvent.class),
-        @Transit(from = InstanceSuspendingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceSuspendedEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
-        @Transit(from = InstanceSuspendedEvent.class, on = InstanceDeletingEvent.class, stop = true),
-
-        //Instance pause
-        @Transit(from = InstanceLaunchedEvent.class, on = InstancePausingEvent.class, to = InstancePausingEvent.class),
-        @Transit(from = InstancePausingEvent.class, on = InstancePausedEvent.class, to = InstancePausedEvent.class),
-        @Transit(from = InstancePausingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstancePausedEvent.class, on = InstanceResumingEvent.class, to = InstanceResumingEvent.class),
-        @Transit(from = InstanceResumingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-        @Transit(from = InstancePausedEvent.class, on = InstanceDeletingEvent.class, stop = true),
-
-        //Instance snapshot
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceSnapshottingEvent.class, to = InstanceSnapshottingEvent.class),
-        @Transit(from = InstanceSnapshottingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceSnapshottingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance rebuild
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceRebuildingEvent.class, to = InstanceRebuildingEvent.class),
-        @Transit(from = InstanceRebuildingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceRebuildingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance resize
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceResizingEvent.class, to = InstanceResizingEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceResizingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance migrate
-        @Transit(from = InstanceLaunchedEvent.class, on = InstanceMigratingEvent.class, to = InstanceMigratingEvent.class),
-        @Transit(from = InstanceMigratingEvent.class, on = InstanceErrorEvent.class, to = InstanceErrorEvent.class),
-        @Transit(from = InstanceMigratingEvent.class, on = InstanceLaunchedEvent.class, to = InstanceLaunchedEvent.class),
-
-        //Instance removal
-        @Transit(from = InstanceErrorEvent.class, on = InstanceDeletingEvent.class, stop = true),
-
-        //Instance renaming
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceQueuedEvent.class},
+                on = InstanceQueuedEvent.class,
+                to = InstanceQueuedEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceQueuedEvent.class, InstanceLaunchingEvent.class},
+                on = InstanceLaunchingEvent.class,
+                to = InstanceLaunchingEvent.class
+        ),
+        @Transit(
+                from = {
+                        InstanceNotAvailableEvent.class,
+                        InstanceLaunchingEvent.class,
+                        InstanceLaunchedEvent.class,
+                        InstanceRebootingEvent.class,
+                        InstanceHardRebootingEvent.class,
+                        InstanceStartingEvent.class,
+                        InstanceResumingEvent.class,
+                        InstanceSnapshottingEvent.class,
+                        InstanceRebuildingEvent.class,
+                        InstanceResizingEvent.class,
+                        InstanceMigratingEvent.class
+                },
+                on = InstanceLaunchedEvent.class,
+                to = InstanceLaunchedEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceRebootingEvent.class},
+                on = InstanceRebootingEvent.class,
+                to = InstanceRebootingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceHardRebootingEvent.class},
+                on = InstanceHardRebootingEvent.class,
+                to = InstanceHardRebootingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceShuttingDownEvent.class},
+                on = InstanceShuttingDownEvent.class,
+                to = InstanceShuttingDownEvent.class
+        ),
+        @Transit(
+                from = {
+                        InstanceNotAvailableEvent.class,
+                        InstanceLaunchingEvent.class, //E.g. for Docker
+                        InstanceLaunchedEvent.class,
+                        InstanceShuttingDownEvent.class,
+                        InstanceShutOffEvent.class
+                },
+                on = InstanceShutOffEvent.class,
+                to = InstanceShutOffEvent.class
+        ),
+        @Transit(
+                from = {
+                        InstanceNotAvailableEvent.class,
+                        InstanceLaunchingEvent.class,
+                        InstanceRebootingEvent.class,
+                        InstanceHardRebootingEvent.class,
+                        InstanceShuttingDownEvent.class,
+                        InstanceStartingEvent.class,
+                        InstancePausingEvent.class,
+                        InstanceRebuildingEvent.class,
+                        InstanceResizingEvent.class,
+                        InstanceSnapshottingEvent.class,
+                        InstanceSuspendingEvent.class,
+                        InstanceMigratingEvent.class,
+                        InstanceErrorEvent.class
+                },
+                on = InstanceErrorEvent.class,
+                to = InstanceErrorEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstancePausingEvent.class},
+                on = InstancePausingEvent.class,
+                to = InstancePausingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstancePausingEvent.class, InstancePausedEvent.class},
+                on = InstancePausedEvent.class,
+                to = InstancePausedEvent.class
+        ),
+        @Transit(
+                from = {
+                        InstanceNotAvailableEvent.class,
+                        InstancePausedEvent.class,
+                        InstanceSuspendedEvent.class,
+                        InstanceResumingEvent.class
+                },
+                on = InstanceResumingEvent.class,
+                to = InstanceResumingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceSnapshottingEvent.class},
+                on = InstanceSnapshottingEvent.class,
+                to = InstanceSnapshottingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceStartingEvent.class, InstanceShutOffEvent.class},
+                on = InstanceStartingEvent.class,
+                to = InstanceStartingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceSuspendingEvent.class},
+                on = InstanceSuspendingEvent.class,
+                to = InstanceSuspendingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceSuspendingEvent.class, InstanceSuspendedEvent.class},
+                on = InstanceSuspendedEvent.class,
+                to = InstanceSuspendedEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceRebuildingEvent.class},
+                on = InstanceRebuildingEvent.class,
+                to = InstanceRebuildingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceResizingEvent.class},
+                on = InstanceResizingEvent.class,
+                to = InstanceResizingEvent.class
+        ),
+        @Transit(
+                from = {InstanceNotAvailableEvent.class, InstanceLaunchedEvent.class, InstanceMigratingEvent.class},
+                on = InstanceMigratingEvent.class,
+                to = InstanceMigratingEvent.class
+        ),
+        @Transit(
+                from = {
+                        InstanceNotAvailableEvent.class,
+                        InstanceLaunchedEvent.class,
+                        InstanceShutOffEvent.class,
+                        InstanceSuspendedEvent.class,
+                        InstancePausedEvent.class,
+                        InstanceErrorEvent.class,
+                        InstanceDeletingEvent.class
+                },
+                on = InstanceDeletingEvent.class,
+                to = InstanceDeletingEvent.class
+        ),
         @Transit(on = InstanceRenamingEvent.class)
         
 })
@@ -143,21 +180,24 @@ public class InstanceFSM {
 
     private final EventBus eventBus;
 
+    private final MailSender mailSender;
+
     @Autowired
-    public InstanceFSM(OperationProcessor operationProcessor, InstancesAware instancesAware, CloudConfigurationProvider cloudConfigurationProvider, EventBus eventBus) {
+    public InstanceFSM(OperationProcessor operationProcessor, InstancesAware instancesAware, CloudConfigurationProvider cloudConfigurationProvider, EventBus eventBus, MailSender mailSender) {
         this.operationProcessor = operationProcessor;
         this.cloudConfigurationProvider = cloudConfigurationProvider;
         this.instancesAware = instancesAware;
         this.eventBus = eventBus;
+        this.mailSender = mailSender;
     }
 
     @BeforeTransit
-    public void beforeTransit(InstanceEvent instanceEvent) {
+    public void beforeTransit(@Event InstanceEvent instanceEvent) {
         LOG.trace("Doing transition for event {}", instanceEvent);
     }
 
     @OnTransit
-    public void onInstanceQueued(InstanceQueuedEvent event) {
+    public void onInstanceQueued(@Event InstanceQueuedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as queued", instance.getName(), instance.getId());
@@ -167,7 +207,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceLaunching(InstanceLaunchingEvent event) {
+    public void onInstanceLaunching(@Event InstanceLaunchingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -198,7 +238,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceLaunched(InstanceLaunchedEvent event) {
+    public void onInstanceLaunched(@Event InstanceLaunchedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as launched", instance.getName(), instance.getId());
@@ -208,7 +248,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceRebooting(InstanceRebootingEvent event) {
+    public void onInstanceRebooting(@Event InstanceRebootingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -222,7 +262,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceHardRebooting(InstanceHardRebootingEvent event) {
+    public void onInstanceHardRebooting(@Event InstanceHardRebootingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -236,7 +276,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceShuttingDown(InstanceShuttingDownEvent event) {
+    public void onInstanceShuttingDown(@Event InstanceShuttingDownEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -250,7 +290,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceShutoff(InstanceShutOffEvent event) {
+    public void onInstanceShutoff(@Event InstanceShutOffEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as shutoff", instance.getName(), instance.getId());
@@ -260,7 +300,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstancePausing(InstancePausingEvent event) {
+    public void onInstancePausing(@Event InstancePausingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -274,7 +314,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstancePaused(InstancePausedEvent event) {
+    public void onInstancePaused(@Event InstancePausedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as paused", instance.getName(), instance.getId());
@@ -284,7 +324,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceResuming(InstanceResumingEvent event) {
+    public void onInstanceResuming(@Event InstanceResumingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -300,7 +340,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceRebuilding(InstanceRebuildingEvent event) {
+    public void onInstanceRebuilding(@Event InstanceRebuildingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -314,7 +354,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceResizing(InstanceResizingEvent event) {
+    public void onInstanceResizing(@Event InstanceResizingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -329,7 +369,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceStarting(InstanceStartingEvent event) {
+    public void onInstanceStarting(@Event InstanceStartingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -343,7 +383,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceSuspending(InstanceSuspendingEvent event) {
+    public void onInstanceSuspending(@Event InstanceSuspendingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -357,7 +397,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceSuspended(InstanceSuspendedEvent event) {
+    public void onInstanceSuspended(@Event InstanceSuspendedEvent event) {
         if (event.isSync()) {
             Instance instance = event.getInstance();
             LOG.info("Marking instance {} ({}) as suspended", instance.getName(), instance.getId());
@@ -367,7 +407,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceMigrating(InstanceMigratingEvent event) {
+    public void onInstanceMigrating(@Event InstanceMigratingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -381,7 +421,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceDeleting(InstanceDeletingEvent event) {
+    public void onInstanceDeleting(@Event InstanceDeletingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -403,7 +443,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceRenaming(InstanceRenamingEvent event) {
+    public void onInstanceRenaming(@Event InstanceRenamingEvent event) {
         Instance instance = event.getInstance();
         String cloudId = instance.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -424,7 +464,7 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceSnapshotting(InstanceSnapshottingEvent event) {
+    public void onInstanceSnapshotting(@Event InstanceSnapshottingEvent event) {
         Instance instance = event.getInstance();
         if (event.isSync()) {
             LOG.info("Marking instance {} ({}) as snapshotting", instance.getName(), instance.getId());
@@ -434,16 +474,55 @@ public class InstanceFSM {
     }
 
     @OnTransit
-    public void onInstanceError(InstanceErrorEvent event) {
+    public void onInstanceError(@FromState InstanceEvent from, @Event InstanceErrorEvent event) {
         Instance instance = event.getInstance();
-        LOG.info("Changing instance {} ({}) status to error with reason = {}", instance.getName(), instance.getId());
+        LOG.info("Changing instance {} ({}) status to error", instance.getName(), instance.getId());
         instance.setState(InstanceState.ERROR);
         instancesAware.saveInstance(instance);
+        if (!(from instanceof InstanceErrorEvent) && !(from instanceof InstanceNotAvailableEvent)) {
+            LOG.info("Sending letter about instance {} ({}) error", instance.getName(), instance.getId());
+            String message = getMailMessage(instanceEventToState(from), instance);
+            mailSender.sendLetter(message);
+        }
     }
 
-    @OnTransit
-    public void onUnknownEvent(InstanceEvent event) {
-        LOG.warn("Skipping unknown event {}", event);
+    private String getMailMessage(InstanceState previousInstanceState, Instance instance) {
+        switch (previousInstanceState) {
+            case DELETING:
+                return String.format("Failed to delete instance %s (%s)", instance.getName(), instance.getId());
+            case HARD_REBOOTING:
+                return String.format("Failed to hard reboot instance %s (%s)", instance.getName(), instance.getId());
+            case LAUNCHED:
+            case PAUSED:
+            case SHUTOFF:
+            case SUSPENDED:
+                return String.format("Instance %s (%s) crashed", instance.getName(), instance.getId());
+            case LAUNCHING:
+            case QUEUED:
+                return String.format("Failed to launch instance %s (%s)", instance.getName(), instance.getId());
+            case MIGRATING:
+                return String.format("Failed to migrate instance %s (%s)", instance.getName(), instance.getId());
+            case PAUSING:
+                return String.format("Failed to pause instance %s (%s)", instance.getName(), instance.getId());
+            case REBOOTING:
+                return String.format("Failed to reboot instance %s (%s)", instance.getName(), instance.getId());
+            case REBUILDING:
+                return String.format("Failed to rebuild instance %s (%s)", instance.getName(), instance.getId());
+            case RESIZING:
+                return String.format("Failed to resize instance %s (%s)", instance.getName(), instance.getId());
+            case RESUMING:
+                return String.format("Failed to resume instance %s (%s)", instance.getName(), instance.getId());
+            case SHUTTING_DOWN:
+                return String.format("Failed to shutdown instance %s (%s)", instance.getName(), instance.getId());
+            case STARTING:
+                return String.format("Failed to start instance %s (%s)", instance.getName(), instance.getId());
+            case SUSPENDING:
+                return String.format("Failed to suspend instance %s (%s)", instance.getName(), instance.getId());
+        }
+        throw new IllegalArgumentException(String.format(
+                "Unsupported instance state: %s. This is a bug.",
+                previousInstanceState.value()
+        ));
     }
 
     @OnException

@@ -1,14 +1,16 @@
 package org.meridor.perspective.worker.processor;
 
-import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.backend.messaging.Message;
 import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.events.ImageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.fsm.Yatomata;
+import ru.yandex.qatools.fsm.impl.FSMBuilder;
 
 import java.util.Optional;
 
@@ -19,14 +21,14 @@ public class ImagesProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImagesProcessor.class);
 
-    private final FSMBuilderAware fsmBuilderAware;
-
     private final ImagesAware imagesAware;
 
+    private final ApplicationContext applicationContext;
+    
     @Autowired
-    public ImagesProcessor(FSMBuilderAware fsmBuilderAware, ImagesAware imagesAware) {
+    public ImagesProcessor(ImagesAware imagesAware, ApplicationContext applicationContext) {
         this.imagesAware = imagesAware;
-        this.fsmBuilderAware = fsmBuilderAware;
+        this.applicationContext = applicationContext;
     }
 
 
@@ -44,10 +46,11 @@ public class ImagesProcessor implements Processor {
     private void processImages(ImageEvent event) {
         Image imageFromEvent = event.getImage();
         Optional<Image> imageOrEmpty = imagesAware.getImage(imageFromEvent.getId());
+        ImageFSM fsmInstance = applicationContext.getBean(ImageFSM.class);
         if (imageOrEmpty.isPresent()) {
             Image image = imageOrEmpty.get();
             ImageEvent currentState = imageToEvent(image);
-            Yatomata<ImageFSM> fsm = fsmBuilderAware.get(ImageFSM.class).build(currentState);
+            Yatomata<ImageFSM> fsm = new FSMBuilder<>(fsmInstance).build(currentState);
             LOG.debug(
                     "Updating image {} ({}) from state = {} to state = {}",
                     image.getName(),
@@ -63,7 +66,7 @@ public class ImagesProcessor implements Processor {
                     event.getImage().getId(),
                     event.getClass().getSimpleName()
             );
-            Yatomata<ImageFSM> fsm = fsmBuilderAware.get(ImageFSM.class).build();
+            Yatomata<ImageFSM> fsm = new FSMBuilder<>(fsmInstance).build();
             fsm.fire(event);
         } else {
             LOG.debug(

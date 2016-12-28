@@ -4,26 +4,31 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.backend.storage.Storage;
+import org.meridor.perspective.beans.DestinationName;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.InstanceState;
 import org.meridor.perspective.events.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.yandex.qatools.fsm.Yatomata;
+import ru.yandex.qatools.fsm.impl.FSMBuilder;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.meridor.perspective.beans.InstanceState.*;
+import static org.meridor.perspective.events.EventFactory.instanceToEvent;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 @ContextConfiguration(locations = "/META-INF/spring/fsm-test-context.xml")
@@ -32,11 +37,14 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 public class InstanceFSMTest {
 
     @Autowired
-    private FSMBuilderAware fsmBuilderAware;
+    private ApplicationContext applicationContext;
 
     @Autowired
     private InstancesAware instancesAware;
-    
+
+    @Autowired
+    private Storage storage;
+
     @Test
     public void testLongLaunch() throws Exception {
         Instance instanceOne = EntityGenerator.getInstance();
@@ -45,7 +53,7 @@ public class InstanceFSMTest {
         instanceOne.setTimestamp(now.minusSeconds(10));
         InstanceLaunchingEvent eventOne = EventFactory.instanceEvent(InstanceLaunchingEvent.class, instanceOne);
         eventOne.setSync(true);
-        Yatomata<InstanceFSM> fsm = fsmBuilderAware.get(InstanceFSM.class).build();
+        Yatomata<InstanceFSM> fsm = getFSMBuilder().build();
         fsm.fire(eventOne);
         assertThat(instancesAware.instanceExists(instanceOne.getId()), is(true));
         
@@ -208,15 +216,34 @@ public class InstanceFSMTest {
     }
 
     private void fireEvent(Class<? extends InstanceEvent> cls, Instance instance, boolean isSyncEvent) {
-        Yatomata<InstanceFSM> fsm = getFSMBuilder().build();
+        fireEvent(null, cls, instance, isSyncEvent);
+    }
+
+    private void fireEvent(InstanceEvent initialState, Class<? extends InstanceEvent> cls, Instance instance, boolean isSyncEvent) {
+        Yatomata<InstanceFSM> fsm = initialState != null ?
+                getFSMBuilder().build(initialState) :
+                getFSMBuilder().build();
         InstanceEvent instanceEvent = EventFactory.instanceEvent(cls, instance);
         instanceEvent.setSync(isSyncEvent);
         fsm.fire(instanceEvent);
     }
     
     private Yatomata.Builder<InstanceFSM> getFSMBuilder() {
-        return fsmBuilderAware.get(InstanceFSM.class);
+        return new FSMBuilder<>(applicationContext.getBean(InstanceFSM.class));
     }
 
+    @Test
+    public void testSendMailOnInstanceError() {
+        BlockingQueue<Object> queue = storage.getQueue(DestinationName.MAIL.value());
+        assertThat(queue, is(empty()));
+        Instance instance = EntityGenerator.getInstance();
+        instance.setState(InstanceState.REBOOTING);
+        InstanceEvent initialState = instanceToEvent(instance);
+        fireEvent(initialState, InstanceErrorEvent.class, instance, true);
+        fireEvent(InstanceErrorEvent.class, instance, true);
+        assertThat(queue, hasSize(1));
+        fireEvent(InstanceErrorEvent.class, instance, true);
+        assertThat(queue, hasSize(1)); //Does not change
+    }
 
 }

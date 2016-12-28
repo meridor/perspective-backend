@@ -1,9 +1,12 @@
 package org.meridor.perspective.events;
 
 import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.InstanceState;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
+
+import static org.meridor.perspective.beans.InstanceState.*;
 
 public final class EventFactory {
 
@@ -65,8 +68,6 @@ public final class EventFactory {
                 return new InstanceShutOffEvent();
             case SHUTTING_DOWN:
                 return new InstanceShuttingDownEvent();
-            case SNAPSHOTTING:
-                return new InstanceSnapshottingEvent();
             case STARTING:
                 return new InstanceStartingEvent();
             case SUSPENDING:
@@ -76,6 +77,47 @@ public final class EventFactory {
         }
     }
 
+    public static InstanceState instanceEventToState(InstanceEvent event) {
+        if (event instanceof InstanceDeletingEvent) {
+            return DELETING;
+        } else if (event instanceof InstanceErrorEvent) {
+            return ERROR;
+        } else if (event instanceof InstanceHardRebootingEvent) {
+            return HARD_REBOOTING;
+        } else if (event instanceof InstanceLaunchedEvent) {
+            return LAUNCHED;
+        } else if (event instanceof InstanceLaunchingEvent) {
+            return LAUNCHING;
+        } else if (event instanceof InstanceMigratingEvent) {
+            return MIGRATING;
+        } else if (event instanceof InstancePausedEvent) {
+            return PAUSED;
+        } else if (event instanceof InstancePausingEvent) {
+            return PAUSING;
+        } else if (event instanceof InstanceQueuedEvent) {
+            return QUEUED;
+        } else if (event instanceof InstanceRebootingEvent) {
+            return REBOOTING;
+        } else if (event instanceof InstanceRebuildingEvent) {
+            return REBUILDING;
+        } else if (event instanceof InstanceResizingEvent) {
+            return RESIZING;
+        } else if (event instanceof InstanceResumingEvent) {
+            return RESUMING;
+        } else if (event instanceof InstanceShutOffEvent) {
+            return SHUTOFF;
+        } else if (event instanceof InstanceShuttingDownEvent) {
+            return SHUTTING_DOWN;
+        } else if (event instanceof InstanceStartingEvent) {
+            return STARTING;
+        } else if (event instanceof InstanceSuspendingEvent) {
+            return SUSPENDING;
+        } else if (event instanceof InstanceSuspendedEvent) {
+            return SUSPENDED;
+        }
+        throw new IllegalArgumentException("Unsupported event: " + event.getClass().getSimpleName());
+    }
+    
     public static <T extends ImageEvent> T imageEvent(Class<T> eventClass, Image image) {
         try {
             T event = eventClass.newInstance();
@@ -117,6 +159,21 @@ public final class EventFactory {
         }
     }
 
+    public static ImageState imageEventToState(ImageEvent event) {
+        if (event instanceof ImageDeletingEvent) {
+            return ImageState.DELETING;
+        } else if (event instanceof ImageErrorEvent) {
+            return ImageState.ERROR;
+        } else if (event instanceof ImageQueuedEvent) {
+            return ImageState.QUEUED;
+        } else if (event instanceof ImageSavingEvent) {
+            return ImageState.SAVING;
+        } else if (event instanceof ImageSavedEvent) {
+            return ImageState.SAVED;
+        }
+        throw new IllegalArgumentException("Unsupported event: " + event.getClass().getSimpleName());
+    }
+    
     public static <T extends ProjectEvent> T projectEvent(Class<T> eventClass, Project project) {
         try {
             T event = eventClass.newInstance();

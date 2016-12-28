@@ -2,11 +2,19 @@ package org.meridor.perspective.worker.processor.event;
 
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.events.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InstanceOperationFailureListener extends OperationFailureListener<InstanceEvent> {
-    
+
+    private final MailSender mailSender;
+
+    @Autowired
+    public InstanceOperationFailureListener(MailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     @Override
     protected void processEvent(InstanceEvent instanceEvent) {
         Instance instance = instanceEvent.getInstance();
@@ -23,7 +31,7 @@ public class InstanceOperationFailureListener extends OperationFailureListener<I
         } else if (instanceEvent instanceof InstanceResumingEvent) {
             sendInstanceLetter("Failed to resume instance %s (%s)", instance);
         } else if (instanceEvent instanceof InstanceRebuildingEvent) {
-            sendLetter(String.format(
+            mailSender.sendLetter(String.format(
                     "Failed to rebuild instance %s (%s) to image %s (%s)",
                     instance.getName(),
                     instance.getId(),
@@ -31,7 +39,7 @@ public class InstanceOperationFailureListener extends OperationFailureListener<I
                     instance.getImage().getId()
             ));
         } else if (instanceEvent instanceof InstanceResizingEvent) {
-            sendLetter(String.format(
+            mailSender.sendLetter(String.format(
                     "Failed to resize instance %s (%s) to flavor %s (%s)",
                     instance.getName(),
                     instance.getId(),
@@ -47,7 +55,7 @@ public class InstanceOperationFailureListener extends OperationFailureListener<I
         } else if (instanceEvent instanceof InstanceDeletingEvent) {
             sendInstanceLetter("Failed to delete instance %s (%s)", instance);
         } else {
-            sendLetter(String.format(
+            mailSender.sendLetter(String.format(
                     "Failed to process %s event for instance %s (%s)",
                     instanceEvent.getClass().getSimpleName(),
                     instance.getName(),
@@ -62,7 +70,7 @@ public class InstanceOperationFailureListener extends OperationFailureListener<I
     }
 
     private void sendInstanceLetter(String text, Instance instance) {
-        sendLetter(String.format(text, instance.getName(), instance.getId()));
+        mailSender.sendLetter(String.format(text, instance.getName(), instance.getId()));
     }
 
 }

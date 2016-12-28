@@ -4,11 +4,19 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.events.ImageDeletingEvent;
 import org.meridor.perspective.events.ImageEvent;
 import org.meridor.perspective.events.ImageSavingEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ImageOperationFailureListener extends OperationFailureListener<ImageEvent> {
-    
+
+    private final MailSender mailSender;
+
+    @Autowired
+    public ImageOperationFailureListener(MailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     @Override
     protected void processEvent(ImageEvent imageEvent) {
         Image image = imageEvent.getImage();
@@ -17,7 +25,7 @@ public class ImageOperationFailureListener extends OperationFailureListener<Imag
         } else if (imageEvent instanceof ImageDeletingEvent) {
             sendImageLetter("Failed to delete image %s (%s)", image);
         } else {
-            sendLetter(String.format(
+            mailSender.sendLetter(String.format(
                     "Failed to process %s event for image %s (%s)",
                     imageEvent.getClass().getSimpleName(),
                     image.getName(),
@@ -32,7 +40,7 @@ public class ImageOperationFailureListener extends OperationFailureListener<Imag
     }
 
     private void sendImageLetter(String text, Image image) {
-        sendLetter(String.format(text, image.getName(), image.getId()));
+        mailSender.sendLetter(String.format(text, image.getName(), image.getId()));
     }
 
 }

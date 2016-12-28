@@ -8,6 +8,7 @@ import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.meridor.perspective.worker.operation.OperationProcessor;
+import org.meridor.perspective.worker.processor.event.MailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,29 +17,27 @@ import ru.yandex.qatools.fsm.annotations.*;
 
 import java.util.Optional;
 
+import static org.meridor.perspective.events.EventFactory.imageEventToState;
+
 @Component
 @FSM(start = ImageNotAvailableEvent.class)
 @Transitions({
-        //Image sync
-        @Transit(from = ImageNotAvailableEvent.class, on = ImageQueuedEvent.class, to = ImageQueuedEvent.class),
-        @Transit(from = ImageNotAvailableEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
-        @Transit(from = ImageNotAvailableEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
-        @Transit(from = ImageNotAvailableEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
-        @Transit(from = ImageNotAvailableEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
-        @Transit(from = ImageQueuedEvent.class, on = ImageQueuedEvent.class, to = ImageQueuedEvent.class),
-        @Transit(from = ImageSavingEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
-        @Transit(from = ImageSavedEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
-        @Transit(from = ImageErrorEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
-        @Transit(from = ImageDeletingEvent.class, on = ImageDeletingEvent.class, to = ImageDeletingEvent.class),
 
-        //Image save
-        @Transit(from = ImageQueuedEvent.class, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
-        @Transit(from = ImageSavingEvent.class, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
-        @Transit(from = ImageSavingEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
+        //Image queued
+        @Transit(from = {ImageNotAvailableEvent.class, ImageQueuedEvent.class}, on = ImageQueuedEvent.class, to = ImageQueuedEvent.class),
 
+        //Image saving
+        @Transit(from = {ImageNotAvailableEvent.class, ImageQueuedEvent.class, ImageSavingEvent.class}, on = ImageSavingEvent.class, to = ImageSavingEvent.class),
+
+        //Image saved
+        @Transit(from = {ImageNotAvailableEvent.class, ImageSavingEvent.class, ImageSavedEvent.class}, on = ImageSavedEvent.class, to = ImageSavedEvent.class),
+
+        //Image error
+        @Transit(from = ImageEvent.class, on = ImageErrorEvent.class, to = ImageErrorEvent.class),
+        
         //Image removal
-        @Transit(from = ImageSavedEvent.class, on = ImageDeletingEvent.class, stop = true),
-        @Transit(from = ImageErrorEvent.class, on = ImageDeletingEvent.class, stop = true)
+        @Transit(from = {ImageNotAvailableEvent.class, ImageErrorEvent.class, ImageSavedEvent.class, ImageDeletingEvent.class}, on = ImageDeletingEvent.class, stop = true),
+        
 })
 public class ImageFSM {
 
@@ -50,20 +49,23 @@ public class ImageFSM {
 
     private final ImagesAware imagesAware;
 
+    private final MailSender mailSender;
+    
     @Autowired
-    public ImageFSM(OperationProcessor operationProcessor, ImagesAware imagesAware, CloudConfigurationProvider cloudConfigurationProvider) {
+    public ImageFSM(OperationProcessor operationProcessor, ImagesAware imagesAware, CloudConfigurationProvider cloudConfigurationProvider, MailSender mailSender) {
         this.operationProcessor = operationProcessor;
         this.imagesAware = imagesAware;
         this.cloudConfigurationProvider = cloudConfigurationProvider;
+        this.mailSender = mailSender;
     }
 
     @BeforeTransit
-    public void beforeTransit(ImageEvent imageEvent) {
+    public void beforeTransit(@Event ImageEvent imageEvent) {
         LOG.trace("Doing transition for event {}", imageEvent);
     }
 
     @OnTransit
-    public void onImageQueued(ImageQueuedEvent event) {
+    public void onImageQueued(@Event ImageQueuedEvent event) {
         if (event.isSync()) {
             Image image = event.getImage();
             LOG.info("Marking image {} ({}) as queued", image.getName(), image.getId());
@@ -73,7 +75,7 @@ public class ImageFSM {
     }
 
     @OnTransit
-    public void onImageSaving(ImageSavingEvent event) {
+    public void onImageSaving(@Event ImageSavingEvent event) {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -89,7 +91,7 @@ public class ImageFSM {
             }
             Image updatedImage = updatedImageCandidate.get();
             updatedImage.setState(ImageState.SAVING);
-            
+
             //Swap images with random UUID and real ID
             String temporaryImageId = event.getTemporaryImageId();
             if (temporaryImageId != null && imagesAware.imageExists(temporaryImageId)) {
@@ -97,11 +99,11 @@ public class ImageFSM {
             }
             imagesAware.saveImage(updatedImage);
         }
-        
+
     }
 
     @OnTransit
-    public void onImageSaved(ImageSavedEvent event) {
+    public void onImageSaved(@Event ImageSavedEvent event) {
         if (event.isSync()) {
             Image image = event.getImage();
             LOG.info("Marking image {} ({}) as saved", image.getName(), image.getId());
@@ -109,9 +111,9 @@ public class ImageFSM {
             imagesAware.saveImage(image);
         }
     }
-    
+
     @OnTransit
-    public void onImageDeleting(ImageDeletingEvent event) {
+    public void onImageDeleting(@Event ImageDeletingEvent event) {
         Image image = event.getImage();
         String cloudId = image.getCloudId();
         Cloud cloud = cloudConfigurationProvider.getCloud(cloudId);
@@ -132,16 +134,31 @@ public class ImageFSM {
     }
 
     @OnTransit
-    public void onImageError(ImageErrorEvent event) {
+    public void onImageError(@FromState ImageEvent from, @Event ImageErrorEvent event) {
         Image image = event.getImage();
-        LOG.info("Changing image {} ({}) status to error with reason = {}", image.getName(), image.getId());
+        LOG.info("Changing image {} ({}) status to error", image.getName(), image.getId());
         image.setState(ImageState.ERROR);
         imagesAware.saveImage(image);
+        if (!(from instanceof ImageErrorEvent) && !(from instanceof ImageNotAvailableEvent)) {
+            LOG.info("Sending letter about image {} ({}) error", image.getName(), image.getId());
+            String message = getMailMessage(imageEventToState(from), image);
+            mailSender.sendLetter(message);
+        }
     }
 
-    @OnTransit
-    public void onUnknownEvent(ImageEvent event) {
-        LOG.warn("Skipping unknown event {}", event);
+    private String getMailMessage(ImageState previousImageState, Image image) {
+        switch (previousImageState) {
+            case DELETING:
+                return String.format("Failed to delete image %s (%s)", image.getName(), image.getId());
+            case QUEUED:
+            case SAVING:
+            case SAVED:
+                return String.format("Failed to save image %s (%s)", image.getName(), image.getId());
+        }
+        throw new IllegalArgumentException(String.format(
+                "Unsupported image state: %s. This is a bug.",
+                previousImageState.value()
+        ));
     }
 
     @OnException
