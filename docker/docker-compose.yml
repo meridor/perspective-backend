@@ -10,6 +10,8 @@ services:
       - storage
     environment:
       - MISC_PROPERTIES=-Dperspective.storage.hosts=storage:5801
+    depends_on:
+      - storage      
   openstack:
     image: meridor/perspective-openstack:${VERSION}
     links:
@@ -26,3 +28,12 @@ services:
       - MISC_PROPERTIES=-Dperspective.storage.hosts=storage:5801
     depends_on:
       - rest
+  digital-ocean:
+    image: meridor/perspective-digital-ocean:${VERSION}
+    links:
+      - storage
+    environment:
+      - MISC_PROPERTIES=-Dperspective.storage.hosts=storage:5801
+    depends_on:
+      - rest
+      
