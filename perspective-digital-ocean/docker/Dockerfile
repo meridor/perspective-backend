@@ -4,15 +4,13 @@ MAINTAINER Ivan Krutov <vania-pooh@meridor.org>
 
 ENV LANG=en_US.UTF-8 \
     GC_OPTS="-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled" \
-    MEMORY_OPTS="-Xmx1024m" \
+    MEMORY_OPTS="-Xmx256m" \
     NETWORK_OPTS="-Djava.net.preferIPv6Addresses=true" \
     LOGGING_OPTS="" \
     MISC_OPTS=""
 
-EXPOSE 5801
-
-COPY lib /usr/share/perspective/perspective-storage/lib
-COPY ${project.build.finalName}.jar usr/share/perspective/perspective-storage
+COPY lib /usr/share/perspective/perspective-digital-ocean/lib
+COPY ${project.build.finalName}.jar usr/share/perspective/perspective-digital-ocean
 
 COPY entrypoint.sh /
 

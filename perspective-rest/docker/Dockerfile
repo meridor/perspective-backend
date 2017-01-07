@@ -2,7 +2,12 @@ FROM openjdk:8-jre-alpine
 
 MAINTAINER Ivan Krutov <vania-pooh@meridor.org>
 
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    GC_OPTS="-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled" \
+    MEMORY_OPTS="-Xms256m -Xmx1024m" \
+    NETWORK_OPTS="-Djava.net.preferIPv6Addresses=true" \
+    LOGGING_OPTS="" \
+    MISC_OPTS=""
 
 EXPOSE 8080
 
