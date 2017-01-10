@@ -3,6 +3,9 @@ package org.meridor.perspective.backend.config.impl;
 import org.junit.Test;
 import org.meridor.perspective.backend.config.SettingsProvider;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.*;
@@ -26,15 +29,14 @@ public class PropertiesSettingsProviderTest {
     @Test
     public void testGet() throws Exception {
         assertThat(settingsProvider.get(MISSING_KEY).isPresent(), is(false));
-        assertThat(settingsProvider.get(EXISTING_KEY).isPresent(), is(true));
-        assertThat(settingsProvider.get(EXISTING_KEY).get(), equalTo(VALUE));
+        assertThat(settingsProvider.get(EXISTING_KEY), equalTo(Optional.of(VALUE)));
     }
 
     @Test
     public void testGetList() throws Exception {
-        assertThat(settingsProvider.getList(MISSING_KEY), is(empty()));
-        assertThat(settingsProvider.getList(EXISTING_KEY), hasSize(3));
-        assertThat(settingsProvider.getList(EXISTING_KEY).get(1), equalTo("2"));
+        assertThat(settingsProvider.getList(MISSING_KEY, Collections.emptyList()), is(empty()));
+        assertThat(settingsProvider.getList(MISSING_KEY, Arrays.asList("1", "2")), contains("1", "2"));
+        assertThat(settingsProvider.getList(EXISTING_KEY, Collections.emptyList()), contains("1", "2", "3"));
     }
 
     @Test

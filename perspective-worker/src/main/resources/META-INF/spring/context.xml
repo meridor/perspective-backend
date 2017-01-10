@@ -39,8 +39,10 @@
             <bean class="com.hazelcast.client.config.ClientConfig">
                 <property name="groupConfig">
                     <bean class="com.hazelcast.config.GroupConfig">
-                        <property name="name" value="${perspective.storage.group.name}"/>
-                        <property name="password" value="${perspective.storage.group.password}"/>
+                        <property name="name"
+                                  value="${perspective.storage.group.name:perspective}"/>
+                        <property name="password"
+                                  value="${perspective.storage.group.password:perspective}"/>
                     </bean>
                 </property>
                 <property name="networkConfig">
@@ -48,6 +50,9 @@
                         <property name="addresses">
                             <bean factory-bean="settingsProvider" factory-method="getList">
                                 <constructor-arg value="perspective.storage.hosts"/>
+                                <constructor-arg>
+                                    <list>127.0.0.1:5801</list>
+                                </constructor-arg>
                             </bean>
                         </property>
                     </bean>

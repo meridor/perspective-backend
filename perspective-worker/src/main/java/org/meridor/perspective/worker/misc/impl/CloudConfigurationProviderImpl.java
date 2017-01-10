@@ -26,7 +26,7 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
 
     private static final Logger LOG = LoggerFactory.getLogger(CloudConfigurationProviderImpl.class);
 
-    @Value("${perspective.configuration.file}")
+    @Value("${perspective.configuration.file:classpath:clouds.xml}")
     private Resource configurationFileResource;
 
     private final Map<String, Cloud> cloudsMap = new HashMap<>();

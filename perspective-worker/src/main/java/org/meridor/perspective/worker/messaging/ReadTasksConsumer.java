@@ -13,7 +13,7 @@ import static org.meridor.perspective.backend.messaging.MessageUtils.getRealQueu
 @Component
 public class ReadTasksConsumer extends BaseConsumer {
 
-    @Value("${perspective.messaging.read.consumers:2}")
+    @Value("${perspective.messaging.read.consumers:8}")
     private int parallelConsumers;
 
     private final Dispatcher dispatcher;

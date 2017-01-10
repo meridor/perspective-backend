@@ -3,7 +3,10 @@ package org.meridor.perspective.backend.config.impl;
 import org.meridor.perspective.backend.config.SettingsProvider;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class PropertiesSettingsProvider implements SettingsProvider {
     
@@ -21,11 +24,11 @@ public class PropertiesSettingsProvider implements SettingsProvider {
     }
 
     @Override
-    public List<String> getList(String settingName) {
+    public List<String> getList(String settingName, List<String> defaultValue) {
         Optional<String> stringCandidate = get(settingName);
         return stringCandidate.isPresent() ?
                 Arrays.asList(stringCandidate.get().split(COMMA)) :
-                Collections.emptyList();
+                defaultValue;
     }
 
     @Override
