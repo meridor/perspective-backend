@@ -61,16 +61,16 @@ public class InstanceFSMTest {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.schedule(() -> instancesAware.getInstances().removeIf(
                 i -> Duration.between(i.getTimestamp(), now).getSeconds() > 5
-        ), 100, TimeUnit.MILLISECONDS);
+        ), 200, TimeUnit.MILLISECONDS);
 
-        Thread.sleep(100);
+        Thread.sleep(100); //Before eviction emulator runs
         Instance instanceTwo = EntityGenerator.getInstance(); //This is the same instance but with more recent timestamp
         instanceTwo.setTimestamp(now);
         InstanceLaunchingEvent eventTwo = EventFactory.instanceEvent(InstanceLaunchingEvent.class, instanceTwo);
         eventTwo.setSync(true);
         fsm.fire(eventTwo);
-        
-        Thread.sleep(100);
+
+        Thread.sleep(200); //After eviction emulator runs
         assertThat(instancesAware.instanceExists(instanceOne.getId()), is(true));
     }
 
