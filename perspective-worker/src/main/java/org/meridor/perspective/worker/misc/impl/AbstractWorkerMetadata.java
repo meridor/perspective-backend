@@ -1,18 +1,19 @@
 package org.meridor.perspective.worker.misc.impl;
 
+import org.meridor.perspective.worker.Config;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public abstract class AbstractWorkerMetadata implements WorkerMetadata {
 
-    @Value("${perspective.worker.id:worker}")
-    private String id;
-
+    @Autowired
+    private Config config;    
+    
     @Override
     public String getId() {
-        return id;
+        return config.getWorkerId();
     }
 
 }

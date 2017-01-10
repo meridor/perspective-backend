@@ -10,13 +10,13 @@ import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.NeedProjectSyncEvent;
 import org.meridor.perspective.events.ProjectSyncEvent;
+import org.meridor.perspective.worker.Config;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -41,15 +41,15 @@ public class ProjectsFetcher extends BaseFetcher implements EventListener<NeedPr
     private final WorkerMetadata workerMetadata;
 
     private final ApplicationContext applicationContext;
-    
-    @Value("${perspective.fetch.delay.projects}")
-    private int fullSyncDelay;
+
+    private final Config config;
     
     @Autowired
-    public ProjectsFetcher(OperationProcessor operationProcessor, ApplicationContext applicationContext, WorkerMetadata workerMetadata) {
+    public ProjectsFetcher(OperationProcessor operationProcessor, ApplicationContext applicationContext, WorkerMetadata workerMetadata, Config config) {
         this.operationProcessor = operationProcessor;
         this.applicationContext = applicationContext;
         this.workerMetadata = workerMetadata;
+        this.config = config;
     }
 
     @IfNotLocked(lockName = "all")
@@ -88,7 +88,7 @@ public class ProjectsFetcher extends BaseFetcher implements EventListener<NeedPr
 
     @Override
     protected int getFullSyncDelay() {
-        return fullSyncDelay;
+        return config.getProjectsFetchDelay();
     }
 
     @Override

@@ -7,7 +7,6 @@ import org.meridor.perspective.rest.handler.impl.HandlerProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -24,25 +23,22 @@ public class Server {
 
     private Undertow server;
 
-    @Value("${perspective.rest.listen.host:localhost}")
-    private String host;
-
-    @Value("${perspective.rest.listen.port:0}")
-    private int port;
-
+    private final Config config;
+    
     @Autowired
-    public Server(ApplicationContext applicationContext) {
+    public Server(ApplicationContext applicationContext, Config config) {
         this.applicationContext = applicationContext;
+        this.config = config;
     }
 
     @PostConstruct
     public void init() {
         server = Undertow.builder()
-                .addHttpListener(port, host)
+                .addHttpListener(config.getPort(), config.getHost())
                 .setHandler(createHandler())
                 .build();
         server.start();
-        LOG.info("Listening on {}:{}", host, port);
+        LOG.info("Listening on {}:{}", config.getHost(), config.getPort());
     }
 
     public String getBaseUrl() {

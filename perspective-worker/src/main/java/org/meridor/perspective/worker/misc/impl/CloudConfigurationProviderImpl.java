@@ -3,10 +3,11 @@ package org.meridor.perspective.worker.misc.impl;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.Clouds;
 import org.meridor.perspective.config.ObjectFactory;
+import org.meridor.perspective.worker.Config;
 import org.meridor.perspective.worker.misc.CloudConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
@@ -26,13 +27,18 @@ public class CloudConfigurationProviderImpl implements CloudConfigurationProvide
 
     private static final Logger LOG = LoggerFactory.getLogger(CloudConfigurationProviderImpl.class);
 
-    @Value("${perspective.configuration.file:classpath:clouds.xml}")
-    private Resource configurationFileResource;
+    private final Config config;
 
     private final Map<String, Cloud> cloudsMap = new HashMap<>();
 
+    @Autowired
+    public CloudConfigurationProviderImpl(Config config) {
+        this.config = config;
+    }
+
     @PostConstruct
     public void init() {
+        Resource configurationFileResource = config.getConfigurationFileResource();
         if (configurationFileResource.exists()) {
             LOG.info("Loading cloud configuration from [{}]", configurationFileResource.toString());
             try (InputStream configFileInputStream = configurationFileResource.getInputStream()) {

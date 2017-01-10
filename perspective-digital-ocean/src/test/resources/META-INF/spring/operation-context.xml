@@ -18,6 +18,7 @@
     <aop:aspectj-autoproxy/>
 
     <bean class="org.meridor.perspective.worker.misc.IdGenerator"/>
+    <bean class="org.meridor.perspective.worker.Config"/>
     <bean class="org.meridor.perspective.backend.messaging.TestStorage"/>
 
 </beans>

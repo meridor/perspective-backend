@@ -10,13 +10,13 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.ImageEvent;
+import org.meridor.perspective.worker.Config;
 import org.meridor.perspective.worker.fetcher.LastModificationAware;
 import org.meridor.perspective.worker.misc.WorkerMetadata;
 import org.meridor.perspective.worker.operation.OperationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -46,17 +46,17 @@ public class ImagesFetcher extends BaseFetcher {
     private final ProjectsAware projectsAware;
 
     private final EventBus eventBus;
-    
-    @Value("${perspective.fetch.delay.images}")
-    private int fullSyncDelay;
+
+    private final Config config;
 
     @Autowired
-    public ImagesFetcher(WorkerMetadata workerMetadata, OperationProcessor operationProcessor, ApplicationContext applicationContext, ProjectsAware projectsAware, EventBus eventBus) {
+    public ImagesFetcher(WorkerMetadata workerMetadata, OperationProcessor operationProcessor, ApplicationContext applicationContext, ProjectsAware projectsAware, EventBus eventBus, Config config) {
         this.workerMetadata = workerMetadata;
         this.operationProcessor = operationProcessor;
         this.applicationContext = applicationContext;
         this.projectsAware = projectsAware;
         this.eventBus = eventBus;
+        this.config = config;
     }
 
     @IfNotLocked(lockName = "all")
@@ -95,7 +95,7 @@ public class ImagesFetcher extends BaseFetcher {
 
     @Override
     protected int getFullSyncDelay() {
-        return fullSyncDelay;
+        return config.getImagesFetchDelay();
     }
 
     @Override

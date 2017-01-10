@@ -1,9 +1,9 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
-import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.backend.storage.InstancesAware;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.worker.Config;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,13 +15,13 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 public class InstanceModificationListener extends LastModificationListener<Instance> {
 
     private final InstancesAware instancesAware;
-    
-    @Value("${perspective.fetch.delay.instances}")
-    private int instancesFetchDelay;
+
+    private final Config config;
     
     @Autowired
-    public InstanceModificationListener(InstancesAware instancesAware) {
+    public InstanceModificationListener(InstancesAware instancesAware, Config config) {
         this.instancesAware = instancesAware;
+        this.config = config;
     }
 
     @PostConstruct
@@ -32,7 +32,7 @@ public class InstanceModificationListener extends LastModificationListener<Insta
 
     @Override
     protected int getLongTimeAgoLimit() {
-        return delayToLimit(instancesFetchDelay);
+        return delayToLimit(config.getInstancesFetchDelay());
     }
 
     @Override

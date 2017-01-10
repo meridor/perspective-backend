@@ -4,9 +4,9 @@ import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.worker.Config;
 import org.meridor.perspective.worker.misc.impl.LimitedSizeMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -16,14 +16,14 @@ public class IdGenerator {
 
     private final WorkerMetadata workerMetadata;
 
-    @Value("${perspective.storage.id.cache.size:1000}")
-    private int cacheSize;
+    private final Config config;
 
     private LimitedSizeMap<String, String> idCache;
 
     @Autowired
-    public IdGenerator(WorkerMetadata workerMetadata) {
+    public IdGenerator(WorkerMetadata workerMetadata, Config config) {
         this.workerMetadata = workerMetadata;
+        this.config = config;
     }
 
     public String generate(Class<?> role, String id) {
@@ -35,7 +35,7 @@ public class IdGenerator {
     
     private String getOrGenerate(String seed) {
         if (idCache == null) {
-            idCache = new LimitedSizeMap<>(cacheSize);
+            idCache = new LimitedSizeMap<>(config.getIdCacheSize());
         }
         if (idCache.containsKey(seed)) {
             return idCache.get(seed);

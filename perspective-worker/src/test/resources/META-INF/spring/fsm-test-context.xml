@@ -19,6 +19,7 @@
     <bean class="org.meridor.perspective.worker.processor.InstanceFSM"/>
     <bean class="org.meridor.perspective.worker.processor.ImageFSM"/>
     <bean class="org.meridor.perspective.worker.processor.WorkerEventBus"/>
+    <bean class="org.meridor.perspective.worker.Config"/>
     <bean class="org.meridor.perspective.worker.processor.event.MailSender"/>
     <bean class="org.meridor.perspective.backend.messaging.ProduceBeanPostProcessor"/>
 

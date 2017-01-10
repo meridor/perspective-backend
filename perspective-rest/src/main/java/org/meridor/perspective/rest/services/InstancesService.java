@@ -9,10 +9,10 @@ import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.events.*;
+import org.meridor.perspective.rest.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,20 +44,20 @@ public class InstancesService {
     @Destination(WRITE_TASKS)
     private Producer producer;
 
-    @Value("${perspective.messaging.max.retries:5}")
-    private int maxRetries;
+    private final Config config;
 
     @Autowired
     public InstancesService(
             InstancesAware instancesAware,
             ImagesAware imagesAware,
             ProjectsAware projectsAware,
-            OperationsRegistry operationsRegistry
-    ) {
+            OperationsRegistry operationsRegistry,
+            Config config) {
         this.instancesAware = instancesAware;
         this.imagesAware = imagesAware;
         this.projectsAware = projectsAware;
         this.operationsRegistry = operationsRegistry;
+        this.config = config;
     }
 
     public Optional<Instance> getInstanceById(String instanceId) {
@@ -86,7 +86,7 @@ public class InstancesService {
             instancesAware.saveInstance(instance);
             InstanceLaunchingEvent event = instanceEvent(InstanceLaunchingEvent.class, instance);
             event.setTemporaryInstanceId(temporaryId);
-            producer.produce(message(instance.getCloudType(), event, maxRetries));
+            producer.produce(message(instance.getCloudType(), event, config.getMessagingMaxRetries()));
         }
     }
 
@@ -271,7 +271,7 @@ public class InstancesService {
                 InstanceEvent event = eventProvider.apply(instance);
                 Instance updatedInstance = instanceProcessor.apply(instance);
                 instancesAware.saveInstance(updatedInstance);
-                producer.produce(message(instance.getCloudType(), event, maxRetries));
+                producer.produce(message(instance.getCloudType(), event, config.getMessagingMaxRetries()));
             } else {
                 LOG.warn(
                         "Skipping instance {} as \"{}\" operation is not supported for cloud {}",

@@ -8,10 +8,11 @@ import org.meridor.perspective.backend.messaging.Message;
 import org.meridor.perspective.backend.messaging.impl.BaseConsumer;
 import org.meridor.perspective.beans.DestinationName;
 import org.meridor.perspective.beans.Letter;
+import org.meridor.perspective.rest.Config;
 import org.meridor.perspective.rest.handler.WebsocketResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Path;
@@ -31,15 +32,16 @@ public class MailResource extends BaseConsumer implements Dispatcher, WebsocketR
 
     private static final Logger LOG = LoggerFactory.getLogger(MailResource.class);
 
-    @Value("${perspective.messaging.mail.consumers:1}")
-    private int parallelConsumers;
-
-    @Value("${perspective.messaging.mail.cache.size:1000}")
-    private int maxCacheSize;
+    private final Config config;
 
     private final List<Letter> cache = new ArrayList<>();
 
     private final Set<WebSocketChannel> channels = ConcurrentHashMap.newKeySet();
+
+    @Autowired
+    public MailResource(Config config) {
+        this.config = config;
+    }
 
     @Override
     public Optional<Message> dispatch(Message message) {
@@ -55,6 +57,7 @@ public class MailResource extends BaseConsumer implements Dispatcher, WebsocketR
                     sendLetter(letter, ch);
                 });
             } else {
+                int maxCacheSize = config.getMailMaxCacheSize();
                 if (maxCacheSize > 0 && cache.size() >= maxCacheSize) {
                     cache.remove(0);
                 }
@@ -91,7 +94,7 @@ public class MailResource extends BaseConsumer implements Dispatcher, WebsocketR
 
     @Override
     protected int getParallelConsumers() {
-        return parallelConsumers;
+        return config.getMailParallelConsumers();
     }
 
     @Override

@@ -8,4 +8,5 @@
     <bean class="org.meridor.perspective.worker.processor.AlwaysSucceedingProcessor"/>
     <bean class="org.meridor.perspective.worker.processor.AlwaysFailingProcessor"/>
     <bean class="org.meridor.perspective.worker.processor.WorkerEventBus"/>
+    <bean class="org.meridor.perspective.worker.Config"/>
 </beans>

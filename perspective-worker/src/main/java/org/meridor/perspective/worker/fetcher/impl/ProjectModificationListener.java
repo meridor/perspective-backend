@@ -1,9 +1,9 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
-import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.backend.storage.ProjectsAware;
+import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.worker.Config;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,13 +15,13 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 public class ProjectModificationListener extends LastModificationListener<Project> {
 
     private final ProjectsAware projectsAware;
-    
-    @Value("${perspective.fetch.delay.projects}")
-    private int projectsFetchDelay;
+
+    private final Config config;
     
     @Autowired
-    public ProjectModificationListener(ProjectsAware projectsAware) {
+    public ProjectModificationListener(ProjectsAware projectsAware, Config config) {
         this.projectsAware = projectsAware;
+        this.config = config;
     }
 
     @PostConstruct
@@ -32,7 +32,7 @@ public class ProjectModificationListener extends LastModificationListener<Projec
 
     @Override
     protected int getLongTimeAgoLimit() {
-        return delayToLimit(projectsFetchDelay);
+        return delayToLimit(config.getProjectsFetchDelay());
     }
 
     @Override

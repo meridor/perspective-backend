@@ -1,9 +1,9 @@
 package org.meridor.perspective.worker.fetcher.impl;
 
-import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.beans.Image;
+import org.meridor.perspective.worker.Config;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,13 +15,13 @@ import static org.meridor.perspective.worker.fetcher.impl.SchedulerUtils.delayTo
 public class ImageModificationListener extends LastModificationListener<Image> {
 
     private final ImagesAware imagesAware;
-    
-    @Value("${perspective.fetch.delay.images}")
-    private int imagesFetchDelay;
+
+    private final Config config;
     
     @Autowired
-    public ImageModificationListener(ImagesAware imagesAware) {
+    public ImageModificationListener(ImagesAware imagesAware, Config config) {
         this.imagesAware = imagesAware;
+        this.config = config;
     }
 
     @PostConstruct
@@ -32,7 +32,7 @@ public class ImageModificationListener extends LastModificationListener<Image> {
 
     @Override
     protected int getLongTimeAgoLimit() {
-        return delayToLimit(imagesFetchDelay);
+        return delayToLimit(config.getImagesFetchDelay());
     }
 
     @Override

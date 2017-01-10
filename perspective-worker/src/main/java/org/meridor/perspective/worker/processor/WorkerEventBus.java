@@ -1,7 +1,8 @@
 package org.meridor.perspective.worker.processor;
 
 import org.meridor.perspective.common.events.AbstractEventBus;
-import org.springframework.beans.factory.annotation.Value;
+import org.meridor.perspective.worker.Config;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -12,12 +13,16 @@ import javax.annotation.PreDestroy;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkerEventBus extends AbstractEventBus {
 
-    @Value("${perspective.worker.event.consumers:5}")
-    private int parallelConsumers;
+    private final Config config;
+
+    @Autowired
+    public WorkerEventBus(Config config) {
+        this.config = config;
+    }
 
     @Override
     protected int getParallelConsumers() {
-        return parallelConsumers;
+        return config.getEventConsumers();
     }
 
     @PreDestroy
