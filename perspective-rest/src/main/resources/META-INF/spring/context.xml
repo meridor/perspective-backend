@@ -15,7 +15,8 @@
     <aop:aspectj-autoproxy/>
 
     <!-- Properties -->
-    <util:properties id="properties" location="classpath:rest.properties"/>
+    <util:properties id="properties" location="classpath:rest.properties"
+                     ignore-resource-not-found="true"/>
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreResourceNotFound" value="true"/>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
@@ -45,7 +46,9 @@
                             <bean factory-bean="settingsProvider" factory-method="getList">
                                 <constructor-arg value="perspective.storage.hosts"/>
                                 <constructor-arg>
-                                    <list>127.0.0.1:5801</list>
+                                    <list>
+                                        <value>127.0.0.1:5801</value>
+                                    </list>
                                 </constructor-arg>
                             </bean>
                         </property>

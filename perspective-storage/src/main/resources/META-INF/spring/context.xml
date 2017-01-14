@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context" xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
             http://www.springframework.org/schema/context
@@ -19,6 +20,14 @@
             <list>
                 <value>classpath:storage.properties</value>
             </list>
+        </property>
+        <property name="properties">
+            <props>
+                <prop key="perspective.storage.backup.count">1</prop>
+                <prop key="perspective.storage.ttl.projects">7200</prop>
+                <prop key="perspective.storage.ttl.instances">3600</prop>
+                <prop key="perspective.storage.ttl.images">7200</prop>
+            </props>
         </property>
     </bean>
 
@@ -47,7 +56,7 @@
             </hz:network>
             
             <hz:map name="deleted-instances"
-                    async-backup-count="${perspective.storage.backup.count:1}"
+                    async-backup-count="${perspective.storage.backup.count}"
                     read-backup-data="true"
                     max-size="70"
                     max-size-policy="USED_HEAP_SIZE"
@@ -55,7 +64,7 @@
                     eviction-policy="LRU"/>
             
             <hz:map name="deleted-images"
-                    async-backup-count="${perspective.storage.backup.count:1}"
+                    async-backup-count="${perspective.storage.backup.count}"
                     read-backup-data="true"
                     max-size="70"
                     max-size-policy="USED_HEAP_SIZE"
@@ -63,17 +72,17 @@
                     eviction-policy="LRU"/>
             
             <hz:map name="projects_by_id"
-                    async-backup-count="${perspective.storage.backup.count:1}"
+                    async-backup-count="${perspective.storage.backup.count}"
                     read-backup-data="true"
-                    time-to-live-seconds="${perspective.storage.ttl.projects:7200}"/>
+                    time-to-live-seconds="${perspective.storage.ttl.projects}"/>
             <hz:map name="instances_by_id"
-                    async-backup-count="${perspective.storage.backup.count:1}"
+                    async-backup-count="${perspective.storage.backup.count}"
                     read-backup-data="true"
-                    time-to-live-seconds="${perspective.storage.ttl.instances:3600}"/>
+                    time-to-live-seconds="${perspective.storage.ttl.instances}"/>
             <hz:map name="images_by_id"
-                    async-backup-count="${perspective.storage.backup.count:1}"
+                    async-backup-count="${perspective.storage.backup.count}"
                     read-backup-data="true"
-                    time-to-live-seconds="${perspective.storage.ttl.images:7200}"/>
+                    time-to-live-seconds="${perspective.storage.ttl.images}"/>
         </hz:config>
     </hz:hazelcast>
 
