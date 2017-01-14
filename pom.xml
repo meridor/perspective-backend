@@ -25,7 +25,7 @@
         <spring.version>4.3.5.RELEASE</spring.version>
         <spring-shell.version>1.2.0.RELEASE</spring-shell.version>
         <hazelcast.version>3.7.4</hazelcast.version>
-        <aspectj.version>1.8.9</aspectj.version>
+        <aspectj.version>1.8.10</aspectj.version>
         <yatomata.version>1.11</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
         <undertow.version>1.4.8.Final</undertow.version>
