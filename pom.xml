@@ -18,7 +18,7 @@
     <properties>
         <compiler.version>1.8</compiler.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>1.7.21</slf4j.version>
+        <slf4j.version>1.7.22</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
         <junit.version>4.12</junit.version>
         <hamcrest.version>1.3</hamcrest.version>
@@ -28,7 +28,7 @@
         <aspectj.version>1.8.9</aspectj.version>
         <yatomata.version>1.11</yatomata.version>
         <openstack4j.version>3.0.0</openstack4j.version>
-        <undertow.version>1.4.0.Final</undertow.version>
+        <undertow.version>1.4.8.Final</undertow.version>
         <digitalocean-api-client.version>2.7</digitalocean-api-client.version>
         <tyrus.version>1.13</tyrus.version>
     </properties>
@@ -275,6 +275,7 @@
                             </goals>
                             <configuration>
                                 <!-- Here we use Docker data prepared during the previous step -->
+                                <noCache>true</noCache>
                                 <dockerDirectory>${project.build.directory}/docker-filtered</dockerDirectory>
                                 <imageName>${project.artifactId}:${project.version}</imageName>
                                 <resources>
