@@ -5,7 +5,7 @@ MAINTAINER Ivan Krutov <vania-pooh@meridor.org>
 ENV LANG=en_US.UTF-8 \
     GC_OPTS="-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled" \
     MEMORY_OPTS="-Xmx1024m" \
-    NETWORK_OPTS="-Djava.net.preferIPv6Addresses=true" \
+    NETWORK_OPTS="" \
     LOGGING_OPTS="" \
     MISC_OPTS=""
 
