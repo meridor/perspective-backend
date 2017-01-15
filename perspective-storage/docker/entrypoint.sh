@@ -1,5 +1,4 @@
 #!/bin/sh
 
-JAVA_ARGS="$GC_OPTS $MEMORY_OPTS $NETWORK_OPTS $MISC_OPTS"
-
-java $JAVA_ARGS -jar /usr/share/perspective/perspective-storage/${project.build.finalName}.jar $LOGGING_OPTS 2>&1
+JAVA_ARGS="$GC_OPTS $MEMORY_OPTS $NETWORK_OPTS $LOGGING_OPTS $MISC_OPTS"
+java $JAVA_ARGS -jar /usr/share/perspective/perspective-storage/${project.build.finalName}.jar 2>&1
