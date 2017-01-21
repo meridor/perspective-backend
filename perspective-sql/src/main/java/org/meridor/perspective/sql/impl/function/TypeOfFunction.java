@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 @Component
 public class TypeOfFunction implements Function<Boolean> {
-    
+
+    private static final String ENUMERATED_COLUMN_TYPES = Arrays.stream(DataType.values()).map(Enum::name).collect(Collectors.joining(", "));
+            
     @Override
     public Set<String> validateInput(List<Object> args) {
         if (args.size() != 2) {
@@ -18,8 +20,7 @@ public class TypeOfFunction implements Function<Boolean> {
         Object desiredColumnType = args.get(1);
         Optional<DataType> dataTypeCandidate = getDataType(desiredColumnType);
         if (!dataTypeCandidate.isPresent()) {
-            String enumeratedColumnTypes = Arrays.stream(DataType.values()).map(Enum::name).collect(Collectors.joining(", "));
-            return Collections.singleton(String.format("Invalid data type \"%s\": should be one of {%s}", desiredColumnType, enumeratedColumnTypes));
+            return Collections.singleton(String.format("Invalid data type \"%s\": should be one of {%s}", desiredColumnType, ENUMERATED_COLUMN_TYPES));
         }
         return Collections.emptySet();
     }
@@ -56,4 +57,15 @@ public class TypeOfFunction implements Function<Boolean> {
         }
         return false;
     }
+
+    @Override
+    public String getSignature() {
+        return "TYPEOF(X, T)";
+    }
+
+    @Override
+    public String getDescription() {
+        return String.format("Returns whether X has given type T from the list: %s.", ENUMERATED_COLUMN_TYPES);
+    }
+
 }

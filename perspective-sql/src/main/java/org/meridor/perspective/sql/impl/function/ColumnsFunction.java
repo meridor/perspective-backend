@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import static org.meridor.perspective.sql.impl.function.FunctionUtils.argsCount;
+import static org.meridor.perspective.sql.impl.function.FunctionUtils.oneOf;
 
 @Component
 public class ColumnsFunction implements Function<DataContainer> {
@@ -19,19 +21,23 @@ public class ColumnsFunction implements Function<DataContainer> {
     private static final String TYPE = "type";
     private static final String DEFAULT_VALUE = "default_value";
     private static final String INDEXED = "indexed";
-    
+
+    private final TablesAware tablesAware;
+
+    private final IndexStorage indexStorage;
+
     @Autowired
-    private TablesAware tablesAware;
-    
-    @Autowired
-    private IndexStorage indexStorage;
+    public ColumnsFunction(TablesAware tablesAware, IndexStorage indexStorage) {
+        this.tablesAware = tablesAware;
+        this.indexStorage = indexStorage;
+    }
 
     @Override
     public Set<String> validateInput(List<Object> args) {
-        if (args.size() != 1) {
-            return Collections.singleton("Function accepts one argument only - name of the table to show columns for");
-        }
-        return Collections.emptySet();
+        return oneOf(
+                args,
+                argsCount(1)
+        );
     }
 
     @Override
@@ -54,11 +60,10 @@ public class ColumnsFunction implements Function<DataContainer> {
         tablesAware.getColumns(tableName).forEach(c -> {
             String columnName = c.getName();
             boolean isIndexed = indexStorage.getSignatures().stream()
-                    .filter(s -> 
+                    .anyMatch(s -> 
                             s.getDesiredColumns().containsKey(tableName) &&
                             s.getDesiredColumns().get(tableName).contains(columnName)
-                    )
-                    .findFirst().isPresent();
+                    );
             dataContainer.addRow(Arrays.asList(
                     columnName,
                     humanizeType(c.getType()),
@@ -75,5 +80,16 @@ public class ColumnsFunction implements Function<DataContainer> {
         }
         return columnType.getCanonicalName();
     }
-    
+
+    @Override
+    public String getSignature() {
+        return "COLUMNS(T)";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Returns a list of columns for table T.";
+    }
+
+
 }

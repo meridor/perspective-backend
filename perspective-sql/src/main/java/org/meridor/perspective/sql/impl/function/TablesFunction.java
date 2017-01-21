@@ -39,5 +39,10 @@ public class TablesFunction implements Function<DataContainer> {
                 .forEach(t -> dataContainer.addRow(Collections.singletonList(t)));
         return dataContainer;
     }
-    
+
+    @Override
+    public String getDescription() {
+        return "Returns the list of available tables.";
+    }
+
 }

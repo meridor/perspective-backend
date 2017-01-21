@@ -5,17 +5,20 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
+import static org.meridor.perspective.beans.BooleanRelation.GREATER_THAN;
 import static org.meridor.perspective.sql.impl.function.FunctionUtils.*;
 
 @Component
-public class AbsFunction implements Function<Double> {
-    
+public class ModFunction implements Function<Double> {
+
     @Override
     public Set<String> validateInput(List<Object> args) {
         return oneOf(
                 args,
-                argsCount(1),
-                isNumber(0)
+                argsCount(2),
+                isNumber(0),
+                isNumber(1),
+                numberRelation(1, GREATER_THAN, 0)
         );
     }
 
@@ -26,21 +29,22 @@ public class AbsFunction implements Function<Double> {
 
     @Override
     public FunctionName getName() {
-        return FunctionName.ABS;
+        return FunctionName.MOD;
     }
 
     @Override
     public Double apply(List<Object> objects) {
-        return Math.abs(Double.valueOf(String.valueOf(objects.get(0))));
+        return Double.valueOf(String.valueOf(objects.get(0))) % Double.valueOf(String.valueOf(objects.get(1)));
     }
 
     @Override
     public String getSignature() {
-        return "ABS(X)";
+        return "MOD(X, Y)";
     }
 
     @Override
     public String getDescription() {
-        return "Returns absolute value of X.";
+        return "Returns the remainder of X divided by Y. Y should be positive.";
     }
+
 }

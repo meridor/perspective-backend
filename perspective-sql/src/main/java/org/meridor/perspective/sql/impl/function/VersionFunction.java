@@ -23,4 +23,10 @@ public class VersionFunction implements Function<String> {
         Optional<String> versionCandidate = Optional.ofNullable(getClass().getPackage().getImplementationVersion());
         return versionCandidate.isPresent() ? versionCandidate.get() : "unknown";
     }
+
+    @Override
+    public String getDescription() {
+        return "Returns Perspective version.";
+    }
+
 }

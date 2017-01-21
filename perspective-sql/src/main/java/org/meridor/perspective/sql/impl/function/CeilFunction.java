@@ -8,8 +8,8 @@ import java.util.Set;
 import static org.meridor.perspective.sql.impl.function.FunctionUtils.*;
 
 @Component
-public class AbsFunction implements Function<Double> {
-    
+public class CeilFunction implements Function<Integer> {
+
     @Override
     public Set<String> validateInput(List<Object> args) {
         return oneOf(
@@ -20,27 +20,28 @@ public class AbsFunction implements Function<Double> {
     }
 
     @Override
-    public Class<Double> getReturnType() {
-        return Double.class;
+    public Class<Integer> getReturnType() {
+        return Integer.class;
     }
 
     @Override
     public FunctionName getName() {
-        return FunctionName.ABS;
+        return FunctionName.CEIL;
     }
 
     @Override
-    public Double apply(List<Object> objects) {
-        return Math.abs(Double.valueOf(String.valueOf(objects.get(0))));
+    public Integer apply(List<Object> objects) {
+        return Double.valueOf(Math.ceil(Double.valueOf(String.valueOf(objects.get(0))))).intValue();
     }
 
     @Override
     public String getSignature() {
-        return "ABS(X)";
+        return "CEIL(X)";
     }
 
     @Override
     public String getDescription() {
-        return "Returns absolute value of X.";
+        return "Returns the smallest integer value not less than X.";
     }
+
 }

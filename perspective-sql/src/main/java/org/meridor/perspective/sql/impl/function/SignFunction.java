@@ -8,8 +8,8 @@ import java.util.Set;
 import static org.meridor.perspective.sql.impl.function.FunctionUtils.*;
 
 @Component
-public class AbsFunction implements Function<Double> {
-    
+public class SignFunction implements Function<Double> {
+
     @Override
     public Set<String> validateInput(List<Object> args) {
         return oneOf(
@@ -26,21 +26,22 @@ public class AbsFunction implements Function<Double> {
 
     @Override
     public FunctionName getName() {
-        return FunctionName.ABS;
+        return FunctionName.SIGN;
     }
 
     @Override
     public Double apply(List<Object> objects) {
-        return Math.abs(Double.valueOf(String.valueOf(objects.get(0))));
+        return Math.signum(Double.valueOf(String.valueOf(objects.get(0))));
     }
 
     @Override
     public String getSignature() {
-        return "ABS(X)";
+        return "SIGN(X)";
     }
 
     @Override
     public String getDescription() {
-        return "Returns absolute value of X.";
+        return "Returns the sign of the argument as -1, 0, or 1, depending on whether X is negative, zero, or positive.";
     }
+
 }

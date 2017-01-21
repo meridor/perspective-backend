@@ -8,14 +8,15 @@ import java.util.Set;
 import static org.meridor.perspective.sql.impl.function.FunctionUtils.*;
 
 @Component
-public class AbsFunction implements Function<Double> {
-    
+public class PowerFunction implements Function<Double> {
+
     @Override
     public Set<String> validateInput(List<Object> args) {
         return oneOf(
                 args,
-                argsCount(1),
-                isNumber(0)
+                argsCount(2),
+                isNumber(0),
+                isNumber(1)
         );
     }
 
@@ -26,21 +27,22 @@ public class AbsFunction implements Function<Double> {
 
     @Override
     public FunctionName getName() {
-        return FunctionName.ABS;
+        return FunctionName.POWER;
     }
 
     @Override
     public Double apply(List<Object> objects) {
-        return Math.abs(Double.valueOf(String.valueOf(objects.get(0))));
+        return Math.pow(Double.valueOf(String.valueOf(objects.get(0))), Double.valueOf(String.valueOf(objects.get(1))));
     }
 
     @Override
     public String getSignature() {
-        return "ABS(X)";
+        return "POWER(X, Y)";
     }
 
     @Override
     public String getDescription() {
-        return "Returns absolute value of X.";
+        return "Returns the value of X raised to the power of Y.";
     }
+
 }

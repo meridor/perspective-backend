@@ -16,5 +16,13 @@ public interface Function<O> extends java.util.function.Function<List<Object>, O
     Class<O> getReturnType();
     
     FunctionName getName();
+
+    default String getSignature() {
+        return String.format("%s()", getName().name());
+    }
+
+    default String getDescription() {
+        return "";
+    }
     
 }
