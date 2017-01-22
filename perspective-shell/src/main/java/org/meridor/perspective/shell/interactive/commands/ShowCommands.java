@@ -2,6 +2,8 @@ package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.beans.Letter;
 import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.common.events.EventBus;
+import org.meridor.perspective.shell.common.events.PromptChangedEvent;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.repository.MailRepository;
@@ -40,6 +42,9 @@ public class ShowCommands extends BaseCommands {
 
     @Autowired
     private RequestProvider requestProvider;
+
+    @Autowired
+    private EventBus eventBus;
     
     @CliCommand(value = "show projects", help = "Show available projects")
     public void showProjects(
@@ -267,6 +272,7 @@ public class ShowCommands extends BaseCommands {
                 })
                 .collect(Collectors.toList());
         letters.forEach(l -> mailRepository.deleteLetter(l.getId()));
+        eventBus.fireAsync(new PromptChangedEvent());
         tableOrNothing(new String[]{"Number", "Date", "Text"}, rows);
     }
 
