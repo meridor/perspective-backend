@@ -4,6 +4,7 @@ import org.meridor.perspective.backend.messaging.Destination;
 import org.meridor.perspective.backend.messaging.IfNotLocked;
 import org.meridor.perspective.backend.messaging.Producer;
 import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.common.events.EventBus;
 import org.meridor.perspective.common.events.EventListener;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -43,13 +45,21 @@ public class ProjectsFetcher extends BaseFetcher implements EventListener<NeedPr
     private final ApplicationContext applicationContext;
 
     private final Config config;
-    
+
+    private final EventBus eventBus;
+
     @Autowired
-    public ProjectsFetcher(OperationProcessor operationProcessor, ApplicationContext applicationContext, WorkerMetadata workerMetadata, Config config) {
+    public ProjectsFetcher(OperationProcessor operationProcessor, ApplicationContext applicationContext, WorkerMetadata workerMetadata, Config config, EventBus eventBus) {
         this.operationProcessor = operationProcessor;
         this.applicationContext = applicationContext;
         this.workerMetadata = workerMetadata;
         this.config = config;
+        this.eventBus = eventBus;
+    }
+
+    @PostConstruct
+    public void init() {
+        eventBus.addListener(NeedProjectSyncEvent.class, this);
     }
 
     @IfNotLocked(lockName = "all")
