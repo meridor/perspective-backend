@@ -58,7 +58,7 @@ public class ProjectsFetcher extends BaseFetcher implements EventListener<NeedPr
     }
 
     @PostConstruct
-    public void init() {
+    public void initListener() {
         eventBus.addListener(NeedProjectSyncEvent.class, this);
     }
 

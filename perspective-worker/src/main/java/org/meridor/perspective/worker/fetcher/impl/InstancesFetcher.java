@@ -110,7 +110,10 @@ public class InstancesFetcher extends BaseFetcher {
             for (Instance instance : instances) {
                 instance.setCloudType(cloudType);
                 instance.setCloudId(cloud.getId());
-                allProjectIds.add(instance.getProjectId());
+                String projectId = instance.getProjectId();
+                if (projectId != null) {
+                    allProjectIds.add(projectId);
+                }
                 InstanceEvent event = instanceToEvent(instance);
                 event.setSync(true);
                 producer.produce(message(cloudType, event));
