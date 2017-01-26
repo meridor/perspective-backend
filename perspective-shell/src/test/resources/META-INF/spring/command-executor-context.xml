@@ -5,6 +5,6 @@
             http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
     <bean class="org.meridor.perspective.shell.interactive.TestLogger"/>
-    <bean class="org.meridor.perspective.shell.common.misc.impl.MockShell"/>
-    <bean class="org.meridor.perspective.shell.common.misc.impl.CommandExecutorImpl"/>
+    <bean class="org.meridor.perspective.shell.interactive.MockShell"/>
+    <bean class="org.meridor.perspective.shell.interactive.impl.CommandExecutorImpl"/>
 </beans>

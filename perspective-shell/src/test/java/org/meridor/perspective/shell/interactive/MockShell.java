@@ -1,4 +1,4 @@
-package org.meridor.perspective.shell.common.misc.impl;
+package org.meridor.perspective.shell.interactive;
 
 import org.springframework.shell.core.CommandResult;
 import org.springframework.shell.core.ExitShellRequest;
@@ -14,9 +14,9 @@ import java.util.logging.Level;
 
 @Component
 public class MockShell implements Shell {
-    
+
     private final List<String> commands = new ArrayList<>();
-    
+
     @Override
     public void promptLoop() {
         throw new UnsupportedOperationException();

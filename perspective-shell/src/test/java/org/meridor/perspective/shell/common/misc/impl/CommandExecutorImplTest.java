@@ -2,7 +2,8 @@ package org.meridor.perspective.shell.common.misc.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.meridor.perspective.shell.common.misc.CommandExecutor;
+import org.meridor.perspective.shell.interactive.CommandExecutor;
+import org.meridor.perspective.shell.interactive.MockShell;
 import org.meridor.perspective.shell.interactive.TestLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -12,7 +13,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-@ContextConfiguration(locations = "/META-INF/spring/command-executer-context.xml")
+@ContextConfiguration(locations = "/META-INF/spring/command-executor-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CommandExecutorImplTest {
 

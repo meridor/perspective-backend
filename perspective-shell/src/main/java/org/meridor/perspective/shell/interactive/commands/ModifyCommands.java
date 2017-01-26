@@ -1,7 +1,6 @@
 package org.meridor.perspective.shell.interactive.commands;
 
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.shell.common.misc.CommandExecutor;
 import org.meridor.perspective.shell.common.misc.DateUtils;
 import org.meridor.perspective.shell.common.misc.OperationSupportChecker;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
@@ -16,6 +15,7 @@ import org.meridor.perspective.shell.common.request.RequestProvider;
 import org.meridor.perspective.shell.common.result.FindFlavorsResult;
 import org.meridor.perspective.shell.common.result.FindImagesResult;
 import org.meridor.perspective.shell.common.result.FindInstancesResult;
+import org.meridor.perspective.shell.interactive.CommandExecutor;
 import org.meridor.perspective.shell.interactive.wizard.instances.rebuild.RebuildInstancesWizard;
 import org.meridor.perspective.shell.interactive.wizard.instances.resize.ResizeInstancesWizard;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,11 @@
 package org.meridor.perspective.shell.interactive.commands;
 
-import org.meridor.perspective.shell.common.misc.CommandExecutor;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.repository.InstancesRepository;
 import org.meridor.perspective.shell.common.request.AddImagesRequest;
 import org.meridor.perspective.shell.common.request.AddInstancesRequest;
 import org.meridor.perspective.shell.common.request.RequestProvider;
+import org.meridor.perspective.shell.interactive.CommandExecutor;
 import org.meridor.perspective.shell.interactive.wizard.images.AddImagesWizard;
 import org.meridor.perspective.shell.interactive.wizard.instances.add.AddInstancesWizard;
 import org.springframework.beans.factory.annotation.Autowired;
