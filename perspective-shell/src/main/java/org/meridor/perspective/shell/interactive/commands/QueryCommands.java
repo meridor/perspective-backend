@@ -1,5 +1,7 @@
 package org.meridor.perspective.shell.interactive.commands;
 
+import org.meridor.perspective.shell.common.format.DataFormatter;
+import org.meridor.perspective.shell.common.format.DataFormatterAware;
 import org.meridor.perspective.shell.common.repository.QueryRepository;
 import org.meridor.perspective.shell.common.repository.SettingsAware;
 import org.meridor.perspective.sql.Data;
@@ -11,6 +13,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.meridor.perspective.shell.common.validator.Setting.SHOW_QUERY_STATS;
@@ -19,12 +22,19 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Component
 public class QueryCommands extends BaseCommands {
 
+    private final QueryRepository queryRepository;
+
+    private final SettingsAware settingsAware;
+
+    private final DataFormatterAware dataFormatterAware;
+
     @Autowired
-    private QueryRepository queryRepository;
-    
-    @Autowired
-    private SettingsAware settingsAware;
-    
+    public QueryCommands(QueryRepository queryRepository, SettingsAware settingsAware, DataFormatterAware dataFormatterAware) {
+        this.queryRepository = queryRepository;
+        this.settingsAware = settingsAware;
+        this.dataFormatterAware = dataFormatterAware;
+    }
+
     @CliCommand(value = "select", help = "Execute SELECT query")
     public void select(
             @CliOption(key = "", mandatory = true, help = "Query body") String sql
@@ -41,9 +51,10 @@ public class QueryCommands extends BaseCommands {
     
     private void executeQuery(String sql) {
         Query query = new Query();
-        query.setSql(sql);
+        query.setSql(dataFormatterAware.removeDelimiter(sql));
         long queryStart = System.currentTimeMillis();
         QueryResult result = queryRepository.query(query);
+        Optional<DataFormatter> dataFormatterCandidate = dataFormatterAware.getDataFormatter(sql);
         switch (result.getStatus()) {
             case SUCCESS: {
                 if (showQueryStats()) {
@@ -51,7 +62,12 @@ public class QueryCommands extends BaseCommands {
                     double seconds = (double) (queryFinish - queryStart) / 1000;
                     ok(String.format("Fetched %d rows in %.2f seconds.", result.getCount(), seconds));
                 }
-                pageData(result);
+                if (dataFormatterCandidate.isPresent()) {
+                    DataFormatter dataFormatter = dataFormatterCandidate.get();
+                    ok(dataFormatter.format(result.getData()));
+                } else {
+                    pageData(result);
+                }
                 break;
             }
             case SYNTAX_ERROR:

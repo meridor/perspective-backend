@@ -31,29 +31,38 @@ public class NonInteractiveCommandsTest {
         return Arrays.asList(new Object[][]{
                 {Collections.singletonList("-v"), false, null},
                 {Collections.singletonList("-h"), false, null},
-                {Arrays.asList("-q", "\'select * from flavors;\'"), true, new ArrayList<QueryResult>() {
-                    {
-                        add(new QueryResult() {
-                            {
-                                setCount(0);
-                                setStatus(QueryStatus.SUCCESS);
-                                setData(new Data() {
-                                    {
-                                        setColumnNames(Arrays.asList("one", "two"));
-                                        setRows(Collections.singletonList(new Row(){
-                                            {
-                                                getValues().addAll(Arrays.asList("11", "12"));
-                                                getValues().addAll(Arrays.asList("21", "22"));
-                                            }
-                                        }));
-                                    }
-                                });
-                            }
-                        });
-                    }
-                }},
+                {Arrays.asList("-q", "select * from flavors;"), true, QUERY_RESULTS},
+                {Arrays.asList("-q", "select * from flavors\\E"), true, QUERY_RESULTS},
         });
     }
+
+    private static final List<QueryResult> QUERY_RESULTS = new ArrayList<QueryResult>() {
+        {
+            add(new QueryResult() {
+                {
+                    setCount(0);
+                    setStatus(QueryStatus.SUCCESS);
+                    setData(new Data() {
+                        {
+                            setColumnNames(Arrays.asList("one", "two"));
+                            setRows(Arrays.asList(
+                                    new Row() {
+                                        {
+                                            getValues().addAll(Arrays.asList("11", "12"));
+                                        }
+                                    },
+                                    new Row() {
+                                        {
+                                            getValues().addAll(Arrays.asList(null, "22"));
+                                        }
+                                    }
+                            ));
+                        }
+                    });
+                }
+            });
+        }
+    };
 
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();

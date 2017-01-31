@@ -36,6 +36,16 @@ public class TextUtilsTest {
     }
 
     @Test
+    public void testUnderscoreToLowerCamel() {
+        assertThat(underscoreToLowerCamel("under_score"), equalTo("underScore"));
+    }
+
+    @Test
+    public void testUnderscoreToUpperCamel() {
+        assertThat(underscoreToUpperCamel("under_score"), equalTo("UnderScore"));
+    }
+
+    @Test
     public void testContainsPlaceholder() {
         String template = "start-$name-end";
         assertThat(containsPlaceholder(template, Placeholder.NAME), is(true));

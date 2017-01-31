@@ -43,7 +43,15 @@ public final class TextUtils {
     }
 
     public static String getPlaceholder(Placeholder placeholder) {
-        return String.format("$%s", CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, placeholder.name()));
+        return String.format("$%s", underscoreToLowerCamel(placeholder.name()));
+    }
+
+    static String underscoreToLowerCamel(String input) {
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, input);
+    }
+
+    public static String underscoreToUpperCamel(String input) {
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, input);
     }
     
     public static boolean containsPlaceholder(final String template, Placeholder placeholder) {

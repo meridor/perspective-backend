@@ -1,10 +1,13 @@
 package org.meridor.perspective.shell.noninteractive.commands;
 
+import org.meridor.perspective.shell.common.format.DataFormatter;
+import org.meridor.perspective.shell.common.format.DataFormatterAware;
 import org.meridor.perspective.shell.common.repository.QueryRepository;
 import org.meridor.perspective.sql.Data;
 import org.meridor.perspective.sql.Query;
 import org.meridor.perspective.sql.QueryResult;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class QueryCommand extends CommandWithDependencyInjection {
@@ -23,12 +26,19 @@ public class QueryCommand extends CommandWithDependencyInjection {
 
     private void executeQuery(String sql) {
         QueryRepository queryRepository = getApplicationContext().getBean(QueryRepository.class);
+        DataFormatterAware dataFormatterAware = getApplicationContext().getBean(DataFormatterAware.class);
         Query query = new Query();
-        query.setSql(sql);
+        query.setSql(dataFormatterAware.removeDelimiter(sql));
         QueryResult result = queryRepository.query(query);
+        Optional<DataFormatter> dataFormatterCandidate = dataFormatterAware.getDataFormatter(sql);
         switch (result.getStatus()) {
             case SUCCESS: {
-                printData(result);
+                if (dataFormatterCandidate.isPresent()) {
+                    DataFormatter dataFormatter = dataFormatterCandidate.get();
+                    System.out.print(dataFormatter.format(result.getData()));
+                } else {
+                    printData(result);
+                }
                 break;
             }
             case SYNTAX_ERROR:

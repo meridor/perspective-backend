@@ -72,6 +72,9 @@ public class CommandsTest {
                 {"rebuild --project test-project --image test-image --instances test-instance"},
                 {"rename instances --instances test-instance --name new-name"},
                 {"select 1 + 1"},
+                {"select 1 + 1\\E"},
+                {"select 1 + 1\\G"},
+                {"select 1 + 1\\L"},
                 {"explain select 1 + 1"},
         });
     }
