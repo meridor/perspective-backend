@@ -72,12 +72,6 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
-        public boolean hardRebootInstance(String instanceId) {
-            //TODO: to be implemented!!!
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public boolean startInstance(String instanceId) {
             StartInstancesRequest request = new StartInstancesRequest(Collections.singletonList(instanceId));
             return isResponseSuccessful(client.startInstances(request));

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.BiFunction;
 
+import static org.meridor.perspective.config.OperationType.HARD_REBOOT_INSTANCE;
 import static org.meridor.perspective.config.OperationType.REBOOT_INSTANCE;
 
 @Component
@@ -34,6 +35,7 @@ public class RebootInstanceOperation extends BaseInstanceOperation {
 
     @Override
     public OperationType[] getTypes() {
-        return new OperationType[]{REBOOT_INSTANCE};
+        //AWS tries to reboot instance then in 4 minutes hard-reboots automatically
+        return new OperationType[]{REBOOT_INSTANCE, HARD_REBOOT_INSTANCE};
     }
 }

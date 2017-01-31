@@ -4,8 +4,6 @@ public interface Api {
 
     boolean rebootInstance(String instanceId);
 
-    boolean hardRebootInstance(String instanceId);
-
     boolean startInstance(String instanceId);
 
     boolean shutdownInstance(String instanceId);
