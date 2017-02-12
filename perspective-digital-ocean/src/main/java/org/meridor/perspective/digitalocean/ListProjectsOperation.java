@@ -3,26 +3,24 @@ package org.meridor.perspective.digitalocean;
 import com.myjeeva.digitalocean.pojo.Account;
 import com.myjeeva.digitalocean.pojo.Key;
 import com.myjeeva.digitalocean.pojo.Size;
-import org.meridor.perspective.backend.storage.ProjectsAware;
-import org.meridor.perspective.beans.*;
+import org.meridor.perspective.beans.Flavor;
+import org.meridor.perspective.beans.Keypair;
+import org.meridor.perspective.beans.Project;
+import org.meridor.perspective.beans.Quota;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.misc.IdGenerator;
+import org.meridor.perspective.worker.operation.OperationUtils;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
-import static org.meridor.perspective.events.EventFactory.now;
-import static org.meridor.perspective.worker.misc.impl.ValueUtils.getProjectName;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
@@ -31,15 +29,12 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private final ApiProvider apiProvider;
 
-    private final IdGenerator idGenerator;
-
-    private final ProjectsAware projectsAware;
+    private final OperationUtils operationUtils;
 
     @Autowired
-    public ListProjectsOperation(IdGenerator idGenerator, ApiProvider apiProvider, ProjectsAware projectsAware) {
-        this.idGenerator = idGenerator;
+    public ListProjectsOperation(ApiProvider apiProvider, OperationUtils operationUtils) {
         this.apiProvider = apiProvider;
-        this.projectsAware = projectsAware;
+        this.operationUtils = operationUtils;
     }
 
     @Override
@@ -64,7 +59,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     @Override
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Project> consumer) {
         try {
-            Map<String, Project> fetchMap = getFetchMap(ids);
+            Map<String, Project> fetchMap = operationUtils.getProjectsFetchMap(ids);
             apiProvider.forEachRegion(cloud, (region, api) -> {
                 try {
                     if (fetchMap.containsKey(region)) {
@@ -92,37 +87,11 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         return new OperationType[]{LIST_PROJECTS};
     }
 
-    private Map<String, Project> getFetchMap(Set<String> ids) {
-        Map<String, Project> ret = new HashMap<>();
-        ids.forEach(id -> {
-            Optional<Project> projectCandidate = projectsAware.getProject(id);
-            if (projectCandidate.isPresent()) {
-                Project project = projectCandidate.get();
-                String region = project.getMetadata().get(MetadataKey.REGION);
-                ret.put(region, project);
-            }
-        });
-        return ret;
-    }
-
     private Project processProject(Cloud cloud, String region, Api api) throws Exception {
-        Project project = createProject(cloud, region);
+        Project project = operationUtils.createProject(cloud, region);
         addFlavors(project, api);
         addKeyPairs(project, api);
         addQuota(project, api);
-        return project;
-    }
-
-    private Project createProject(Cloud cloud, String region) {
-        String projectId = idGenerator.getProjectId(cloud, region);
-        Project project = new Project();
-        project.setId(projectId);
-        project.setName(getProjectName(cloud, region));
-        project.setTimestamp(now().minusHours(1));
-
-        MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.REGION, region);
-        project.setMetadata(metadata);
         return project;
     }
 

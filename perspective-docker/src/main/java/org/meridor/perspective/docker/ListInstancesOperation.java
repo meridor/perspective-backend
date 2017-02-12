@@ -2,12 +2,12 @@ package org.meridor.perspective.docker;
 
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.ContainerState;
+import org.meridor.perspective.backend.storage.ImagesAware;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ImagesAware;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
@@ -29,17 +29,21 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
 
     private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
 
-    @Autowired
-    private IdGenerator idGenerator;
-    
-    @Autowired
-    private ApiProvider apiProvider;
+    private final IdGenerator idGenerator;
+
+    private final ApiProvider apiProvider;
+
+    private final ProjectsAware projects;
+
+    private final ImagesAware images;
 
     @Autowired
-    private ProjectsAware projects;
-
-    @Autowired
-    private ImagesAware images;
+    public ListInstancesOperation(IdGenerator idGenerator, ApiProvider apiProvider, ProjectsAware projects, ImagesAware images) {
+        this.idGenerator = idGenerator;
+        this.apiProvider = apiProvider;
+        this.projects = projects;
+        this.images = images;
+    }
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {

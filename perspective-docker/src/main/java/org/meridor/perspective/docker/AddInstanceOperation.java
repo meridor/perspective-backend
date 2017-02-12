@@ -20,11 +20,15 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
 
     private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
+    private final ApiProvider apiProvider;
+
+    private final IdGenerator idGenerator;
+
     @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private IdGenerator idGenerator;
+    public AddInstanceOperation(ApiProvider apiProvider, IdGenerator idGenerator) {
+        this.apiProvider = apiProvider;
+        this.idGenerator = idGenerator;
+    }
 
     @Override
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {

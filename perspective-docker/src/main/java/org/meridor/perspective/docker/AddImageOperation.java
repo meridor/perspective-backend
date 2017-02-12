@@ -1,10 +1,10 @@
 package org.meridor.perspective.docker;
 
+import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
@@ -21,15 +21,19 @@ import static org.meridor.perspective.config.OperationType.ADD_IMAGE;
 public class AddImageOperation implements ProcessingOperation<Image, Image> {
     
     private static final Logger LOG = LoggerFactory.getLogger(AddImageOperation.class);
-    
-    @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private IdGenerator idGenerator;
+
+    private final ApiProvider apiProvider;
+
+    private final IdGenerator idGenerator;
+
+    private final InstancesAware instancesAware;
 
     @Autowired
-    private InstancesAware instancesAware;
+    public AddImageOperation(ApiProvider apiProvider, IdGenerator idGenerator, InstancesAware instancesAware) {
+        this.apiProvider = apiProvider;
+        this.idGenerator = idGenerator;
+        this.instancesAware = instancesAware;
+    }
 
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {

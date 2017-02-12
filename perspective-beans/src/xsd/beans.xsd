@@ -37,11 +37,6 @@
         </xsd:union>
     </xsd:simpleType>
 
-    <xsd:complexType name="cidr">
-        <xsd:attribute name="address" type="tns:ipAddress"/>
-        <xsd:attribute name="prefixSize" type="xsd:int"/>
-    </xsd:complexType>
-
     <xsd:simpleType name="metadataKey">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="architecture"/>
@@ -85,12 +80,13 @@
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="ram" type="xsd:int"/>
+            <xsd:element name="ram" type="xsd:double"/>
             <xsd:element name="vcpus" type="xsd:int"/>
             <xsd:element name="rootDisk" type="xsd:int"/>
             <xsd:element name="ephemeralDisk" type="xsd:int"/>
             <xsd:element name="hasSwap" type="xsd:boolean"/>
             <xsd:element name="isPublic" type="xsd:boolean"/>
+            <xsd:element name="notes" type="xsd:string" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
 
@@ -163,7 +159,7 @@
         <xsd:all>
             <xsd:element name="id" type="tns:uuid"/>
             <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="cidr" type="tns:cidr"/>
+            <xsd:element name="cidr" type="xsd:string"/>
             <xsd:element name="protocolVersion" type="tns:protocolVersion" default="4"/>
             <xsd:element name="gateway" type="tns:ipAddress"/>
             <xsd:element name="isDHCPEnabled" type="xsd:boolean"/>

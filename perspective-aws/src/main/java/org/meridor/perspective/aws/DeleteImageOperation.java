@@ -1,4 +1,4 @@
-package org.meridor.perspective.digitalocean;
+package org.meridor.perspective.aws;
 
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.config.OperationType;
@@ -13,14 +13,7 @@ public class DeleteImageOperation extends BaseImageOperation {
 
     @Override
     protected BiFunction<Api, Image, Boolean> getAction() {
-        return (api, image) -> {
-            try {
-                api.deleteImage(Integer.valueOf(image.getRealId()));
-                return true;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
+        return (api, image) -> api.deleteImage(image.getRealId());
     }
 
     @Override

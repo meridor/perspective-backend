@@ -1,48 +1,29 @@
 package org.meridor.perspective.openstack;
 
 import org.meridor.perspective.beans.Image;
-import org.meridor.perspective.beans.MetadataKey;
-import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.worker.operation.ConsumingOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 
 import static org.meridor.perspective.config.OperationType.DELETE_IMAGE;
 
 @Component
-public class DeleteImageOperation implements ConsumingOperation<Image> {
+public class DeleteImageOperation extends BaseImageOperation {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
-
-    private final ApiProvider apiProvider;
-
-    @Autowired
-    public DeleteImageOperation(ApiProvider apiProvider) {
-        this.apiProvider = apiProvider;
+    @Override
+    protected BiFunction<Api, Image, Boolean> getAction() {
+        return (api, image) -> api.deleteImage(image.getRealId());
     }
 
     @Override
-    public boolean perform(Cloud cloud, Supplier<Image> supplier) {
-        try {
-            Image image = supplier.get();
-            String imageId = image.getRealId();
-            if (imageId == null) {
-                return false;
-            }
-            String region = image.getMetadata().get(MetadataKey.REGION);
-            Api api = apiProvider.getApi(cloud, region);
-            api.deleteImage(imageId);
-            LOG.debug("Deleted image {} ({})", image.getName(), image.getId());
-            return true;
-        } catch (Exception e) {
-            LOG.error("Failed to delete image", e);
-            return false;
-        }
+    protected String getSuccessMessage(Image entity) {
+        return "Deleted image %s (%s)";
+    }
+
+    @Override
+    protected String getErrorMessage(Image entity) {
+        return "Failed to delete image %s (%s)";
     }
 
     @Override

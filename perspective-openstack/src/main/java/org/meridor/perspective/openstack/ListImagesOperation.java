@@ -8,6 +8,7 @@ import org.meridor.perspective.beans.MetadataMap;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
+import org.meridor.perspective.worker.operation.OperationUtils;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +28,21 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
+    private final IdGenerator idGenerator;
+
+    private final ApiProvider apiProvider;
+
+    private final ImagesAware imagesAware;
+
+    private final OperationUtils operationUtils;
+
     @Autowired
-    private IdGenerator idGenerator;
-    
-    @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private ImagesAware imagesAware;
+    public ListImagesOperation(IdGenerator idGenerator, ApiProvider apiProvider, ImagesAware imagesAware, OperationUtils operationUtils) {
+        this.idGenerator = idGenerator;
+        this.apiProvider = apiProvider;
+        this.imagesAware = imagesAware;
+        this.operationUtils = operationUtils;
+    }
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
@@ -65,7 +73,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     @Override
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Image>> consumer) {
         try {
-            Map<String, Set<String>> fetchMap = getFetchMap(ids);
+            Map<String, Set<String>> fetchMap = operationUtils.getImagesFetchMap(ids);
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
@@ -91,23 +99,6 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
         }
     }
 
-    private Map<String, Set<String>> getFetchMap(Set<String> ids) {
-        Map<String, Set<String>> ret = new HashMap<>();
-        ids.forEach(id -> {
-            Optional<Image> imageCandidate = imagesAware.getImage(id);
-            if (imageCandidate.isPresent()) {
-                Image image = imageCandidate.get();
-                String realId = image.getRealId();
-                if (realId != null) {
-                    String region = image.getMetadata().get(MetadataKey.REGION);
-                    ret.putIfAbsent(region, new HashSet<>());
-                    ret.get(region).add(realId);
-                }
-            }
-        });
-        return ret;
-    }
-    
     @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_IMAGES};

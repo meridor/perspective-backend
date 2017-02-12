@@ -168,13 +168,7 @@ public class TestRepository implements ProjectsRepository, ImagesRepository, Ins
     public List<FindNetworksResult> findNetworks(FindNetworksRequest findNetworksRequest) {
         Network network = EntityGenerator.getNetwork();
         List<String> subnets = EntityGenerator.getNetwork().getSubnets().stream()
-                .map(
-                        s -> String.format(
-                                "%s/%s",
-                                s.getCidr().getAddress(),
-                                String.valueOf(s.getCidr().getPrefixSize())
-                        )
-                )
+                .map(Subnet::getCidr)
                 .collect(Collectors.toList());
 
         FindNetworksResult findNetworksResult = new FindNetworksResult(

@@ -22,8 +22,12 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
+    private final IdGenerator idGenerator;
+
     @Autowired
-    private IdGenerator idGenerator;
+    public ListProjectsOperation(IdGenerator idGenerator) {
+        this.idGenerator = idGenerator;
+    }
     
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {

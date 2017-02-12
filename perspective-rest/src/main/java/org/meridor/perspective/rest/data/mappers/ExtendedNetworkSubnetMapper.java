@@ -20,7 +20,7 @@ public class ExtendedNetworkSubnetMapper extends BaseObjectMapper<ExtendedNetwor
                 put("project_id", ExtendedNetworkSubnet::getProjectId);
                 put("network_id", ExtendedNetworkSubnet::getNetworkId);
                 put("name", ExtendedNetworkSubnet::getName);
-                put("cidr", s -> String.format("%s/%d", s.getCidr().getAddress(), s.getCidr().getPrefixSize()));
+                put("cidr", ExtendedNetworkSubnet::getCidr);
                 put("protocol_version", ExtendedNetworkSubnet::getProtocolVersion);
                 put("gateway", ExtendedNetworkSubnet::getGateway);
                 put("is_dhcp_enabled", ExtendedNetworkSubnet::isDHCPEnabled);

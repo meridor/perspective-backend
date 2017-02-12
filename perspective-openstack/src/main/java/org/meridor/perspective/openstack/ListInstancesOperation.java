@@ -1,13 +1,13 @@
 package org.meridor.perspective.openstack;
 
 import org.meridor.perspective.backend.storage.ImagesAware;
-import org.meridor.perspective.backend.storage.InstancesAware;
 import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.CloudType;
 import org.meridor.perspective.config.OperationType;
 import org.meridor.perspective.worker.misc.IdGenerator;
+import org.meridor.perspective.worker.operation.OperationUtils;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.model.compute.Address;
 import org.openstack4j.model.compute.Server;
@@ -32,31 +32,35 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     private static final Logger LOG = LoggerFactory.getLogger(ListInstancesOperation.class);
     
     private static final String OFF = "off";
-    
-    private static final String DOT = "."; 
 
-    @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private IdGenerator idGenerator;
-    
-    @Autowired
-    private ProjectsAware projects;
+    private static final String DOT = ".";
 
-    @Autowired
-    private InstancesAware instancesAware;
+    private final ApiProvider apiProvider;
 
-    @Autowired
-    private ImagesAware imagesAware;
+    private final IdGenerator idGenerator;
+
+    private final ProjectsAware projects;
+
+    private final ImagesAware imagesAware;
+
+    private final OperationUtils operationUtils;
     
     @Value("${perspective.openstack.console.type:off}")
     private String consoleType;
 
     @Value("${perspective.openstack.default.domain:}") //Default is empty string
     private String defaultDomain;
-    
-    
+
+    @Autowired
+    public ListInstancesOperation(ApiProvider apiProvider, IdGenerator idGenerator, ProjectsAware projects, ImagesAware imagesAware, OperationUtils operationUtils) {
+        this.apiProvider = apiProvider;
+        this.idGenerator = idGenerator;
+        this.projects = projects;
+        this.imagesAware = imagesAware;
+        this.operationUtils = operationUtils;
+    }
+
+
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try {
@@ -89,7 +93,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     @Override
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Instance>> consumer) {
         try {
-            Map<String, Set<String>> fetchMap = getFetchMap(ids);
+            Map<String, Set<String>> fetchMap = operationUtils.getInstancesFetchMap(ids);
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
@@ -114,24 +118,6 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
             return false;
         }
     }
-
-    private Map<String, Set<String>> getFetchMap(Set<String> ids) {
-        Map<String, Set<String>> ret = new HashMap<>();
-        ids.forEach(id -> {
-            Optional<Instance> instanceCandidate = instancesAware.getInstance(id);
-            if (instanceCandidate.isPresent()) {
-                Instance instance = instanceCandidate.get();
-                String realId = instance.getRealId();
-                if (realId != null) {
-                    String region = instance.getMetadata().get(MetadataKey.REGION);
-                    ret.putIfAbsent(region, new HashSet<>());
-                    ret.get(region).add(realId);
-                }
-            }
-        });
-        return ret;
-    }
-
 
     @Override
     public OperationType[] getTypes() {

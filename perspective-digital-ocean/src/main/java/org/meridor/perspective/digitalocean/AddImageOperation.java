@@ -26,17 +26,21 @@ public class AddImageOperation implements ProcessingOperation<Image, Image> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AddImageOperation.class);
 
-    @Autowired
-    private ApiProvider apiProvider;
+    private final ApiProvider apiProvider;
+
+    private final IdGenerator idGenerator;
+
+    private final ProjectsAware projectsAware;
+
+    private final InstancesAware instancesAware;
 
     @Autowired
-    private IdGenerator idGenerator;
-
-    @Autowired
-    private ProjectsAware projectsAware;
-
-    @Autowired
-    private InstancesAware instancesAware;
+    public AddImageOperation(ApiProvider apiProvider, IdGenerator idGenerator, ProjectsAware projectsAware, InstancesAware instancesAware) {
+        this.apiProvider = apiProvider;
+        this.idGenerator = idGenerator;
+        this.projectsAware = projectsAware;
+        this.instancesAware = instancesAware;
+    }
 
     @Override
     public Image perform(Cloud cloud, Supplier<Image> supplier) {

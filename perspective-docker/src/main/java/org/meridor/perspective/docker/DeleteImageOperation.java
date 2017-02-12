@@ -18,8 +18,12 @@ public class DeleteImageOperation implements ConsumingOperation<Image> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeleteImageOperation.class);
 
+    private final ApiProvider apiProvider;
+
     @Autowired
-    private ApiProvider apiProvider;
+    public DeleteImageOperation(ApiProvider apiProvider) {
+        this.apiProvider = apiProvider;
+    }
 
     @Override
     public boolean perform(Cloud cloud, Supplier<Image> supplier) {

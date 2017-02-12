@@ -1,9 +1,12 @@
 package org.meridor.perspective.openstack;
 
-import org.meridor.perspective.beans.*;
+import org.meridor.perspective.backend.storage.ProjectsAware;
+import org.meridor.perspective.beans.AvailabilityZone;
+import org.meridor.perspective.beans.Instance;
+import org.meridor.perspective.beans.MetadataKey;
+import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.openstack4j.api.Builders;
@@ -26,14 +29,18 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
 
     private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
+    private final ApiProvider apiProvider;
+
+    private final ProjectsAware projectsAware;
+
+    private final IdGenerator idGenerator;
+
     @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private ProjectsAware projectsAware;
-    
-    @Autowired
-    private IdGenerator idGenerator;
+    public AddInstanceOperation(ApiProvider apiProvider, ProjectsAware projectsAware, IdGenerator idGenerator) {
+        this.apiProvider = apiProvider;
+        this.projectsAware = projectsAware;
+        this.idGenerator = idGenerator;
+    }
 
     @Override
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {

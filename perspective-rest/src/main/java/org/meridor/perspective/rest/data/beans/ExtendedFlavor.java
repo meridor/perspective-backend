@@ -23,7 +23,7 @@ public class ExtendedFlavor {
         return flavor.getName();
     }
 
-    public int getRam() {
+    public double getRam() {
         return flavor.getRam();
     }
 
@@ -45,5 +45,9 @@ public class ExtendedFlavor {
 
     public boolean isPublic() {
         return flavor.isIsPublic();
+    }
+
+    public String getNotes() {
+        return flavor.getNotes();
     }
 }

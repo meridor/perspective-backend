@@ -4,10 +4,10 @@ import com.myjeeva.digitalocean.pojo.Droplet;
 import com.myjeeva.digitalocean.pojo.Image;
 import com.myjeeva.digitalocean.pojo.Key;
 import com.myjeeva.digitalocean.pojo.Region;
+import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ProjectsAware;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.operation.ProcessingOperation;
 import org.slf4j.Logger;
@@ -26,14 +26,18 @@ public class AddInstanceOperation implements ProcessingOperation<Instance, Insta
 
     private static final Logger LOG = LoggerFactory.getLogger(AddInstanceOperation.class);
 
-    @Autowired
-    private ApiProvider apiProvider;
+    private final ApiProvider apiProvider;
+
+    private final ProjectsAware projectsAware;
+
+    private final IdGenerator idGenerator;
 
     @Autowired
-    private ProjectsAware projectsAware;
-
-    @Autowired
-    private IdGenerator idGenerator;
+    public AddInstanceOperation(ApiProvider apiProvider, ProjectsAware projectsAware, IdGenerator idGenerator) {
+        this.apiProvider = apiProvider;
+        this.projectsAware = projectsAware;
+        this.idGenerator = idGenerator;
+    }
 
     @Override
     public Instance perform(Cloud cloud, Supplier<Instance> supplier) {

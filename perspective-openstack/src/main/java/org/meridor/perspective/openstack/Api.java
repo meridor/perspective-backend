@@ -68,7 +68,7 @@ public interface Api {
 
     String addImage(String instanceId, String imageName);
 
-    void deleteImage(String imageId);
+    boolean deleteImage(String imageId);
 
     List<? extends org.openstack4j.model.image.Image> listImages();
 

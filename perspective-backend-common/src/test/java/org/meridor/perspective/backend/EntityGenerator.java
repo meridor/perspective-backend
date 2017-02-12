@@ -70,12 +70,7 @@ public class EntityGenerator {
         Subnet subnet = new Subnet();
         subnet.setId("test-subnet");
         subnet.setName("test-subnet");
-        subnet.setCidr(new Cidr() {
-            {
-                setAddress("5.255.210.0");
-                setPrefixSize(24);
-            }
-        });
+        subnet.setCidr("5.255.210.0/24");
         return subnet;
     }
     

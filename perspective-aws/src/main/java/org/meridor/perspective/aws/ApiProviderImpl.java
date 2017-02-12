@@ -6,19 +6,17 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
-import com.amazonaws.services.ec2.model.RebootInstancesRequest;
-import com.amazonaws.services.ec2.model.StartInstancesRequest;
-import com.amazonaws.services.ec2.model.StopInstancesRequest;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.amazonaws.services.ec2.model.*;
+import org.apache.http.HttpStatus;
+import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.config.Cloud;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class ApiProviderImpl implements ApiProvider {
@@ -66,6 +64,54 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public List<Flavor> listFlavors() {
+            return Stream.of(AvailableFlavor.values())
+                    .map(AvailableFlavor::toFlavor)
+                    .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<NetworkInterface> listNetworks() {
+            return client.describeNetworkInterfaces().getNetworkInterfaces();
+        }
+
+        @Override
+        public List<Subnet> listSubnets() {
+            return client.describeSubnets().getSubnets();
+        }
+
+        @Override
+        public List<AvailabilityZone> listAvailabilityZones() {
+            return client.describeAvailabilityZones().getAvailabilityZones();
+        }
+
+        @Override
+        public List<KeyPairInfo> listKeypairs() {
+            return client.describeKeyPairs().getKeyPairs();
+        }
+
+        @Override
+        public List<Instance> listInstances(Set<String> instanceIds) {
+            DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest()
+                    .withInstanceIds(instanceIds);
+            DescribeInstancesResult describeInstancesResult = client.describeInstances(describeInstancesRequest);
+            return resultToInstances(describeInstancesResult);
+        }
+
+        @Override
+        public List<Instance> listInstances() {
+            return resultToInstances(client.describeInstances());
+        }
+
+        private List<Instance> resultToInstances(DescribeInstancesResult describeInstancesResult) {
+            return isResponseSuccessful(describeInstancesResult) ?
+                    describeInstancesResult.getReservations()
+                            .stream()
+                            .flatMap(r -> r.getInstances().stream())
+                            .collect(Collectors.toList()) : Collections.emptyList();
+        }
+
+        @Override
         public boolean rebootInstance(String instanceId) {
             RebootInstancesRequest request = new RebootInstancesRequest(Collections.singletonList(instanceId));
             return isResponseSuccessful(client.rebootInstances(request));
@@ -89,9 +135,47 @@ public class ApiProviderImpl implements ApiProvider {
             return isResponseSuccessful(client.terminateInstances(terminateInstancesRequest));
         }
 
+        @Override
+        public String addImage(String instanceId, String imageName) {
+            CreateImageRequest createImageRequest = new CreateImageRequest(instanceId, imageName);
+            CreateImageResult createImageResult = client.createImage(createImageRequest);
+            return createImageResult.getImageId();
+        }
+
+        @Override
+        public List<Image> listImages(Set<String> imageIds) {
+            DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest()
+                    .withImageIds(imageIds);
+            return client.describeImages(describeImagesRequest).getImages();
+        }
+
+        @Override
+        public List<Image> listImages() {
+            return client.describeImages().getImages();
+        }
+
+        @Override
+        public boolean deleteImage(String imageId) {
+            List<Image> images = listImages(Collections.singleton(imageId));
+            if (images.size() >= 1) {
+                Image image = images.get(0);
+                DeregisterImageRequest deregisterImageRequest = new DeregisterImageRequest(imageId);
+                DeregisterImageResult deregisterImageResult = client.deregisterImage(deregisterImageRequest);
+                for (BlockDeviceMapping blockDeviceMapping : image.getBlockDeviceMappings()) {
+                    String snapshotId = blockDeviceMapping.getEbs().getSnapshotId();
+                    if (snapshotId != null) {
+                        DeleteSnapshotRequest deleteSnapshotRequest = new DeleteSnapshotRequest(snapshotId);
+                        DeleteSnapshotResult deleteSnapshotResult = client.deleteSnapshot(deleteSnapshotRequest);
+                        return isResponseSuccessful(deregisterImageResult) && isResponseSuccessful(deleteSnapshotResult);
+                    }
+                }
+                return isResponseSuccessful(deregisterImageResult);
+            }
+            return false;
+        }
+
         private boolean isResponseSuccessful(AmazonWebServiceResult<?> response) {
-            //TODO: to be implemented!
-            return true;
+            return response.getSdkHttpMetadata().getHttpStatusCode() == HttpStatus.SC_OK;
         }
 
         @Override

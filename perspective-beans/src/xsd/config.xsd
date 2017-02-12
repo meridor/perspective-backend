@@ -7,9 +7,10 @@
     <xsd:simpleType name="cloudType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="mock"/>
-            <xsd:enumeration value="openstack"/>
+            <xsd:enumeration value="aws"/>
             <xsd:enumeration value="docker"/>
             <xsd:enumeration value="digital_ocean"/>
+            <xsd:enumeration value="openstack"/>
         </xsd:restriction>
     </xsd:simpleType>
 

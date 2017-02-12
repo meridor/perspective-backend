@@ -1,6 +1,5 @@
 package org.meridor.perspective.rest.data.beans;
 
-import org.meridor.perspective.beans.Cidr;
 import org.meridor.perspective.beans.Subnet;
 
 public class ExtendedNetworkSubnet {
@@ -30,7 +29,7 @@ public class ExtendedNetworkSubnet {
         return subnet.getName();
     }
 
-    public Cidr getCidr() {
+    public String getCidr() {
         return subnet.getCidr();
     }
 

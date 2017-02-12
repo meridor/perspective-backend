@@ -233,8 +233,8 @@ public class ApiProvider {
         }
 
         @Override
-        public void deleteImage(String imageId) {
-            api.compute().images().delete(imageId);
+        public boolean deleteImage(String imageId) {
+            return api.compute().images().delete(imageId).isSuccess();
         }
 
         @Override

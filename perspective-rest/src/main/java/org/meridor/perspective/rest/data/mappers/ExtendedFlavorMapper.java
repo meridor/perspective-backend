@@ -25,6 +25,7 @@ public class ExtendedFlavorMapper extends BaseObjectMapper<ExtendedFlavor> {
                 put("ephemeral_disk", ExtendedFlavor::getEphemeralDisk);
                 put("has_swap", ExtendedFlavor::hasSwap);
                 put("is_public", ExtendedFlavor::isPublic);
+                put("notes", ExtendedFlavor::getNotes);
             }
         };
     }

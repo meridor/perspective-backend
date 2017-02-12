@@ -3,9 +3,8 @@ package org.meridor.perspective.openstack;
 import org.meridor.perspective.beans.*;
 import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.config.OperationType;
-import org.meridor.perspective.backend.storage.ProjectsAware;
-import org.meridor.perspective.worker.misc.IdGenerator;
 import org.meridor.perspective.worker.misc.impl.ValueUtils;
+import org.meridor.perspective.worker.operation.OperationUtils;
 import org.meridor.perspective.worker.operation.SupplyingOperation;
 import org.openstack4j.model.compute.AbsoluteLimit;
 import org.slf4j.Logger;
@@ -13,29 +12,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
-import static org.meridor.perspective.events.EventFactory.now;
-import static org.meridor.perspective.worker.misc.impl.ValueUtils.getProjectName;
 
 @Component
 public class ListProjectsOperation implements SupplyingOperation<Project> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
+    private final ApiProvider apiProvider;
+
+    private final OperationUtils operationUtils;
+
     @Autowired
-    private ApiProvider apiProvider;
-    
-    @Autowired
-    private IdGenerator idGenerator;
-    
-    @Autowired
-    private ProjectsAware projectsAware;
+    public ListProjectsOperation(ApiProvider apiProvider, OperationUtils operationUtils) {
+        this.apiProvider = apiProvider;
+        this.operationUtils = operationUtils;
+    }
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Project> consumer) {
@@ -59,7 +55,7 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     @Override
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Project> consumer) {
         try {
-            Map<String, Project> fetchMap = getFetchMap(ids);
+            Map<String, Project> fetchMap = operationUtils.getProjectsFetchMap(ids);
             apiProvider.forEachComputeRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     Project project = processProject(cloud, region, api);
@@ -77,45 +73,18 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
         }
     }
 
-    private Map<String, Project> getFetchMap(Set<String> ids) {
-        Map<String, Project> ret = new HashMap<>();
-        ids.forEach(id -> {
-            Optional<Project> projectCandidate = projectsAware.getProject(id);
-            if (projectCandidate.isPresent()) {
-                Project project = projectCandidate.get();
-                String region = project.getMetadata().get(MetadataKey.REGION);
-                ret.put(region, project);
-            }
-        });
-        return ret;
-    }
-
     @Override
     public OperationType[] getTypes() {
         return new OperationType[]{LIST_PROJECTS};
     }
 
     private Project processProject(Cloud cloud, String region, Api api) {
-        Project project = createProject(cloud, region);
+        Project project = operationUtils.createProject(cloud, region);
         addFlavors(project, api);
         addNetworks(project, api);
         addKeyPairs(project, api);
         addAvailabilityZones(project, cloud, region, api);
         addQuota(project, cloud, region, api);
-        return project;
-    }
-    
-    private Project createProject(Cloud cloud, String region) {
-        String projectId = idGenerator.getProjectId(cloud, region);
-        Project project = new Project();
-        project.setId(projectId);
-        project.setName(getProjectName(cloud, region));
-        project.setTimestamp(now().minusHours(1));
-
-        MetadataMap metadata = new MetadataMap();
-        metadata.put(MetadataKey.REGION, region);
-        
-        project.setMetadata(metadata);
         return project;
     }
 
@@ -151,29 +120,13 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     private Subnet processSubnet(org.openstack4j.model.network.Subnet subnet) {
         Subnet ret = new Subnet();
         ret.setId(subnet.getId());
-        Cidr cidr = parseCidr(subnet.getCidr());
-        ret.setCidr(cidr);
+        ret.setCidr(subnet.getCidr());
         ret.setGateway(subnet.getGateway());
         ret.setIsDHCPEnabled(subnet.isDHCPEnabled());
         ret.setName(subnet.getName());
         int ipVersion = subnet.getIpVersion() != null ? subnet.getIpVersion().getVersion() : 4;
         ret.setProtocolVersion(ipVersion);
         return ret;
-    }
-    
-    private static Cidr parseCidr(String cidrString) {
-        //TODO: replace this with https://github.com/abedra/orchard/pull/7 when it gets merged
-        final String CIDR_DELIMITER = "/";
-        String[] pieces = cidrString.split(CIDR_DELIMITER);
-        Cidr cidr = new Cidr();
-        if (pieces.length == 2) {
-            cidr.setAddress(pieces[0]);
-            cidr.setPrefixSize(Integer.valueOf(pieces[1]));
-        } else {
-            cidr.setAddress("255.255.255.255");
-            cidr.setPrefixSize(32);
-        }
-        return cidr;
     }
 
     private void addAvailabilityZones(Project project, Cloud cloud, String region, Api api) {

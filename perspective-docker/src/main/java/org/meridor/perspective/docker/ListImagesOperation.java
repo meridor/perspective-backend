@@ -28,11 +28,15 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListImagesOperation.class);
 
+    private final IdGenerator idGenerator;
+
+    private final ApiProvider apiProvider;
+
     @Autowired
-    private IdGenerator idGenerator;
-    
-    @Autowired
-    private ApiProvider apiProvider;
+    public ListImagesOperation(IdGenerator idGenerator, ApiProvider apiProvider) {
+        this.idGenerator = idGenerator;
+        this.apiProvider = apiProvider;
+    }
 
     @Override
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {

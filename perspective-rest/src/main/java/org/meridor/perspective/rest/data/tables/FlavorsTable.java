@@ -21,6 +21,7 @@ public class FlavorsTable implements Table {
     public String ephemeral_disk;
     public String has_swap;
     public String is_public;
+    public String notes;
     
     @Override
     public String getName() {
