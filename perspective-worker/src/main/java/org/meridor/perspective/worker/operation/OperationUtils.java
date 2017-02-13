@@ -8,8 +8,10 @@ import org.meridor.perspective.config.Cloud;
 import org.meridor.perspective.worker.misc.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.function.BiFunction;
 
 import static org.meridor.perspective.events.EventFactory.now;
 import static org.meridor.perspective.worker.misc.impl.ValueUtils.getProjectName;
@@ -94,4 +96,13 @@ public final class OperationUtils {
         return project;
     }
 
+    public <T> T fromProjectAndUserName(Cloud cloud, BiFunction<String, String, T> action) {
+        final String DELIMITER = ":";
+        String[] identity = cloud.getIdentity().split(DELIMITER);
+        Assert.isTrue(identity.length == 2, "Identity should be in format project:username");
+        String projectName = identity[0];
+        String userName = identity[1];
+        return action.apply(projectName, userName);
+    }
+    
 }

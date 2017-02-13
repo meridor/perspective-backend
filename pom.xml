@@ -48,6 +48,7 @@
         <module>perspective-digital-ocean</module>
         <module>perspective-common</module>
         <module>perspective-aws</module>
+        <module>perspective-microsoft-azure</module>
     </modules>
 
     <dependencyManagement>

@@ -1,6 +1,7 @@
 package org.meridor.perspective.openstack;
 
 import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.worker.operation.OperationUtils;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.types.Facing;
 import org.openstack4j.api.types.ServiceType;
@@ -14,8 +15,8 @@ import org.openstack4j.model.identity.v3.Service;
 import org.openstack4j.model.image.Image;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.openstack.OSFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,12 @@ import java.util.stream.Collectors;
 @Component
 public class ApiProvider {
 
+    private final OperationUtils operationUtils;
+
+    @Autowired
+    public ApiProvider(OperationUtils operationUtils) {
+        this.operationUtils = operationUtils;
+    }
 
     public Api getApi(Cloud cloud, String region) {
         return region != null ? new ApiImpl(cloud, region) : new ApiImpl(cloud);
@@ -42,11 +49,9 @@ public class ApiProvider {
         computeRegions.forEach(cr -> action.accept(cr, new ApiImpl(cloud, cr)));
     }
 
-    private static class ApiImpl implements Api {
+    private class ApiImpl implements Api {
 
         //TODO: probably implement API pooling
-
-        private static final String DELIMITER = ":";
 
         private final OSClient.OSClientV3 api;
 
@@ -58,21 +63,19 @@ public class ApiProvider {
             this.api = createApi(cloud, region);
         }
 
-        private static OSClient.OSClientV3 createApi(Cloud cloud, String region) {
-            String[] identity = cloud.getIdentity().split(DELIMITER);
-            Assert.isTrue(identity.length == 2, "Identity should be in format project:username");
-            String projectName = identity[0];
-            String userName = identity[1];
-            OSClient.OSClientV3 api = OSFactory.builderV3()
-                    .withConfig(getConnectionSettings())
-                    .endpoint(cloud.getEndpoint())
-                    .credentials(userName, cloud.getCredential(), Identifier.byId("default"))
-                    .scopeToProject(Identifier.byName(projectName), Identifier.byName("default"))
-                    .authenticate();
-            return region != null ? api.useRegion(region) : api;
+        private OSClient.OSClientV3 createApi(Cloud cloud, String region) {
+            return operationUtils.fromProjectAndUserName(cloud, (projectName, userName) -> {
+                OSClient.OSClientV3 api = OSFactory.builderV3()
+                        .withConfig(getConnectionSettings())
+                        .endpoint(cloud.getEndpoint())
+                        .credentials(userName, cloud.getCredential(), Identifier.byId("default"))
+                        .scopeToProject(Identifier.byName(projectName), Identifier.byName("default"))
+                        .authenticate();
+                return region != null ? api.useRegion(region) : api;
+            });
         }
 
-        private static Config getConnectionSettings() {
+        private Config getConnectionSettings() {
             return Config.newConfig()
                     .withConnectionTimeout(10000)
                     .withReadTimeout(30000);
