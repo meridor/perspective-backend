@@ -27,7 +27,6 @@
         <hazelcast.version>3.7.4</hazelcast.version>
         <aspectj.version>1.8.10</aspectj.version>
         <yatomata.version>1.11</yatomata.version>
-        <openstack4j.version>3.0.0</openstack4j.version>
         <undertow.version>1.4.8.Final</undertow.version>
         <digitalocean-api-client.version>2.7</digitalocean-api-client.version>
         <tyrus.version>1.13</tyrus.version>

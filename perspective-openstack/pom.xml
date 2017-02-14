@@ -10,6 +10,10 @@
     <artifactId>perspective-openstack</artifactId>
     <name>Perspective Openstack Worker</name>
 
+    <properties>
+        <openstack4j.version>3.0.3</openstack4j.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
