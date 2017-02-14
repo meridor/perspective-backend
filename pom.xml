@@ -49,6 +49,7 @@
         <module>perspective-common</module>
         <module>perspective-aws</module>
         <module>perspective-microsoft-azure</module>
+        <module>perspective-google-cloud</module>
     </modules>
 
     <dependencyManagement>
