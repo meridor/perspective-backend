@@ -1,6 +1,6 @@
 package org.meridor.perspective.googlecloud;
 
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.Region;
 import org.meridor.perspective.config.Cloud;
 
 import java.util.function.BiConsumer;
