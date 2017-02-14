@@ -39,8 +39,7 @@ public class ApiProviderImpl implements ApiProvider {
         private Compute createComputeApi(Cloud cloud) {
 
             Path jsonPath = Paths.get(cloud.getCredential());
-            try {
-                InputStream inputStream = Files.newInputStream(jsonPath, READ);
+            try (InputStream inputStream = Files.newInputStream(jsonPath, READ)) {
                 Credentials credentials = GoogleCredentials.fromStream(inputStream);
                 return ComputeOptions.newBuilder()
                         .setCredentials(credentials)
