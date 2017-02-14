@@ -36,13 +36,13 @@ public class ApiProvider {
         private ApiImpl(Cloud cloud) {
             this.cloud = cloud;
             //TODO: support SSL certificates
-            AuthConfig authConfig = AuthConfig.builder()
+            RegistryAuth registryAuth = RegistryAuth.builder()
                     .username(cloud.getIdentity())
                     .password(cloud.getCredential())
                     .build();
             this.dockerClient = DefaultDockerClient.builder()
                     .uri(URI.create(cloud.getEndpoint()))
-                    .authConfig(authConfig)
+                    .registryAuth(registryAuth)
                     .build();
         }
 

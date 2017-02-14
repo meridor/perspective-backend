@@ -11,7 +11,7 @@
     <name>Perspective Docker Worker</name>
 
     <properties>
-        <spotify-client.version>3.1.5</spotify-client.version>
+        <spotify-client.version>7.0.2</spotify-client.version>
     </properties>
     
     <build>
