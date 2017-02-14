@@ -10,6 +10,10 @@
     <artifactId>perspective-digital-ocean</artifactId>
 
     <name>Perspective Digital Ocean Worker</name>
+
+    <properties>
+        <digitalocean-api-client.version>2.8</digitalocean-api-client.version>
+    </properties>
     
     <dependencies>
         <dependency>

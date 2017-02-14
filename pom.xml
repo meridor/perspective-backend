@@ -28,7 +28,6 @@
         <aspectj.version>1.8.10</aspectj.version>
         <yatomata.version>1.11</yatomata.version>
         <undertow.version>1.4.8.Final</undertow.version>
-        <digitalocean-api-client.version>2.7</digitalocean-api-client.version>
         <tyrus.version>1.13</tyrus.version>
     </properties>
 
