@@ -10,6 +10,8 @@
             <xsd:enumeration value="aws"/>
             <xsd:enumeration value="docker"/>
             <xsd:enumeration value="digital_ocean"/>
+            <xsd:enumeration value="google_cloud"/>
+            <xsd:enumeration value="microsoft_azure"/>
             <xsd:enumeration value="openstack"/>
         </xsd:restriction>
     </xsd:simpleType>
