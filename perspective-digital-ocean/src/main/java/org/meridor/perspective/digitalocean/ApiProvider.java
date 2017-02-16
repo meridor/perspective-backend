@@ -1,12 +1,10 @@
 package org.meridor.perspective.digitalocean;
 
 import org.meridor.perspective.config.Cloud;
+import org.meridor.perspective.worker.operation.RegionsAware;
 
-import java.util.function.BiConsumer;
-
-public interface ApiProvider {
+public interface ApiProvider extends RegionsAware<String, Api> {
 
     Api getApi(Cloud cloud);
 
-    void forEachRegion(Cloud cloud, BiConsumer<String, Api> action) throws Exception;
 }

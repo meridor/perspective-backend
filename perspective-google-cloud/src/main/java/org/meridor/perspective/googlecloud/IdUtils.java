@@ -1,9 +1,6 @@
 package org.meridor.perspective.googlecloud;
 
-import com.google.cloud.compute.ImageId;
-import com.google.cloud.compute.InstanceId;
-import com.google.cloud.compute.MachineTypeId;
-import com.google.cloud.compute.ZoneId;
+import com.google.cloud.compute.*;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -22,7 +19,25 @@ public final class IdUtils {
         return InstanceId.of(pieces[0], pieces[1], pieces[2]);
     }
 
-    public static String flavorIdToString(MachineTypeId machineTypeId) {
+    public static String networkIdToString(NetworkId networkId) {
+        return join(networkId.getProject(), networkId.getNetwork());
+    }
+
+    public static NetworkId stringToNetworkId(String networkId) {
+        String[] pieces = split(networkId, 2);
+        return NetworkId.of(pieces[0], pieces[1]);
+    }
+
+    public static String subnetworkIdToString(SubnetworkId subnetworkId) {
+        return join(subnetworkId.getProject(), subnetworkId.getRegion(), subnetworkId.getSubnetwork());
+    }
+
+    public static SubnetworkId stringToSubnetworkId(String subnetworkId) {
+        String[] pieces = split(subnetworkId, 3);
+        return SubnetworkId.of(pieces[0], pieces[1], pieces[3]);
+    }
+
+    public static String machineTypeIdToString(MachineTypeId machineTypeId) {
         ZoneId zoneId = machineTypeId.getZoneId();
         return join(zoneId.getProject(), zoneId.getZone(), machineTypeId.getType());
     }

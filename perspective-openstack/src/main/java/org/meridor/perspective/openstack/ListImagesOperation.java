@@ -48,7 +48,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     public boolean perform(Cloud cloud, Consumer<Set<Image>> consumer) {
         try {
             final AtomicInteger overallImagesCount = new AtomicInteger();
-            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+            apiProvider.forEachRegion(cloud, (region, api) -> {
                 Set<Image> images = new HashSet<>();
                 try {
                     List<? extends org.openstack4j.model.image.Image> imagesList = api.listImages();
@@ -74,7 +74,7 @@ public class ListImagesOperation implements SupplyingOperation<Set<Image>> {
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Image>> consumer) {
         try {
             Map<String, Set<String>> fetchMap = operationUtils.getImagesFetchMap(ids);
-            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+            apiProvider.forEachRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
                         Optional<org.openstack4j.model.image.Image> imageCandidate = api.getImageById(realId);

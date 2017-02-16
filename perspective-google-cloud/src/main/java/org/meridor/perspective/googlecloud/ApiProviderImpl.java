@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -111,6 +112,11 @@ public class ApiProviderImpl implements ApiProvider {
         }
 
         @Override
+        public List<Subnetwork> listSubnetworks() {
+            return Lists.newArrayList(computeApi.listSubnetworks().getValues());
+        }
+
+        @Override
         public List<Region> listRegions() {
             return Lists.newArrayList(computeApi.listRegions().getValues());
         }
@@ -118,7 +124,7 @@ public class ApiProviderImpl implements ApiProvider {
         @Override
         public List<Keypair> listKeypairs() {
             //TODO: see https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#project-wide 
-            throw new UnsupportedOperationException();
+            return Collections.emptyList();
         }
 
         @Override

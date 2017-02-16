@@ -3,6 +3,7 @@ package org.meridor.perspective.googlecloud;
 import com.google.cloud.compute.MachineType;
 import com.google.cloud.compute.Network;
 import com.google.cloud.compute.Region;
+import com.google.cloud.compute.Subnetwork;
 import org.meridor.perspective.beans.Keypair;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface Api {
     List<MachineType> listFlavors();
 
     List<Network> listNetworks();
+
+    List<Subnetwork> listSubnetworks();
 
     List<Region> listRegions();
 

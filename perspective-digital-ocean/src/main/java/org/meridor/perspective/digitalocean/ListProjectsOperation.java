@@ -8,22 +8,16 @@ import org.meridor.perspective.beans.Keypair;
 import org.meridor.perspective.beans.Project;
 import org.meridor.perspective.beans.Quota;
 import org.meridor.perspective.config.Cloud;
-import org.meridor.perspective.config.OperationType;
+import org.meridor.perspective.worker.operation.AbstractListProjectsOperation;
 import org.meridor.perspective.worker.operation.OperationUtils;
-import org.meridor.perspective.worker.operation.SupplyingOperation;
+import org.meridor.perspective.worker.operation.RegionsAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import static org.meridor.perspective.config.OperationType.LIST_PROJECTS;
-
 @Component
-public class ListProjectsOperation implements SupplyingOperation<Project> {
+public class ListProjectsOperation extends AbstractListProjectsOperation<String, Api> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListProjectsOperation.class);
 
@@ -38,61 +32,21 @@ public class ListProjectsOperation implements SupplyingOperation<Project> {
     }
 
     @Override
-    public boolean perform(Cloud cloud, Consumer<Project> consumer) {
+    protected Project processProject(Cloud cloud, String region, Api api) {
         try {
-            apiProvider.forEachRegion(cloud, (region, api) -> {
-                try {
-                    Project project = processProject(cloud, region, api);
-                    LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName());
-                    consumer.accept(project);
-                } catch (Exception e) {
-                    LOG.error(String.format("Failed to fetch project for cloud = %s", cloud.getName()), e);
-                }
-            });
-            return true;
+            Project project = operationUtils.createProject(cloud, region);
+            addFlavors(project, api);
+            addKeyPairs(project, api);
+            addQuota(project, api);
+            return project;
         } catch (Exception e) {
-            LOG.error("Failed to fetch projects for cloud = " + cloud.getName(), e);
-            return false;
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public boolean perform(Cloud cloud, Set<String> ids, Consumer<Project> consumer) {
-        try {
-            Map<String, Project> fetchMap = operationUtils.getProjectsFetchMap(ids);
-            apiProvider.forEachRegion(cloud, (region, api) -> {
-                try {
-                    if (fetchMap.containsKey(region)) {
-                        Project project = processProject(cloud, region, api);
-                        consumer.accept(project);
-                        LOG.info("Fetched project {} for cloud = {}, region = {}", project.getName(), cloud.getName(), region);
-                    }
-                } catch (Exception e) {
-                    LOG.info("Failed to project for cloud = {}, region = {}", cloud.getName(), region);
-                }
-            });
-            return true;
-        } catch (Exception e) {
-            LOG.error(String.format(
-                    "Failed to fetch projects with ids = %s for cloud = %s",
-                    ids,
-                    cloud.getName()
-            ), e);
-            return false;
-        }
-    }
-
-    @Override
-    public OperationType[] getTypes() {
-        return new OperationType[]{LIST_PROJECTS};
-    }
-
-    private Project processProject(Cloud cloud, String region, Api api) throws Exception {
-        Project project = operationUtils.createProject(cloud, region);
-        addFlavors(project, api);
-        addKeyPairs(project, api);
-        addQuota(project, api);
-        return project;
+    protected RegionsAware<String, Api> getRegionsAware() {
+        return apiProvider;
     }
 
     private void addFlavors(Project project, Api api) throws Exception {

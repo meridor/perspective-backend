@@ -65,7 +65,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     public boolean perform(Cloud cloud, Consumer<Set<Instance>> consumer) {
         try {
             final AtomicInteger overallInstancesCount = new AtomicInteger();
-            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+            apiProvider.forEachRegion(cloud, (region, api) -> {
                 Set<Instance> instances = new HashSet<>();
                 try {
                     List<? extends org.openstack4j.model.compute.Server> servers = api.listInstances();
@@ -94,7 +94,7 @@ public class ListInstancesOperation implements SupplyingOperation<Set<Instance>>
     public boolean perform(Cloud cloud, Set<String> ids, Consumer<Set<Instance>> consumer) {
         try {
             Map<String, Set<String>> fetchMap = operationUtils.getInstancesFetchMap(ids);
-            apiProvider.forEachComputeRegion(cloud, (region, api) -> {
+            apiProvider.forEachRegion(cloud, (region, api) -> {
                 if (fetchMap.containsKey(region)) {
                     fetchMap.get(region).forEach(realId -> {
                         Optional<Server> instanceCandidate = api.getInstanceById(realId);
