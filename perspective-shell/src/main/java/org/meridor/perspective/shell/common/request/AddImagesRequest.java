@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.meridor.perspective.events.EventFactory.now;
+import static org.meridor.perspective.shell.common.repository.impl.Placeholder.DATE;
+import static org.meridor.perspective.shell.common.repository.impl.Placeholder.NAME;
+import static org.meridor.perspective.shell.common.repository.impl.TextUtils.getPlaceholder;
 import static org.meridor.perspective.shell.common.repository.impl.TextUtils.replacePlaceholders;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
@@ -31,7 +34,7 @@ public class AddImagesRequest implements Request<List<Image>> {
     
     @Name("name")
     @Required
-    private String imageName;
+    private String imageName = String.format("%s-%s", getPlaceholder(NAME), getPlaceholder(DATE));
 
     private final InstancesRepository instancesRepository;
 
@@ -70,8 +73,8 @@ public class AddImagesRequest implements Request<List<Image>> {
         String finalImageName = (imageName != null) ?
                 replacePlaceholders(imageName, new HashMap<Placeholder, String>() {
                     {
-                        put(Placeholder.NAME, instance.getName());
-                        put(Placeholder.DATE, dateUtils.formatDate(now()));
+                        put(NAME, instance.getName());
+                        put(DATE, dateUtils.formatDate(now()));
                     }
                 }) :
                 String.format("%s-image", instance.getName());

@@ -83,10 +83,17 @@ public class AddCommands extends BaseCommands {
     @CliCommand(value = "add images", help = "Add one or more images to project")
     public void addImage(
             @CliOption(key = "instances", help = "Comma separated instance names or patterns to match against instance name") String instanceNames,
+            @CliOption(key = "", help = "Comma separated instance names or patterns to match against instance name") String inlineInstanceNames,
             @CliOption(key = "name", help = "Image name") String imageName
     ) {
-        if (instanceNames != null) {
-            AddImagesRequest addImagesRequest = requestProvider.get(AddImagesRequest.class).withInstanceNames(instanceNames).withName(imageName);
+        if (inlineInstanceNames != null || instanceNames != null) {
+            AddImagesRequest addImagesRequest = requestProvider.get(AddImagesRequest.class);
+            addImagesRequest = (inlineInstanceNames != null) ?
+                    addImagesRequest.withInstanceNames(inlineInstanceNames) :
+                    addImagesRequest.withInstanceNames(instanceNames);
+            if (imageName != null) {
+                addImagesRequest = addImagesRequest.withName(imageName);
+            }
             validateConfirmExecuteShowStatus(
                     addImagesRequest,
                     images -> String.format("Going to add %d images.", images.size()),

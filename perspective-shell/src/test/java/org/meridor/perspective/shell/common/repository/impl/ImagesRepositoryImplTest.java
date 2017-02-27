@@ -2,11 +2,11 @@ package org.meridor.perspective.shell.common.repository.impl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.beans.Flavor;
 import org.meridor.perspective.beans.Image;
 import org.meridor.perspective.beans.Instance;
 import org.meridor.perspective.beans.Project;
-import org.meridor.perspective.backend.EntityGenerator;
 import org.meridor.perspective.shell.common.repository.ImagesRepository;
 import org.meridor.perspective.shell.common.request.AddImagesRequest;
 import org.meridor.perspective.shell.common.request.FindImagesRequest;
@@ -63,6 +63,15 @@ public class ImagesRepositoryImplTest {
 
     @Test
     public void testAddImages() {
+        testAddImagesByName("something");
+    }
+
+    @Test
+    public void testAddImagesDefaultName() {
+        testAddImagesByName(null);
+    }
+
+    private void testAddImagesByName(String imageName) {
         Project project = EntityGenerator.getProject();
         Instance instance = EntityGenerator.getInstance();
         Image image = EntityGenerator.getImage();
@@ -70,8 +79,10 @@ public class ImagesRepositoryImplTest {
         QueryResult queryResult = createMockInstancesResult(project, instance, image, flavor);
         mockQueryRepository.addQueryResult(queryResult);
         AddImagesRequest addImagesRequest = requestProvider.get(AddImagesRequest.class)
-                .withInstanceNames(instance.getName())
-                .withName("something");
+                .withInstanceNames(instance.getName());
+        if (imageName != null) {
+            addImagesRequest = addImagesRequest.withName(imageName);
+        }
         List<Image> images = addImagesRequest.getPayload();
         assertThat(imagesRepository.addImages(images), is(empty()));
     }
