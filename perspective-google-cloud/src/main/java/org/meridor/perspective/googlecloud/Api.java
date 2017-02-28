@@ -1,12 +1,10 @@
 package org.meridor.perspective.googlecloud;
 
-import com.google.cloud.compute.MachineType;
-import com.google.cloud.compute.Network;
-import com.google.cloud.compute.Region;
-import com.google.cloud.compute.Subnetwork;
+import com.google.cloud.compute.*;
 import org.meridor.perspective.beans.Keypair;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface Api {
 
@@ -37,6 +35,10 @@ public interface Api {
     boolean resizeInstance(String instanceId, String flavorId);
 
     List<com.google.cloud.compute.Instance> listInstances();
+
+    List<Disk> listDisks();
+
+    Optional<Instance> getInstanceById(String instanceId);
 
     // Image operations
 

@@ -55,6 +55,15 @@ public final class IdUtils {
         String[] pieces = split(imageId, 2);
         return ImageId.of(pieces[0], pieces[1]);
     }
+    
+    public static String diskIdToString(DiskId diskId) {
+        return join(diskId.getProject(), diskId.getZone(), diskId.getDisk());
+    }
+
+    public static DiskId stringToDiskId(String diskId) {
+        String[] pieces = split(diskId, 3);
+        return DiskId.of(pieces[0], pieces[1], pieces[2]);
+    }
 
     private static String[] split(String input, int piecesRequired) {
         String[] pieces = String.valueOf(input).split(ID_DELIMITER);

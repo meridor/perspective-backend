@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -164,6 +165,16 @@ public class ApiProviderImpl implements ApiProvider {
         @Override
         public List<com.google.cloud.compute.Instance> listInstances() {
             return Lists.newArrayList(computeApi.listInstances().getValues());
+        }
+
+        @Override
+        public List<Disk> listDisks() {
+            return Lists.newArrayList(computeApi.listDisks().getValues());
+        }
+
+        @Override
+        public Optional<Instance> getInstanceById(String instanceId) {
+            return Optional.ofNullable(computeApi.getInstance(stringToInstanceId(instanceId)));
         }
 
         @Override
